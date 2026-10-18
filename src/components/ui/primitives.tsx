@@ -1,0 +1,355 @@
+import type { ReactNode } from 'react';
+import {
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  type TextProps,
+  type ViewProps,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  Fonts,
+  MaxContentWidth,
+  Radius,
+  Spacing,
+  Typography,
+  type ThemeColor,
+} from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { Icon, type IconName } from './icon';
+
+export interface AppTextProps extends TextProps {
+  variant?: keyof typeof Typography;
+  color?: ThemeColor;
+}
+export function AppText({
+  variant = 'body',
+  color = 'text',
+  style,
+  ...props
+}: AppTextProps) {
+  const theme = useTheme();
+  return (
+    <Text
+      {...props}
+      style={[
+        { fontFamily: Fonts.sans, color: theme[color] },
+        Typography[variant],
+        style,
+      ]}
+    />
+  );
+}
+export function Screen({ children }: { children: ReactNode }) {
+  const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  return (
+    <ScrollView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      contentInsetAdjustmentBehavior="automatic"
+      automaticallyAdjustKeyboardInsets
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      contentContainerStyle={[
+        styles.scroll,
+        {
+          paddingTop: Spacing.three + (Platform.OS === 'ios' ? 0 : insets.top),
+          paddingLeft: Math.max(Spacing.four, insets.left),
+          paddingRight: Math.max(Spacing.four, insets.right),
+        },
+      ]}
+    >
+      <View style={styles.screen}>{children}</View>
+    </ScrollView>
+  );
+}
+export function DemoBadge() {
+  const theme = useTheme();
+  return (
+    <View style={[styles.demoBadge, { backgroundColor: theme.muted }]}>
+      <View style={[styles.dot, { backgroundColor: theme.primary }]} />
+      <AppText variant="caption" color="textSecondary">
+        Wersja demonstracyjna
+      </AppText>
+    </View>
+  );
+}
+export interface HeaderProps {
+  title: string;
+  subtitle: string;
+  brand?: boolean;
+}
+export function Header({ title, subtitle, brand }: HeaderProps) {
+  const theme = useTheme();
+  return (
+    <View style={styles.header}>
+      <View style={styles.brandRow}>
+        <View style={styles.row}>
+          <View
+            style={[
+              styles.brandIcon,
+              { backgroundColor: theme.backgroundSelected },
+            ]}
+          >
+            <Icon name="compass" size={22} />
+          </View>
+          <AppText variant="heading">RazemGo</AppText>
+        </View>
+        <AppText variant="caption" color="textSecondary">
+          Bliżej siebie.
+        </AppText>
+      </View>
+      <View style={{ gap: Spacing.two }}>
+        <AppText accessibilityRole="header" variant="title">
+          {title}
+        </AppText>
+        <AppText color="textSecondary">{subtitle}</AppText>
+      </View>
+      {brand ? <DemoBadge /> : null}
+    </View>
+  );
+}
+export interface ButtonProps {
+  label: string;
+  onPress?: () => void;
+  icon?: IconName;
+  variant?: 'primary' | 'secondary';
+  disabled?: boolean;
+}
+export function Button({
+  label,
+  onPress,
+  icon,
+  variant = 'primary',
+  disabled = false,
+}: ButtonProps) {
+  const theme = useTheme();
+  const background = disabled
+    ? theme.disabled
+    : variant === 'primary'
+      ? theme.primaryStrong
+      : theme.backgroundSelected;
+  const foreground = disabled
+    ? theme.disabledText
+    : variant === 'primary'
+      ? theme.backgroundElement
+      : theme.primaryStrong;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.button,
+        { backgroundColor: background, opacity: pressed ? 0.78 : 1 },
+      ]}
+    >
+      <AppText
+        variant="label"
+        style={{ color: foreground, flexShrink: 1, textAlign: 'center' }}
+      >
+        {label}
+      </AppText>
+      {icon ? <Icon name={icon} color={foreground} size={20} /> : null}
+    </Pressable>
+  );
+}
+export interface ChipProps {
+  label: string;
+  selected?: boolean;
+  onPress?: () => void;
+  accessibilityLabel?: string;
+}
+export function Chip({
+  label,
+  selected = false,
+  onPress,
+  accessibilityLabel,
+}: ChipProps) {
+  const theme = useTheme();
+  const content = (
+    <AppText
+      variant="label"
+      color={selected ? 'primaryStrong' : 'textSecondary'}
+      style={{ flexShrink: 1 }}
+    >
+      {label}
+    </AppText>
+  );
+  const baseStyle = [
+    styles.chip,
+    {
+      backgroundColor: selected
+        ? theme.backgroundSelected
+        : theme.backgroundElement,
+      borderColor: selected ? theme.primaryStrong : theme.border,
+    },
+  ];
+  return onPress ? (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={({ pressed }) => [
+        ...baseStyle,
+        styles.touchChip,
+        { opacity: pressed ? 0.65 : 1 },
+      ]}
+    >
+      {selected ? <Icon name="check" size={15} /> : null}
+      {content}
+    </Pressable>
+  ) : (
+    <View style={baseStyle}>{content}</View>
+  );
+}
+export function Card({ style, ...props }: ViewProps) {
+  const theme = useTheme();
+  return (
+    <View
+      {...props}
+      style={[
+        styles.card,
+        { backgroundColor: theme.backgroundElement, borderColor: theme.border },
+        style,
+      ]}
+    />
+  );
+}
+export interface EmptyStateProps {
+  title: string;
+  description: string;
+  icon?: IconName;
+  action?: ReactNode;
+}
+export function EmptyState({
+  title,
+  description,
+  icon = 'search',
+  action,
+}: EmptyStateProps) {
+  const theme = useTheme();
+  return (
+    <Card style={styles.empty}>
+      <View style={[styles.emptyIcon, { backgroundColor: theme.hero }]}>
+        <Icon name={icon} size={44} />
+      </View>
+      <AppText
+        accessibilityRole="header"
+        variant="heading"
+        style={styles.center}
+      >
+        {title}
+      </AppText>
+      <AppText color="textSecondary" style={styles.center}>
+        {description}
+      </AppText>
+      {action}
+    </Card>
+  );
+}
+export function SectionTitle({
+  title,
+  detail,
+}: {
+  title: string;
+  detail?: string;
+}) {
+  return (
+    <View style={{ gap: Spacing.one }}>
+      <AppText variant="heading" accessibilityRole="header">
+        {title}
+      </AppText>
+      {detail ? (
+        <AppText variant="label" color="textSecondary">
+          {detail}
+        </AppText>
+      ) : null}
+    </View>
+  );
+}
+export const layout = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  stack: { gap: Spacing.three },
+  section: { gap: Spacing.three },
+});
+const styles = StyleSheet.create({
+  scroll: { flexGrow: 1, alignItems: 'center', paddingBottom: Spacing.five },
+  screen: { width: '100%', maxWidth: MaxContentWidth, gap: Spacing.four },
+  header: { gap: Spacing.three },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+    paddingBottom: Spacing.two,
+  },
+  row: { flexDirection: 'row', gap: Spacing.two, alignItems: 'center' },
+  brandIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: Radius.small,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  demoBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    alignSelf: 'flex-start',
+    borderRadius: Radius.pill,
+  },
+  dot: { width: 6, height: 6, borderRadius: 3 },
+  button: {
+    minHeight: 52,
+    borderRadius: Radius.small,
+    paddingVertical: 14,
+    paddingHorizontal: Spacing.three,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+  },
+  chip: {
+    borderWidth: 1,
+    borderRadius: Radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    maxWidth: '100%',
+  },
+  touchChip: { minHeight: 48 },
+  card: {
+    borderWidth: 1,
+    borderRadius: Radius.card,
+    padding: Spacing.three,
+    gap: Spacing.three,
+  },
+  empty: {
+    alignItems: 'center',
+    paddingVertical: Spacing.five,
+    paddingHorizontal: Spacing.four,
+    gap: Spacing.three,
+  },
+  emptyIcon: {
+    width: 100,
+    height: 100,
+    borderRadius: Radius.hero,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.two,
+  },
+  center: { textAlign: 'center' },
+});

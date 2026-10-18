@@ -1,180 +1,232 @@
-import { Image } from 'expo-image';
-import { SymbolView } from 'expo-symbols';
-import { Platform, Pressable, ScrollView, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-import { ExternalLink } from '@/components/external-link';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Collapsible } from '@/components/ui/collapsible';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import {
+  AppText,
+  Button,
+  Card,
+  Chip,
+  EmptyState,
+  Header,
+  Screen,
+  layout,
+} from '@/components/ui/primitives';
+import { Icon } from '@/components/ui/icon';
+import { TripCard } from '@/components/trips/trip-card';
+import {
+  CHILD_AGE_BANDS,
+  DEMO_DATE_RANGES,
+  DEMO_PROPOSALS,
+} from '@/data/mocks/travel';
+import {
+  filterProposals,
+  INITIAL_FILTERS,
+} from '@/features/discovery/filter-trips';
+import { useDiscovery } from '@/features/discovery/discovery-context';
+import { Fonts, Radius, Spacing, Typography } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import type { ChildAgeBand, TripMode } from '@/types/travel';
 
-export default function TabTwoScreen() {
-  const safeAreaInsets = useSafeAreaInsets();
-  const insets = {
-    ...safeAreaInsets,
-    bottom: safeAreaInsets.bottom + BottomTabInset + Spacing.three,
-  };
+const modes: { mode: TripMode; label: string }[] = [
+  { mode: 'planned', label: 'Mam plan' },
+  { mode: 'flexible', label: 'Szukam pomysłu' },
+];
+export default function ExploreScreen() {
   const theme = useTheme();
-
-  const contentPlatformStyle = Platform.select({
-    android: {
-      paddingTop: insets.top,
-      paddingLeft: insets.left,
-      paddingRight: insets.right,
-      paddingBottom: insets.bottom,
-    },
-    web: {
-      paddingTop: Spacing.six,
-      paddingBottom: Spacing.four,
-    },
-  });
-
+  const { filters, setFilters } = useDiscovery();
+  const dateRange = DEMO_DATE_RANGES.find(
+    (range) => range.id === filters.dateRangeId,
+  );
+  const proposals = filterProposals(DEMO_PROPOSALS, filters, dateRange);
+  const planned = filters.mode === 'planned';
+  const reset = () => setFilters({ ...INITIAL_FILTERS, mode: filters.mode });
+  const toggleAge = (band: ChildAgeBand) =>
+    setFilters((current) => ({
+      ...current,
+      childAgeBands: current.childAgeBands.includes(band)
+        ? current.childAgeBands.filter((age) => age !== band)
+        : [...current.childAgeBands, band],
+    }));
   return (
-    <ScrollView
-      style={[styles.scrollView, { backgroundColor: theme.background }]}
-      contentInset={insets}
-      contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
-      <ThemedView style={styles.container}>
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText type="subtitle">Explore</ThemedText>
-          <ThemedText style={styles.centerText} themeColor="textSecondary">
-            This starter app includes example{'\n'}code to help you get started.
-          </ThemedText>
-
-          <ExternalLink href="https://docs.expo.dev" asChild>
-            <Pressable style={({ pressed }) => pressed && styles.pressed}>
-              <ThemedView type="backgroundElement" style={styles.linkButton}>
-                <ThemedText type="link">Expo documentation</ThemedText>
-                <SymbolView
-                  tintColor={theme.text}
-                  name={{ ios: 'arrow.up.right.square', android: 'link', web: 'link' }}
-                  size={12}
-                />
-              </ThemedView>
-            </Pressable>
-          </ExternalLink>
-        </ThemedView>
-
-        <ThemedView style={styles.sectionsWrapper}>
-          <Collapsible title="File-based routing">
-            <ThemedText type="small">
-              This app has two screens: <ThemedText type="code">src/app/index.tsx</ThemedText> and{' '}
-              <ThemedText type="code">src/app/explore.tsx</ThemedText>
-            </ThemedText>
-            <ThemedText type="small">
-              The layout file in <ThemedText type="code">src/app/_layout.tsx</ThemedText> sets up
-              the tab navigator.
-            </ThemedText>
-            <ExternalLink href="https://docs.expo.dev/router/introduction">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Android, iOS, and web support">
-            <ThemedView type="backgroundElement" style={styles.collapsibleContent}>
-              <ThemedText type="small">
-                You can open this project on Android, iOS, and the web. To open the web version,
-                press <ThemedText type="smallBold">w</ThemedText> in the terminal running this
-                project.
-              </ThemedText>
-              <Image
-                source={require('@/assets/images/tutorial-web.png')}
-                style={styles.imageTutorial}
+    <Screen>
+      <Header
+        title="Znajdź wspólny kierunek."
+        subtitle="Podobne plany. Nowe znajomości. Wybierz, czego szukasz."
+        brand
+      />
+      <View
+        accessibilityRole="tablist"
+        style={[styles.segment, { backgroundColor: theme.muted }]}
+      >
+        {modes.map(({ mode, label }) => (
+          <Pressable
+            key={mode}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: filters.mode === mode }}
+            accessibilityLabel={label}
+            onPress={() => setFilters((current) => ({ ...current, mode }))}
+            style={({ pressed }) => [
+              styles.segmentItem,
+              {
+                backgroundColor:
+                  filters.mode === mode ? theme.backgroundElement : theme.muted,
+                opacity: pressed ? 0.7 : 1,
+              },
+            ]}
+          >
+            <AppText
+              variant="label"
+              color={filters.mode === mode ? 'primaryStrong' : 'textSecondary'}
+              style={{ textAlign: 'center' }}
+            >
+              {label}
+            </AppText>
+          </Pressable>
+        ))}
+      </View>
+      <Card style={{ gap: Spacing.four }}>
+        <View style={layout.stack}>
+          <AppText variant="label">
+            {planned ? 'Kiedy wyjeżdżacie?' : 'Kiedy macie wolne?'}
+          </AppText>
+          <AppText variant="caption" color="textSecondary">
+            Przykładowe terminy · 2027
+          </AppText>
+          <View style={layout.wrap}>
+            <Chip
+              label="Dowolny termin"
+              selected={filters.dateRangeId === 'all'}
+              onPress={() =>
+                setFilters((current) => ({ ...current, dateRangeId: 'all' }))
+              }
+            />
+            {DEMO_DATE_RANGES.map((range) => (
+              <Chip
+                key={range.id}
+                label={range.label}
+                selected={filters.dateRangeId === range.id}
+                onPress={() =>
+                  setFilters((current) => ({
+                    ...current,
+                    dateRangeId: range.id,
+                  }))
+                }
               />
-            </ThemedView>
-          </Collapsible>
-
-          <Collapsible title="Images">
-            <ThemedText type="small">
-              For static images, you can use the <ThemedText type="code">@2x</ThemedText> and{' '}
-              <ThemedText type="code">@3x</ThemedText> suffixes to provide files for different
-              screen densities.
-            </ThemedText>
-            <Image source={require('@/assets/images/react-logo.png')} style={styles.imageReact} />
-            <ExternalLink href="https://reactnative.dev/docs/images">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Light and dark mode components">
-            <ThemedText type="small">
-              This template has light and dark mode support. The{' '}
-              <ThemedText type="code">useColorScheme()</ThemedText> hook lets you inspect what the
-              user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-            </ThemedText>
-            <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Animations">
-            <ThemedText type="small">
-              This template includes an example of an animated component. The{' '}
-              <ThemedText type="code">src/components/ui/collapsible.tsx</ThemedText> component uses
-              the powerful <ThemedText type="code">react-native-reanimated</ThemedText> library to
-              animate opening this hint.
-            </ThemedText>
-          </Collapsible>
-        </ThemedView>
-        {Platform.OS === 'web' && <WebBadge />}
-      </ThemedView>
-    </ScrollView>
+            ))}
+          </View>
+        </View>
+        <View style={layout.stack}>
+          <AppText variant="label">
+            {planned ? 'Dokąd jedziecie?' : 'Jaki obszar Was interesuje?'}
+          </AppText>
+          <View
+            style={[
+              styles.inputRow,
+              { borderColor: theme.border, backgroundColor: theme.background },
+            ]}
+          >
+            <Icon name="pin" size={20} />
+            <TextInput
+              accessibilityLabel={
+                planned ? 'Kierunek wyjazdu' : 'Obszar poszukiwań'
+              }
+              placeholder={
+                planned ? 'Np. Chłapowo lub Pomorze' : 'Np. Mazury lub Sudety'
+              }
+              placeholderTextColor={theme.textSecondary}
+              value={filters.location}
+              onChangeText={(location) =>
+                setFilters((current) => ({ ...current, location }))
+              }
+              autoCorrect={false}
+              returnKeyType="done"
+              style={[styles.input, { color: theme.text }]}
+            />
+          </View>
+          <AppText variant="caption" color="textSecondary">
+            {planned
+              ? 'Szukamy propozycji w miejscowości lub regionie celu wyjazdu.'
+              : 'Wybierz region, w którym chcecie się spotkać. Dokładny cel ustalicie później.'}
+          </AppText>
+        </View>
+        <View style={layout.stack}>
+          <AppText variant="label">Towarzystwo dla dzieci</AppText>
+          <AppText variant="caption" color="textSecondary">
+            Opcjonalnie · możesz wybrać kilka przedziałów
+          </AppText>
+          <View style={layout.wrap}>
+            {CHILD_AGE_BANDS.map((band) => (
+              <Chip
+                key={band}
+                label={band + ' lat'}
+                accessibilityLabel={'Wiek dzieci: ' + band + ' lat'}
+                selected={filters.childAgeBands.includes(band)}
+                onPress={() => toggleAge(band)}
+              />
+            ))}
+          </View>
+        </View>
+        <Button label="Wyczyść filtry" variant="secondary" onPress={reset} />
+      </Card>
+      <View style={layout.section}>
+        <AppText
+          variant="heading"
+          accessibilityRole="header"
+          accessibilityLiveRegion="polite"
+        >
+          Propozycje dla Was · {proposals.length}
+        </AppText>
+        <AppText variant="label" color="textSecondary">
+          Plany i pomysły · dane demonstracyjne
+        </AppText>
+        {proposals.length ? (
+          proposals.map(({ trip, group }) => (
+            <TripCard
+              key={trip.id}
+              trip={trip}
+              group={group}
+              dateRange={dateRange}
+            />
+          ))
+        ) : (
+          <EmptyState
+            title="Jeszcze się mijamy"
+            description="Żaden przykładowy plan nie pasuje do tych filtrów. Spróbuj innego regionu, terminu lub wieku dzieci."
+            action={
+              <Button label="Pokaż wszystkie propozycje" onPress={reset} />
+            }
+          />
+        )}
+      </View>
+    </Screen>
   );
 }
-
 const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-  },
-  contentContainer: {
+  segment: {
     flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  container: {
-    maxWidth: MaxContentWidth,
-    flexGrow: 1,
-  },
-  titleContainer: {
-    gap: Spacing.three,
-    alignItems: 'center',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.six,
-  },
-  centerText: {
-    textAlign: 'center',
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-  linkButton: {
-    flexDirection: 'row',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.five,
-    justifyContent: 'center',
+    borderRadius: Radius.small,
+    padding: Spacing.one,
     gap: Spacing.one,
+  },
+  segmentItem: {
+    flex: 1,
+    minHeight: 48,
+    padding: 12,
+    justifyContent: 'center',
+    borderRadius: Radius.small,
+  },
+  inputRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: Spacing.two,
+    borderWidth: 1,
+    borderRadius: Radius.small,
+    paddingHorizontal: 12,
   },
-  sectionsWrapper: {
-    gap: Spacing.five,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-  },
-  collapsibleContent: {
-    alignItems: 'center',
-  },
-  imageTutorial: {
-    width: '100%',
-    aspectRatio: 296 / 171,
-    borderRadius: Spacing.three,
-    marginTop: Spacing.two,
-  },
-  imageReact: {
-    width: 100,
-    height: 100,
-    alignSelf: 'center',
+  input: {
+    flex: 1,
+    minWidth: 0,
+    minHeight: 52,
+    paddingVertical: 12,
+    fontFamily: Fonts.sans,
+    ...Typography.body,
   },
 });

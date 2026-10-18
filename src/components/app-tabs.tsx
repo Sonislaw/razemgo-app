@@ -1,32 +1,42 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
-import { useColorScheme } from 'react-native';
-
-import { Colors } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { TAB_ITEMS } from '@/constants/navigation';
+import { SYMBOLS } from '@/components/ui/icon';
 
 export default function AppTabs() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
-
+  const theme = useTheme();
   return (
     <NativeTabs
-      backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
-      <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
+      backBehavior="history"
+      backgroundColor={theme.backgroundElement}
+      tintColor={theme.primaryStrong}
+      iconColor={{
+        default: theme.textSecondary,
+        selected: theme.primaryStrong,
+      }}
+      indicatorColor={theme.backgroundSelected}
+      labelVisibilityMode="labeled"
+      labelStyle={{ fontSize: 11, color: theme.textSecondary }}
+      tabBarRespectsIMEInsets
+    >
+      {TAB_ITEMS.map((tab) => (
+        <NativeTabs.Trigger
+          key={tab.name}
+          name={tab.name}
+          disableTransparentOnScrollEdge
+          accessibilityLabel={tab.label}
+        >
+          <NativeTabs.Trigger.Label
+            selectedStyle={{ color: theme.primaryStrong }}
+          >
+            {tab.label}
+          </NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Icon
+            sf={SYMBOLS[tab.icon].ios}
+            md={SYMBOLS[tab.icon].android}
+          />
+        </NativeTabs.Trigger>
+      ))}
     </NativeTabs>
   );
 }

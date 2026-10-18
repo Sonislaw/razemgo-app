@@ -1,56 +1,75 @@
-# Welcome to your Expo app 👋
+# RazemGo — App Shell MVP
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Mobilna aplikacja do poznawania towarzyszy wspólnych wyjazdów. Pierwsza wersja interfejsu zawiera pięć zakładek: **Start, Odkrywaj, Wyjazdy, Wiadomości, Profil**.
 
-## Get started
+## Uruchomienie w Expo Go
 
-1. Install dependencies
+Projekt zachowuje **Expo SDK 57**, React Native 0.86 i Expo Router. Do pracy zalecany jest Node.js 24 (wbudowana obsługa TypeScript jest również używana w testach).
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```powershell
+cd C:\Users\dev\www\razemgo
+npm ci
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Otwórz Expo Go obsługujące SDK 57 na telefonie z Androidem i zeskanuj kod QR z terminala. Telefon i komputer powinny znajdować się w tej samej sieci. Klawisz `w` otwiera pomocniczy podgląd webowy. Klawisz `a` wymaga skonfigurowanego emulatora lub urządzenia Android.
 
-### Other setup steps
+## Co działa
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+- Pięć zakładek, skróty pomiędzy ekranami oraz historia zakładek dla przycisku „wstecz”.
+- Jasny i ciemny motyw zgodny z ustawieniami urządzenia, wspólne tokeny i lokalne ilustracje.
+- Sześć fikcyjnych propozycji, dwa własne plany oraz przykładowy profil.
+- Odkrywaj: zmiana trybu, wybór terminu, wyszukiwanie miejsca/regionu, przedziały wieku dzieci, licznik wyników i reset.
+- Filtry zachowują się podczas zmiany zakładki. Pełne ponowne uruchomienie aplikacji resetuje stan.
+- Wyszukiwanie ignoruje wielkość liter i polskie znaki. Filtry terminu, miejsca i wieku łączą się warunkiem AND; wybrane przedziały wieku — OR.
+- Wspólny termin wymaga co najmniej jednej wspólnej nocy. Miejsce zamieszkania nie ogranicza wyników.
+- Oba tryby wyszukiwania pokazują zarówno ustalone plany, jak i elastyczne obszary.
 
-## Learn more
+Terminy maj/czerwiec 2027 są stałymi przykładami, niezależnymi od daty urządzenia. Wyniki nie pochodzą z produkcyjnego algorytmu dopasowań.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Struktura
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- `src/app/` — ekrany i główny layout Expo Router.
+- `src/components/ui/` — wspólne elementy UI, typografia i ikony.
+- `src/components/trips/` — karty wyjazdów i ilustracje.
+- `src/constants/` — motywy, odstępy, typografia oraz zakładki.
+- `src/data/mocks/` — jawnie fikcyjne grupy i plany.
+- `src/features/discovery/` — czysta logika filtrów i stan bieżącej sesji.
+- `src/types/` — kontrakty domenowe.
+- `scripts/discovery.test.mjs` — testy logiki na wbudowanym runnerze Node.
 
-## Join the community
+## Kontrole
 
-Join our community of developers creating universal apps.
+```powershell
+npm run lint
+npm run typecheck
+npm run test:discovery
+npx expo install --check
+npx expo export --platform android --output-dir .expo/export-android
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Testy obejmują wspólne noce, zmianę czasu, łączenie filtrów, przedziały wieku, polskie znaki, oba tryby planowania, rozdzielenie miejsca zamieszkania od celu oraz reset bez modyfikacji danych.
+
+Weryfikacja wdrożenia: lint, TypeScript, 10 testów logiki, zgodność zależności i eksport Androida zakończyły się powodzeniem. Metro uruchomiło aplikację i zwróciło manifest Androida dla SDK 57. Automatyczny test przeglądarkowy sprawdził pięć zakładek, skróty, filtry, ich zachowanie po zmianie zakładki i reset po przeładowaniu — bez błędów JavaScript. Oceniono również podglądy przy szerokości 390 i 320 px, oba motywy oraz tekst powiększony do 150%. Nie wykonano testu na fizycznym telefonie ani emulatorze Androida.
+
+Node może wyświetlić informacyjne ostrzeżenie `MODULE_TYPELESS_PACKAGE_JSON` podczas bezpośredniego uruchamiania testów TypeScript. Nie wymaga ono zmiany formatu modułów aplikacji.
+
+## Szybki test na telefonie
+
+1. Otwórz wszystkie pięć zakładek; sprawdź „wstecz” Androida oraz skróty na Start i Wiadomości.
+2. W Odkrywaj wybierz **21–24 maja**, wpisz **Pomorze**, zaznacz **7–9 lat**. Powinna zostać jedna propozycja z informacją o dwóch wspólnych nocach.
+3. Przejdź do Profilu i wróć — filtry powinny pozostać.
+4. Wybierz „Szukam pomysłu”: zmieni się opis pola i poszukiwania.
+5. Wpisz **Atlantyda**, sprawdź pusty stan i wybierz „Pokaż wszystkie propozycje” — wróci sześć wyników.
+6. Sprawdź „Wkrótce” przy dodawaniu wyjazdu, zaproszeniach i edycji profilu.
+7. Sprawdź przewijanie do końca ekranów, otwartą klawiaturę, większy tekst systemowy i oba motywy.
+
+## Granice wersji demonstracyjnej
+
+Tworzenie i edycja planów, profile kont, zaproszenia, czat, onboarding i obsługa linków instalacyjnych pozostają kolejnymi etapami. Aplikacja nie integruje backendu, map, GPS, płatności, analityki ani powiadomień. Nie przechowuje rzeczywistych danych rodzin.
+
+Przeglądarkowy podgląd o wymiarach telefonu i poprawny eksport Androida nie zastępują testu fizycznego urządzenia w Expo Go.
+
+## Stan zależności
+
+Podczas wdrożenia `expo install --check` potwierdził zgodność z SDK 57. Audyt npm zgłosił 29 podatności (11 moderate, 18 high), obejmujących drzewo zależności Expo/React Native. Proponowane automatyczne naprawy zmieniają główne wersje frameworka; wymagają osobnego przeglądu kompatybilności. Nie uruchamiano `npm audit fix --force`.

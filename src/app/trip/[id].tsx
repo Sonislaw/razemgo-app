@@ -14,17 +14,15 @@ import {
 } from '@/components/ui/primitives';
 import { Landscape } from '@/components/trips/landscape';
 import { Icon } from '@/components/ui/icon';
-import {
-  DEMO_DATE_RANGES,
-  DEMO_PROPOSALS,
-  MY_TRIPS,
-} from '@/data/mocks/travel';
+import { DEMO_DATE_RANGES, DEMO_PROPOSALS } from '@/data/mocks/travel';
 import { DEMO_COMPATIBILITY_SCORES } from '@/data/mocks/compatibility';
 import {
   formatSharedNights,
   formatTripDates,
   getMatchFacts,
   getTripLocation,
+  resolveDiscoveryRange,
+  getDiscoveryReferenceRange,
 } from '@/features/discovery/filter-trips';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { Radius } from '@/constants/theme';
@@ -32,6 +30,8 @@ import { useTheme } from '@/hooks/use-theme';
 import { useProfile } from '@/features/profile/profile-context';
 import { getPreferredChildAges } from '@/features/profile/profile-data';
 import { TripContactAction } from '@/features/messaging/trip-contact-action';
+import { useOwnTrips } from '@/features/trips/own-trips-context';
+import { isArchivedTrip, todayDate } from '@/features/trips/own-trips-state';
 
 export function generateStaticParams() {
   return DEMO_PROPOSALS.map(({ trip }) => ({ id: trip.id }));
@@ -41,6 +41,7 @@ export default function TripDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { filters } = useDiscovery();
   const { profile } = useProfile();
+  const { state: ownTrips } = useOwnTrips();
   const theme = useTheme();
   const proposal = DEMO_PROPOSALS.find((item) => item.trip.id === id);
   const back = () =>
@@ -61,14 +62,14 @@ export default function TripDetailsScreen() {
       </Screen>
     );
   const { trip, group } = proposal;
-  const selectedRange = DEMO_DATE_RANGES.find(
-    (range) => range.id === filters.dateRangeId,
-  );
+  const selectedRange = resolveDiscoveryRange(filters, DEMO_DATE_RANGES);
   const facts = getMatchFacts(
     proposal,
     profile.group,
-    MY_TRIPS,
-    selectedRange,
+    ownTrips.trips.filter(
+      (plan) => plan.status !== 'draft' && !isArchivedTrip(plan, todayDate()),
+    ),
+    getDiscoveryReferenceRange(filters, selectedRange, trip),
     getPreferredChildAges(profile, filters.childAgeBands),
   );
   const score = DEMO_COMPATIBILITY_SCORES[trip.id];
@@ -126,9 +127,13 @@ export default function TripDetailsScreen() {
             </AppText>
             {facts.referenceRange ? (
               <AppText variant="caption" color="textSecondary">
-                {facts.dateSource === 'selected'
-                  ? 'Porównanie z wybranym terminem: '
-                  : 'Porównanie z Waszym przykładowym planem: '}
+                {facts.dateSource === 'selected' &&
+                filters.dateRangeId === 'own-trip' &&
+                filters.dateFlexibilityDays
+                  ? 'Najlepszy termin w ramach elastyczności wyjazdu: '
+                  : facts.dateSource === 'selected'
+                    ? 'Porównanie z wybranym terminem: '
+                    : 'Porównanie z Waszym przykładowym planem: '}
                 {formatTripDates(facts.referenceRange)}.
               </AppText>
             ) : null}

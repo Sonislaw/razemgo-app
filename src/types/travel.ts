@@ -43,6 +43,10 @@ export interface DiscoveryFilters {
   dateRangeId: string;
   location: string;
   childAgeBands: ChildAgeBand[];
+  customDateRange?: DateRange;
+  dateFlexibilityDays?: number;
+  sourceTripId?: string;
+  groupKinds?: TravelGroup['kind'][];
 }
 export interface DemoDateRange extends DateRange {
   id: string;

@@ -24,7 +24,13 @@ import {
   DEMO_DATE_RANGES,
   DEMO_PROPOSALS,
 } from '@/data/mocks/travel';
-import { filterProposals, INITIAL_FILTERS } from './filter-trips';
+import {
+  filterProposals,
+  formatTripDates,
+  INITIAL_FILTERS,
+  resolveDiscoveryRange,
+} from './filter-trips';
+import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import {
   Fonts,
   MaxContentWidth,
@@ -51,9 +57,7 @@ export function DiscoveryFiltersSheet({
     ...initialFilters,
     childAgeBands: [...initialFilters.childAgeBands],
   }));
-  const dateRange = DEMO_DATE_RANGES.find(
-    (range) => range.id === draft.dateRangeId,
-  );
+  const dateRange = resolveDiscoveryRange(draft, DEMO_DATE_RANGES);
   const resultCount = filterProposals(DEMO_PROPOSALS, draft, dateRange).length;
   const planned = draft.mode === 'planned';
   const toggleAge = (band: ChildAgeBand) =>
@@ -134,6 +138,20 @@ export function DiscoveryFiltersSheet({
                 Przykładowe terminy · 2027
               </AppText>
               <View style={layout.wrap}>
+                {draft.customDateRange ? (
+                  <Chip
+                    label={
+                      'Z wyjazdu: ' + formatTripDates(draft.customDateRange)
+                    }
+                    selected={draft.dateRangeId === 'own-trip'}
+                    onPress={() =>
+                      setDraft((current) => ({
+                        ...current,
+                        dateRangeId: 'own-trip',
+                      }))
+                    }
+                  />
+                ) : null}
                 <Chip
                   label="Dowolny termin"
                   selected={draft.dateRangeId === 'all'}
@@ -156,6 +174,12 @@ export function DiscoveryFiltersSheet({
                 ))}
               </View>
             </View>
+            {draft.dateRangeId === 'own-trip' && !!draft.dateFlexibilityDays ? (
+              <AppText variant="caption" color="textSecondary">
+                Cały wyjazd można przesunąć o ±{draft.dateFlexibilityDays} dni.
+                Porównujemy pobyty o niezmienionej długości.
+              </AppText>
+            ) : null}
             <View style={layout.stack}>
               <AppText variant="label">
                 {planned ? 'Dokąd jedziecie?' : 'Jaki obszar Was interesuje?'}
@@ -196,6 +220,32 @@ export function DiscoveryFiltersSheet({
                   : 'Region wspólnego spotkania. Dokładny cel ustalicie później.'}
               </AppText>
             </View>
+            {draft.sourceTripId ? (
+              <View style={layout.stack}>
+                <AppText variant="label">
+                  Towarzystwo z preferencji wyjazdu
+                </AppText>
+                <View style={layout.wrap}>
+                  {GROUP_KIND_OPTIONS.map((option) => (
+                    <Chip
+                      key={option.value}
+                      label={option.label}
+                      selected={draft.groupKinds?.includes(option.value)}
+                      onPress={() =>
+                        setDraft((current) => ({
+                          ...current,
+                          groupKinds: current.groupKinds?.includes(option.value)
+                            ? current.groupKinds.filter(
+                                (value) => value !== option.value,
+                              )
+                            : [...(current.groupKinds ?? []), option.value],
+                        }))
+                      }
+                    />
+                  ))}
+                </View>
+              </View>
+            ) : null}
             <View style={layout.stack}>
               <AppText variant="label">Towarzystwo dla dzieci</AppText>
               <AppText variant="caption" color="textSecondary">

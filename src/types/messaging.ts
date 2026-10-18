@@ -11,6 +11,7 @@ export interface ContactInvitation {
   id: string;
   groupId: string;
   tripId: string;
+  ownTripId?: string;
   direction: InvitationDirection;
   status: InvitationStatus;
   text: string;

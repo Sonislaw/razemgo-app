@@ -142,7 +142,13 @@ export type MessagingAction =
   | { type: 'send-error'; value: boolean }
   | { type: 'accept'; invitationId: string; demoOutgoing?: boolean }
   | { type: 'decline' | 'withdraw'; invitationId: string }
-  | { type: 'invite'; groupId: string; tripId: string; text: string }
+  | {
+      type: 'invite';
+      groupId: string;
+      tripId: string;
+      text: string;
+      ownTripId?: string;
+    }
   | { type: 'read'; conversationId: string }
   | { type: 'send'; conversationId: string; text: string }
   | { type: 'retry'; messageId: string }
@@ -264,6 +270,7 @@ export function messagingReducer(
             id: 'local-inv-' + state.nextSequence,
             groupId: action.groupId,
             tripId: action.tripId,
+            ownTripId: action.ownTripId,
             direction: 'sent',
             status: 'pending',
             text,

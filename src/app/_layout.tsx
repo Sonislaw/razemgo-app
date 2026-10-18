@@ -7,6 +7,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { DiscoveryProvider } from '@/features/discovery/discovery-context';
 import { ProfileProvider } from '@/features/profile/profile-context';
 import { MessagingProvider } from '@/features/messaging/messaging-context';
+import { OwnTripsProvider } from '@/features/trips/own-trips-context';
 
 export const unstable_settings = { initialRouteName: '(tabs)' };
 
@@ -35,24 +36,28 @@ export default function RootLayout() {
       }}
     >
       <ProfileProvider>
-        <DiscoveryProvider>
-          <MessagingProvider>
-            <StatusBar style={dark ? 'light' : 'dark'} />
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: palette.background },
-              }}
-            >
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="trip/[id]" />
-              <Stack.Screen name="edit-profile" />
-              <Stack.Screen name="settings" />
-              <Stack.Screen name="chat/[id]" />
-              <Stack.Screen name="messaging-safety" />
-            </Stack>
-          </MessagingProvider>
-        </DiscoveryProvider>
+        <OwnTripsProvider>
+          <DiscoveryProvider>
+            <MessagingProvider>
+              <StatusBar style={dark ? 'light' : 'dark'} />
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: palette.background },
+                }}
+              >
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="trip/[id]" />
+                <Stack.Screen name="edit-profile" />
+                <Stack.Screen name="settings" />
+                <Stack.Screen name="chat/[id]" />
+                <Stack.Screen name="messaging-safety" />
+                <Stack.Screen name="trips/[id]" />
+                <Stack.Screen name="trip-editor" />
+              </Stack>
+            </MessagingProvider>
+          </DiscoveryProvider>
+        </OwnTripsProvider>
       </ProfileProvider>
     </ThemeProvider>
   );

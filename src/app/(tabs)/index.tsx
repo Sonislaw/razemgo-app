@@ -11,12 +11,18 @@ import {
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { TripCard } from '@/components/trips/trip-card';
-import { DEMO_PROPOSALS, MY_TRIPS } from '@/data/mocks/travel';
+import { DEMO_PROPOSALS } from '@/data/mocks/travel';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useOwnTrips } from '@/features/trips/own-trips-context';
+import { isArchivedTrip, todayDate } from '@/features/trips/own-trips-state';
 
 export default function HomeScreen() {
   const theme = useTheme();
+  const { state } = useOwnTrips();
+  const activeCount = state.trips.filter(
+    (trip) => !isArchivedTrip(trip, todayDate()),
+  ).length;
   return (
     <Screen>
       <Header
@@ -58,8 +64,8 @@ export default function HomeScreen() {
           </AppText>
         </View>
         <AppText color="textSecondary">
-          W Waszym przykładowym kalendarzu są {MY_TRIPS.length} plany. Jeden cel
-          już wybrany, drugi czeka na pomysł.
+          Wasze aktywne plany: {activeCount}. Wróćcie do szczegółów albo
+          zaplanujcie kolejny wspólny wyjazd.
         </AppText>
         <Button
           label="Zobacz swoje wyjazdy"

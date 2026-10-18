@@ -3,6 +3,9 @@ import { View } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
 
 export const SYMBOLS = {
+  pause: { ios: 'pause', android: 'pause', web: 'pause' },
+  copy: { ios: 'doc.on.doc', android: 'content_copy', web: 'content_copy' },
+  trash: { ios: 'trash', android: 'delete_outline', web: 'delete_outline' },
   send: { ios: 'paperplane', android: 'send', web: 'send' },
   more: { ios: 'ellipsis', android: 'more_horiz', web: 'more_horiz' },
   flag: { ios: 'flag', android: 'flag', web: 'flag' },

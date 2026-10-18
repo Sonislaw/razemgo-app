@@ -45,14 +45,20 @@ export function AppText({
     />
   );
 }
-export function Screen({ children }: { children: ReactNode }) {
+export function Screen({
+  children,
+  adjustKeyboardInsets = true,
+}: {
+  children: ReactNode;
+  adjustKeyboardInsets?: boolean;
+}) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: theme.background }}
       contentInsetAdjustmentBehavior="automatic"
-      automaticallyAdjustKeyboardInsets
+      automaticallyAdjustKeyboardInsets={adjustKeyboardInsets}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       contentContainerStyle={[

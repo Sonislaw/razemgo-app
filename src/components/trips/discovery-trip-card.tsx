@@ -13,6 +13,7 @@ import {
   type MatchFacts,
 } from '@/features/discovery/filter-trips';
 import type { TripProposal } from '@/types/travel';
+import { CompactTripCard } from './compact-trip-card';
 
 interface DiscoveryTripCardProps extends TripProposal {
   facts: MatchFacts;
@@ -29,12 +30,7 @@ export function DiscoveryTripCard({
     ? facts.matchingAgeBands
     : facts.ageBands;
   return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-      ]}
-    >
+    <CompactTripCard>
       <View style={styles.topRow}>
         <AppText variant="caption" color="primaryStrong" style={styles.flex}>
           {trip.mode === 'planned' ? 'MAM PLAN' : 'SZUKAM POMYSŁU'}
@@ -115,16 +111,10 @@ export function DiscoveryTripCard({
           router.push({ pathname: '/trip/[id]', params: { id: trip.id } })
         }
       />
-    </View>
+    </CompactTripCard>
   );
 }
 const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    borderRadius: Radius.card,
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',

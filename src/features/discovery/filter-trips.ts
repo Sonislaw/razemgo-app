@@ -1,6 +1,7 @@
 import type {
   ChildAgeBand,
   DateRange,
+  DemoDateRange,
   DiscoveryFilters,
   TripPlan,
   TripProposal,
@@ -39,8 +40,14 @@ export function filterProposals(
   dateRange?: DateRange,
 ): TripProposal[] {
   const location = normalizeLocation(filters.location);
+  const range =
+    dateRange ??
+    (filters.dateRangeId === 'own-trip' ? filters.customDateRange : undefined);
   return proposals.filter(({ trip, group }) => {
-    if (dateRange && sharedNights(trip, dateRange) <= 0) return false;
+    const reference = getDiscoveryReferenceRange(filters, range, trip);
+    if (reference && sharedNights(trip, reference) <= 0) return false;
+    if (filters.groupKinds?.length && !filters.groupKinds.includes(group.kind))
+      return false;
     if (
       location &&
       !normalizeLocation(getTripLocation(trip)).includes(location)
@@ -54,6 +61,59 @@ export function filterProposals(
     return true;
   });
 }
+export function getDiscoveryReferenceRange(
+  filters: DiscoveryFilters,
+  range: DateRange | undefined,
+  candidate: DateRange,
+): DateRange | undefined {
+  if (
+    !range ||
+    filters.dateRangeId !== 'own-trip' ||
+    !filters.dateFlexibilityDays
+  )
+    return range;
+  const flexibility = Math.min(
+    7,
+    Math.max(0, Math.trunc(filters.dateFlexibilityDays)),
+  );
+  const shifts = [
+    0,
+    ...Array.from({ length: flexibility }, (_, index) => [
+      -(index + 1),
+      index + 1,
+    ]).flat(),
+  ];
+  let best = range;
+  let bestNights = sharedNights(candidate, range);
+  for (const shift of shifts) {
+    const shifted = {
+      startDate: new Date(
+        Date.parse(range.startDate + 'T00:00:00Z') + shift * 86400000,
+      )
+        .toISOString()
+        .slice(0, 10),
+      endDate: new Date(
+        Date.parse(range.endDate + 'T00:00:00Z') + shift * 86400000,
+      )
+        .toISOString()
+        .slice(0, 10),
+    };
+    const nights = sharedNights(candidate, shifted);
+    if (nights > bestNights) {
+      best = shifted;
+      bestNights = nights;
+    }
+  }
+  return best;
+}
+export function resolveDiscoveryRange(
+  filters: DiscoveryFilters,
+  ranges: DemoDateRange[],
+): DateRange | undefined {
+  return filters.dateRangeId === 'own-trip'
+    ? filters.customDateRange
+    : ranges.find((range) => range.id === filters.dateRangeId);
+}
 export function formatTripDates(trip: DateRange): string {
   const format = (date: string) =>
     new Intl.DateTimeFormat('pl-PL', {
@@ -63,10 +123,13 @@ export function formatTripDates(trip: DateRange): string {
     }).format(new Date(date + 'T00:00:00Z'));
   return (
     format(trip.startDate) +
+    (trip.startDate.slice(0, 4) !== trip.endDate.slice(0, 4)
+      ? ' ' + trip.startDate.slice(0, 4)
+      : '') +
     ' – ' +
     format(trip.endDate) +
     ' ' +
-    trip.startDate.slice(0, 4)
+    trip.endDate.slice(0, 4)
   );
 }
 

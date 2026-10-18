@@ -11,16 +11,15 @@ import {
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
-import {
-  DEMO_DATE_RANGES,
-  DEMO_PROPOSALS,
-  MY_TRIPS,
-} from '@/data/mocks/travel';
+import { DEMO_DATE_RANGES, DEMO_PROPOSALS } from '@/data/mocks/travel';
 import { DEMO_COMPATIBILITY_SCORES } from '@/data/mocks/compatibility';
 import {
   filterProposals,
   getMatchFacts,
   INITIAL_FILTERS,
+  resolveDiscoveryRange,
+  formatTripDates,
+  getDiscoveryReferenceRange,
 } from '@/features/discovery/filter-trips';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { DiscoveryFiltersSheet } from '@/features/discovery/discovery-filters-sheet';
@@ -29,6 +28,8 @@ import { useTheme } from '@/hooks/use-theme';
 import { useProfile } from '@/features/profile/profile-context';
 import { getPreferredChildAges } from '@/features/profile/profile-data';
 import type { TripMode } from '@/types/travel';
+import { useOwnTrips } from '@/features/trips/own-trips-context';
+import { isArchivedTrip, todayDate } from '@/features/trips/own-trips-state';
 
 const modes: { mode: TripMode; label: string }[] = [
   { mode: 'planned', label: 'Mam plan' },
@@ -38,17 +39,23 @@ export default function ExploreScreen() {
   const theme = useTheme();
   const { filters, setFilters } = useDiscovery();
   const { profile } = useProfile();
-  const [showFilters, setShowFilters] = useState(false);
-  const dateRange = DEMO_DATE_RANGES.find(
-    (range) => range.id === filters.dateRangeId,
+  const { state: ownTrips } = useOwnTrips();
+  const ownPlans = ownTrips.trips.filter(
+    (trip) => trip.status !== 'draft' && !isArchivedTrip(trip, todayDate()),
   );
+  const [showFilters, setShowFilters] = useState(false);
+  const dateRange = resolveDiscoveryRange(filters, DEMO_DATE_RANGES);
   const proposals = filterProposals(DEMO_PROPOSALS, filters, dateRange);
   const activeCount =
     Number(filters.dateRangeId !== 'all') +
     Number(Boolean(filters.location.trim())) +
-    Number(filters.childAgeBands.length > 0);
+    Number(filters.childAgeBands.length > 0) +
+    Number(Boolean(filters.groupKinds?.length));
   const summary = [
-    dateRange?.label,
+    filters.dateRangeId === 'own-trip' && dateRange
+      ? formatTripDates(dateRange)
+      : DEMO_DATE_RANGES.find((range) => range.id === filters.dateRangeId)
+          ?.label,
     filters.location.trim(),
     filters.childAgeBands.length
       ? 'Dzieci ' + filters.childAgeBands.join(', ') + ' lat'
@@ -65,6 +72,25 @@ export default function ExploreScreen() {
           title="Odkrywaj"
           subtitle="Podobne plany. Nowe znajomości."
         />
+        {filters.sourceTripId ? (
+          <View style={layout.row}>
+            <AppText
+              variant="caption"
+              color="primaryStrong"
+              style={{ flex: 1 }}
+            >
+              Dla wyjazdu:{' '}
+              {ownTrips.trips.find((trip) => trip.id === filters.sourceTripId)
+                ?.title ?? 'zapisane kryteria'}
+              {filters.groupKinds?.length ? ' · wybrane towarzystwo' : ''}
+            </AppText>
+            <IconButton
+              label="Usuń kryteria wyjazdu"
+              icon="close"
+              onPress={reset}
+            />
+          </View>
+        ) : null}
         <View
           accessibilityRole="tablist"
           style={[styles.segment, { backgroundColor: theme.muted }]}
@@ -146,7 +172,9 @@ export default function ExploreScreen() {
         </View>
         <AppText variant="caption" color="textSecondary">
           {dateRange
-            ? 'Wspólne noce według wybranego terminu.'
+            ? filters.dateRangeId === 'own-trip' && filters.dateFlexibilityDays
+              ? `Możliwe wspólne noce po przesunięciu wyjazdu o maks. ${filters.dateFlexibilityDays} dni.`
+              : 'Wspólne noce według wybranego terminu.'
             : 'Wspólne noce według Waszych przykładowych planów.'}
         </AppText>
         {proposals.length ? (
@@ -157,8 +185,8 @@ export default function ExploreScreen() {
               facts={getMatchFacts(
                 proposal,
                 profile.group,
-                MY_TRIPS,
-                dateRange,
+                ownPlans,
+                getDiscoveryReferenceRange(filters, dateRange, proposal.trip),
                 getPreferredChildAges(profile, filters.childAgeBands),
               )}
               demoScore={DEMO_COMPATIBILITY_SCORES[proposal.trip.id]}

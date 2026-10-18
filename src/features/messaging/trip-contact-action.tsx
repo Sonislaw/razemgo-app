@@ -8,9 +8,21 @@ import type { TripProposal } from '@/types/travel';
 import { useMessaging } from './messaging-context';
 import { getTripContact, MAX_INVITATION_LENGTH } from './messaging-state';
 import { MessagingSheet } from './messaging-ui';
+import { useDiscovery } from '@/features/discovery/discovery-context';
+import { useOwnTrips } from '@/features/trips/own-trips-context';
+import { isSearchingTrip, todayDate } from '@/features/trips/own-trips-state';
 
 export function TripContactAction({ proposal }: { proposal: TripProposal }) {
   const { state, dispatch } = useMessaging();
+  const { filters } = useDiscovery();
+  const { state: ownTrips } = useOwnTrips();
+  const ownTrip = ownTrips.trips.find(
+    (item) => item.id === filters.sourceTripId,
+  );
+  const unavailableSource = Boolean(
+    filters.sourceTripId &&
+    (!ownTrip || !isSearchingTrip(ownTrip, todayDate())),
+  );
   const theme = useTheme();
   const [composing, setComposing] = useState(false);
   const [text, setText] = useState('');
@@ -59,11 +71,14 @@ export function TripContactAction({ proposal }: { proposal: TripProposal }) {
         <Button
           label="Zaproś do kontaktu"
           icon="chat"
-          disabled={state.loadStatus !== 'ready'}
+          disabled={state.loadStatus !== 'ready' || unavailableSource}
           onPress={() => setComposing(true)}
         />
       )}
       <AppText variant="caption" color="textSecondary">
+        {unavailableSource
+          ? 'Wyjazd, dla którego szukacie towarzystwa, nie przyjmuje nowych zaproszeń. Zmieńcie jego status albo wyczyśćcie kryteria w Odkrywaj. '
+          : ''}
         Zaproszenia i czat działają demonstracyjnie, tylko w bieżącej sesji.
         Kontakt między dorosłymi po akceptacji zaproszenia.
       </AppText>
@@ -76,6 +91,11 @@ export function TripContactAction({ proposal }: { proposal: TripProposal }) {
           <AppText variant="caption" color="primaryStrong">
             {trip.title}
           </AppText>
+          {ownTrip ? (
+            <AppText variant="caption" color="textSecondary">
+              Wasz wyjazd: {ownTrip.title}
+            </AppText>
+          ) : null}
           <AppText
             color="textSecondary"
             style={{ fontSize: 14, lineHeight: 21 }}
@@ -114,6 +134,7 @@ export function TripContactAction({ proposal }: { proposal: TripProposal }) {
             disabled={
               !text.trim() ||
               state.loadStatus !== 'ready' ||
+              unavailableSource ||
               contact.kind !== 'available'
             }
             onPress={() => {
@@ -121,6 +142,7 @@ export function TripContactAction({ proposal }: { proposal: TripProposal }) {
                 type: 'invite',
                 groupId: group.id,
                 tripId: trip.id,
+                ownTripId: ownTrip?.id,
                 text,
               });
               setComposing(false);

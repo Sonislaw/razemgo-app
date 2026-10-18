@@ -1,5 +1,4 @@
 import { router } from 'expo-router';
-import { Image } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
 import {
   AppText,
@@ -8,6 +7,7 @@ import {
   Chip,
   DemoBadge,
   IconButton,
+  PageHeader,
   Screen,
   layout,
 } from '@/components/ui/primitives';
@@ -36,16 +36,16 @@ export default function ProfileScreen() {
   if (!hasProfile)
     return (
       <Screen>
-        <View style={styles.header}>
-          <AppText accessibilityRole="header" variant="heading">
-            Mój profil
-          </AppText>
-          <IconButton
-            icon="settings"
-            label="Ustawienia aplikacji"
-            onPress={() => router.push('/settings')}
-          />
-        </View>
+        <PageHeader
+          title="Mój profil"
+          actions={
+            <IconButton
+              icon="settings"
+              label="Ustawienia aplikacji"
+              onPress={() => router.push('/settings')}
+            />
+          }
+        />
         <Card>
           <Icon name="people" size={32} />
           <AppText variant="heading">Poznajmy Waszą ekipę</AppText>
@@ -60,24 +60,16 @@ export default function ProfileScreen() {
   return (
     <Screen>
       <View style={styles.content}>
-        <View style={styles.header}>
-          <View style={layout.row}>
-            <Image
-              source={require('@/assets/images/zgrana-symbol.svg')}
-              style={styles.logo}
-              contentFit="contain"
-              accessible={false}
+        <PageHeader
+          title="Mój profil"
+          actions={
+            <IconButton
+              icon="settings"
+              label="Ustawienia aplikacji"
+              onPress={() => router.push('/settings')}
             />
-            <AppText accessibilityRole="header" variant="heading">
-              Mój profil
-            </AppText>
-          </View>
-          <IconButton
-            icon="settings"
-            label="Ustawienia aplikacji"
-            onPress={() => router.push('/settings')}
-          />
-        </View>
+          }
+        />
         <Card style={styles.identity}>
           <View style={layout.row}>
             <View style={[styles.avatar, { backgroundColor: theme.hero }]}>
@@ -204,13 +196,6 @@ export default function ProfileScreen() {
 }
 const styles = StyleSheet.create({
   content: { gap: 12 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  logo: { width: 28, height: 28 },
   identity: { padding: 14, gap: 14 },
   avatar: {
     width: 64,

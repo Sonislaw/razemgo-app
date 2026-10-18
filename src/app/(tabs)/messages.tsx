@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   IconButton,
+  PageHeader,
   Screen,
   layout,
 } from '@/components/ui/primitives';
@@ -285,44 +286,42 @@ export default function MessagesScreen() {
     <>
       <Screen>
         <View style={{ gap: 12 }}>
-          <View style={layout.row}>
-            <AppText
-              variant="heading"
-              accessibilityRole="header"
-              style={{ flex: 1, fontSize: 24, lineHeight: 30 }}
-            >
-              Wiadomości
-            </AppText>
-            {IS_DEMO_MODE ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Scenariusze demonstracyjne"
-                onPress={() => setDemoOpen(true)}
-                style={{
-                  minWidth: 48,
-                  minHeight: 48,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <View
-                  style={{
-                    paddingHorizontal: 10,
-                    paddingVertical: 4,
-                    borderRadius: 12,
-                    backgroundColor: theme.hero,
-                  }}
-                >
-                  <AppText variant="caption">Demo</AppText>
-                </View>
-              </Pressable>
-            ) : null}
-            <IconButton
-              label="Bezpieczeństwo rozmów"
-              icon="shield"
-              onPress={() => router.push('/messaging-safety')}
-            />
-          </View>
+          <PageHeader
+            title="Wiadomości"
+            actions={
+              <>
+                {IS_DEMO_MODE ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Scenariusze demonstracyjne"
+                    onPress={() => setDemoOpen(true)}
+                    style={{
+                      minWidth: 48,
+                      minHeight: 48,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <View
+                      style={{
+                        paddingHorizontal: 10,
+                        paddingVertical: 4,
+                        borderRadius: 12,
+                        backgroundColor: theme.hero,
+                      }}
+                    >
+                      <AppText variant="caption">Demo</AppText>
+                    </View>
+                  </Pressable>
+                ) : null}
+                <IconButton
+                  label="Bezpieczeństwo rozmów"
+                  icon="shield"
+                  onPress={() => router.push('/messaging-safety')}
+                />
+              </>
+            }
+          />
           <MessageSegments<MailboxView>
             value={state.view}
             options={[

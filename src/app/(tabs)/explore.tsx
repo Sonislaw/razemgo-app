@@ -4,7 +4,7 @@ import {
   AppText,
   Button,
   EmptyState,
-  Header,
+  PageHeader,
   IconButton,
   Screen,
   layout,
@@ -67,11 +67,7 @@ export default function ExploreScreen() {
   return (
     <Screen>
       <View style={styles.controls}>
-        <Header
-          compact
-          title="Odkrywaj"
-          subtitle="Podobne plany. Nowe znajomości."
-        />
+        <PageHeader title="Odkrywaj" />
         {filters.sourceTripId ? (
           <View style={layout.row}>
             <AppText

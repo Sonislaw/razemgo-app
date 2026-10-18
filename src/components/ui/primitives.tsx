@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { Image } from 'expo-image';
 import {
   Platform,
   Pressable,
@@ -86,58 +85,21 @@ export function DemoBadge() {
     </View>
   );
 }
-export interface HeaderProps {
+export interface PageHeaderProps {
   title: string;
-  subtitle: string;
-  brand?: boolean;
-  compact?: boolean;
+  actions?: ReactNode;
 }
-export function Header({ title, subtitle, brand, compact }: HeaderProps) {
-  if (compact) {
-    return (
-      <View style={{ gap: Spacing.two }}>
-        <View style={styles.row}>
-          <Image
-            source={require('@/assets/images/zgrana-symbol.svg')}
-            style={{ width: 28, height: 28 }}
-            contentFit="contain"
-            accessible={false}
-          />
-          <AppText accessibilityRole="header" variant="heading">
-            {title}
-          </AppText>
-        </View>
-        <AppText variant="label" color="textSecondary">
-          {subtitle}
-        </AppText>
-      </View>
-    );
-  }
+export function PageHeader({ title, actions }: PageHeaderProps) {
   return (
-    <View style={styles.header}>
-      <View style={styles.brandRow}>
-        <View style={styles.row}>
-          <Image
-            source={require('@/assets/images/zgrana-symbol.svg')}
-            style={styles.brandIcon}
-            contentFit="contain"
-            accessible={false}
-          />
-          <AppText variant="heading" color="brand">
-            RazemGo
-          </AppText>
-        </View>
-        <AppText variant="caption" color="textSecondary">
-          Bliżej siebie.
-        </AppText>
-      </View>
-      <View style={{ gap: Spacing.two }}>
-        <AppText accessibilityRole="header" variant="title">
-          {title}
-        </AppText>
-        <AppText color="textSecondary">{subtitle}</AppText>
-      </View>
-      {brand ? <DemoBadge /> : null}
+    <View style={styles.pageHeader}>
+      <AppText
+        accessibilityRole="header"
+        variant="heading"
+        style={styles.pageTitle}
+      >
+        {title}
+      </AppText>
+      {actions ? <View style={layout.row}>{actions}</View> : null}
     </View>
   );
 }
@@ -339,19 +301,17 @@ export const layout = StyleSheet.create({
 const styles = StyleSheet.create({
   scroll: { flexGrow: 1, alignItems: 'center', paddingBottom: Spacing.five },
   screen: { width: '100%', maxWidth: MaxContentWidth, gap: Spacing.four },
-  header: { gap: Spacing.three },
-  brandRow: {
+  pageHeader: {
+    minHeight: 48,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
     gap: Spacing.two,
-    paddingBottom: Spacing.two,
   },
-  row: { flexDirection: 'row', gap: Spacing.two, alignItems: 'center' },
-  brandIcon: {
-    width: 36,
-    height: 36,
+  pageTitle: {
+    flex: 1,
+    minWidth: 0,
+    fontSize: 24,
+    lineHeight: 30,
   },
   demoBadge: {
     flexDirection: 'row',

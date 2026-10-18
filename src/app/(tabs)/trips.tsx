@@ -5,11 +5,11 @@ import {
   AppText,
   Button,
   IconButton,
+  PageHeader,
   Screen,
   layout,
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
-import { IS_DEMO_MODE } from '@/constants/app';
 import { useTheme } from '@/hooks/use-theme';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import {
@@ -58,42 +58,31 @@ function TripsContent() {
     <>
       <Screen key={noticeId ?? 'initial'}>
         <View style={{ gap: 12 }}>
-          <View style={layout.row}>
-            <View style={{ flex: 1 }}>
-              <AppText
-                accessibilityRole="header"
-                variant="heading"
-                style={{ fontSize: 23, lineHeight: 30 }}
+          <PageHeader
+            title="Moje wyjazdy"
+            actions={
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Dodaj wyjazd"
+                onPress={add}
+                style={({ pressed }) => ({
+                  minHeight: 48,
+                  borderRadius: 14,
+                  backgroundColor: theme.primaryStrong,
+                  paddingHorizontal: 14,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  opacity: pressed ? 0.7 : 1,
+                })}
               >
-                Moje wyjazdy
-              </AppText>
-              {IS_DEMO_MODE ? (
-                <AppText variant="caption" color="textSecondary">
-                  Wersja demo
+                <Icon name="plus" size={20} color={theme.onPrimary} />
+                <AppText variant="label" style={{ color: theme.onPrimary }}>
+                  Dodaj
                 </AppText>
-              ) : null}
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Dodaj wyjazd"
-              onPress={add}
-              style={({ pressed }) => ({
-                minHeight: 48,
-                borderRadius: 14,
-                backgroundColor: theme.primaryStrong,
-                paddingHorizontal: 14,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 6,
-                opacity: pressed ? 0.7 : 1,
-              })}
-            >
-              <Icon name="plus" size={20} color={theme.onPrimary} />
-              <AppText variant="label" style={{ color: theme.onPrimary }}>
-                Dodaj
-              </AppText>
-            </Pressable>
-          </View>
+              </Pressable>
+            }
+          />
           {notice ? (
             <View
               accessibilityLiveRegion="polite"

@@ -45,7 +45,7 @@ export function filterProposals(
   const range =
     dateRange ??
     (filters.dateRangeId === 'own-trip' ? filters.customDateRange : undefined);
-  return proposals.filter(({ trip, group }) => {
+  const matching = proposals.filter(({ trip, group }) => {
     const reference = getDiscoveryReferenceRange(filters, range, trip);
     if (reference && sharedNights(trip, reference) <= 0) return false;
     if (filters.groupKinds?.length && !filters.groupKinds.includes(group.kind))
@@ -62,6 +62,12 @@ export function filterProposals(
       return false;
     return true;
   });
+  const preferredMode = filters.mode === 'planned' ? 'flexible' : 'planned';
+  return matching.sort(
+    (a, b) =>
+      Number(b.trip.mode === preferredMode) -
+      Number(a.trip.mode === preferredMode),
+  );
 }
 export function getDiscoveryReferenceRange(
   filters: DiscoveryFilters,

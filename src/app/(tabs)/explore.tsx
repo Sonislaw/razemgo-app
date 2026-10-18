@@ -166,13 +166,25 @@ export default function ExploreScreen() {
             Dane demonstracyjne
           </AppText>
         </View>
-        <AppText variant="caption" color="textSecondary">
-          {dateRange
-            ? filters.dateRangeId === 'own-trip' && filters.dateFlexibilityDays
-              ? `Możliwe wspólne noce po przesunięciu wyjazdu o maks. ${filters.dateFlexibilityDays} dni.`
-              : 'Wspólne noce według wybranego terminu.'
-            : 'Wspólne noce według Waszych przykładowych planów.'}
-        </AppText>
+        <View style={{ gap: 4 }}>
+          <AppText
+            variant="caption"
+            color="primaryStrong"
+            accessibilityLiveRegion="polite"
+          >
+            {filters.mode === 'planned'
+              ? 'Najpierw ekipy szukające pomysłu.'
+              : 'Najpierw wyjazdy z ustalonym celem.'}
+          </AppText>
+          <AppText variant="caption" color="textSecondary">
+            {dateRange
+              ? filters.dateRangeId === 'own-trip' &&
+                filters.dateFlexibilityDays
+                ? `Możliwe wspólne noce po przesunięciu wyjazdu o maks. ${filters.dateFlexibilityDays} dni.`
+                : 'Wspólne noce według wybranego terminu.'
+              : 'Wspólne noce według Waszych przykładowych planów.'}
+          </AppText>
+        </View>
         {proposals.length ? (
           proposals.map((proposal) => (
             <DiscoveryTripCard

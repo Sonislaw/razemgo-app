@@ -15,11 +15,58 @@ import {
   formatSharedNights,
 } from '../src/features/discovery/filter-trips.ts';
 
-test('default filters show all six demo proposals in stable order', () => {
+test('having a plan prioritizes flexible trips and retains the other proposals', () => {
   assert.deepEqual(
-    filterProposals(DEMO_PROPOSALS, INITIAL_FILTERS),
-    DEMO_PROPOSALS,
+    filterProposals(DEMO_PROPOSALS, INITIAL_FILTERS).map(({ trip }) => trip.id),
+    [
+      'demo-mountains',
+      'demo-forest',
+      'demo-coast',
+      'demo-lake',
+      'demo-friends',
+      'demo-bieszczady',
+    ],
   );
+});
+
+test('looking for an idea prioritizes fixed destinations with stable order within each type', () => {
+  assert.deepEqual(
+    filterProposals(DEMO_PROPOSALS, {
+      ...INITIAL_FILTERS,
+      mode: 'flexible',
+    }).map(({ trip }) => trip.id),
+    [
+      'demo-coast',
+      'demo-lake',
+      'demo-friends',
+      'demo-bieszczady',
+      'demo-mountains',
+      'demo-forest',
+    ],
+  );
+});
+
+test('changing mode reorders only matching trips and leaves the source data unchanged', () => {
+  const snapshot = JSON.stringify(DEMO_PROPOSALS);
+  const filters = {
+    ...INITIAL_FILTERS,
+    location: 'Pomorze',
+    childAgeBands: ['4–6', '7–9'],
+  };
+  const range = DEMO_DATE_RANGES[0];
+  assert.deepEqual(
+    filterProposals(DEMO_PROPOSALS, filters, range).map(({ trip }) => trip.id),
+    ['demo-forest', 'demo-coast'],
+  );
+  assert.deepEqual(
+    filterProposals(
+      DEMO_PROPOSALS,
+      { ...filters, mode: 'flexible' },
+      range,
+    ).map(({ trip }) => trip.id),
+    ['demo-coast', 'demo-forest'],
+  );
+  assert.equal(JSON.stringify(DEMO_PROPOSALS), snapshot);
 });
 
 test('same checkout/check-in date is not a shared night', () => {

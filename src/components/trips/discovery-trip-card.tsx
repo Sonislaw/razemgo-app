@@ -76,7 +76,11 @@ export function DiscoveryTripCard({
         <View style={[styles.fact, { backgroundColor: theme.muted }]}>
           <Icon name="people" size={15} />
           <AppText variant="caption" style={styles.shrink}>
-            {ages.length ? 'Dzieci ' + ages.join(', ') + ' lat' : 'Bez dzieci'}
+            {ages.length
+              ? 'Dzieci ' + ages.join(', ') + ' lat'
+              : group.childCount
+                ? 'Wiek dzieci niepodany'
+                : 'Bez dzieci'}
           </AppText>
         </View>
         {facts.nights !== null ? (

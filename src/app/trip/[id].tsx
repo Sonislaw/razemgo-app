@@ -17,7 +17,6 @@ import { Icon } from '@/components/ui/icon';
 import {
   DEMO_DATE_RANGES,
   DEMO_PROPOSALS,
-  MY_GROUP,
   MY_TRIPS,
 } from '@/data/mocks/travel';
 import { DEMO_COMPATIBILITY_SCORES } from '@/data/mocks/compatibility';
@@ -30,6 +29,8 @@ import {
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useProfile } from '@/features/profile/profile-context';
+import { getPreferredChildAges } from '@/features/profile/profile-data';
 
 export function generateStaticParams() {
   return DEMO_PROPOSALS.map(({ trip }) => ({ id: trip.id }));
@@ -38,6 +39,7 @@ export function generateStaticParams() {
 export default function TripDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { filters } = useDiscovery();
+  const { profile } = useProfile();
   const theme = useTheme();
   const proposal = DEMO_PROPOSALS.find((item) => item.trip.id === id);
   const back = () =>
@@ -63,12 +65,10 @@ export default function TripDetailsScreen() {
   );
   const facts = getMatchFacts(
     proposal,
-    MY_GROUP,
+    profile.group,
     MY_TRIPS,
     selectedRange,
-    filters.childAgeBands.length
-      ? filters.childAgeBands
-      : MY_GROUP.childAgeBands,
+    getPreferredChildAges(profile, filters.childAgeBands),
   );
   const score = DEMO_COMPATIBILITY_SCORES[trip.id];
   return (

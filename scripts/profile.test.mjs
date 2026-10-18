@@ -1,0 +1,71 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { MY_GROUP } from '../src/data/mocks/travel.ts';
+import {
+  cloneProfile,
+  normalizeProfile,
+  validateProfile,
+  formatGroupSize,
+  getPreferredChildAges,
+} from '../src/features/profile/profile-data.ts';
+
+const example = {
+  group: MY_GROUP,
+  matching: {
+    groupKinds: ['family'],
+    childAgeBands: ['7–9'],
+    description: 'Spokojne wyjazdy.',
+  },
+};
+
+test('editing a draft does not mutate the current profile or mock arrays', () => {
+  const before = JSON.stringify(example);
+  const draft = cloneProfile(example);
+  draft.group.childAgeBands.push('10–12');
+  draft.group.interests.length = 0;
+  draft.group.travelModes.push('Kamper');
+  draft.matching.childAgeBands.push('4–6');
+  draft.matching.groupKinds.push('couple');
+  assert.equal(JSON.stringify(example), before);
+});
+
+test('two children may share one age band or leave age unspecified', () => {
+  const draft = cloneProfile(example);
+  draft.group.childAgeBands = ['4–6'];
+  assert.deepEqual(validateProfile(draft), []);
+  draft.group.childAgeBands = [];
+  assert.deepEqual(validateProfile(draft), []);
+  assert.equal(formatGroupSize(2, 2), '2 dorosłych · 2 dzieci');
+});
+
+test('normalizing an adult-only profile clears old ages without changing matching preferences', () => {
+  const draft = cloneProfile(example);
+  draft.group.childCount = 0;
+  draft.group.adultCount = 1;
+  draft.group.name = '  Nasza ekipa  ';
+  const result = normalizeProfile(draft);
+  assert.deepEqual(result.group.childAgeBands, []);
+  assert.deepEqual(result.matching.childAgeBands, ['7–9']);
+  assert.equal(result.group.kind, example.group.kind);
+  assert.equal(result.group.name, 'Nasza ekipa');
+  assert.equal(formatGroupSize(1, 0), '1 dorosły · bez dzieci');
+  assert.equal(draft.group.name, '  Nasza ekipa  ');
+});
+
+test('validation rejects blank identity, impossible ages and missing travel modes', () => {
+  const draft = cloneProfile(example);
+  draft.group.name = ' ';
+  draft.group.homeLocation = '';
+  draft.group.childCount = 1;
+  draft.group.travelModes = [];
+  assert.equal(validateProfile(draft).length, 4);
+});
+
+test('matching preferences are independent of own children and explicit discovery filters take precedence', () => {
+  const draft = cloneProfile(example);
+  draft.matching.childAgeBands = ['13–17'];
+  assert.deepEqual(getPreferredChildAges(draft), ['13–17']);
+  assert.deepEqual(getPreferredChildAges(draft, ['0–3']), ['0–3']);
+  draft.matching.childAgeBands = [];
+  assert.deepEqual(getPreferredChildAges(draft), MY_GROUP.childAgeBands);
+});

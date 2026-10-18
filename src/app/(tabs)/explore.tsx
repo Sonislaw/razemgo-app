@@ -14,7 +14,6 @@ import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
 import {
   DEMO_DATE_RANGES,
   DEMO_PROPOSALS,
-  MY_GROUP,
   MY_TRIPS,
 } from '@/data/mocks/travel';
 import { DEMO_COMPATIBILITY_SCORES } from '@/data/mocks/compatibility';
@@ -27,6 +26,8 @@ import { useDiscovery } from '@/features/discovery/discovery-context';
 import { DiscoveryFiltersSheet } from '@/features/discovery/discovery-filters-sheet';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useProfile } from '@/features/profile/profile-context';
+import { getPreferredChildAges } from '@/features/profile/profile-data';
 import type { TripMode } from '@/types/travel';
 
 const modes: { mode: TripMode; label: string }[] = [
@@ -36,6 +37,7 @@ const modes: { mode: TripMode; label: string }[] = [
 export default function ExploreScreen() {
   const theme = useTheme();
   const { filters, setFilters } = useDiscovery();
+  const { profile } = useProfile();
   const [showFilters, setShowFilters] = useState(false);
   const dateRange = DEMO_DATE_RANGES.find(
     (range) => range.id === filters.dateRangeId,
@@ -154,12 +156,10 @@ export default function ExploreScreen() {
               {...proposal}
               facts={getMatchFacts(
                 proposal,
-                MY_GROUP,
+                profile.group,
                 MY_TRIPS,
                 dateRange,
-                filters.childAgeBands.length
-                  ? filters.childAgeBands
-                  : MY_GROUP.childAgeBands,
+                getPreferredChildAges(profile, filters.childAgeBands),
               )}
               demoScore={DEMO_COMPATIBILITY_SCORES[proposal.trip.id]}
             />

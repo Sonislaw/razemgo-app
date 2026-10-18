@@ -19,6 +19,10 @@ Otwórz Expo Go obsługujące SDK 57 na telefonie z Androidem i zeskanuj kod QR 
 - Pięć zakładek, skróty pomiędzy ekranami oraz historia zakładek dla przycisku „wstecz”.
 - Domyślny jasny motyw niezależny od ustawień urządzenia, wspólne tokeny i lokalne ilustracje. Paleta ciemna pozostaje przygotowana pod przyszły wybór motywu w aplikacji.
 - Sześć fikcyjnych propozycji, dwa własne plany oraz przykładowy profil.
+- Profil: kompaktowa karta ekipy, edycja nazwy, okolicy, liczby dorosłych i dzieci, przybliżonych przedziałów wieku, sposobów podróżowania oraz zainteresowań. Każda sekcja otwiera swoją część edytora; wyjście bez zapisu odrzuca zmiany.
+- „Kogo chcemy poznać?” przechowuje osobne preferencje dotyczące grup i wieku dzieci. Preferowany wiek służy do objaśniania zgodności w Odkrywaj; jawnie wybrany filtr wieku ma pierwszeństwo. Procentowe oceny nadal są stałymi przykładami demo.
+- Ustawienia aplikacji są osobnym ekranem pod ikoną koła zębatego. Konto, prywatność, powiadomienia i bezpieczeństwo mają widoczne statusy „Wkrótce”. Motyw pozostaje jasny.
+- Zapis profilu odświeża też informacje o własnej ekipie w Wyjazdach i dane do porównań. Stan jest lokalny dla bieżącej sesji; restart przywraca przykładowy profil. Oznaczenie „Wersja demonstracyjna” zależy od `IS_DEMO_MODE` w `src/constants/app.ts`.
 - Odkrywaj: krótki nagłówek, pasek filtrów oraz zwarte karty z przyciskiem „Zobacz wyjazd”. Termin, miejsce/region i wiek dzieci wybiera się w panelu od dołu. Dopiero „Pokaż wyniki” zatwierdza filtry; zamknięcie panelu odrzuca zmiany.
 - Karty pokazują stałą, jawnie demonstracyjną ocenę zgodności, przedziały wieku dzieci oraz wspólne noce liczone z wybranego terminu. Przy braku terminu porównują przykładowe własne plany; nie sumują kilku pobytów.
 - Szczegóły wyjazdu zawierają ilustrację, opis, informacje o grupie i wyjaśnienie porównania. Powrót do listy zachowuje filtry.
@@ -37,6 +41,7 @@ Terminy maj/czerwiec 2027 są stałymi przykładami, niezależnymi od daty urzą
 - `src/constants/` — motywy, odstępy, typografia oraz zakładki.
 - `src/data/mocks/` — jawnie fikcyjne grupy i plany.
 - `src/features/discovery/` — czysta logika filtrów i stan bieżącej sesji.
+- `src/features/profile/` — profil bieżącej sesji, formularze i walidacja; `edit-profile.tsx` i `settings.tsx` w `src/app/` zawierają osobne ekrany edycji i ustawień.
 - `src/types/` — kontrakty domenowe.
 - `scripts/discovery.test.mjs` — testy logiki na wbudowanym runnerze Node.
 
@@ -46,13 +51,14 @@ Terminy maj/czerwiec 2027 są stałymi przykładami, niezależnymi od daty urzą
 npm run lint
 npm run typecheck
 npm run test:discovery
+npm run test:profile
 npx expo install --check
 npx expo export --platform android --output-dir .expo/export-android
 ```
 
 Testy obejmują wspólne noce, zmianę czasu, łączenie filtrów, przedziały wieku, polskie znaki, oba tryby planowania, rozdzielenie miejsca zamieszkania od celu, reset bez modyfikacji danych, pierwszeństwo wybranego terminu, porównanie pojedynczego własnego planu i brak wymyślonych dopasowań wieku.
 
-Weryfikacja obejmuje lint, TypeScript, 14 testów logiki, zgodność zależności i eksport Androida oraz istniejącego podglądu webowego. Automatyczny test przeglądarkowy sprawdza widoczność pierwszej karty bez przewijania, zatwierdzanie i odrzucanie zmian w panelu, filtry, ich zachowanie po zmianie zakładki, szczegóły i powrót do listy, puste wyniki oraz reset — bez błędów JavaScript. Sprawdzono również bezpośrednie wejście do szczegółów, nieznany identyfikator, panel przy szerokości 320 px, tekst powiększony do 150% i zmniejszenie wysokości podglądu do 460 px. Nie wykonano testu na fizycznym telefonie ani emulatorze Androida.
+Weryfikacja obejmuje lint, TypeScript, 19 testów logiki (14 wyszukiwania i 5 profilu), zgodność zależności i eksport Androida oraz istniejącego podglądu webowego. Testy przeglądarkowe obejmują filtry, szczegóły, powrót do listy oraz profil: zapis, anulowanie, walidację, niezależność liczby dzieci od przedziałów wieku, edycję sekcji, preferencje, odświeżanie danych w innych zakładkach i ustawienia. Sprawdzono szerokość 320 px, tekst powiększony do 150% oraz zmniejszenie wysokości podglądu do 460 px. Nie wykonano testu na fizycznym telefonie ani emulatorze Androida.
 
 Node może wyświetlić informacyjne ostrzeżenie `MODULE_TYPELESS_PACKAGE_JSON` podczas bezpośredniego uruchamiania testów TypeScript. Nie wymaga ono zmiany formatu modułów aplikacji.
 
@@ -63,12 +69,14 @@ Node może wyświetlić informacyjne ostrzeżenie `MODULE_TYPELESS_PACKAGE_JSON`
 3. Przejdź do Profilu i wróć — filtry powinny pozostać.
 4. Wybierz „Zobacz wyjazd”, sprawdź szczegóły i wróć do listy. Filtry powinny pozostać. Wybierz „Szukam pomysłu” i otwórz panel — zmienią się opisy pól.
 5. W panelu wpisz **Atlantyda** i zatwierdź, sprawdź pusty stan i wybierz „Pokaż wszystkie propozycje” — wróci sześć wyników. Sprawdź też, że zamknięcie panelu bez zatwierdzenia odrzuca zmiany.
-6. Sprawdź „Wkrótce” przy dodawaniu wyjazdu, zaproszeniach i edycji profilu.
+6. Sprawdź „Wkrótce” przy dodawaniu wyjazdu i zaproszeniach.
 7. Sprawdź przewijanie do końca ekranów, otwartą klawiaturę i większy tekst systemowy. Włącz ciemny motyw telefonu — aplikacja powinna pozostać jasna.
+8. W Profilu wybierz „Edytuj profil”. Zmień nazwę i zapisz — karta ekipy i Wyjazdy powinny pokazać nową nazwę. Zmień dane ponownie, ale wyjdź bez zapisu — poprzednia wersja powinna pozostać.
+9. Otwórz każdą sekcję profilu i „Kogo chcemy poznać?”. Sprawdź zmianę preferencji, ustawienia pod kołem zębatym oraz powrót do profilu. Restart aplikacji powinien przywrócić przykładowe dane.
 
 ## Granice wersji demonstracyjnej
 
-Tworzenie i edycja planów, profile kont, zaproszenia, czat, onboarding i obsługa linków instalacyjnych pozostają kolejnymi etapami. Aplikacja nie integruje backendu, map, GPS, płatności, analityki ani powiadomień. Nie przechowuje rzeczywistych danych rodzin.
+Tworzenie i edycja planów, konta użytkowników, zaproszenia, czat, onboarding i obsługa linków instalacyjnych pozostają kolejnymi etapami. Edycja profilu działa na danych lokalnych w bieżącej sesji. Aplikacja nie integruje backendu, map, GPS, płatności, analityki ani powiadomień.
 
 Przeglądarkowy podgląd o wymiarach telefonu i poprawny eksport Androida nie zastępują testu fizycznego urządzenia w Expo Go.
 

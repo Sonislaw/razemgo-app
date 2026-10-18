@@ -20,6 +20,7 @@ import {
   type ThemeColor,
 } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { IS_DEMO_MODE } from '@/constants/app';
 import { Icon, type IconName } from './icon';
 
 export interface AppTextProps extends TextProps {
@@ -69,6 +70,7 @@ export function Screen({ children }: { children: ReactNode }) {
 }
 export function DemoBadge() {
   const theme = useTheme();
+  if (!IS_DEMO_MODE) return null;
   return (
     <View style={[styles.demoBadge, { backgroundColor: theme.muted }]}>
       <View style={[styles.dot, { backgroundColor: theme.community }]} />

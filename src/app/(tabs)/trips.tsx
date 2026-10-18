@@ -10,9 +10,11 @@ import {
 } from '@/components/ui/primitives';
 import { TripCard } from '@/components/trips/trip-card';
 import { Icon } from '@/components/ui/icon';
-import { MY_GROUP, MY_TRIPS } from '@/data/mocks/travel';
+import { MY_TRIPS } from '@/data/mocks/travel';
+import { useProfile } from '@/features/profile/profile-context';
 
 export default function TripsScreen() {
+  const { profile } = useProfile();
   return (
     <Screen>
       <Header
@@ -42,7 +44,7 @@ export default function TripsScreen() {
           detail="2 przykładowe plany · sezon 2027"
         />
         {MY_TRIPS.map((trip) => (
-          <TripCard key={trip.id} trip={trip} group={MY_GROUP} />
+          <TripCard key={trip.id} trip={trip} group={profile.group} />
         ))}
       </View>
     </Screen>

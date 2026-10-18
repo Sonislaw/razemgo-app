@@ -7,6 +7,7 @@ export interface TravelGroup {
   name: string;
   kind: 'family' | 'couple' | 'solo' | 'friends';
   adultCount: number;
+  childCount: number;
   childAgeBands: ChildAgeBand[];
   homeLocation: string;
   travelModes: string[];

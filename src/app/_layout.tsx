@@ -5,6 +5,7 @@ import { Appearance, Platform } from 'react-native';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import { DiscoveryProvider } from '@/features/discovery/discovery-context';
+import { ProfileProvider } from '@/features/profile/profile-context';
 
 export const unstable_settings = { initialRouteName: '(tabs)' };
 
@@ -32,18 +33,22 @@ export default function RootLayout() {
         },
       }}
     >
-      <DiscoveryProvider>
-        <StatusBar style={dark ? 'light' : 'dark'} />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: palette.background },
-          }}
-        >
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="trip/[id]" />
-        </Stack>
-      </DiscoveryProvider>
+      <ProfileProvider>
+        <DiscoveryProvider>
+          <StatusBar style={dark ? 'light' : 'dark'} />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: palette.background },
+            }}
+          >
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="trip/[id]" />
+            <Stack.Screen name="edit-profile" />
+            <Stack.Screen name="settings" />
+          </Stack>
+        </DiscoveryProvider>
+      </ProfileProvider>
     </ThemeProvider>
   );
 }

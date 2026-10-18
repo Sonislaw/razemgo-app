@@ -90,7 +90,9 @@ export function TripCard({
               {group.adultCount === 1 ? 'dorosły' : 'dorosłych'}
               {group.childAgeBands.length
                 ? ' · dzieci: ' + group.childAgeBands.join(', ') + ' lat'
-                : ' · bez dzieci'}
+                : group.childCount
+                  ? ' · wiek dzieci niepodany'
+                  : ' · bez dzieci'}
             </AppText>
           </View>
         </View>

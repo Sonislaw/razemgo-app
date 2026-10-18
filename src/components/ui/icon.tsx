@@ -3,6 +3,26 @@ import { View } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
 
 export const SYMBOLS = {
+  settings: { ios: 'gearshape', android: 'settings', web: 'settings' },
+  edit: { ios: 'pencil', android: 'edit', web: 'edit' },
+  chevron: {
+    ios: 'chevron.right',
+    android: 'chevron_right',
+    web: 'chevron_right',
+  },
+  heart: { ios: 'heart', android: 'favorite_border', web: 'favorite_border' },
+  camper: {
+    ios: 'car.side',
+    android: 'airport_shuttle',
+    web: 'airport_shuttle',
+  },
+  minus: { ios: 'minus', android: 'remove', web: 'remove' },
+  bell: {
+    ios: 'bell',
+    android: 'notifications_none',
+    web: 'notifications_none',
+  },
+  lock: { ios: 'lock', android: 'lock_outline', web: 'lock_outline' },
   filters: { ios: 'slider.horizontal.3', android: 'tune', web: 'tune' },
   close: { ios: 'xmark', android: 'close', web: 'close' },
   back: { ios: 'arrow.left', android: 'arrow_back', web: 'arrow_back' },

@@ -82,8 +82,29 @@ export interface HeaderProps {
   title: string;
   subtitle: string;
   brand?: boolean;
+  compact?: boolean;
 }
-export function Header({ title, subtitle, brand }: HeaderProps) {
+export function Header({ title, subtitle, brand, compact }: HeaderProps) {
+  if (compact) {
+    return (
+      <View style={{ gap: Spacing.two }}>
+        <View style={styles.row}>
+          <Image
+            source={require('@/assets/images/zgrana-symbol.svg')}
+            style={{ width: 28, height: 28 }}
+            contentFit="contain"
+            accessible={false}
+          />
+          <AppText accessibilityRole="header" variant="heading">
+            {title}
+          </AppText>
+        </View>
+        <AppText variant="label" color="textSecondary">
+          {subtitle}
+        </AppText>
+      </View>
+    );
+  }
   return (
     <View style={styles.header}>
       <View style={styles.brandRow}>
@@ -118,6 +139,35 @@ export interface ButtonProps {
   icon?: IconName;
   variant?: 'primary' | 'secondary';
   disabled?: boolean;
+}
+export function IconButton({
+  label,
+  icon,
+  onPress,
+}: {
+  label: string;
+  icon: IconName;
+  onPress: () => void;
+}) {
+  const theme = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={({ pressed }) => ({
+        minWidth: 48,
+        minHeight: 48,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: Radius.pill,
+        backgroundColor: theme.muted,
+        opacity: pressed ? 0.65 : 1,
+      })}
+    >
+      <Icon name={icon} size={22} />
+    </Pressable>
+  );
 }
 export function Button({
   label,

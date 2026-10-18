@@ -1,8 +1,10 @@
 import type {
+  ChildAgeBand,
   DateRange,
   DiscoveryFilters,
   TripPlan,
   TripProposal,
+  TravelGroup,
 } from '../../types/travel';
 
 export const INITIAL_FILTERS: DiscoveryFilters = {
@@ -66,4 +68,63 @@ export function formatTripDates(trip: DateRange): string {
     ' ' +
     trip.startDate.slice(0, 4)
   );
+}
+
+export interface MatchFacts {
+  nights: number | null;
+  referenceRange?: DateRange;
+  dateSource: 'selected' | 'own-plans' | 'none';
+  ageBands: ChildAgeBand[];
+  matchingAgeBands: ChildAgeBand[];
+  commonInterests: string[];
+}
+
+export function getMatchFacts(
+  proposal: TripProposal,
+  ownGroup: TravelGroup,
+  ownPlans: TripPlan[],
+  selectedRange?: DateRange,
+  preferredAges: ChildAgeBand[] = ownGroup.childAgeBands,
+): MatchFacts {
+  // Compare actual stays; don't add disjoint plans together or use home locations.
+  const referenceRange =
+    selectedRange ??
+    ownPlans.reduce<TripPlan | undefined>(
+      (best, plan) =>
+        !best ||
+        sharedNights(proposal.trip, plan) > sharedNights(proposal.trip, best)
+          ? plan
+          : best,
+      undefined,
+    );
+  return {
+    nights: referenceRange ? sharedNights(proposal.trip, referenceRange) : null,
+    referenceRange,
+    dateSource: selectedRange
+      ? 'selected'
+      : referenceRange
+        ? 'own-plans'
+        : 'none',
+    ageBands: proposal.group.childAgeBands,
+    matchingAgeBands: proposal.group.childAgeBands.filter((band) =>
+      preferredAges.includes(band),
+    ),
+    commonInterests: proposal.trip.interests.filter((interest) =>
+      ownGroup.interests.includes(interest),
+    ),
+  };
+}
+
+export function formatSharedNights(nights: number): string {
+  if (nights === 0) return 'Brak wspólnych nocy';
+  if (nights === 1) return '1 wspólna noc';
+  const lastDigit = nights % 10;
+  const lastTwoDigits = nights % 100;
+  if (
+    lastDigit >= 2 &&
+    lastDigit <= 4 &&
+    (lastTwoDigits < 12 || lastTwoDigits > 14)
+  )
+    return nights + ' wspólne noce';
+  return nights + ' wspólnych nocy';
 }

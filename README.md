@@ -19,7 +19,9 @@ Otwórz Expo Go obsługujące SDK 57 na telefonie z Androidem i zeskanuj kod QR 
 - Pięć zakładek, skróty pomiędzy ekranami oraz historia zakładek dla przycisku „wstecz”.
 - Domyślny jasny motyw niezależny od ustawień urządzenia, wspólne tokeny i lokalne ilustracje. Paleta ciemna pozostaje przygotowana pod przyszły wybór motywu w aplikacji.
 - Sześć fikcyjnych propozycji, dwa własne plany oraz przykładowy profil.
-- Odkrywaj: zmiana trybu, wybór terminu, wyszukiwanie miejsca/regionu, przedziały wieku dzieci, licznik wyników i reset.
+- Odkrywaj: krótki nagłówek, pasek filtrów oraz zwarte karty z przyciskiem „Zobacz wyjazd”. Termin, miejsce/region i wiek dzieci wybiera się w panelu od dołu. Dopiero „Pokaż wyniki” zatwierdza filtry; zamknięcie panelu odrzuca zmiany.
+- Karty pokazują stałą, jawnie demonstracyjną ocenę zgodności, przedziały wieku dzieci oraz wspólne noce liczone z wybranego terminu. Przy braku terminu porównują przykładowe własne plany; nie sumują kilku pobytów.
+- Szczegóły wyjazdu zawierają ilustrację, opis, informacje o grupie i wyjaśnienie porównania. Powrót do listy zachowuje filtry.
 - Filtry zachowują się podczas zmiany zakładki. Pełne ponowne uruchomienie aplikacji resetuje stan.
 - Wyszukiwanie ignoruje wielkość liter i polskie znaki. Filtry terminu, miejsca i wieku łączą się warunkiem AND; wybrane przedziały wieku — OR.
 - Wspólny termin wymaga co najmniej jednej wspólnej nocy. Miejsce zamieszkania nie ogranicza wyników.
@@ -29,7 +31,7 @@ Terminy maj/czerwiec 2027 są stałymi przykładami, niezależnymi od daty urzą
 
 ## Struktura
 
-- `src/app/` — ekrany i główny layout Expo Router.
+- `src/app/` — główny stos Expo Router; `(tabs)/` zawiera pięć zakładek, a `trip/[id].tsx` szczegóły otwierane ponad nimi. Adresy zakładek pozostają bez zmian.
 - `src/components/ui/` — wspólne elementy UI, typografia i ikony.
 - `src/components/trips/` — karty wyjazdów i ilustracje.
 - `src/constants/` — motywy, odstępy, typografia oraz zakładki.
@@ -48,19 +50,19 @@ npx expo install --check
 npx expo export --platform android --output-dir .expo/export-android
 ```
 
-Testy obejmują wspólne noce, zmianę czasu, łączenie filtrów, przedziały wieku, polskie znaki, oba tryby planowania, rozdzielenie miejsca zamieszkania od celu oraz reset bez modyfikacji danych.
+Testy obejmują wspólne noce, zmianę czasu, łączenie filtrów, przedziały wieku, polskie znaki, oba tryby planowania, rozdzielenie miejsca zamieszkania od celu, reset bez modyfikacji danych, pierwszeństwo wybranego terminu, porównanie pojedynczego własnego planu i brak wymyślonych dopasowań wieku.
 
-Weryfikacja wdrożenia: lint, TypeScript, 10 testów logiki, zgodność zależności i eksport Androida zakończyły się powodzeniem. Metro uruchomiło aplikację i zwróciło manifest Androida dla SDK 57. Automatyczny test przeglądarkowy sprawdził pięć zakładek, skróty, filtry, ich zachowanie po zmianie zakładki i reset po przeładowaniu — bez błędów JavaScript. Oceniono również podglądy przy szerokości 390 i 320 px, oba motywy oraz tekst powiększony do 150%. Nie wykonano testu na fizycznym telefonie ani emulatorze Androida.
+Weryfikacja obejmuje lint, TypeScript, 14 testów logiki, zgodność zależności i eksport Androida oraz istniejącego podglądu webowego. Automatyczny test przeglądarkowy sprawdza widoczność pierwszej karty bez przewijania, zatwierdzanie i odrzucanie zmian w panelu, filtry, ich zachowanie po zmianie zakładki, szczegóły i powrót do listy, puste wyniki oraz reset — bez błędów JavaScript. Sprawdzono również bezpośrednie wejście do szczegółów, nieznany identyfikator, panel przy szerokości 320 px, tekst powiększony do 150% i zmniejszenie wysokości podglądu do 460 px. Nie wykonano testu na fizycznym telefonie ani emulatorze Androida.
 
 Node może wyświetlić informacyjne ostrzeżenie `MODULE_TYPELESS_PACKAGE_JSON` podczas bezpośredniego uruchamiania testów TypeScript. Nie wymaga ono zmiany formatu modułów aplikacji.
 
 ## Szybki test na telefonie
 
 1. Otwórz wszystkie pięć zakładek; sprawdź „wstecz” Androida oraz skróty na Start i Wiadomości.
-2. W Odkrywaj wybierz **21–24 maja**, wpisz **Pomorze**, zaznacz **7–9 lat**. Powinna zostać jedna propozycja z informacją o dwóch wspólnych nocach.
+2. W Odkrywaj otwórz **Filtry**, wybierz **21–24 maja**, wpisz **Pomorze**, zaznacz **7–9 lat**, a następnie **Pokaż wyniki**. Powinna zostać jedna propozycja z informacją o dwóch wspólnych nocach.
 3. Przejdź do Profilu i wróć — filtry powinny pozostać.
-4. Wybierz „Szukam pomysłu”: zmieni się opis pola i poszukiwania.
-5. Wpisz **Atlantyda**, sprawdź pusty stan i wybierz „Pokaż wszystkie propozycje” — wróci sześć wyników.
+4. Wybierz „Zobacz wyjazd”, sprawdź szczegóły i wróć do listy. Filtry powinny pozostać. Wybierz „Szukam pomysłu” i otwórz panel — zmienią się opisy pól.
+5. W panelu wpisz **Atlantyda** i zatwierdź, sprawdź pusty stan i wybierz „Pokaż wszystkie propozycje” — wróci sześć wyników. Sprawdź też, że zamknięcie panelu bez zatwierdzenia odrzuca zmiany.
 6. Sprawdź „Wkrótce” przy dodawaniu wyjazdu, zaproszeniach i edycji profilu.
 7. Sprawdź przewijanie do końca ekranów, otwartą klawiaturę i większy tekst systemowy. Włącz ciemny motyw telefonu — aplikacja powinna pozostać jasna.
 

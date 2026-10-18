@@ -4,12 +4,15 @@ import {
   DEMO_PROPOSALS,
   DEMO_DATE_RANGES,
   MY_TRIPS,
+  MY_GROUP,
 } from '../src/data/mocks/travel.ts';
 import {
   INITIAL_FILTERS,
   filterProposals,
   sharedNights,
   formatTripDates,
+  getMatchFacts,
+  formatSharedNights,
 } from '../src/features/discovery/filter-trips.ts';
 
 test('default filters show all six demo proposals in stable order', () => {
@@ -128,4 +131,45 @@ test('demo dates and their formatting are independent of device timezone', () =>
       (trip) => sharedNights(trip, trip) > 0,
     ),
   );
+});
+
+test('match facts use the selected range before existing own plans', () => {
+  const proposal = DEMO_PROPOSALS[0];
+  const facts = getMatchFacts(
+    proposal,
+    MY_GROUP,
+    MY_TRIPS,
+    DEMO_DATE_RANGES[1],
+    ['7–9'],
+  );
+  assert.equal(facts.nights, 0);
+  assert.equal(facts.dateSource, 'selected');
+  assert.deepEqual(facts.matchingAgeBands, ['7–9']);
+  assert.deepEqual(facts.commonInterests, ['Rowery', 'Spokojny wypoczynek']);
+});
+
+test('match facts compare with one best own plan without summing duplicate stays', () => {
+  const facts = getMatchFacts(DEMO_PROPOSALS[0], MY_GROUP, [
+    ...MY_TRIPS,
+    MY_TRIPS[0],
+  ]);
+  assert.equal(facts.nights, 2);
+  assert.equal(facts.dateSource, 'own-plans');
+  assert.equal(facts.referenceRange.id, 'demo-my-coast');
+  assert.equal(getMatchFacts(DEMO_PROPOSALS[0], MY_GROUP, []).nights, null);
+});
+
+test('groups without children do not get invented age matches', () => {
+  const facts = getMatchFacts(DEMO_PROPOSALS[2], MY_GROUP, MY_TRIPS);
+  assert.deepEqual(facts.ageBands, []);
+  assert.deepEqual(facts.matchingAgeBands, []);
+});
+
+test('shared-night captions distinguish zero, one and Polish plural endings', () => {
+  assert.equal(formatSharedNights(0), 'Brak wspólnych nocy');
+  assert.equal(formatSharedNights(1), '1 wspólna noc');
+  assert.equal(formatSharedNights(2), '2 wspólne noce');
+  assert.equal(formatSharedNights(5), '5 wspólnych nocy');
+  assert.equal(formatSharedNights(12), '12 wspólnych nocy');
+  assert.equal(formatSharedNights(22), '22 wspólne noce');
 });

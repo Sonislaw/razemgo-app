@@ -3,6 +3,9 @@ import { View } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
 
 export const SYMBOLS = {
+  filters: { ios: 'slider.horizontal.3', android: 'tune', web: 'tune' },
+  close: { ios: 'xmark', android: 'close', web: 'close' },
+  back: { ios: 'arrow.left', android: 'arrow_back', web: 'arrow_back' },
   home: { ios: 'house', android: 'home', web: 'home' },
   search: { ios: 'magnifyingglass', android: 'search', web: 'search' },
   trips: { ios: 'suitcase.rolling', android: 'luggage', web: 'luggage' },

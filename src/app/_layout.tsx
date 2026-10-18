@@ -1,11 +1,12 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { Appearance, Platform } from 'react-native';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
-import AppTabs from '@/components/app-tabs';
 import { DiscoveryProvider } from '@/features/discovery/discovery-context';
+
+export const unstable_settings = { initialRouteName: '(tabs)' };
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -33,7 +34,15 @@ export default function RootLayout() {
     >
       <DiscoveryProvider>
         <StatusBar style={dark ? 'light' : 'dark'} />
-        <AppTabs />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: palette.background },
+          }}
+        >
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="trip/[id]" />
+        </Stack>
       </DiscoveryProvider>
     </ThemeProvider>
   );

@@ -42,7 +42,8 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test:discovery": "node --test scripts/discovery.test.mjs",
-    "test:profile": "node --test scripts/profile.test.mjs"
+    "test:profile": "node --test scripts/profile.test.mjs",
+    "test:messaging": "node --test scripts/messaging.test.mjs"
   },
   "private": true
 }

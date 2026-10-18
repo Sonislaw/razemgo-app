@@ -2,14 +2,20 @@ import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { useTheme } from '@/hooks/use-theme';
 import { TAB_ITEMS } from '@/constants/navigation';
 import { SYMBOLS } from '@/components/ui/icon';
+import { useMessaging } from '@/features/messaging/messaging-context';
+import { notificationCount } from '@/features/messaging/messaging-state';
 
 export default function AppTabs() {
   const theme = useTheme();
+  const { state } = useMessaging();
+  const notifications = notificationCount(state);
   return (
     <NativeTabs
       backBehavior="history"
       backgroundColor={theme.backgroundElement}
       tintColor={theme.primaryStrong}
+      badgeBackgroundColor={theme.primaryStrong}
+      badgeTextColor={theme.onPrimary}
       iconColor={{
         default: theme.textSecondary,
         selected: theme.primaryStrong,
@@ -24,7 +30,12 @@ export default function AppTabs() {
           key={tab.name}
           name={tab.name}
           disableTransparentOnScrollEdge
-          accessibilityLabel={tab.label}
+          accessibilityLabel={
+            tab.label +
+            (tab.name === 'messages' && notifications
+              ? ', nowe: ' + notifications
+              : '')
+          }
         >
           <NativeTabs.Trigger.Label
             selectedStyle={{ color: theme.primaryStrong }}
@@ -35,6 +46,11 @@ export default function AppTabs() {
             sf={SYMBOLS[tab.icon].ios}
             md={SYMBOLS[tab.icon].android}
           />
+          {tab.name === 'messages' && notifications > 0 ? (
+            <NativeTabs.Trigger.Badge>
+              {notifications > 99 ? '99+' : String(notifications)}
+            </NativeTabs.Trigger.Badge>
+          ) : null}
         </NativeTabs.Trigger>
       ))}
     </NativeTabs>

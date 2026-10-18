@@ -3,6 +3,11 @@ import { View } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
 
 export const SYMBOLS = {
+  send: { ios: 'paperplane', android: 'send', web: 'send' },
+  more: { ios: 'ellipsis', android: 'more_horiz', web: 'more_horiz' },
+  flag: { ios: 'flag', android: 'flag', web: 'flag' },
+  block: { ios: 'hand.raised.slash', android: 'block', web: 'block' },
+  refresh: { ios: 'arrow.clockwise', android: 'refresh', web: 'refresh' },
   settings: { ios: 'gearshape', android: 'settings', web: 'settings' },
   edit: { ios: 'pencil', android: 'edit', web: 'edit' },
   chevron: {

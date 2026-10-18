@@ -31,6 +31,7 @@ import { Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useProfile } from '@/features/profile/profile-context';
 import { getPreferredChildAges } from '@/features/profile/profile-data';
+import { TripContactAction } from '@/features/messaging/trip-contact-action';
 
 export function generateStaticParams() {
   return DEMO_PROPOSALS.map(({ trip }) => ({ id: trip.id }));
@@ -172,10 +173,9 @@ export default function TripDetailsScreen() {
           Okolica zamieszkania nie określa miejsca wspólnego wyjazdu.
         </AppText>
       </Card>
-      <Button label="Zaproś do kontaktu · Wkrótce" icon="chat" disabled />
+      <TripContactAction proposal={proposal} />
       <AppText variant="caption" color="textSecondary">
-        Grupy i wyjazdy są fikcyjne. Zaproszenia będą dostępne w kolejnej
-        wersji.
+        Grupy, wyjazdy i wiadomości są fikcyjne.
       </AppText>
     </Screen>
   );

@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { View } from 'react-native';
 import {
   AppText,
+  Button,
   Card,
   DemoBadge,
   Screen,
@@ -84,7 +85,13 @@ export default function SettingsScreen() {
           icon="lock"
           title="Bezpieczeństwo"
           status="Wkrótce"
-          description="Zarządzanie dostępem do konta, zgłoszeniami i zablokowanymi osobami."
+          description="Ochrona dostępu do konta będzie dostępna po dodaniu logowania."
+        />
+        <Button
+          label="Bezpieczeństwo rozmów"
+          icon="shield"
+          variant="secondary"
+          onPress={() => router.push('/messaging-safety')}
         />
         {IS_DEMO_MODE ? (
           <View style={{ gap: 8 }}>

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="870" viewBox="0 0 1320 870">
+<defs><filter id="shadow"><feDropShadow dx="0" dy="9" stdDeviation="12" flood-color="#344952" flood-opacity=".10"/></filter></defs>
+<rect width="1320" height="870" rx="32" fill="#F6FAFB"/>
+<text x="65" y="92" font-size="21" fill="#086996" font-family="DejaVu Sans, sans-serif" font-weight="bold" letter-spacing="2">RAZEMGO / DESIGN SYSTEM</text>
+<text x="65" y="154" font-size="48" fill="#243842" font-family="DejaVu Sans, sans-serif" font-weight="bold">Paleta kolorów</text>
+<text x="65" y="192" font-size="20" fill="#617782" font-family="DejaVu Sans, sans-serif">Podróże łączą ludzi — kolory wyjęte z oryginalnego logo</text>
+<rect x="65" y="238" width="220" height="255" rx="18" fill="#fff" filter="url(#shadow)"/>
+<path d="M83 238 h184 a18 18 0 0 1 18 18 v126 h-220 v-126 a18 18 0 0 1 18-18" fill="#344952"/>
+<text x="82" y="417" font-size="20" font-weight="bold" fill="#243842" font-family="DejaVu Sans, sans-serif">Grafit</text>
+<text x="82" y="450" font-size="18" fill="#617782" font-family="DejaVu Sans Mono, monospace">#344952</text>
+<text x="82" y="475" font-size="12" fill="#617782" font-family="DejaVu Sans, sans-serif">Główna tożsamość</text>
+<rect x="307" y="238" width="220" height="255" rx="18" fill="#fff" filter="url(#shadow)"/>
+<path d="M325 238 h184 a18 18 0 0 1 18 18 v126 h-220 v-126 a18 18 0 0 1 18-18" fill="#1992CE"/>
+<text x="324" y="417" font-size="20" font-weight="bold" fill="#243842" font-family="DejaVu Sans, sans-serif">Niebieski</text>
+<text x="324" y="450" font-size="18" fill="#617782" font-family="DejaVu Sans Mono, monospace">#1992CE</text>
+<text x="324" y="475" font-size="12" fill="#617782" font-family="DejaVu Sans, sans-serif">Odkrywanie i trasy</text>
+<rect x="549" y="238" width="220" height="255" rx="18" fill="#fff" filter="url(#shadow)"/>
+<path d="M567 238 h184 a18 18 0 0 1 18 18 v126 h-220 v-126 a18 18 0 0 1 18-18" fill="#59BC57"/>
+<text x="566" y="417" font-size="20" font-weight="bold" fill="#243842" font-family="DejaVu Sans, sans-serif">Zielony</text>
+<text x="566" y="450" font-size="18" fill="#617782" font-family="DejaVu Sans Mono, monospace">#59BC57</text>
+<text x="566" y="475" font-size="12" fill="#617782" font-family="DejaVu Sans, sans-serif">Społeczność i natura</text>
+<rect x="791" y="238" width="220" height="255" rx="18" fill="#fff" filter="url(#shadow)"/>
+<path d="M809 238 h184 a18 18 0 0 1 18 18 v126 h-220 v-126 a18 18 0 0 1 18-18" fill="#FE881E"/>
+<text x="808" y="417" font-size="20" font-weight="bold" fill="#243842" font-family="DejaVu Sans, sans-serif">Pomarańcz</text>
+<text x="808" y="450" font-size="18" fill="#617782" font-family="DejaVu Sans Mono, monospace">#FE881E</text>
+<text x="808" y="475" font-size="12" fill="#617782" font-family="DejaVu Sans, sans-serif">Akcent i energia</text>
+<rect x="1033" y="238" width="220" height="255" rx="18" fill="#fff" filter="url(#shadow)"/>
+<path d="M1051 238 h184 a18 18 0 0 1 18 18 v126 h-220 v-126 a18 18 0 0 1 18-18" fill="#FDB61B"/>
+<text x="1050" y="417" font-size="20" font-weight="bold" fill="#243842" font-family="DejaVu Sans, sans-serif">Żółty</text>
+<text x="1050" y="450" font-size="18" fill="#617782" font-family="DejaVu Sans Mono, monospace">#FDB61B</text>
+<text x="1050" y="475" font-size="12" fill="#617782" font-family="DejaVu Sans, sans-serif">Ciepło i optymizm</text>
+<text x="65" y="564" font-size="27" font-weight="bold" fill="#243842" font-family="DejaVu Sans, sans-serif">Kolory interfejsu</text>
+<rect x="65" y="594" width="377" height="87" rx="15" fill="#fff" stroke="#DCE7EB"/>
+<rect x="78" y="607" width="61" height="61" rx="9" fill="#F6FAFB" stroke="#DCE7EB"/>
+<text x="152" y="631" font-size="17" font-weight="bold" fill="#243842" font-family="DejaVu Sans, sans-serif">Tło</text>
+<text x="152" y="658" font-size="16" fill="#617782" font-family="DejaVu Sans Mono, monospace">#F6FAFB</text>
+<rect x="468" y="594" width="377" height="87" rx="15" fill="#fff" stroke="#DCE7EB"/>
+<rect x="481" y="607" width="61" height="61" rx="9" fill="#FFFFFF" stroke="#DCE7EB"/>
+<text x="555" y="631" font-size="17" font-weight="bold" fill="#243842" font-family="DejaVu Sans, sans-serif">Powierzchnia</text>
+<text x="555" y="658" font-size="16" fill="#617782" font-family="DejaVu Sans Mono, monospace">#FFFFFF</text>
+<rect x="871" y="594" width="377" height="87" rx="15" fill="#fff" stroke="#DCE7EB"/>
+<rect x="884" y="607" width="61" height="61" rx="9" fill="#EAF5F8" stroke="#DCE7EB"/>
+<text x="958" y="631" font-size="17" font-weight="bold" fill="#243842" font-family="DejaVu Sans, sans-serif">Tło dodatkowe</text>
+<text x="958" y="658" font-size="16" fill="#617782" font-family="DejaVu Sans Mono, monospace">#EAF5F8</text>
+<rect x="65" y="698" width="377" height="87" rx="15" fill="#fff" stroke="#DCE7EB"/>
+<rect x="78" y="711" width="61" height="61" rx="9" fill="#243842" stroke="#DCE7EB"/>
+<text x="152" y="735" font-size="17" font-weight="bold" fill="#243842" font-family="DejaVu Sans, sans-serif">Tekst</text>
+<text x="152" y="762" font-size="16" fill="#617782" font-family="DejaVu Sans Mono, monospace">#243842</text>
+<rect x="468" y="698" width="377" height="87" rx="15" fill="#fff" stroke="#DCE7EB"/>
+<rect x="481" y="711" width="61" height="61" rx="9" fill="#617782" stroke="#DCE7EB"/>
+<text x="555" y="735" font-size="17" font-weight="bold" fill="#243842" font-family="DejaVu Sans, sans-serif">Tekst pomocniczy</text>
+<text x="555" y="762" font-size="16" fill="#617782" font-family="DejaVu Sans Mono, monospace">#617782</text>
+<rect x="871" y="698" width="377" height="87" rx="15" fill="#fff" stroke="#DCE7EB"/>
+<rect x="884" y="711" width="61" height="61" rx="9" fill="#DCE7EB" stroke="#DCE7EB"/>
+<text x="958" y="735" font-size="17" font-weight="bold" fill="#243842" font-family="DejaVu Sans, sans-serif">Obramowania</text>
+<text x="958" y="762" font-size="16" fill="#617782" font-family="DejaVu Sans Mono, monospace">#DCE7EB</text>
+<text x="65" y="840" font-size="15" fill="#617782" font-family="DejaVu Sans, sans-serif">Przyciski: #086996 · Akcje zielone: #287A31 · Tło: #F6FAFB · Tekst: #243842</text></svg>

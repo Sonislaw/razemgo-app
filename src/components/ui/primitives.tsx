@@ -71,8 +71,8 @@ export function DemoBadge() {
   const theme = useTheme();
   return (
     <View style={[styles.demoBadge, { backgroundColor: theme.muted }]}>
-      <View style={[styles.dot, { backgroundColor: theme.primary }]} />
-      <AppText variant="caption" color="textSecondary">
+      <View style={[styles.dot, { backgroundColor: theme.community }]} />
+      <AppText variant="caption" color="text">
         Wersja demonstracyjna
       </AppText>
     </View>
@@ -94,7 +94,9 @@ export function Header({ title, subtitle, brand }: HeaderProps) {
             contentFit="contain"
             accessible={false}
           />
-          <AppText variant="heading">RazemGo</AppText>
+          <AppText variant="heading" color="brand">
+            RazemGo
+          </AppText>
         </View>
         <AppText variant="caption" color="textSecondary">
           Bliżej siebie.
@@ -173,7 +175,7 @@ export function Chip({
   const content = (
     <AppText
       variant="label"
-      color={selected ? 'primaryStrong' : 'textSecondary'}
+      color={selected ? 'primaryStrong' : 'text'}
       style={{ flexShrink: 1 }}
     >
       {label}
@@ -182,9 +184,7 @@ export function Chip({
   const baseStyle = [
     styles.chip,
     {
-      backgroundColor: selected
-        ? theme.backgroundSelected
-        : theme.muted,
+      backgroundColor: selected ? theme.backgroundSelected : theme.muted,
       borderColor: selected ? theme.primaryStrong : theme.border,
     },
   ];

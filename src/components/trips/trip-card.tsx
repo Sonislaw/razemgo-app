@@ -70,18 +70,18 @@ export function TripCard({
           <View
             style={[
               styles.reason,
-              { backgroundColor: theme.backgroundSelected },
+              { backgroundColor: theme.positiveBackground },
             ]}
           >
-            <Icon name="check" size={17} />
-            <AppText variant="label" color="primaryStrong" style={styles.flex}>
+            <Icon name="check" size={17} color={theme.positive} />
+            <AppText variant="label" color="positive" style={styles.flex}>
               Wspólne noce w wybranym terminie: {nights}
             </AppText>
           </View>
         ) : null}
         <View style={[styles.group, { borderTopColor: theme.border }]}>
           <View style={[styles.avatar, { backgroundColor: theme.muted }]}>
-            <Icon name="people" size={22} />
+            <Icon name="people" size={22} color={theme.positive} />
           </View>
           <View style={styles.flex}>
             <AppText variant="label">{group.name}</AppText>

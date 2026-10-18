@@ -26,7 +26,7 @@ export default function HomeScreen() {
       />
       <View style={[styles.hero, { backgroundColor: theme.hero }]}>
         <View style={layout.row}>
-          <Icon name="sun" color={theme.heroText} />
+          <Icon name="sun" color={theme.energy} />
           <AppText variant="caption" color="heroText" style={styles.eyebrow}>
             MNIEJ PLANOWANIA. WIĘCEJ WSPOMNIEŃ.
           </AppText>

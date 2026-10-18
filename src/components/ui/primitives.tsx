@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Image } from 'expo-image';
 import {
   Platform,
   Pressable,
@@ -83,19 +84,16 @@ export interface HeaderProps {
   brand?: boolean;
 }
 export function Header({ title, subtitle, brand }: HeaderProps) {
-  const theme = useTheme();
   return (
     <View style={styles.header}>
       <View style={styles.brandRow}>
         <View style={styles.row}>
-          <View
-            style={[
-              styles.brandIcon,
-              { backgroundColor: theme.backgroundSelected },
-            ]}
-          >
-            <Icon name="compass" size={22} />
-          </View>
+          <Image
+            source={require('@/assets/images/zgrana-symbol.svg')}
+            style={styles.brandIcon}
+            contentFit="contain"
+            accessible={false}
+          />
           <AppText variant="heading">RazemGo</AppText>
         </View>
         <AppText variant="caption" color="textSecondary">
@@ -130,12 +128,12 @@ export function Button({
   const background = disabled
     ? theme.disabled
     : variant === 'primary'
-      ? theme.primaryStrong
+      ? theme.primary
       : theme.backgroundSelected;
   const foreground = disabled
     ? theme.disabledText
     : variant === 'primary'
-      ? theme.backgroundElement
+      ? theme.onPrimary
       : theme.primaryStrong;
   return (
     <Pressable
@@ -186,7 +184,7 @@ export function Chip({
     {
       backgroundColor: selected
         ? theme.backgroundSelected
-        : theme.backgroundElement,
+        : theme.muted,
       borderColor: selected ? theme.primaryStrong : theme.border,
     },
   ];
@@ -296,9 +294,6 @@ const styles = StyleSheet.create({
   brandIcon: {
     width: 36,
     height: 36,
-    borderRadius: Radius.small,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   demoBadge: {
     flexDirection: 'row',

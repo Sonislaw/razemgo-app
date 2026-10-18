@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 import {
   AppText,
@@ -52,11 +52,17 @@ function SettingsSection({
 }
 
 export default function SettingsScreen() {
-  const back = () => router.dismissTo('/profile');
+  const { from } = useLocalSearchParams<{ from?: string }>();
+  const fromHome = from === 'home';
+  const back = () => router.dismissTo(fromHome ? '/' : '/profile');
   return (
     <Screen>
       <View style={{ gap: 12 }}>
-        <ProfileSubpageHeader title="Ustawienia" onBack={back} />
+        <ProfileSubpageHeader
+          title="Ustawienia"
+          onBack={back}
+          backLabel={fromHome ? 'Wróć na Start' : 'Wróć do profilu'}
+        />
         <SettingsSection
           icon="sun"
           title="Wygląd aplikacji"

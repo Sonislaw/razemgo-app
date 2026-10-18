@@ -8,13 +8,15 @@ import { useTheme } from '@/hooks/use-theme';
 export function ProfileSubpageHeader({
   title,
   onBack,
+  backLabel = 'Wróć do profilu',
 }: {
   title: string;
   onBack: () => void;
+  backLabel?: string;
 }) {
   return (
     <View style={layout.row}>
-      <IconButton icon="back" label="Wróć do profilu" onPress={onBack} />
+      <IconButton icon="back" label={backLabel} onPress={onBack} />
       <AppText variant="heading" accessibilityRole="header" style={{ flex: 1 }}>
         {title}
       </AppText>

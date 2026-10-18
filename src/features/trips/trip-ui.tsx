@@ -1,7 +1,8 @@
 import { Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { AppText, IconButton, layout } from '@/components/ui/primitives';
-import { Icon, type IconName } from '@/components/ui/icon';
+import { Icon } from '@/components/ui/icon';
+import { TripThumbnail } from '@/components/trips/trip-thumbnail';
 import { CompactTripCard } from '@/components/trips/compact-trip-card';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { useTheme } from '@/hooks/use-theme';
@@ -90,12 +91,6 @@ export function OwnTripCard({
   onMenu: () => void;
 }) {
   const theme = useTheme();
-  const icon: Record<OwnedTrip['landscape'], IconName> = {
-    coast: 'water',
-    lake: 'water',
-    mountain: 'mountain',
-    forest: 'leaf',
-  };
   return (
     <CompactTripCard style={{ gap: 4 }}>
       <View style={[layout.row, { justifyContent: 'space-between' }]}>
@@ -107,23 +102,7 @@ export function OwnTripCard({
         />
       </View>
       <View style={[layout.row, { alignItems: 'flex-start' }]}>
-        <View
-          style={{
-            width: 52,
-            height: 60,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 16,
-            backgroundColor:
-              trip.landscape === 'forest'
-                ? theme.positiveBackground
-                : trip.landscape === 'coast'
-                  ? theme.muted
-                  : theme.hero,
-          }}
-        >
-          <Icon name={icon[trip.landscape]} size={28} />
-        </View>
+        <TripThumbnail kind={trip.landscape} />
         <View style={{ flex: 1, gap: 4 }}>
           <AppText
             accessibilityRole="header"

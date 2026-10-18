@@ -16,6 +16,11 @@ Otwórz Expo Go obsługujące SDK 57 na telefonie z Androidem i zeskanuj kod QR 
 
 ## Co działa
 
+- Start jest krótkim panelem codziennego korzystania: powitanie z nazwą ekipy, akcje **Znajdź ekipę / Dodaj wyjazd** i jeden najbliższy rzeczywisty plan z bezpośrednim przejściem do szczegółów. Nie pokazuje szkiców, anulowanych ani zakończonych podróży jako nadchodzących; wstrzymany lub prywatny plan pozostaje rzeczywistym wyjazdem. Przy braku podróży proponuje pierwszy/kolejny plan albo dokończenie istniejącego szkicu.
+- Start pokazuje maksymalnie trzy zwarte propozycje innych ekip. Lokalny dobór uwzględnia opublikowane własne plany, wspólne noce, region i preferencje; bez pasujących wyjazdów korzysta z zainteresowań profilu, a przy braku takich zgodności pokazuje jawne inspiracje. Pomija zablokowane ekipy, własną grupę, minione propozycje i duplikaty ekip. Przyczyny są konkretne; Start nie pokazuje procentowego rankingu. Wszystkie propozycje nadal pochodzą z danych demonstracyjnych.
+- Nowe otrzymane zaproszenia i nieprzeczytane wiadomości mają osobne moduły na Start, widoczne wyłącznie przy dodatniej liczbie. Dzwonek otwiera odpowiedni widok Wiadomości i korzysta z tego samego licznika co dolna zakładka. Stan ładowania lub błędu skrzynki ma odrębny skrót do Wiadomości.
+- Żółta karta „Wasz kierunek. Wasze towarzystwo.” jest na osobnym ekranie `/welcome`. Wariant nowego użytkownika ma rzeczywisty lokalny stan bez utworzonego profilu, krótką zachętę na Start i przejście do istniejącego edytora. Poprawny zapis tworzy profil lokalnie i odświeża Start; wyjście bez zapisu zachowuje wariant bez profilu. Pełny onboarding z trwałym oznaczeniem pierwszego uruchomienia pozostaje kolejnym etapem.
+- Przycisk **Demo** na Start otwiera warianty: wyjazdy i zaproszenia, nowy użytkownik z ekranem powitalnym, profil bez wyjazdów, sam szkic i nieprzeczytane rozmowy. Wybór zastępuje lokalny profil, plany, skrzynkę oraz filtry i jest dostępny tylko w trybie demonstracyjnym. Ustawienia i edycja profilu otwarte ze Start wracają na Start; wejścia z Profilu zachowują dotychczasowy powrót.
 - Pięć zakładek, skróty pomiędzy ekranami oraz historia zakładek dla przycisku „wstecz”.
 - Domyślny jasny motyw niezależny od ustawień urządzenia, wspólne tokeny i lokalne ilustracje. Paleta ciemna pozostaje przygotowana pod przyszły wybór motywu w aplikacji.
 - Sześć fikcyjnych propozycji, dwa początkowe własne plany oraz przykładowy profil. Własne wyjazdy można dodawać i zmieniać lokalnie.
@@ -57,6 +62,7 @@ Terminy maj/czerwiec 2027 są stałymi przykładami, niezależnymi od daty urzą
 - `src/features/profile/` — profil bieżącej sesji, formularze i walidacja; `edit-profile.tsx` i `settings.tsx` w `src/app/` zawierają osobne ekrany edycji i ustawień.
 - `src/features/messaging/` — reducer skrzynki, lokalny kontekst, panele demo, zaproszenia i opcje bezpieczeństwa. `src/app/chat/[id].tsx` zawiera czat, a `messaging-safety.tsx` zasady i blokady.
 - `src/features/trips/` — stan własnych planów, statusy, walidacja, kalendarz, filtry i menu zarządzania. Wyjazdy i Odkrywaj korzystają ze wspólnej obudowy `CompactTripCard`; panele używają wspólnego `BottomSheet`.
+- `src/features/home/` — kompaktowe podglądy i warianty demonstracyjne Startu; dobór propozycji jest czystą funkcją w `features/discovery/filter-trips.ts`, a wybór najbliższego planu w `features/trips/own-trips-state.ts`. `TripThumbnail` jest wspólny dla własnych wyjazdów i Startu.
 - `src/types/` — kontrakty domenowe.
 - `scripts/discovery.test.mjs` — testy logiki na wbudowanym runnerze Node.
 
@@ -69,15 +75,18 @@ npm run test:discovery
 npm run test:profile
 npm run test:messaging
 npm run test:trips
+npm run test:home
 npx expo install --check
 npx expo export --platform android --output-dir .expo/export-android
 ```
 
 Testy obejmują wspólne noce, zmianę czasu, łączenie filtrów, przedziały wieku, polskie znaki, oba tryby planowania, rozdzielenie miejsca zamieszkania od celu, reset bez modyfikacji danych, pierwszeństwo wybranego terminu, porównanie pojedynczego własnego planu i brak wymyślonych dopasowań wieku.
 
-Kontrole logiki obejmują 42 testy: 14 wyszukiwania, 5 profilu, 12 wiadomości i 11 własnych wyjazdów. Testy wyjazdów sprawdzają szkice i publikację, poprawność dat, zmianę typu, niezależność statusu, prywatność, archiwum, kopiowanie bez modyfikacji źródła, łączenie filtrów, przesuwanie pobytu bez dodawania nocy oraz usuwanie i reset. Testy wiadomości obejmują zgodę na kontakt, brak duplikatów, odrzucanie i wycofywanie, liczniki, ponawianie wysłania, blokady i lokalne zgłoszenia.
+Kontrole logiki obejmują 50 testów: 14 wyszukiwania, 5 profilu, 12 wiadomości, 11 własnych wyjazdów i 8 Startu. Testy Startu sprawdzają najbliższy i trwający wyjazd, statusy, prawdziwe wspólne noce, elastyczność bez wydłużania pobytu, preferencje, inspiracje bez wymyślonej zgodności, blokady, limit i unikalność propozycji oraz brak modyfikacji danych. Testy wyjazdów obejmują szkice, publikację, daty, prywatność, archiwum, kopiowanie, filtry, usuwanie i reset. Testy wiadomości sprawdzają zgodę na kontakt, brak duplikatów, liczniki, ponawianie, blokady i lokalne zgłoszenia.
 
 Weryfikacja komputerowa obejmuje lint, TypeScript, testy logiki, zgodność zależności i eksport Androida oraz pomocniczego podglądu webowego. Testy przeglądarkowe obejmują wyszukiwanie, profil, Wiadomości oraz cały przepływ własnego wyjazdu: szkic → publikacja → edycja → wyszukiwanie → powiązane zaproszenie → akceptacja → czat. Sprawdzono też zarządzanie statusami, potwierdzenia, filtry, archiwum, pusty stan i reset. Dwie pełne karty własnych planów mieszczą się w podglądzie 390 × 844 px. Sprawdzono szerokość 320 px, tekst powiększony do 150% oraz stały pasek kreatora przy wysokości 460 px. Nie wykonano testu na fizycznym telefonie ani emulatorze Androida; zachowanie natywnej klawiatury i przycisku „wstecz” wymaga sprawdzenia w Expo Go.
+
+Sprawdzenia Startu obejmują oba główne skróty, szczegóły własnego i proponowanego planu, kryteria przekazywane do Odkrywaj, zmianę najbliższego wyjazdu po anulowaniu, odczyt zaproszeń i wiadomości, pusty stan, szkic, utworzenie profilu i powroty do właściwego ekranu. W podglądzie 390 × 844 px całe powitanie, akcje, najbliższy plan oraz pierwsza propozycja mieszczą się przed dolną nawigacją; przy 320 × 568 px dane najbliższego planu są widoczne bez przewijania. Sprawdzono większy tekst, długą nazwę ekipy, ekran powitalny i pozostawanie przy jasnym motywie mimo ciemnych ustawień przeglądarki.
 
 Node może wyświetlić informacyjne ostrzeżenie `MODULE_TYPELESS_PACKAGE_JSON` podczas bezpośredniego uruchamiania testów TypeScript. Nie wymaga ono zmiany formatu modułów aplikacji.
 
@@ -97,10 +106,12 @@ Node może wyświetlić informacyjne ostrzeżenie `MODULE_TYPELESS_PACKAGE_JSON`
 12. Z Odkrywaj otwórz wyjazd grupy bez aktualnego zaproszenia, np. „Słońce, plaża i planszówki”. Wyślij zaproszenie. W Wiadomościach pojawi się ono w Wysłanych; panel Demo pozwala zasymulować jego akceptację.
 13. Z menu własnego planu wstrzymaj i wznów poszukiwania, skopiuj go, a następnie sprawdź anulowanie, zakończenie i usuwanie z potwierdzeniem. Kopia powinna być prywatnym szkicem bez przejętych ekip. Użyj filtrów miejsca i terminu; po usunięciu wszystkich aktywnych planów sprawdź zachętę do utworzenia pierwszego.
 14. W szczegółach „Nasz weekend nad morzem” wybierz „Znajdź towarzystwo”. Kryteria w Odkrywaj powinny odpowiadać temu wyjazdowi. Zaakceptuj jego przykładowe zaproszenie w Wiadomościach i wróć do szczegółów — powinna pojawić się jedna zaakceptowana ekipa z przyciskiem rozmowy.
+15. Na Start wybierz **Znajdź ekipę**, sprawdź kryteria najbliższego wyjazdu i wróć. Otwórz najbliższy plan oraz krótką propozycję. Odrzuć otrzymane zaproszenia — ich moduł powinien zniknąć. Odczyt rozmowy powinien zmniejszyć licznik wiadomości na Start.
+16. W **Demo** na Start sprawdź brak wyjazdów, sam szkic i nowego użytkownika. W nowym wariancie użyj ekranu powitalnego lub „Rozejrzyj się”, uzupełnij profil i zapisz. Start powinien pokazać nazwę ekipy i zachętę do pierwszego wyjazdu. Utwórz plan, wróć na Start i sprawdź aktualny najbliższy wyjazd. Restart przywraca domyślne demo z profilem i dwoma planami.
 
 ## Granice wersji demonstracyjnej
 
-Konta użytkowników, onboarding i obsługa linków instalacyjnych pozostają kolejnymi etapami. Własne plany, profil, zaproszenia, czat, blokady i zgłoszenia działają wyłącznie lokalnie w bieżącej sesji. Restart przywraca fikcyjne dane. Własny opublikowany plan nie jest wysyłany do serwera ani dodawany do sześciu propozycji innych ekip w Odkrywaj. Nie ma wymiany wiadomości z innymi urządzeniami, rzeczywistej moderacji, weryfikacji dorosłości ani powiadomień push. Aplikacja nie integruje backendu, map, GPS, płatności ani analityki.
+Konta użytkowników, pełny onboarding z trwałym stanem pierwszego uruchomienia i obsługa linków instalacyjnych pozostają kolejnymi etapami. Własne plany, profil, zaproszenia, czat, blokady i zgłoszenia działają wyłącznie lokalnie w bieżącej sesji. Restart przywraca fikcyjne dane. Własny opublikowany plan nie jest wysyłany do serwera ani dodawany do sześciu propozycji innych ekip w Odkrywaj. Nie ma wymiany wiadomości z innymi urządzeniami, rzeczywistej moderacji, weryfikacji dorosłości ani powiadomień push. Aplikacja nie integruje backendu, map, GPS, płatności ani analityki.
 
 Przeglądarkowy podgląd o wymiarach telefonu i poprawny eksport Androida nie zastępują testu fizycznego urządzenia w Expo Go.
 

@@ -54,6 +54,7 @@ export default function RootLayout() {
                 <Stack.Screen name="messaging-safety" />
                 <Stack.Screen name="trips/[id]" />
                 <Stack.Screen name="trip-editor" />
+                <Stack.Screen name="welcome" />
               </Stack>
             </MessagingProvider>
           </DiscoveryProvider>

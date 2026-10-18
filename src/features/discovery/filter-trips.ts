@@ -7,6 +7,8 @@ import type {
   TripProposal,
   TravelGroup,
 } from '../../types/travel';
+import type { OwnedTrip } from '../../types/owned-trip';
+import type { TravelerProfile } from '../../types/profile';
 
 export const INITIAL_FILTERS: DiscoveryFilters = {
   mode: 'planned',
@@ -190,4 +192,144 @@ export function formatSharedNights(nights: number): string {
   )
     return nights + ' wspólne noce';
   return nights + ' wspólnych nocy';
+}
+
+export interface HomeRecommendation {
+  proposal: TripProposal;
+  source: 'trip' | 'interests' | 'inspiration';
+  ownTripId?: string;
+  nights: number;
+  dateShifted: boolean;
+  commonInterests: string[];
+  matchingAges: ChildAgeBand[];
+}
+/** Local demo suggestions, with observable reasons rather than a compatibility percentage. */
+export function selectHomeRecommendations(
+  proposals: TripProposal[],
+  profile: TravelerProfile,
+  ownTrips: OwnedTrip[],
+  today: string,
+  blockedGroupIds: string[] = [],
+): HomeRecommendation[] {
+  const candidates = proposals.filter(
+    ({ trip, group }) =>
+      group.id !== profile.group.id &&
+      !blockedGroupIds.includes(group.id) &&
+      Number.isFinite(Date.parse(trip.startDate)) &&
+      Number.isFinite(Date.parse(trip.endDate)) &&
+      trip.startDate < trip.endDate &&
+      trip.endDate > today,
+  );
+  const searchableTrips = ownTrips
+    .filter(
+      (trip) =>
+        trip.status === 'published' &&
+        trip.visibility === 'public' &&
+        Number.isFinite(Date.parse(trip.startDate)) &&
+        Number.isFinite(Date.parse(trip.endDate)) &&
+        trip.endDate > today &&
+        trip.startDate < trip.endDate,
+    )
+    .sort(
+      (a, b) =>
+        a.startDate.localeCompare(b.startDate) || a.id.localeCompare(b.id),
+    );
+  const tailored: HomeRecommendation[] = [];
+  for (const proposal of candidates) {
+    for (const ownTrip of searchableTrips) {
+      const place =
+        ownTrip.mode === 'planned' ? ownTrip.destination : ownTrip.travelArea;
+      const filters: DiscoveryFilters = {
+        mode: ownTrip.mode,
+        dateRangeId: 'own-trip',
+        customDateRange: {
+          startDate: ownTrip.startDate,
+          endDate: ownTrip.endDate,
+        },
+        dateFlexibilityDays: ownTrip.dateFlexibilityDays,
+        location: place.region,
+        childAgeBands: ownTrip.matching.childAgeBands,
+        groupKinds: ownTrip.matching.groupKinds,
+      };
+      if (!filterProposals([proposal], filters).length) continue;
+      const reference = getDiscoveryReferenceRange(
+        filters,
+        ownTrip,
+        proposal.trip,
+      )!;
+      const interests = ownTrip.interests.length
+        ? ownTrip.interests
+        : profile.group.interests;
+      tailored.push({
+        proposal,
+        source: 'trip',
+        ownTripId: ownTrip.id,
+        nights: sharedNights(proposal.trip, reference),
+        dateShifted: reference.startDate !== ownTrip.startDate,
+        commonInterests: proposal.trip.interests.filter((interest) =>
+          interests.includes(interest),
+        ),
+        matchingAges: proposal.group.childAgeBands.filter((age) =>
+          ownTrip.matching.childAgeBands.includes(age),
+        ),
+      });
+      break;
+    }
+  }
+  const compare = (a: HomeRecommendation, b: HomeRecommendation) =>
+    b.commonInterests.length - a.commonInterests.length ||
+    b.nights - a.nights ||
+    b.matchingAges.length - a.matchingAges.length ||
+    a.proposal.trip.startDate.localeCompare(b.proposal.trip.startDate) ||
+    a.proposal.trip.id.localeCompare(b.proposal.trip.id);
+  const unique = (items: HomeRecommendation[]) => {
+    const seen = new Set<string>();
+    return items
+      .filter((item) => {
+        if (seen.has(item.proposal.group.id)) return false;
+        seen.add(item.proposal.group.id);
+        return true;
+      })
+      .slice(0, 3);
+  };
+  if (tailored.length) return unique(tailored.sort(compare));
+  const preferredAges = profile.matching.childAgeBands.length
+    ? profile.matching.childAgeBands
+    : profile.group.childAgeBands;
+  const fromProfile = candidates
+    .filter(
+      ({ group, trip }) =>
+        (!profile.matching.groupKinds.length ||
+          profile.matching.groupKinds.includes(group.kind)) &&
+        (!preferredAges.length ||
+          group.childAgeBands.some((age) => preferredAges.includes(age))) &&
+        trip.interests.some((interest) =>
+          profile.group.interests.includes(interest),
+        ),
+    )
+    .map((proposal) => ({
+      proposal,
+      source: 'interests' as const,
+      nights: 0,
+      dateShifted: false,
+      commonInterests: proposal.trip.interests.filter((interest) =>
+        profile.group.interests.includes(interest),
+      ),
+      matchingAges: proposal.group.childAgeBands.filter((age) =>
+        preferredAges.includes(age),
+      ),
+    }));
+  if (fromProfile.length) return unique(fromProfile.sort(compare));
+  return unique(
+    candidates
+      .map((proposal) => ({
+        proposal,
+        source: 'inspiration' as const,
+        nights: 0,
+        dateShifted: false,
+        commonInterests: [],
+        matchingAges: [],
+      }))
+      .sort(compare),
+  );
 }

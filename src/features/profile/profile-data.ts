@@ -1,6 +1,23 @@
 import type { TravelerProfile } from '../../types/profile';
 import type { ChildAgeBand } from '../../types/travel';
 
+export function createEmptyProfile(): TravelerProfile {
+  return {
+    group: {
+      id: 'demo-us',
+      name: '',
+      kind: 'family',
+      adultCount: 2,
+      childCount: 0,
+      childAgeBands: [],
+      homeLocation: '',
+      travelModes: [],
+      interests: [],
+    },
+    matching: { groupKinds: [], childAgeBands: [], description: '' },
+  };
+}
+
 export function getPreferredChildAges(
   profile: TravelerProfile,
   selectedBands: ChildAgeBand[] = [],

@@ -45,7 +45,10 @@ function isProfileSection(value: unknown): value is ProfileSection {
 }
 
 export default function EditProfileScreen() {
-  const { section } = useLocalSearchParams<{ section?: string }>();
+  const { section, from } = useLocalSearchParams<{
+    section?: string;
+    from?: string;
+  }>();
   const { profile, saveProfile } = useProfile();
   const theme = useTheme();
   const [draft, setDraft] = useState(() => cloneProfile(profile));
@@ -54,7 +57,7 @@ export default function EditProfileScreen() {
   const show = (name: ProfileSection) => !sectionName || sectionName === name;
   const back = () => {
     Keyboard.dismiss();
-    router.dismissTo('/profile');
+    router.dismissTo(from === 'home' ? '/' : '/profile');
   };
   const save = () => {
     const nextErrors = saveProfile(draft);
@@ -66,6 +69,7 @@ export default function EditProfileScreen() {
       <ProfileSubpageHeader
         title={sectionName ? titles[sectionName] : 'Edytuj profil'}
         onBack={back}
+        backLabel={from === 'home' ? 'Wróć na Start' : 'Wróć do profilu'}
       />
       {show('crew') ? (
         <Card>

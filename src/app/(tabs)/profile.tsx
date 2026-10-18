@@ -23,7 +23,7 @@ import type { ProfileSection } from '@/types/profile';
 
 export default function ProfileScreen() {
   const theme = useTheme();
-  const { profile } = useProfile();
+  const { profile, hasProfile } = useProfile();
   const { group, matching } = profile;
   const edit = (section?: ProfileSection) =>
     router.push({
@@ -33,6 +33,30 @@ export default function ProfileScreen() {
   const preferredGroups = GROUP_KIND_OPTIONS.filter((option) =>
     matching.groupKinds.includes(option.value),
   );
+  if (!hasProfile)
+    return (
+      <Screen>
+        <View style={styles.header}>
+          <AppText accessibilityRole="header" variant="heading">
+            Mój profil
+          </AppText>
+          <IconButton
+            icon="settings"
+            label="Ustawienia aplikacji"
+            onPress={() => router.push('/settings')}
+          />
+        </View>
+        <Card>
+          <Icon name="people" size={32} />
+          <AppText variant="heading">Poznajmy Waszą ekipę</AppText>
+          <AppText color="textSecondary">
+            Uzupełnijcie nazwę, przybliżoną okolicę i sposób podróżowania.
+          </AppText>
+          <Button label="Uzupełnij profil" icon="edit" onPress={() => edit()} />
+        </Card>
+        <DemoBadge />
+      </Screen>
+    );
   return (
     <Screen>
       <View style={styles.content}>

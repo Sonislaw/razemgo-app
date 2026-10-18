@@ -51,6 +51,24 @@ export function isSearchingTrip(trip: OwnedTrip, today: string): boolean {
     getTripStatus(trip, today) === 'published' && trip.visibility === 'public'
   );
 }
+export function selectNextTrip(
+  trips: OwnedTrip[],
+  today: string,
+): OwnedTrip | undefined {
+  return trips
+    .filter(
+      (trip) =>
+        (trip.status === 'published' || trip.status === 'paused') &&
+        isValidDate(trip.startDate) &&
+        isValidDate(trip.endDate) &&
+        trip.endDate > trip.startDate &&
+        trip.endDate > today,
+    )
+    .sort(
+      (a, b) =>
+        a.startDate.localeCompare(b.startDate) || a.id.localeCompare(b.id),
+    )[0];
+}
 export function discoveryFiltersForTrip(trip: OwnedTrip): DiscoveryFilters {
   const place = trip.mode === 'planned' ? trip.destination : trip.travelArea;
   const valid = isValidDate(trip.startDate) && isValidDate(trip.endDate);

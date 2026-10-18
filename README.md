@@ -17,7 +17,7 @@ Otwórz Expo Go obsługujące SDK 57 na telefonie z Androidem i zeskanuj kod QR 
 ## Co działa
 
 - Pięć zakładek, skróty pomiędzy ekranami oraz historia zakładek dla przycisku „wstecz”.
-- Jasny i ciemny motyw zgodny z ustawieniami urządzenia, wspólne tokeny i lokalne ilustracje.
+- Domyślny jasny motyw niezależny od ustawień urządzenia, wspólne tokeny i lokalne ilustracje. Paleta ciemna pozostaje przygotowana pod przyszły wybór motywu w aplikacji.
 - Sześć fikcyjnych propozycji, dwa własne plany oraz przykładowy profil.
 - Odkrywaj: zmiana trybu, wybór terminu, wyszukiwanie miejsca/regionu, przedziały wieku dzieci, licznik wyników i reset.
 - Filtry zachowują się podczas zmiany zakładki. Pełne ponowne uruchomienie aplikacji resetuje stan.
@@ -62,7 +62,7 @@ Node może wyświetlić informacyjne ostrzeżenie `MODULE_TYPELESS_PACKAGE_JSON`
 4. Wybierz „Szukam pomysłu”: zmieni się opis pola i poszukiwania.
 5. Wpisz **Atlantyda**, sprawdź pusty stan i wybierz „Pokaż wszystkie propozycje” — wróci sześć wyników.
 6. Sprawdź „Wkrótce” przy dodawaniu wyjazdu, zaproszeniach i edycji profilu.
-7. Sprawdź przewijanie do końca ekranów, otwartą klawiaturę, większy tekst systemowy i oba motywy.
+7. Sprawdź przewijanie do końca ekranów, otwartą klawiaturę i większy tekst systemowy. Włącz ciemny motyw telefonu — aplikacja powinna pozostać jasna.
 
 ## Granice wersji demonstracyjnej
 

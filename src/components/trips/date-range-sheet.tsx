@@ -48,6 +48,7 @@ export function DateRangeSheet({
   onClose: () => void;
 }) {
   const theme = useTheme();
+  const today = todayDate();
   const insets = useSafeAreaInsets();
   const { fontScale } = useWindowDimensions();
   const list = useRef<FlatList<string>>(null);
@@ -229,12 +230,14 @@ export function DateRangeSheet({
                       date < range.endDate,
                     );
                     const selected = start || end;
+                    const isToday = date === today;
                     return (
                       <Pressable
                         key={date}
                         accessibilityRole="button"
                         accessibilityLabel={
                           dateLabel(date) +
+                          (isToday ? ', dzisiaj' : '') +
                           (start
                             ? ', początek wyjazdu'
                             : end
@@ -269,10 +272,28 @@ export function DateRangeSheet({
                           },
                         ]}
                       >
+                        {isToday ? (
+                          <View
+                            pointerEvents="none"
+                            style={[
+                              styles.todayOutline,
+                              {
+                                borderColor: selected
+                                  ? theme.onPrimary
+                                  : theme.primaryStrong,
+                              },
+                            ]}
+                          />
+                        ) : null}
                         <AppText
                           variant="label"
                           style={{
-                            color: selected ? theme.onPrimary : theme.text,
+                            color: selected
+                              ? theme.onPrimary
+                              : isToday
+                                ? theme.primaryStrong
+                                : theme.text,
+                            fontWeight: isToday ? '700' : '600',
                           }}
                         >
                           {Number(date.slice(8, 10))}
@@ -391,6 +412,15 @@ const styles = StyleSheet.create({
   calendarContent: { paddingHorizontal: 16 },
   days: { flexDirection: 'row', flexWrap: 'wrap' },
   day: { width: '14.285714%', alignItems: 'center', justifyContent: 'center' },
+  todayOutline: {
+    position: 'absolute',
+    top: 4,
+    bottom: 4,
+    left: 4,
+    right: 4,
+    borderWidth: 2,
+    borderRadius: 8,
+  },
   footer: { paddingTop: 12, paddingHorizontal: 16, gap: 12, borderTopWidth: 1 },
   tolerances: { gap: 8 },
   tolerance: {

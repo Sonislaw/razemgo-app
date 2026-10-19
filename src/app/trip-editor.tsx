@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -72,6 +73,7 @@ export default function TripEditorScreen() {
     existing ? toTripForm(existing) : newTripForm(profile),
   );
   const [form, setForm] = useState<TripForm>(initial);
+  const modeLabel = form.mode === 'planned' ? 'Mam plan' : 'Szukam pomysłu';
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [errors, setErrors] = useState<string[]>([]);
   const [confirmExit, setConfirmExit] = useState(false);
@@ -151,8 +153,24 @@ export default function TripEditorScreen() {
         style={{ flex: 1, backgroundColor: theme.background }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <Screen key={step + '-' + errors.length} adjustKeyboardInsets={false}>
-          <View style={{ gap: 16 }}>
+        <View
+          style={{
+            backgroundColor: theme.background,
+            paddingTop: insets.top + 16,
+            paddingBottom: 12,
+            paddingHorizontal: Math.max(24, insets.left, insets.right),
+            borderBottomWidth: 1,
+            borderBottomColor: theme.border,
+          }}
+        >
+          <View
+            style={{
+              width: '100%',
+              maxWidth: MaxContentWidth,
+              alignSelf: 'center',
+              gap: 12,
+            }}
+          >
             <View style={layout.row}>
               <IconButton
                 label={step === 1 ? 'Wróć do wyjazdów' : 'Poprzedni krok'}
@@ -166,13 +184,41 @@ export default function TripEditorScreen() {
                   }
                 }}
               />
-              <View style={{ flex: 1 }}>
+              <View style={{ flex: 1, gap: 4 }}>
                 <AppText accessibilityRole="header" variant="heading">
                   {existing ? 'Edytuj wyjazd' : 'Nowy wyjazd'}
                 </AppText>
-                <AppText variant="caption" color="textSecondary">
-                  Krok {step} z 3
-                </AppText>
+                <View style={[layout.wrap, { rowGap: 4 }]}>
+                  <AppText variant="caption" color="textSecondary">
+                    Krok {step} z 3
+                  </AppText>
+                  <View
+                    accessible
+                    accessibilityLabel={'Typ wyjazdu: ' + modeLabel}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4,
+                      maxWidth: '100%',
+                      paddingHorizontal: 8,
+                      paddingVertical: 2,
+                      borderRadius: 12,
+                      backgroundColor: theme.backgroundSelected,
+                    }}
+                  >
+                    <Icon
+                      name={form.mode === 'planned' ? 'pin' : 'compass'}
+                      size={14}
+                    />
+                    <AppText
+                      variant="caption"
+                      color="primaryStrong"
+                      style={{ flexShrink: 1 }}
+                    >
+                      {modeLabel}
+                    </AppText>
+                  </View>
+                </View>
               </View>
               <IconButton
                 label="Zamknij kreator"
@@ -198,6 +244,31 @@ export default function TripEditorScreen() {
                 />
               ))}
             </View>
+          </View>
+        </View>
+        <ScrollView
+          key={step + '-' + errors.length}
+          style={{ flex: 1 }}
+          contentInsetAdjustmentBehavior="never"
+          automaticallyAdjustKeyboardInsets={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingTop: 16,
+            paddingBottom: 32,
+            paddingLeft: Math.max(24, insets.left),
+            paddingRight: Math.max(24, insets.right),
+          }}
+        >
+          <View
+            style={{
+              width: '100%',
+              maxWidth: MaxContentWidth,
+              alignSelf: 'center',
+              gap: 16,
+            }}
+          >
             <AppText variant="heading" accessibilityRole="header">
               {titles[step - 1]}
             </AppText>
@@ -468,8 +539,7 @@ export default function TripEditorScreen() {
                     {getTripHeadline(preview)}
                   </AppText>
                   <AppText variant="label">
-                    {form.mode === 'planned' ? 'Mam plan' : 'Szukam pomysłu'} ·{' '}
-                    {ownTripPlace(preview)}
+                    {modeLabel} · {ownTripPlace(preview)}
                   </AppText>
                   <AppText variant="label">{ownTripDates(preview)}</AppText>
                   <AppText variant="caption">
@@ -504,7 +574,7 @@ export default function TripEditorScreen() {
               Niezapisane zmiany znikają po opuszczeniu kreatora.
             </AppText>
           </View>
-        </Screen>
+        </ScrollView>
         <View
           style={{
             backgroundColor: theme.backgroundElement,

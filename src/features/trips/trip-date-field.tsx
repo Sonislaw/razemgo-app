@@ -34,7 +34,8 @@ function DatePicker({
   onClose: () => void;
 }) {
   const theme = useTheme();
-  const initial = isValidDate(value) ? value : todayDate();
+  const today = todayDate();
+  const initial = isValidDate(value) ? value : today;
   const [month, setMonth] = useState(initial.slice(0, 7));
   const [selected, setSelected] = useState(isValidDate(value) ? value : '');
   const display = (date: string) =>
@@ -103,7 +104,9 @@ function DatePicker({
             <Pressable
               key={index}
               accessibilityRole="button"
-              accessibilityLabel={dateLabel(date)}
+              accessibilityLabel={
+                dateLabel(date) + (date === today ? ', dzisiaj' : '')
+              }
               accessibilityState={{ selected: selected === date }}
               onPress={() => pick(date)}
               style={{
@@ -116,10 +119,32 @@ function DatePicker({
                   selected === date ? theme.primaryStrong : 'transparent',
               }}
             >
+              {date === today ? (
+                <View
+                  pointerEvents="none"
+                  style={{
+                    position: 'absolute',
+                    top: 4,
+                    bottom: 4,
+                    left: 4,
+                    right: 4,
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderColor:
+                      selected === date ? theme.onPrimary : theme.primaryStrong,
+                  }}
+                />
+              ) : null}
               <AppText
                 variant="label"
                 style={{
-                  color: selected === date ? theme.onPrimary : theme.text,
+                  color:
+                    selected === date
+                      ? theme.onPrimary
+                      : date === today
+                        ? theme.primaryStrong
+                        : theme.text,
+                  fontWeight: date === today ? '700' : '600',
                 }}
               >
                 {day}

@@ -1,3 +1,5 @@
+import type { AnimalKind, GroupAnimals, TripAnimals } from './animals';
+
 export type ChildAgeBand = '0–3' | '4–6' | '7–9' | '10–12' | '13–17';
 export type TripMode = 'planned' | 'flexible';
 export type LandscapeKind = 'coast' | 'lake' | 'mountain' | 'forest';
@@ -12,6 +14,7 @@ export interface TravelGroup {
   homeLocation: string;
   travelModes: string[];
   interests: string[];
+  animals: GroupAnimals;
 }
 export interface DateRange {
   startDate: string;
@@ -24,6 +27,7 @@ interface TripBase extends DateRange {
   description: string;
   interests: string[];
   landscape: LandscapeKind;
+  animals: TripAnimals;
 }
 export type TripPlan = TripBase &
   (
@@ -44,6 +48,7 @@ export interface DiscoveryFilters {
   location: string;
   childAgeBands: ChildAgeBand[];
   customDateRange?: DateRange;
+  animalKinds?: AnimalKind[];
   dateFlexibilityDays?: number;
   sourceTripId?: string;
   groupKinds?: TravelGroup['kind'][];

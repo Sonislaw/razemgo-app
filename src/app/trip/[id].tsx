@@ -32,6 +32,7 @@ import { getPreferredChildAges } from '@/features/profile/profile-data';
 import { TripContactAction } from '@/features/messaging/trip-contact-action';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import { isArchivedTrip, todayDate } from '@/features/trips/own-trips-state';
+import { AnimalInformation } from '@/features/animals/animal-ui';
 
 export function generateStaticParams() {
   return DEMO_PROPOSALS.map(({ trip }) => ({ id: trip.id }));
@@ -112,7 +113,14 @@ export default function TripDetailsScreen() {
           ))}
         </View>
       </Card>
-      <Card style={{ backgroundColor: theme.positiveBackground }}>
+      <Card>
+        <AnimalInformation animals={trip.animals} />
+      </Card>
+      <Card
+        style={{
+          backgroundColor: theme.positiveBackground,
+        }}
+      >
         <AppText variant="heading" accessibilityRole="header" color="positive">
           {score !== undefined ? score + '% zgodności · demo' : 'Co Was łączy?'}
         </AppText>

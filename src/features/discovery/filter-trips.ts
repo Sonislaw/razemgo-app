@@ -15,6 +15,7 @@ export const INITIAL_FILTERS: DiscoveryFilters = {
   dateRangeId: 'all',
   location: '',
   childAgeBands: [],
+  animalKinds: [],
 };
 export function normalizeLocation(value: string): string {
   return value
@@ -58,6 +59,13 @@ export function filterProposals(
     if (
       filters.childAgeBands.length &&
       !group.childAgeBands.some((band) => filters.childAgeBands.includes(band))
+    )
+      return false;
+    if (
+      filters.animalKinds?.length &&
+      !trip.animals.animals.some((animal) =>
+        filters.animalKinds!.includes(animal.kind),
+      )
     )
       return false;
     return true;
@@ -324,6 +332,7 @@ export function selectHomeRecommendations(
       matchingAges: proposal.group.childAgeBands.filter((age) =>
         preferredAges.includes(age),
       ),
+      ownTripId: searchableTrips[0]?.id,
     }));
   if (fromProfile.length) return unique(fromProfile.sort(compare));
   return unique(
@@ -335,6 +344,7 @@ export function selectHomeRecommendations(
         dateShifted: false,
         commonInterests: [],
         matchingAges: [],
+        ownTripId: searchableTrips[0]?.id,
       }))
       .sort(compare),
   );

@@ -7,6 +7,7 @@ import type {
 } from '../../types/owned-trip';
 import type { TravelerProfile } from '../../types/profile';
 import type { DiscoveryFilters } from '../../types/travel';
+import { cloneAnimals, validateAnimalCounts } from '../animals/animal-data.ts';
 
 export const TRIP_STATUS_LABELS: Record<TripStatus, string> = {
   draft: 'Szkic',
@@ -105,6 +106,7 @@ export function toTripForm(trip: OwnedTrip): TripForm {
     groupKinds: [...trip.matching.groupKinds],
     childAgeBands: [...trip.matching.childAgeBands],
     visibility: trip.visibility,
+    animals: cloneAnimals(trip.animals),
   };
 }
 export function newTripForm(profile: TravelerProfile): TripForm {
@@ -123,6 +125,7 @@ export function newTripForm(profile: TravelerProfile): TripForm {
     groupKinds: [...profile.matching.groupKinds],
     childAgeBands: [...profile.matching.childAgeBands],
     visibility: 'public',
+    animals: cloneAnimals(profile.group.animals),
   };
 }
 export function validateTripForm(form: TripForm, step?: 1 | 2 | 3): string[] {
@@ -136,6 +139,7 @@ export function validateTripForm(form: TripForm, step?: 1 | 2 | 3): string[] {
       );
   }
   if (!step || step === 2) {
+    errors.push(...validateAnimalCounts(form.animals.animals));
     if (!form.title.trim() || form.title.trim().length > 64)
       errors.push('Podaj nazwę wyjazdu (maksymalnie 64 znaki).');
     if (!form.placeName.trim() || !form.region.trim())
@@ -170,6 +174,7 @@ export function tripFromForm(
     dateFlexibilityDays: form.dateFlexibilityDays,
     visibility: form.visibility,
     status,
+    animals: cloneAnimals(form.animals),
     matching: {
       groupKinds: [...form.groupKinds],
       childAgeBands: [...form.childAgeBands],

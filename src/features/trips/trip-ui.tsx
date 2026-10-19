@@ -8,6 +8,7 @@ import { IS_DEMO_MODE } from '@/constants/app';
 import { useTheme } from '@/hooks/use-theme';
 import type { OwnedTrip, TripStatus } from '@/types/owned-trip';
 import { formatTripDates } from '@/features/discovery/filter-trips';
+import { TripAnimalTag } from '@/features/animals/animal-ui';
 import {
   getTripStatus,
   isValidDate,
@@ -122,6 +123,9 @@ export function OwnTripCard({
               : ''}
           </AppText>
         </View>
+      </View>
+      <View style={{ paddingTop: 8 }}>
+        <TripAnimalTag animals={trip.animals} />
       </View>
       <View
         style={[

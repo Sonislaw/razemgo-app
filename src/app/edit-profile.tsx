@@ -26,12 +26,14 @@ import {
 import { ProfileSubpageHeader } from '@/features/profile/profile-ui';
 import type { ProfileSection } from '@/types/profile';
 import { useTheme } from '@/hooks/use-theme';
+import { GroupAnimalFields } from '@/features/animals/animal-fields';
 
 const titles: Record<ProfileSection, string> = {
   crew: 'Nasza ekipa',
   travel: 'Jak podróżujemy',
   interests: 'Co lubimy',
   matching: 'Kogo chcemy poznać?',
+  animals: 'Zwierzęta w naszej ekipie',
 };
 const toggle = <T,>(values: T[], value: T): T[] =>
   values.includes(value)
@@ -40,7 +42,7 @@ const toggle = <T,>(values: T[], value: T): T[] =>
 function isProfileSection(value: unknown): value is ProfileSection {
   return (
     typeof value === 'string' &&
-    ['crew', 'travel', 'interests', 'matching'].includes(value)
+    ['crew', 'travel', 'interests', 'matching', 'animals'].includes(value)
   );
 }
 
@@ -156,6 +158,20 @@ export default function EditProfileScreen() {
               </View>
             </View>
           ) : null}
+        </Card>
+      ) : null}
+      {show('animals') ? (
+        <Card>
+          <SectionTitle title="Zwierzęta w naszej ekipie" />
+          <GroupAnimalFields
+            value={draft.group.animals}
+            onChange={(animals) =>
+              setDraft((current) => ({
+                ...current,
+                group: { ...current.group, animals },
+              }))
+            }
+          />
         </Card>
       ) : null}
       {show('travel') ? (

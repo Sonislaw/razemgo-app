@@ -11,4 +11,5 @@ export interface TravelerProfile {
   matching: MatchingPreferences;
 }
 
-export type ProfileSection = 'crew' | 'travel' | 'interests' | 'matching';
+export type ProfileSection =
+  'crew' | 'travel' | 'interests' | 'matching' | 'animals';

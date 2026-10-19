@@ -35,6 +35,7 @@ import { useMessaging } from '@/features/messaging/messaging-context';
 import { isConversationAccepted } from '@/features/messaging/messaging-state';
 import { GroupAvatar } from '@/features/messaging/messaging-ui';
 import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
+import { AnimalInformation } from '@/features/animals/animal-ui';
 
 export function generateStaticParams() {
   return DEMO_OWN_TRIPS.map((trip) => ({ id: trip.id }));
@@ -155,6 +156,9 @@ export default function OwnTripDetailsScreen() {
                 ))}
               </View>
             ) : null}
+          </Card>
+          <Card>
+            <AnimalInformation animals={trip.animals} />
           </Card>
           <Card style={{ gap: 12 }}>
             <AppText variant="heading" accessibilityRole="header">

@@ -18,6 +18,7 @@ import {
 } from '@/features/discovery/filter-trips';
 import type { OwnedTrip } from '@/types/owned-trip';
 import { useTheme } from '@/hooks/use-theme';
+import { TripAnimalTag } from '@/features/animals/animal-ui';
 
 export function HomeSection({
   title,
@@ -98,6 +99,7 @@ export function NextTripPreview({
             </AppText>
           </View>
         </View>
+        <TripAnimalTag animals={trip.animals} />
         <View
           style={[
             layout.row,
@@ -172,6 +174,7 @@ export function RecommendationPreview({
             </AppText>
           </View>
         </View>
+        <TripAnimalTag animals={trip.animals} />
         <View
           style={[
             layout.row,

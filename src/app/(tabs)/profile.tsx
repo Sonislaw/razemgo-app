@@ -20,6 +20,7 @@ import { formatGroupSize } from '@/features/profile/profile-data';
 import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import { ProfileSectionCard } from '@/features/profile/profile-ui';
 import type { ProfileSection } from '@/types/profile';
+import { animalCountSummary } from '@/features/animals/animal-data';
 
 export default function ProfileScreen() {
   const theme = useTheme();
@@ -120,6 +121,28 @@ export default function ProfileScreen() {
           ) : group.childCount ? (
             <AppText variant="label">
               Przedziały wieku nie zostały podane.
+            </AppText>
+          ) : null}
+        </ProfileSectionCard>
+        <ProfileSectionCard
+          title="Zwierzęta w naszej ekipie"
+          icon="paw"
+          onPress={() => edit('animals')}
+        >
+          {group.animals.animals.length ? (
+            <View style={layout.wrap}>
+              {group.animals.animals.map((animal) => (
+                <Chip key={animal.kind} label={animalCountSummary([animal])} />
+              ))}
+            </View>
+          ) : (
+            <AppText variant="caption" color="textSecondary">
+              Bez zwierząt
+            </AppText>
+          )}
+          {group.animals.welcomesAnimals ? (
+            <AppText variant="caption" color="textSecondary">
+              Zwierzęta innych ekip mile widziane
             </AppText>
           ) : null}
         </ProfileSectionCard>

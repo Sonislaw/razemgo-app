@@ -1,3 +1,4 @@
+import type { TripAnimals } from './animals';
 import type {
   ChildAgeBand,
   LandscapeKind,
@@ -35,6 +36,7 @@ export interface TripForm {
   groupKinds: TravelGroup['kind'][];
   childAgeBands: ChildAgeBand[];
   visibility: TripVisibility;
+  animals: TripAnimals;
 }
 export interface OwnTripsState {
   trips: OwnedTrip[];

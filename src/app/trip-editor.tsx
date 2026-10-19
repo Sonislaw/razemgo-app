@@ -47,6 +47,8 @@ import {
   TripStatusBadge,
 } from '@/features/trips/trip-ui';
 import type { TripForm } from '@/types/owned-trip';
+import { TripAnimalFields } from '@/features/animals/animal-fields';
+import { AnimalInformation } from '@/features/animals/animal-ui';
 
 const toggle = <T,>(values: T[], value: T): T[] =>
   values.includes(value)
@@ -380,6 +382,12 @@ export default function TripEditorScreen() {
                     ))}
                   </View>
                 </View>
+                <Card>
+                  <TripAnimalFields
+                    value={form.animals}
+                    onChange={(animals) => update('animals', animals)}
+                  />
+                </Card>
                 <View style={{ gap: 8 }}>
                   <AppText variant="label">
                     Co chcecie robić? · opcjonalnie
@@ -519,6 +527,7 @@ export default function TripEditorScreen() {
                   <AppText variant="caption">
                     {form.travelModes.join(', ')}
                   </AppText>
+                  <AnimalInformation animals={form.animals} />
                   {form.description ? (
                     <AppText style={{ fontSize: 14, lineHeight: 21 }}>
                       {form.description}

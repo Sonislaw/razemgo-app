@@ -40,6 +40,7 @@ import {
 } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { ChildAgeBand, DiscoveryFilters } from '@/types/travel';
+import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
 
 interface DiscoveryFiltersSheetProps {
   initialFilters: DiscoveryFilters;
@@ -56,6 +57,7 @@ export function DiscoveryFiltersSheet({
   const [draft, setDraft] = useState<DiscoveryFilters>(() => ({
     ...initialFilters,
     childAgeBands: [...initialFilters.childAgeBands],
+    animalKinds: [...(initialFilters.animalKinds ?? [])],
   }));
   const dateRange = resolveDiscoveryRange(draft, DEMO_DATE_RANGES);
   const resultCount = filterProposals(DEMO_PROPOSALS, draft, dateRange).length;
@@ -259,6 +261,30 @@ export function DiscoveryFiltersSheet({
                     accessibilityLabel={'Wiek dzieci: ' + band + ' lat'}
                     selected={draft.childAgeBands.includes(band)}
                     onPress={() => toggleAge(band)}
+                  />
+                ))}
+              </View>
+            </View>
+            <View style={layout.stack}>
+              <AppText variant="label">Zwierzęta na wyjeździe</AppText>
+              <AppText variant="caption" color="textSecondary">
+                Opcjonalnie · możesz wybrać kilka rodzajów
+              </AppText>
+              <View style={layout.wrap}>
+                {ANIMAL_OPTIONS.map(({ kind, label }) => (
+                  <Chip
+                    key={kind}
+                    label={label}
+                    accessibilityLabel={'Zwierzęta na wyjeździe: ' + label}
+                    selected={draft.animalKinds?.includes(kind)}
+                    onPress={() =>
+                      setDraft((current) => ({
+                        ...current,
+                        animalKinds: current.animalKinds?.includes(kind)
+                          ? current.animalKinds.filter((item) => item !== kind)
+                          : [...(current.animalKinds ?? []), kind],
+                      }))
+                    }
                   />
                 ))}
               </View>

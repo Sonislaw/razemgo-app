@@ -45,7 +45,8 @@
     "test:profile": "node --test scripts/profile.test.mjs",
     "test:messaging": "node --test scripts/messaging.test.mjs",
     "test:trips": "node --test scripts/trips.test.mjs",
-    "test:home": "node --test scripts/home.test.mjs"
+    "test:home": "node --test scripts/home.test.mjs",
+    "test:animals": "node --test scripts/animals.test.mjs"
   },
   "private": true
 }

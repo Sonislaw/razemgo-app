@@ -272,7 +272,7 @@ test('finding company passes exact dates, flexibility and preferences into real 
   });
   assert.deepEqual(
     filterProposals(DEMO_PROPOSALS, filters).map((item) => item.trip.id),
-    ['demo-coast', 'demo-forest'],
+    ['demo-forest', 'demo-coast'],
   );
   const flexible = discoveryFiltersForTrip({ ...trip, dateFlexibilityDays: 3 });
   assert.deepEqual(flexible.customDateRange, {

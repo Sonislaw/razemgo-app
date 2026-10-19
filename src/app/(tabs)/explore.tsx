@@ -30,6 +30,7 @@ import { getPreferredChildAges } from '@/features/profile/profile-data';
 import type { TripMode } from '@/types/travel';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import { isArchivedTrip, todayDate } from '@/features/trips/own-trips-state';
+import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
 
 const modes: { mode: TripMode; label: string }[] = [
   { mode: 'planned', label: 'Mam plan' },
@@ -50,7 +51,8 @@ export default function ExploreScreen() {
     Number(filters.dateRangeId !== 'all') +
     Number(Boolean(filters.location.trim())) +
     Number(filters.childAgeBands.length > 0) +
-    Number(Boolean(filters.groupKinds?.length));
+    Number(Boolean(filters.groupKinds?.length)) +
+    Number(Boolean(filters.animalKinds?.length));
   const summary = [
     filters.dateRangeId === 'own-trip' && dateRange
       ? formatTripDates(dateRange)
@@ -59,6 +61,14 @@ export default function ExploreScreen() {
     filters.location.trim(),
     filters.childAgeBands.length
       ? 'Dzieci ' + filters.childAgeBands.join(', ') + ' lat'
+      : '',
+    filters.animalKinds?.length
+      ? 'Zwierzęta: ' +
+        ANIMAL_OPTIONS.filter((option) =>
+          filters.animalKinds!.includes(option.kind),
+        )
+          .map((option) => option.label)
+          .join(', ')
       : '',
   ]
     .filter(Boolean)
@@ -203,7 +213,7 @@ export default function ExploreScreen() {
         ) : (
           <EmptyState
             title="Jeszcze się mijamy"
-            description="Żaden przykładowy plan nie pasuje do tych filtrów. Spróbuj innego regionu, terminu lub wieku dzieci."
+            description="Żaden przykładowy plan nie pasuje do tych filtrów. Spróbuj innego regionu, terminu, wieku dzieci lub rodzaju zwierząt."
             action={
               <Button label="Pokaż wszystkie propozycje" onPress={reset} />
             }

@@ -14,6 +14,7 @@ import {
 } from '@/features/discovery/filter-trips';
 import type { TripProposal } from '@/types/travel';
 import { CompactTripCard } from './compact-trip-card';
+import { TripAnimalTag } from '@/features/animals/animal-ui';
 
 interface DiscoveryTripCardProps extends TripProposal {
   facts: MatchFacts;
@@ -26,6 +27,7 @@ export function DiscoveryTripCard({
   demoScore,
 }: DiscoveryTripCardProps) {
   const theme = useTheme();
+  const score = demoScore;
   const ages = facts.matchingAgeBands.length
     ? facts.matchingAgeBands
     : facts.ageBands;
@@ -35,15 +37,17 @@ export function DiscoveryTripCard({
         <AppText variant="caption" color="primaryStrong" style={styles.flex}>
           {trip.mode === 'planned' ? 'MAM PLAN' : 'SZUKAM POMYSŁU'}
         </AppText>
-        {demoScore !== undefined ? (
+        {score !== undefined ? (
           <View
             style={[
               styles.score,
-              { backgroundColor: theme.positiveBackground },
+              {
+                backgroundColor: theme.positiveBackground,
+              },
             ]}
           >
             <AppText variant="caption" color="positive" style={styles.bold}>
-              {demoScore}% zgodności · demo
+              {score}% zgodności · demo
             </AppText>
           </View>
         ) : null}
@@ -99,6 +103,7 @@ export function DiscoveryTripCard({
           </View>
         ) : null}
       </View>
+      <TripAnimalTag animals={trip.animals} />
       <AppText variant="caption" color="textSecondary">
         {group.name} · {group.adultCount}{' '}
         {group.adultCount === 1 ? 'dorosły' : 'dorosłych'}

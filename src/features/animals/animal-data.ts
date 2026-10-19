@@ -1,5 +1,5 @@
 import type {
-  AnimalCount,
+  Animal,
   AnimalKind,
   GroupAnimals,
   TripAnimals,
@@ -14,39 +14,31 @@ export function emptyAnimals(): GroupAnimals {
   return { animals: [] };
 }
 export function cloneAnimals(value: GroupAnimals): GroupAnimals {
-  return { animals: value.animals.map((item) => ({ ...item })) };
+  return { animals: value.animals.map(({ kind }) => ({ kind })) };
 }
-export function validateAnimalCounts(value: AnimalCount[]): string[] {
+export function validateAnimals(value: Animal[]): string[] {
   return value.some(
-    (item) =>
-      !ANIMAL_OPTIONS.some((option) => option.kind === item.kind) ||
-      !Number.isInteger(item.count) ||
-      item.count < 1 ||
-      item.count > 8,
+    (item) => !ANIMAL_OPTIONS.some((option) => option.kind === item.kind),
   ) || new Set(value.map((item) => item.kind)).size !== value.length
-    ? ['Podaj od 1 do 8 zwierząt każdego wybranego rodzaju.']
+    ? ['Sprawdź wybrane rodzaje zwierząt.']
     : [];
 }
-export function animalCountSummary(animals: AnimalCount[]): string {
+export function animalSummary(animals: Animal[]): string {
   return animals
-    .map(({ kind, count }) => {
-      if (kind === 'dog')
-        return count === 1 ? '1 pies' : count + (count < 5 ? ' psy' : ' psów');
-      if (kind === 'cat')
-        return count === 1 ? '1 kot' : count + (count < 5 ? ' koty' : ' kotów');
-      return count === 1
-        ? '1 inne zwierzę'
-        : count + (count < 5 ? ' inne zwierzęta' : ' innych zwierząt');
-    })
+    .map(
+      ({ kind }) =>
+        ANIMAL_OPTIONS.find((option) => option.kind === kind)?.label ??
+        'Zwierzę',
+    )
     .join(' · ');
 }
 export function tripAnimalSummary(value: TripAnimals): string {
   if (!value.animals.length) return 'Bez zwierząt na tym wyjeździe';
-  if (value.animals.length === 1 && value.animals[0].count === 1)
+  if (value.animals.length === 1)
     return value.animals[0].kind === 'dog'
       ? 'Z psem'
       : value.animals[0].kind === 'cat'
         ? 'Z kotem'
         : 'Ze zwierzęciem';
-  return animalCountSummary(value.animals);
+  return animalSummary(value.animals);
 }

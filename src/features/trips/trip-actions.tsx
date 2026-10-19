@@ -1,3 +1,4 @@
+import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { AppText, Button } from '@/components/ui/primitives';
@@ -37,7 +38,7 @@ export function TripActions({
       }
       onClose={onClose}
     >
-      <AppText variant="label">{trip.title}</AppText>
+      <AppText variant="label">{getTripHeadline(trip)}</AppText>
       {confirm ? (
         <>
           <AppText color="textSecondary">

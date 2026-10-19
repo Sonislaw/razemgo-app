@@ -21,7 +21,7 @@ export function OwnTripFiltersSheet({
   return (
     <BottomSheet title="Filtry moich wyjazdów" onClose={onClose}>
       <ProfileTextField
-        label="Nazwa, miejscowość lub region"
+        label="Opis, miejscowość lub region"
         value={draft.query}
         onChangeText={(query) => setDraft({ ...draft, query })}
         maxLength={80}

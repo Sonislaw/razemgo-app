@@ -1,3 +1,4 @@
+import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
@@ -54,7 +55,7 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
       accessibilityLabel={
         proposal.group.name +
         ', ' +
-        proposal.trip.title +
+        getTripHeadline(proposal.trip) +
         (unread ? ', nieprzeczytane: ' + unread : '')
       }
       onPress={() =>
@@ -87,7 +88,7 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
           ) : null}
         </View>
         <AppText variant="caption" color="primaryStrong" numberOfLines={1}>
-          {proposal.trip.title}
+          {getTripHeadline(proposal.trip)}
         </AppText>
         <View style={layout.row}>
           <AppText
@@ -172,7 +173,7 @@ function InvitationCard({ invitation }: { invitation: ContactInvitation }) {
       </View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={'Zobacz wyjazd: ' + proposal.trip.title}
+        accessibilityLabel={'Zobacz wyjazd: ' + getTripHeadline(proposal.trip)}
         onPress={() =>
           router.push({
             pathname: '/trip/[id]',
@@ -191,7 +192,7 @@ function InvitationCard({ invitation }: { invitation: ContactInvitation }) {
       >
         <Icon name="trips" size={18} />
         <AppText variant="caption" color="primaryStrong" style={{ flex: 1 }}>
-          {proposal.trip.title}
+          {getTripHeadline(proposal.trip)}
         </AppText>
         <Icon name="chevron" size={16} />
       </Pressable>

@@ -1,3 +1,4 @@
+import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import {
@@ -124,7 +125,7 @@ export default function ChatScreen() {
               {proposal.group.name}
             </AppText>
             <AppText variant="caption" color="textSecondary" numberOfLines={1}>
-              {proposal.trip.title}
+              {getTripHeadline(proposal.trip)}
             </AppText>
           </View>
           <IconButton
@@ -135,7 +136,9 @@ export default function ChatScreen() {
         </View>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={'Wspólny wyjazd: ' + proposal.trip.title}
+          accessibilityLabel={
+            'Wspólny wyjazd: ' + getTripHeadline(proposal.trip)
+          }
           onPress={() =>
             router.push({
               pathname: '/trip/[id]',

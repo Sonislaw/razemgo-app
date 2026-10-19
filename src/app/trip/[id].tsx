@@ -1,3 +1,4 @@
+import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import {
@@ -84,7 +85,7 @@ export default function TripDetailsScreen() {
             : 'SZUKAM POMYSŁU · CEL DO USTALENIA'}
         </AppText>
         <AppText variant="title" accessibilityRole="header">
-          {trip.title}
+          {getTripHeadline(trip)}
         </AppText>
         <View style={layout.row}>
           <Icon name="pin" />

@@ -1,3 +1,4 @@
+import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { TextInput, View } from 'react-native';
@@ -89,11 +90,11 @@ export function TripContactAction({ proposal }: { proposal: TripProposal }) {
         >
           <AppText variant="label">{group.name}</AppText>
           <AppText variant="caption" color="primaryStrong">
-            {trip.title}
+            {getTripHeadline(trip)}
           </AppText>
           {ownTrip ? (
             <AppText variant="caption" color="textSecondary">
-              Wasz wyjazd: {ownTrip.title}
+              Wasz wyjazd: {getTripHeadline(ownTrip)}
             </AppText>
           ) : null}
           <AppText

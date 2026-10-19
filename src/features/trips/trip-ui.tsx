@@ -1,3 +1,4 @@
+import { getTripHeadline } from '@/features/trips/trip-headline';
 import { Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { AppText, IconButton, layout } from '@/components/ui/primitives';
@@ -97,7 +98,7 @@ export function OwnTripCard({
       <View style={[layout.row, { justifyContent: 'space-between' }]}>
         <TripStatusBadge status={getTripStatus(trip, todayDate())} />
         <IconButton
-          label={'Opcje wyjazdu: ' + trip.title}
+          label={'Opcje wyjazdu: ' + getTripHeadline(trip)}
           icon="more"
           onPress={onMenu}
         />
@@ -111,7 +112,7 @@ export function OwnTripCard({
             style={{ fontSize: 17, lineHeight: 22 }}
             numberOfLines={2}
           >
-            {trip.title}
+            {getTripHeadline(trip)}
           </AppText>
           <AppText variant="caption" color="textSecondary" numberOfLines={2}>
             {ownTripPlace(trip)}
@@ -146,7 +147,7 @@ export function OwnTripCard({
         </AppText>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={'Szczegóły wyjazdu: ' + trip.title}
+          accessibilityLabel={'Szczegóły wyjazdu: ' + getTripHeadline(trip)}
           onPress={() =>
             router.push({ pathname: '/trips/[id]', params: { id: trip.id } })
           }

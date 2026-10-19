@@ -20,7 +20,7 @@ import { formatGroupSize } from '@/features/profile/profile-data';
 import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import { ProfileSectionCard } from '@/features/profile/profile-ui';
 import type { ProfileSection } from '@/types/profile';
-import { animalCountSummary } from '@/features/animals/animal-data';
+import { animalSummary } from '@/features/animals/animal-data';
 
 export default function ProfileScreen() {
   const theme = useTheme();
@@ -132,7 +132,7 @@ export default function ProfileScreen() {
           {group.animals.animals.length ? (
             <View style={layout.wrap}>
               {group.animals.animals.map((animal) => (
-                <Chip key={animal.kind} label={animalCountSummary([animal])} />
+                <Chip key={animal.kind} label={animalSummary([animal])} />
               ))}
             </View>
           ) : (

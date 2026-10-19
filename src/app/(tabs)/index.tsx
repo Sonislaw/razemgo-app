@@ -1,3 +1,4 @@
+import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { useState } from 'react';
@@ -275,7 +276,7 @@ export default function HomeScreen() {
               <Card style={{ gap: 8 }}>
                 <AppText variant="label" style={{ fontSize: 16 }}>
                   {draft
-                    ? draft.title
+                    ? getTripHeadline(draft)
                     : ownTrips.trips.length
                       ? 'Czas na kolejny wspólny wyjazd'
                       : 'Zaplanujcie pierwszą przygodę'}

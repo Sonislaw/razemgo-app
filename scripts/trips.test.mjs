@@ -28,6 +28,7 @@ import {
   resolveDiscoveryRange,
   sharedNights,
 } from '../src/features/discovery/filter-trips.ts';
+import { getTripHeadline } from '../src/features/trips/trip-headline.ts';
 const today = '2026-10-18';
 const profile = {
   group: MY_GROUP,
@@ -56,6 +57,97 @@ const save = (state, draft, id, values = form()) =>
     today,
   });
 
+test('trip headlines use the first eight description words and normalize whitespace', () => {
+  const trip = {
+    ...MY_TRIPS[0],
+    description:
+      '  Plaża,\nrowery  i dużo czasu na wspólną zabawę. Spokojny weekend nad morzem. ',
+  };
+  assert.equal(
+    getTripHeadline(trip),
+    'Plaża, rowery i dużo czasu na wspólną zabawę…',
+  );
+  assert.equal(
+    getTripHeadline({ ...trip, description: '  Krótki opis.  ' }),
+    'Krótki opis.',
+  );
+  assert.equal(
+    getTripHeadline({ ...trip, description: 'Przygoda 🚐🌲' }),
+    'Przygoda 🚐🌲',
+  );
+  assert.equal(
+    getTripHeadline({ ...trip, title: 'Stara nazwa' }),
+    getTripHeadline(trip),
+  );
+});
+
+test('long headlines end at a word boundary and preserve Unicode characters', () => {
+  const description = 'Rodzinnepodróżowanie '.repeat(9).trim();
+  const headline = getTripHeadline({ ...MY_TRIPS[0], description });
+  assert.ok(Array.from(headline).length <= 81);
+  assert.match(headline, /Rodzinnepodróżowanie…$/u);
+  const emojiHeadline = getTripHeadline({
+    ...MY_TRIPS[0],
+    description: '🚐'.repeat(100),
+  });
+  assert.equal(emojiHeadline, '🚐'.repeat(80) + '…');
+});
+
+test('empty descriptions get a destination or area label and unfinished drafts stay readable', () => {
+  assert.equal(
+    getTripHeadline({ ...MY_TRIPS[0], description: ' \n ' }),
+    'Wyjazd · Chłapowo',
+  );
+  assert.equal(
+    getTripHeadline({ ...MY_TRIPS[1], description: '' }),
+    'Szukamy pomysłu · Kaszuby',
+  );
+  const blank = tripFromForm(
+    newTripForm(profile),
+    'blank',
+    MY_GROUP.id,
+    'draft',
+  );
+  assert.equal(getTripHeadline(blank), 'Wyjazd do zaplanowania');
+});
+
+test('publishing and editing need no name or description and ignore legacy title input', () => {
+  const values = { ...form(), description: '', title: 'Stara nazwa' };
+  assert.deepEqual(validateTripForm(values), []);
+  const state = save(initial(), false, undefined, values);
+  const trip = state.trips.at(-1);
+  assert.equal(Object.hasOwn(trip, 'title'), false);
+  assert.equal(Object.hasOwn(toTripForm(trip), 'title'), false);
+  assert.equal(Object.hasOwn(newTripForm(profile), 'title'), false);
+  assert.equal(getTripHeadline(trip), 'Wyjazd · Chłapowo');
+  const updated = save(state, false, trip.id, {
+    ...values,
+    description: 'Wspólne ognisko nad morzem',
+  });
+  assert.equal(
+    getTripHeadline(updated.trips.at(-1)),
+    'Wspólne ognisko nad morzem',
+  );
+  assert.equal(updated.trips.at(-1).id, trip.id);
+});
+
+test('own-trip search also finds words beyond the short description excerpt', () => {
+  const description =
+    'Raz dwa trzy cztery pięć sześć siedem osiem dziewięć DziesiąteHasło';
+  const state = save(initial(), false, undefined, { ...form(), description });
+  const matches = selectOwnTrips(
+    state.trips,
+    { ...EMPTY_TRIP_FILTERS, query: 'dziesiatehaslo' },
+    false,
+    today,
+  );
+  assert.deepEqual(
+    matches.map((trip) => trip.id),
+    [state.lastSavedId],
+  );
+  assert.ok(!getTripHeadline(matches[0]).includes('DziesiąteHasło'));
+});
+
 test('dates reject rollover, require a night and stay stable across time changes', () => {
   assert.equal(isValidDate('2027-02-31'), false);
   assert.equal(isValidDate('2028-02-29'), true);
@@ -77,7 +169,7 @@ test('drafts may be incomplete and never enter discovery or crash date rendering
   const state = save(initial(), true, undefined, blank);
   const draft = state.trips.at(-1);
   assert.equal(draft.status, 'draft');
-  assert.equal(draft.title, 'Nowy wyjazd');
+  assert.equal(getTripHeadline(draft), 'Wyjazd do zaplanowania');
   assert.equal(isSearchingTrip(draft, today), false);
   assert.equal(discoveryFiltersForTrip(draft).customDateRange, undefined);
   assert.equal(
@@ -94,10 +186,10 @@ test('publishing adds a complete plan; editing retains its id without duplicates
   assert.equal(state.lastSavedId, 'local-trip-1');
   const updated = save(state, false, 'local-trip-1', {
     ...form(),
-    title: 'Zmieniona nazwa',
+    description: 'Zmieniony opis',
   });
   assert.equal(updated.trips.length, 3);
-  assert.equal(updated.trips.at(-1).title, 'Zmieniona nazwa');
+  assert.equal(getTripHeadline(updated.trips.at(-1)), 'Zmieniony opis');
   assert.equal(updated.revision, state.revision + 1);
 });
 
@@ -195,7 +287,8 @@ test('publication rejects past dates; copying an old plan creates an editable dr
   }).trips.at(-1);
   assert.equal(copy.status, 'draft');
   assert.equal(copy.visibility, 'private');
-  assert.match(copy.title, /kopia/);
+  assert.notEqual(copy.id, archived.trips[0].id);
+  assert.equal(getTripHeadline(copy), getTripHeadline(archived.trips[0]));
 });
 
 test('duplicate and draft editing clone nested fields rather than mutating the original or fixtures', () => {

@@ -7,7 +7,7 @@ import type {
 } from '../../types/owned-trip';
 import type { TravelerProfile } from '../../types/profile';
 import type { DiscoveryFilters } from '../../types/travel';
-import { cloneAnimals, validateAnimalCounts } from '../animals/animal-data.ts';
+import { cloneAnimals, validateAnimals } from '../animals/animal-data.ts';
 
 export const TRIP_STATUS_LABELS: Record<TripStatus, string> = {
   draft: 'Szkic',
@@ -93,7 +93,6 @@ export function toTripForm(trip: OwnedTrip): TripForm {
   const place = trip.mode === 'planned' ? trip.destination : trip.travelArea;
   return {
     mode: trip.mode,
-    title: trip.title,
     startDate: trip.startDate,
     endDate: trip.endDate,
     placeName: place.name,
@@ -111,7 +110,6 @@ export function toTripForm(trip: OwnedTrip): TripForm {
 export function newTripForm(profile: TravelerProfile): TripForm {
   return {
     mode: 'planned',
-    title: '',
     startDate: '',
     endDate: '',
     placeName: '',
@@ -137,9 +135,7 @@ export function validateTripForm(form: TripForm, step?: 1 | 2 | 3): string[] {
       );
   }
   if (!step || step === 2) {
-    errors.push(...validateAnimalCounts(form.animals.animals));
-    if (!form.title.trim() || form.title.trim().length > 64)
-      errors.push('Podaj nazwę wyjazdu (maksymalnie 64 znaki).');
+    errors.push(...validateAnimals(form.animals.animals));
     if (!form.placeName.trim() || !form.region.trim())
       errors.push(
         form.mode === 'planned'
@@ -162,7 +158,6 @@ export function tripFromForm(
   const base = {
     id,
     groupId,
-    title: form.title.trim() || 'Nowy wyjazd',
     startDate: form.startDate,
     endDate: form.endDate,
     description: form.description.trim(),
@@ -214,7 +209,7 @@ export function selectOwnTrips(
       if (
         query &&
         !normalizeSearch(
-          `${trip.title} ${place.name} ${place.region}`,
+          `${trip.description} ${place.name} ${place.region}`,
         ).includes(query)
       )
         return false;
@@ -308,7 +303,6 @@ export function ownTripsReducer(
     };
   if (action.type === 'duplicate') {
     const form = toTripForm(trip);
-    form.title = form.title.slice(0, 56) + ' (kopia)';
     form.visibility = 'private';
     return {
       ...state,

@@ -3,7 +3,7 @@ import type { ChildAgeBand } from '../../types/travel';
 import {
   cloneAnimals,
   emptyAnimals,
-  validateAnimalCounts,
+  validateAnimals,
 } from '../animals/animal-data.ts';
 
 export function createEmptyProfile(): TravelerProfile {
@@ -63,7 +63,7 @@ export function normalizeProfile(profile: TravelerProfile): TravelerProfile {
 export function validateProfile(profile: TravelerProfile): string[] {
   const errors: string[] = [];
   const { group, matching } = profile;
-  errors.push(...validateAnimalCounts(group.animals.animals));
+  errors.push(...validateAnimals(group.animals.animals));
   if (group.name.trim().length < 2 || group.name.trim().length > 40)
     errors.push('Nazwa ekipy powinna mieć od 2 do 40 znaków.');
   if (

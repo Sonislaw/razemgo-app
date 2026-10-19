@@ -1,3 +1,4 @@
+import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { AppText, Button, layout } from '@/components/ui/primitives';
@@ -53,8 +54,9 @@ export function DiscoveryTripCard({
         variant="heading"
         accessibilityRole="header"
         style={styles.title}
+        numberOfLines={2}
       >
-        {trip.title}
+        {getTripHeadline(trip)}
       </AppText>
       <View style={layout.row}>
         <Icon name="pin" size={16} />

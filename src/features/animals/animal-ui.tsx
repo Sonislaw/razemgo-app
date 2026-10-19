@@ -2,7 +2,7 @@ import { View } from 'react-native';
 import { AppText, layout } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import type { TripAnimals } from '@/types/animals';
-import { animalCountSummary, tripAnimalSummary } from './animal-data';
+import { animalSummary, tripAnimalSummary } from './animal-data';
 
 export function TripAnimalTag({ animals }: { animals: TripAnimals }) {
   return (
@@ -24,7 +24,7 @@ export function AnimalInformation({ animals }: { animals: TripAnimals }) {
         </AppText>
       </View>
       <AppText variant="label">
-        {animalCountSummary(animals.animals) || 'Bez zwierząt'}
+        {animalSummary(animals.animals) || 'Bez zwierząt'}
       </AppText>
     </View>
   );

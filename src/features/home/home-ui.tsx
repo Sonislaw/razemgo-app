@@ -1,3 +1,4 @@
+import { getTripHeadline } from '@/features/trips/trip-headline';
 import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 import { AppText, layout } from '@/components/ui/primitives';
@@ -75,7 +76,9 @@ export function NextTripPreview({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={'Szczegóły najbliższego wyjazdu: ' + trip.title}
+      accessibilityLabel={
+        'Szczegóły najbliższego wyjazdu: ' + getTripHeadline(trip)
+      }
       onPress={onPress}
       style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
     >
@@ -88,7 +91,7 @@ export function NextTripPreview({
               style={{ fontSize: 17, lineHeight: 22 }}
               numberOfLines={2}
             >
-              {trip.title}
+              {getTripHeadline(trip)}
             </AppText>
             <AppText variant="caption" color="textSecondary" numberOfLines={2}>
               {ownTripPlace(trip)}
@@ -147,7 +150,7 @@ export function RecommendationPreview({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={
-        'Zobacz propozycję: ' + trip.title + ', ' + group.name
+        'Zobacz propozycję: ' + getTripHeadline(trip) + ', ' + group.name
       }
       onPress={onPress}
       style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
@@ -161,7 +164,7 @@ export function RecommendationPreview({
               style={{ fontSize: 16, lineHeight: 22 }}
               numberOfLines={2}
             >
-              {trip.title}
+              {getTripHeadline(trip)}
             </AppText>
             <AppText variant="caption" color="textSecondary" numberOfLines={1}>
               {group.name}

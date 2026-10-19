@@ -29,12 +29,16 @@ import { useProfile } from '@/features/profile/profile-context';
 import { getPreferredChildAges } from '@/features/profile/profile-data';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
+import { getTripHeadline } from '@/features/trips/trip-headline';
 
 export default function ExploreScreen() {
   const theme = useTheme();
   const { filters, setFilters, sort, setSort } = useDiscovery();
   const { profile } = useProfile();
   const { state: ownTrips } = useOwnTrips();
+  const sourceTrip = ownTrips.trips.find(
+    (trip) => trip.id === filters.sourceTripId,
+  );
   const preferredAges = getPreferredChildAges(profile, filters.childAgeBands);
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
@@ -91,8 +95,7 @@ export default function ExploreScreen() {
               style={{ flex: 1 }}
             >
               Dla wyjazdu:{' '}
-              {ownTrips.trips.find((trip) => trip.id === filters.sourceTripId)
-                ?.title ?? 'zapisane kryteria'}
+              {sourceTrip ? getTripHeadline(sourceTrip) : 'zapisane kryteria'}
               {filters.groupKinds?.length ? ' · wybrane towarzystwo' : ''}
             </AppText>
             <IconButton

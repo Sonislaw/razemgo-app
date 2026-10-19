@@ -1,3 +1,4 @@
+import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
@@ -296,12 +297,6 @@ export default function TripEditorScreen() {
             ) : step === 2 ? (
               <>
                 <ProfileTextField
-                  label="Nazwa wyjazdu"
-                  value={form.title}
-                  onChangeText={(value) => update('title', value)}
-                  maxLength={64}
-                />
-                <ProfileTextField
                   label={
                     form.mode === 'planned'
                       ? 'Miejscowość'
@@ -340,12 +335,6 @@ export default function TripEditorScreen() {
                     ))}
                   </View>
                 </View>
-                <Card>
-                  <TripAnimalFields
-                    value={form.animals}
-                    onChange={(animals) => update('animals', animals)}
-                  />
-                </Card>
                 <View style={{ gap: 8 }}>
                   <AppText variant="label">
                     Co chcecie robić? · opcjonalnie
@@ -369,7 +358,7 @@ export default function TripEditorScreen() {
                   onChangeText={(value) => update('description', value)}
                   maxLength={1000}
                   multiline
-                  hint="Opcjonalnie. Napiszcie, jaki macie pomysł na wspólny czas."
+                  hint="Opcjonalnie. Początek opisu pokażemy na karcie wyjazdu — opowiedzcie, co planujecie."
                 />
                 <View style={{ gap: 8 }}>
                   <AppText variant="label">Klimat wyjazdu</AppText>
@@ -391,6 +380,10 @@ export default function TripEditorScreen() {
                     ))}
                   </View>
                 </View>
+                <TripAnimalFields
+                  value={form.animals}
+                  onChange={(animals) => update('animals', animals)}
+                />
               </>
             ) : (
               <>
@@ -471,7 +464,9 @@ export default function TripEditorScreen() {
                     PODGLĄD PLANU
                   </AppText>
                   <TripStatusBadge status={previewStatus} />
-                  <AppText variant="heading">{preview.title}</AppText>
+                  <AppText variant="heading">
+                    {getTripHeadline(preview)}
+                  </AppText>
                   <AppText variant="label">
                     {form.mode === 'planned' ? 'Mam plan' : 'Szukam pomysłu'} ·{' '}
                     {ownTripPlace(preview)}

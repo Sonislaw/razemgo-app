@@ -1,7 +1,5 @@
 import { View } from 'react-native';
 import { AppText, Chip, layout } from '@/components/ui/primitives';
-import { Icon } from '@/components/ui/icon';
-import { ProfileCounter } from '@/features/profile/profile-form-fields';
 import { ANIMAL_OPTIONS } from './animal-data';
 import type { GroupAnimals } from '@/types/animals';
 
@@ -13,7 +11,7 @@ export function GroupAnimalFields({ value, onChange }: AnimalFieldsProps) {
   return (
     <View style={{ gap: 12 }}>
       <AppText variant="caption" color="textSecondary">
-        Opcjonalnie · wybierzcie rodzaj i liczbę zwierząt.
+        Opcjonalnie · zaznaczcie zwierzęta, z którymi podróżujecie.
       </AppText>
       <View style={layout.wrap}>
         <Chip
@@ -32,44 +30,19 @@ export function GroupAnimalFields({ value, onChange }: AnimalFieldsProps) {
                 ...value,
                 animals: value.animals.some((item) => item.kind === kind)
                   ? value.animals.filter((item) => item.kind !== kind)
-                  : [...value.animals, { kind, count: 1 }],
+                  : [...value.animals, { kind }],
               })
             }
           />
         ))}
       </View>
-      {value.animals.map((item) => (
-        <ProfileCounter
-          key={item.kind}
-          label={
-            'Liczba zwierząt: ' +
-            ANIMAL_OPTIONS.find((option) => option.kind === item.kind)!.label
-          }
-          value={item.count}
-          min={1}
-          max={8}
-          onChange={(count) =>
-            onChange({
-              ...value,
-              animals: value.animals.map((animal) =>
-                animal.kind === item.kind ? { ...animal, count } : animal,
-              ),
-            })
-          }
-        />
-      ))}
     </View>
   );
 }
 export function TripAnimalFields(props: AnimalFieldsProps) {
   return (
-    <View style={{ gap: 12 }}>
-      <View style={layout.row}>
-        <Icon name="paw" size={22} />
-        <AppText variant="heading" style={{ flex: 1 }}>
-          Zwierzęta na tym wyjeździe
-        </AppText>
-      </View>
+    <View style={{ gap: 8 }}>
+      <AppText variant="label">Zwierzęta na tym wyjeździe</AppText>
       <GroupAnimalFields {...props} />
     </View>
   );

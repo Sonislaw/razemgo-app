@@ -25,7 +25,7 @@ import {
   selectHomeRecommendations,
 } from '../src/features/discovery/filter-trips.ts';
 import {
-  animalCountSummary,
+  animalSummary,
   emptyAnimals,
   tripAnimalSummary,
 } from '../src/features/animals/animal-data.ts';
@@ -43,9 +43,12 @@ const owned = () => ({
   matching: { groupKinds: [], childAgeBands: [] },
 });
 
-test('animal profiles keep optional animal counts and discard the removed welcoming preference', () => {
+test('animal profiles keep optional species and discard removed counts and welcoming preferences', () => {
   const value = profile();
-  value.group.animals = { animals: [], welcomesAnimals: true };
+  value.group.animals = {
+    animals: [{ kind: 'dog', count: 2 }],
+    welcomesAnimals: true,
+  };
   const normalized = normalizeProfile(value);
   assert.deepEqual(validateProfile(normalized), []);
   assert.equal(
@@ -53,7 +56,8 @@ test('animal profiles keep optional animal counts and discard the removed welcom
     false,
   );
   assert.equal(value.group.animals.welcomesAnimals, true);
-  assert.deepEqual(normalized.group.animals.animals, []);
+  assert.deepEqual(normalized.group.animals.animals, [{ kind: 'dog' }]);
+  assert.equal(value.group.animals.animals[0].count, 2);
 });
 
 test('new trips inherit a separate editable animal list without any confirmation state', () => {
@@ -63,8 +67,9 @@ test('new trips inherit a separate editable animal list without any confirmation
   assert.equal(draft.animals.animals[0].kind, 'dog');
   assert.equal(Object.hasOwn(draft.animals, 'attendance'), false);
   assert.equal(Object.hasOwn(draft.animals, 'welcomesAnimals'), false);
-  draft.animals.animals[0].count = 2;
-  assert.equal(value.group.animals.animals[0].count, 1);
+  assert.equal(Object.hasOwn(draft.animals.animals[0], 'count'), false);
+  draft.animals.animals[0].kind = 'cat';
+  assert.equal(value.group.animals.animals[0].kind, 'dog');
   draft.animals = emptyAnimals();
   assert.equal(value.group.animals.animals.length, 1);
   const form = { ...toTripForm(owned()), animals: emptyAnimals() };
@@ -168,14 +173,19 @@ test('animals and contact preferences do not exclude or reorder recommendations,
   assert.equal(discoveryFiltersForTrip(owned()).animalKinds, undefined);
 });
 
-test('trip edit and duplicate preserve animal counts independently of the original and profile', () => {
-  const initial = createOwnTripsState([owned()]);
+test('trip edit and duplicate preserve species independently and discard legacy counts', () => {
+  const legacy = {
+    ...owned(),
+    animals: { animals: [{ kind: 'dog', count: 2 }] },
+  };
+  const initial = createOwnTripsState([legacy]);
   const copy = ownTripsReducer(initial, {
     type: 'duplicate',
     id: initial.trips[0].id,
   });
   const form = toTripForm(copy.trips[1]);
-  form.animals.animals[0].count = 2;
+  assert.equal(Object.hasOwn(form.animals.animals[0], 'count'), false);
+  form.animals.animals[0].kind = 'cat';
   const saved = ownTripsReducer(copy, {
     type: 'save',
     id: copy.trips[1].id,
@@ -184,22 +194,27 @@ test('trip edit and duplicate preserve animal counts independently of the origin
     draft: true,
     today: '2026-10-19',
   });
-  assert.equal(saved.trips[1].animals.animals[0].count, 2);
-  assert.equal(saved.trips[0].animals.animals[0].count, 1);
+  assert.deepEqual(saved.trips[1].animals.animals, [{ kind: 'cat' }]);
+  assert.deepEqual(saved.trips[0].animals.animals, [{ kind: 'dog' }]);
   assert.equal(Object.hasOwn(saved.trips[0].animals, 'welcomesAnimals'), false);
   assert.equal(Object.hasOwn(saved.trips[1].animals, 'welcomesAnimals'), false);
-  assert.equal(MY_GROUP.animals.animals[0].count, 1);
+  assert.deepEqual(MY_GROUP.animals.animals, [{ kind: 'dog' }]);
+  assert.equal(legacy.animals.animals[0].count, 2);
 });
 
-test('animal labels and count validation are ordinary form data', () => {
+test('animal labels only signal species and validation accepts optional selections', () => {
   assert.equal(
     tripAnimalSummary(emptyAnimals()),
     'Bez zwierząt na tym wyjeździe',
   );
   assert.equal(tripAnimalSummary(MY_TRIPS[0].animals), 'Z psem');
-  assert.equal(animalCountSummary([{ kind: 'dog', count: 2 }]), '2 psy');
+  assert.equal(animalSummary([{ kind: 'dog' }, { kind: 'cat' }]), 'Pies · Kot');
+  assert.equal(
+    tripAnimalSummary({ animals: [{ kind: 'dog', count: 2 }] }),
+    'Z psem',
+  );
   const form = toTripForm(owned());
-  form.animals.animals[0].count = 0;
+  form.animals.animals[0].kind = 'unknown';
   assert.ok(validateTripForm(form).some((error) => error.includes('zwierząt')));
   form.animals = emptyAnimals();
   assert.deepEqual(validateTripForm(form), []);

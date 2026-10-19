@@ -1,3 +1,4 @@
+import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
@@ -115,7 +116,7 @@ export default function OwnTripDetailsScreen() {
               variant="title"
               style={{ fontSize: 26, lineHeight: 32 }}
             >
-              {trip.title}
+              {getTripHeadline(trip)}
             </AppText>
             <AppText variant="caption" color="primaryStrong">
               {trip.mode === 'planned'

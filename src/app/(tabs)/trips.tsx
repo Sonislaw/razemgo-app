@@ -1,3 +1,4 @@
+import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -97,7 +98,9 @@ function TripsContent() {
             >
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel={'Zobacz zapisany wyjazd: ' + notice.title}
+                accessibilityLabel={
+                  'Zobacz zapisany wyjazd: ' + getTripHeadline(notice)
+                }
                 onPress={() =>
                   router.push({
                     pathname: '/trips/[id]',
@@ -107,7 +110,7 @@ function TripsContent() {
                 style={{ flex: 1, minHeight: 48, justifyContent: 'center' }}
               >
                 <AppText variant="label" color="positive">
-                  Zapisano: {notice.title}
+                  Zapisano: {getTripHeadline(notice)}
                 </AppText>
                 <AppText variant="caption" color="textSecondary">
                   Zobacz wyjazd →

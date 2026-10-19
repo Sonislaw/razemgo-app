@@ -21,7 +21,6 @@ export type OwnedTrip = TripPlan & {
 };
 export interface TripForm {
   mode: TripMode;
-  title: string;
   startDate: string;
   endDate: string;
   placeName: string;

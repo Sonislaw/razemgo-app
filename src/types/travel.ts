@@ -23,7 +23,6 @@ export interface DateRange {
 interface TripBase extends DateRange {
   id: string;
   groupId: string;
-  title: string;
   description: string;
   interests: string[];
   landscape: LandscapeKind;

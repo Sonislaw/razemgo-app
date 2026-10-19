@@ -43,7 +43,7 @@ export const MY_GROUP: TravelGroup = {
   homeLocation: 'Okolice Gdańska',
   travelModes: ['Przyczepa', 'Samochód'],
   interests: ['Rowery', 'Spokojny wypoczynek', 'Ognisko'],
-  animals: { animals: [{ kind: 'dog', count: 1 }] },
+  animals: { animals: [{ kind: 'dog' }] },
 };
 export const DEMO_GROUPS: TravelGroup[] = [
   {
@@ -56,7 +56,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
     homeLocation: 'Okolice Krakowa',
     travelModes: ['Przyczepa'],
     interests: ['Rowery', 'Plaża', 'Spokojny wypoczynek'],
-    animals: { animals: [{ kind: 'dog', count: 1 }] },
+    animals: { animals: [{ kind: 'dog' }] },
   },
   {
     id: 'demo-2',
@@ -80,7 +80,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
     homeLocation: 'Okolice Poznania',
     travelModes: ['Van'],
     interests: ['Wędrówki', 'Przyroda', 'Fotografia'],
-    animals: { animals: [{ kind: 'cat', count: 1 }] },
+    animals: { animals: [{ kind: 'cat' }] },
   },
   {
     id: 'demo-4',
@@ -116,17 +116,16 @@ export const DEMO_GROUPS: TravelGroup[] = [
     homeLocation: 'Okolice Łodzi',
     travelModes: ['Kamper'],
     interests: ['Wędrówki', 'Rowery', 'Ognisko'],
-    animals: { animals: [{ kind: 'dog', count: 2 }] },
+    animals: { animals: [{ kind: 'dog' }] },
   },
 ];
 export const DEMO_TRIPS: TripPlan[] = [
   {
     id: 'demo-coast',
-    animals: { animals: [{ kind: 'dog', count: 1 }] },
+    animals: { animals: [{ kind: 'dog' }] },
 
     groupId: 'demo-1',
     mode: 'planned',
-    title: 'Małe kroki, wielkie morze',
     destination: { name: 'Chłapowo', region: 'Pomorze' },
     startDate: '2027-05-22',
     endDate: '2027-05-25',
@@ -141,7 +140,6 @@ export const DEMO_TRIPS: TripPlan[] = [
 
     groupId: 'demo-2',
     mode: 'planned',
-    title: 'Poranki nad jeziorem',
     destination: { name: 'Mikołajki', region: 'Mazury' },
     startDate: '2027-06-04',
     endDate: '2027-06-07',
@@ -152,11 +150,10 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-mountains',
-    animals: { animals: [{ kind: 'cat', count: 1 }] },
+    animals: { animals: [{ kind: 'cat' }] },
 
     groupId: 'demo-3',
     mode: 'flexible',
-    title: 'Gdzieś bliżej gór',
     travelArea: { name: 'Sudety', region: 'Dolny Śląsk' },
     startDate: '2027-05-21',
     endDate: '2027-05-24',
@@ -171,7 +168,6 @@ export const DEMO_TRIPS: TripPlan[] = [
 
     groupId: 'demo-4',
     mode: 'flexible',
-    title: 'Weekend w rytmie lasu',
     travelArea: { name: 'Bory Tucholskie', region: 'Pomorze' },
     startDate: '2027-05-21',
     endDate: '2027-05-23',
@@ -186,7 +182,6 @@ export const DEMO_TRIPS: TripPlan[] = [
 
     groupId: 'demo-5',
     mode: 'planned',
-    title: 'Słońce, plaża i planszówki',
     destination: { name: 'Łeba', region: 'Pomorze' },
     startDate: '2027-06-18',
     endDate: '2027-06-21',
@@ -197,11 +192,10 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-bieszczady',
-    animals: { animals: [{ kind: 'dog', count: 2 }] },
+    animals: { animals: [{ kind: 'dog' }] },
 
     groupId: 'demo-6',
     mode: 'planned',
-    title: 'Razem na połoniny',
     destination: { name: 'Wetlina', region: 'Bieszczady' },
     startDate: '2027-06-05',
     endDate: '2027-06-08',
@@ -214,16 +208,15 @@ export const DEMO_TRIPS: TripPlan[] = [
 export const MY_TRIPS: TripPlan[] = [
   {
     id: 'demo-my-coast',
-    animals: { animals: [{ kind: 'dog', count: 1 }] },
+    animals: { animals: [{ kind: 'dog' }] },
 
     groupId: MY_GROUP.id,
     mode: 'planned',
-    title: 'Nasz weekend nad morzem',
     destination: { name: 'Chłapowo', region: 'Pomorze' },
     startDate: '2027-05-21',
     endDate: '2027-05-24',
     description:
-      'Przykładowy plan: przyczepa, rowery i rodzinny czas na plaży.',
+      'Przyczepa, rowery i rodzinny czas na plaży. Chętnie poznamy inne ekipy nad morzem.',
     interests: ['Rowery', 'Plaża'],
     landscape: 'coast',
   },
@@ -233,12 +226,11 @@ export const MY_TRIPS: TripPlan[] = [
 
     groupId: MY_GROUP.id,
     mode: 'flexible',
-    title: 'Czerwiec? Wybierzmy się razem',
     travelArea: { name: 'Kaszuby', region: 'Pomorze' },
     startDate: '2027-06-04',
     endDate: '2027-06-07',
     description:
-      'Przykładowa dostępność: mamy wolny termin, miejsce wybierzemy z towarzyszami.',
+      'Mamy wolny termin i ochotę na przygodę. Miejsce wybierzemy razem z towarzyszami.',
     interests: ['Ognisko', 'Spokojny wypoczynek'],
     landscape: 'lake',
   },

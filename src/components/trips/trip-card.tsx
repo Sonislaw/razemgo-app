@@ -1,3 +1,4 @@
+import { getTripHeadline } from '@/features/trips/trip-headline';
 import { StyleSheet, View } from 'react-native';
 import { AppText, Chip, layout } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
@@ -43,7 +44,7 @@ export function TripCard({
           </AppText>
         </View>
         <AppText variant="heading" accessibilityRole="header">
-          {trip.title}
+          {getTripHeadline(trip)}
         </AppText>
         <View style={layout.row}>
           <Icon name="pin" size={17} />

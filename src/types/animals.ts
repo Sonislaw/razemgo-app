@@ -1,9 +1,8 @@
 export type AnimalKind = 'dog' | 'cat' | 'other';
-export interface AnimalCount {
+export interface Animal {
   kind: AnimalKind;
-  count: number;
 }
 export interface GroupAnimals {
-  animals: AnimalCount[];
+  animals: Animal[];
 }
 export type TripAnimals = GroupAnimals;

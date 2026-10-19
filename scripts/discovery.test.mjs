@@ -432,7 +432,6 @@ test('date, destination and child filters combine with AND', () => {
     results.map(({ trip }) => trip.id),
     ['demo-coast'],
   );
-  assert.notEqual(results[0].group.homeLocation, 'Okolice Gdańska');
 });
 
 test('multiple age bands use OR and exclude groups without matching ages', () => {
@@ -533,7 +532,7 @@ test('selecting both types includes all plans regardless of checkbox selection o
   }
 });
 
-test('search uses the destination or travel area, never the home location', () => {
+test('search uses the destination or travel area', () => {
   assert.equal(
     filterProposals(DEMO_PROPOSALS, { ...INITIAL_FILTERS, location: 'Krakowa' })
       .length,

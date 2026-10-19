@@ -15,7 +15,6 @@ export function createEmptyProfile(): TravelerProfile {
       adultCount: 2,
       childCount: 0,
       childAgeBands: [],
-      homeLocation: '',
       travelModes: [],
       interests: [],
       animals: emptyAnimals(),
@@ -37,7 +36,11 @@ export function getPreferredChildAges(
 export function cloneProfile(profile: TravelerProfile): TravelerProfile {
   return {
     group: {
-      ...profile.group,
+      id: profile.group.id,
+      name: profile.group.name,
+      kind: profile.group.kind,
+      adultCount: profile.group.adultCount,
+      childCount: profile.group.childCount,
       childAgeBands: [...profile.group.childAgeBands],
       travelModes: [...profile.group.travelModes],
       interests: [...profile.group.interests],
@@ -54,7 +57,6 @@ export function cloneProfile(profile: TravelerProfile): TravelerProfile {
 export function normalizeProfile(profile: TravelerProfile): TravelerProfile {
   const normalized = cloneProfile(profile);
   normalized.group.name = normalized.group.name.trim();
-  normalized.group.homeLocation = normalized.group.homeLocation.trim();
   normalized.matching.description = normalized.matching.description.trim();
   if (normalized.group.childCount === 0) normalized.group.childAgeBands = [];
   return normalized;
@@ -66,11 +68,6 @@ export function validateProfile(profile: TravelerProfile): string[] {
   errors.push(...validateAnimals(group.animals.animals));
   if (group.name.trim().length < 2 || group.name.trim().length > 40)
     errors.push('Nazwa ekipy powinna mieć od 2 do 40 znaków.');
-  if (
-    group.homeLocation.trim().length < 2 ||
-    group.homeLocation.trim().length > 60
-  )
-    errors.push('Podaj miasto lub przybliżoną okolicę (2–60 znaków).');
   if (
     !Number.isInteger(group.adultCount) ||
     group.adultCount < 1 ||

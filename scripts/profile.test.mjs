@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { MY_GROUP } from '../src/data/mocks/travel.ts';
 import {
   cloneProfile,
+  createEmptyProfile,
   normalizeProfile,
   validateProfile,
   formatGroupSize,
@@ -55,10 +56,31 @@ test('normalizing an adult-only profile clears old ages without changing matchin
 test('validation rejects blank identity, impossible ages and missing travel modes', () => {
   const draft = cloneProfile(example);
   draft.group.name = ' ';
-  draft.group.homeLocation = '';
   draft.group.childCount = 1;
   draft.group.travelModes = [];
-  assert.equal(validateProfile(draft).length, 4);
+  assert.equal(validateProfile(draft).length, 3);
+});
+
+test('a new profile saves without a home location and older residence data is discarded', () => {
+  const draft = createEmptyProfile();
+  draft.group.name = 'Nasza ekipa';
+  draft.group.travelModes = ['Przyczepa'];
+  const saved = normalizeProfile(draft);
+  assert.deepEqual(validateProfile(saved), []);
+  assert.equal(Object.hasOwn(saved.group, 'homeLocation'), false);
+  const legacy = {
+    ...example,
+    group: { ...example.group, homeLocation: 'Okolice Gdańska' },
+  };
+  assert.equal(
+    Object.hasOwn(cloneProfile(legacy).group, 'homeLocation'),
+    false,
+  );
+  assert.equal(
+    Object.hasOwn(normalizeProfile(legacy).group, 'homeLocation'),
+    false,
+  );
+  assert.equal(legacy.group.homeLocation, 'Okolice Gdańska');
 });
 
 test('matching preferences are independent of own children and explicit discovery filters take precedence', () => {

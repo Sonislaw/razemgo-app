@@ -11,7 +11,6 @@ export interface TravelGroup {
   adultCount: number;
   childCount: number;
   childAgeBands: ChildAgeBand[];
-  homeLocation: string;
   travelModes: string[];
   interests: string[];
   animals: GroupAnimals;

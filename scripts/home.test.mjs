@@ -201,9 +201,8 @@ test('blocked groups, self, expired plans and duplicate crews do not enter the t
   );
 });
 
-test('home location is never used as a destination; generic results are deterministic and bounded', () => {
+test('generic results are deterministic and bounded', () => {
   const changed = cloneProfile(profile);
-  changed.group.homeLocation = 'Pomorze';
   changed.group.interests = [];
   changed.matching.groupKinds = [];
   changed.matching.childAgeBands = [];

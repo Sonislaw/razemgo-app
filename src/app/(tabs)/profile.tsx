@@ -51,7 +51,7 @@ export default function ProfileScreen() {
           <Icon name="people" size={32} />
           <AppText variant="heading">Poznajmy Waszą ekipę</AppText>
           <AppText color="textSecondary">
-            Uzupełnijcie nazwę, przybliżoną okolicę i sposób podróżowania.
+            Uzupełnijcie nazwę ekipy i sposób podróżowania.
           </AppText>
           <Button label="Uzupełnij profil" icon="edit" onPress={() => edit()} />
         </Card>
@@ -83,16 +83,6 @@ export default function ProfileScreen() {
               <AppText variant="label" color="textSecondary">
                 {formatGroupSize(group.adultCount, group.childCount)}
               </AppText>
-              <View style={layout.row}>
-                <Icon name="pin" size={15} />
-                <AppText
-                  variant="caption"
-                  color="textSecondary"
-                  style={styles.flex}
-                >
-                  {group.homeLocation}
-                </AppText>
-              </View>
             </View>
           </View>
           <Button
@@ -224,6 +214,5 @@ const styles = StyleSheet.create({
   },
   identityText: { flex: 1, gap: 4 },
   name: { fontSize: 18, lineHeight: 24 },
-  flex: { flex: 1 },
   demo: { gap: 8, paddingTop: 4 },
 });

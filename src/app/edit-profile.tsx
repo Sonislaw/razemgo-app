@@ -87,18 +87,6 @@ export default function EditProfileScreen() {
               }))
             }
           />
-          <ProfileTextField
-            label="Przybliżona okolica"
-            value={draft.group.homeLocation}
-            maxLength={60}
-            hint="Miasto lub okolica — bez dokładnego adresu."
-            onChangeText={(homeLocation) =>
-              setDraft((current) => ({
-                ...current,
-                group: { ...current.group, homeLocation },
-              }))
-            }
-          />
           <ProfileCounter
             label="Dorośli"
             value={draft.group.adultCount}

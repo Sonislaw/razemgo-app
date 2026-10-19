@@ -73,7 +73,7 @@ export default function SettingsScreen() {
           icon="shield"
           title="Prywatność"
           status="Wkrótce"
-          description="Zarządzanie widocznością profilu i planów. W profilu pokazujemy wyłącznie przybliżoną okolicę oraz przedziały wieku dzieci."
+          description="Zarządzanie widocznością profilu i planów. Wiek dzieci pokazujemy w przybliżonych przedziałach."
         />
         <SettingsSection
           icon="bell"

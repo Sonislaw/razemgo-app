@@ -270,7 +270,7 @@ export function getMatchFacts(
   selectedRange?: DateRange,
   preferredAges: ChildAgeBand[] = ownGroup.childAgeBands,
 ): MatchFacts {
-  // Compare actual stays; don't add disjoint plans together or use home locations.
+  // Compare actual stays; don't add disjoint plans together.
   const referenceRange =
     selectedRange ??
     ownPlans.reduce<TripPlan | undefined>(

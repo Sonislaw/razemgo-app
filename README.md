@@ -46,7 +46,7 @@ Otwórz Expo Go obsługujące SDK 57 na telefonie z Androidem i zeskanuj kod QR 
 - Mały przycisk **Demo** otwiera scenariusze: początkowe zaproszenia, trzy rozmowy z nieprzeczytanymi wiadomościami, pusta skrzynka, symulowane ładowanie i błąd. Można też zasymulować błąd wysyłania, przychodzącą wiadomość oraz akceptację wysłanego zaproszenia przez drugą ekipę. Ponowienie nie duplikuje wiadomości. Wybór scenariusza zastępuje lokalny stan skrzynki.
 - Filtry zachowują się podczas zmiany zakładki. Pełne ponowne uruchomienie aplikacji resetuje stan.
 - Wyszukiwanie ignoruje wielkość liter i polskie znaki. Filtry terminu, miejsca i wieku łączą się warunkiem AND; wybrane przedziały wieku — OR.
-- Wspólny termin wymaga co najmniej jednej wspólnej nocy. Miejsce zamieszkania nie ogranicza wyników.
+- Wspólny termin wymaga co najmniej jednej wspólnej nocy.
 - Oba tryby wyszukiwania pokazują zarówno ustalone plany, jak i elastyczne obszary.
 
 Terminy maj/czerwiec 2027 są stałymi przykładami, niezależnymi od daty urządzenia. Wyniki nie pochodzą z produkcyjnego algorytmu dopasowań.
@@ -80,7 +80,7 @@ npx expo install --check
 npx expo export --platform android --output-dir .expo/export-android
 ```
 
-Testy obejmują wspólne noce, zmianę czasu, łączenie filtrów, przedziały wieku, polskie znaki, oba tryby planowania, rozdzielenie miejsca zamieszkania od celu, reset bez modyfikacji danych, pierwszeństwo wybranego terminu, porównanie pojedynczego własnego planu i brak wymyślonych dopasowań wieku.
+Testy obejmują wspólne noce, zmianę czasu, łączenie filtrów, przedziały wieku, polskie znaki, oba tryby planowania, filtrowanie według celu wyjazdu, reset bez modyfikacji danych, pierwszeństwo wybranego terminu, porównanie pojedynczego własnego planu i brak wymyślonych dopasowań wieku.
 
 Kontrole logiki obejmują 50 testów: 14 wyszukiwania, 5 profilu, 12 wiadomości, 11 własnych wyjazdów i 8 Startu. Testy Startu sprawdzają najbliższy i trwający wyjazd, statusy, prawdziwe wspólne noce, elastyczność bez wydłużania pobytu, preferencje, inspiracje bez wymyślonej zgodności, blokady, limit i unikalność propozycji oraz brak modyfikacji danych. Testy wyjazdów obejmują szkice, publikację, daty, prywatność, archiwum, kopiowanie, filtry, usuwanie i reset. Testy wiadomości sprawdzają zgodę na kontakt, brak duplikatów, liczniki, ponawianie, blokady i lokalne zgłoszenia.
 

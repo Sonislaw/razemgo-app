@@ -1,7 +1,12 @@
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { Pressable, View } from 'react-native';
 import { router } from 'expo-router';
-import { AppText, IconButton, layout } from '@/components/ui/primitives';
+import {
+  AppText,
+  Button,
+  IconButton,
+  layout,
+} from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { TripThumbnail } from '@/components/trips/trip-thumbnail';
 import { CompactTripCard } from '@/components/trips/compact-trip-card';
@@ -10,8 +15,11 @@ import { useTheme } from '@/hooks/use-theme';
 import type { OwnedTrip, TripStatus } from '@/types/owned-trip';
 import { formatTripDates } from '@/features/discovery/filter-trips';
 import { TripAnimalTag } from '@/features/animals/animal-ui';
+import { useDiscovery } from '@/features/discovery/discovery-context';
 import {
+  discoveryFiltersForTrip,
   getTripStatus,
+  isSearchingTrip,
   isValidDate,
   todayDate,
   TRIP_STATUS_LABELS,
@@ -93,6 +101,8 @@ export function OwnTripCard({
   onMenu: () => void;
 }) {
   const theme = useTheme();
+  const { setFilters } = useDiscovery();
+  const searching = isSearchingTrip(trip, todayDate());
   return (
     <CompactTripCard style={{ gap: 4 }}>
       <View style={[layout.row, { justifyContent: 'space-between' }]}>
@@ -158,6 +168,17 @@ export function OwnTripCard({
           </AppText>
           <Icon name="arrow" size={18} />
         </Pressable>
+      </View>
+      <View style={{ paddingTop: 4 }}>
+        <Button
+          label="Znajdź towarzystwo"
+          icon="people"
+          disabled={!searching}
+          onPress={() => {
+            setFilters(discoveryFiltersForTrip(trip));
+            router.navigate('/explore');
+          }}
+        />
       </View>
     </CompactTripCard>
   );

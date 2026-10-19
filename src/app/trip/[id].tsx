@@ -151,12 +151,7 @@ export default function TripDetailsScreen() {
             ? ' · dzieci: ' + group.childAgeBands.join(', ') + ' lat'
             : ' · bez dzieci'}
         </AppText>
-        <AppText color="textSecondary">
-          {group.homeLocation} · {group.travelModes.join(', ')}
-        </AppText>
-        <AppText variant="caption" color="textSecondary">
-          Okolica zamieszkania nie określa miejsca wspólnego wyjazdu.
-        </AppText>
+        <AppText color="textSecondary">{group.travelModes.join(', ')}</AppText>
       </Card>
       <TripContactAction proposal={proposal} />
       <AppText variant="caption" color="textSecondary">

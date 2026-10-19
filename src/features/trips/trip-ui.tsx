@@ -118,9 +118,6 @@ export function OwnTripCard({
           </AppText>
           <AppText variant="caption" color="textSecondary">
             {ownTripDates(trip)}
-            {trip.mode === 'flexible' && trip.dateFlexibilityDays
-              ? ` · ±${trip.dateFlexibilityDays} ${trip.dateFlexibilityDays === 1 ? 'dzień' : 'dni'}`
-              : ''}
           </AppText>
         </View>
       </View>

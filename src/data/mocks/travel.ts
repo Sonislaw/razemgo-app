@@ -43,7 +43,7 @@ export const MY_GROUP: TravelGroup = {
   homeLocation: 'Okolice Gdańska',
   travelModes: ['Przyczepa', 'Samochód'],
   interests: ['Rowery', 'Spokojny wypoczynek', 'Ognisko'],
-  animals: { animals: [{ kind: 'dog', count: 1 }], welcomesAnimals: true },
+  animals: { animals: [{ kind: 'dog', count: 1 }] },
 };
 export const DEMO_GROUPS: TravelGroup[] = [
   {
@@ -56,7 +56,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
     homeLocation: 'Okolice Krakowa',
     travelModes: ['Przyczepa'],
     interests: ['Rowery', 'Plaża', 'Spokojny wypoczynek'],
-    animals: { animals: [{ kind: 'dog', count: 1 }], welcomesAnimals: true },
+    animals: { animals: [{ kind: 'dog', count: 1 }] },
   },
   {
     id: 'demo-2',
@@ -68,7 +68,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
     homeLocation: 'Okolice Warszawy',
     travelModes: ['Kamper'],
     interests: ['Kajaki', 'Ognisko', 'Przyroda'],
-    animals: { animals: [], welcomesAnimals: false },
+    animals: { animals: [] },
   },
   {
     id: 'demo-3',
@@ -80,7 +80,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
     homeLocation: 'Okolice Poznania',
     travelModes: ['Van'],
     interests: ['Wędrówki', 'Przyroda', 'Fotografia'],
-    animals: { animals: [{ kind: 'cat', count: 1 }], welcomesAnimals: true },
+    animals: { animals: [{ kind: 'cat', count: 1 }] },
   },
   {
     id: 'demo-4',
@@ -92,7 +92,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
     homeLocation: 'Okolice Torunia',
     travelModes: ['Namiot'],
     interests: ['Spokojny wypoczynek', 'Las', 'Ognisko'],
-    animals: { animals: [], welcomesAnimals: true },
+    animals: { animals: [] },
   },
   {
     id: 'demo-5',
@@ -104,7 +104,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
     homeLocation: 'Okolice Wrocławia',
     travelModes: ['Samochód', 'Namiot'],
     interests: ['Rowery', 'Plaża', 'Gry planszowe'],
-    animals: { animals: [], welcomesAnimals: false },
+    animals: { animals: [] },
   },
   {
     id: 'demo-6',
@@ -116,13 +116,13 @@ export const DEMO_GROUPS: TravelGroup[] = [
     homeLocation: 'Okolice Łodzi',
     travelModes: ['Kamper'],
     interests: ['Wędrówki', 'Rowery', 'Ognisko'],
-    animals: { animals: [{ kind: 'dog', count: 2 }], welcomesAnimals: true },
+    animals: { animals: [{ kind: 'dog', count: 2 }] },
   },
 ];
 export const DEMO_TRIPS: TripPlan[] = [
   {
     id: 'demo-coast',
-    animals: { animals: [{ kind: 'dog', count: 1 }], welcomesAnimals: true },
+    animals: { animals: [{ kind: 'dog', count: 1 }] },
 
     groupId: 'demo-1',
     mode: 'planned',
@@ -137,7 +137,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-lake',
-    animals: { animals: [], welcomesAnimals: false },
+    animals: { animals: [] },
 
     groupId: 'demo-2',
     mode: 'planned',
@@ -152,7 +152,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-mountains',
-    animals: { animals: [{ kind: 'cat', count: 1 }], welcomesAnimals: true },
+    animals: { animals: [{ kind: 'cat', count: 1 }] },
 
     groupId: 'demo-3',
     mode: 'flexible',
@@ -167,7 +167,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-forest',
-    animals: { animals: [], welcomesAnimals: true },
+    animals: { animals: [] },
 
     groupId: 'demo-4',
     mode: 'flexible',
@@ -182,7 +182,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-friends',
-    animals: { animals: [], welcomesAnimals: false },
+    animals: { animals: [] },
 
     groupId: 'demo-5',
     mode: 'planned',
@@ -197,7 +197,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-bieszczady',
-    animals: { animals: [{ kind: 'dog', count: 2 }], welcomesAnimals: true },
+    animals: { animals: [{ kind: 'dog', count: 2 }] },
 
     groupId: 'demo-6',
     mode: 'planned',
@@ -214,7 +214,7 @@ export const DEMO_TRIPS: TripPlan[] = [
 export const MY_TRIPS: TripPlan[] = [
   {
     id: 'demo-my-coast',
-    animals: { animals: [{ kind: 'dog', count: 1 }], welcomesAnimals: true },
+    animals: { animals: [{ kind: 'dog', count: 1 }] },
 
     groupId: MY_GROUP.id,
     mode: 'planned',
@@ -229,7 +229,7 @@ export const MY_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-my-idea',
-    animals: { animals: [], welcomesAnimals: true },
+    animals: { animals: [] },
 
     groupId: MY_GROUP.id,
     mode: 'flexible',

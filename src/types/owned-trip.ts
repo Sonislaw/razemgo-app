@@ -10,11 +10,9 @@ import type {
 export type TripStatus =
   'draft' | 'published' | 'paused' | 'completed' | 'cancelled';
 export type TripVisibility = 'public' | 'private';
-export type DateFlexibility = 0 | 1 | 3 | 7;
 export type OwnedTrip = TripPlan & {
   status: TripStatus;
   visibility: TripVisibility;
-  dateFlexibilityDays: DateFlexibility;
   travelModes: string[];
   matching: {
     groupKinds: TravelGroup['kind'][];
@@ -28,7 +26,6 @@ export interface TripForm {
   endDate: string;
   placeName: string;
   region: string;
-  dateFlexibilityDays: DateFlexibility;
   travelModes: string[];
   interests: string[];
   description: string;

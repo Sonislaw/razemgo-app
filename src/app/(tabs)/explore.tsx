@@ -57,7 +57,12 @@ export default function ExploreScreen() {
         ? 'Mam plan'
         : 'Szukam pomysłu'
       : '',
-    dateRange ? formatTripDates(dateRange) : '',
+    dateRange
+      ? formatTripDates(dateRange) +
+        (filters.dateFlexibilityDays
+          ? ` (±${filters.dateFlexibilityDays} ${filters.dateFlexibilityDays === 1 ? 'dzień' : 'dni'})`
+          : '')
+      : '',
     filters.location.trim(),
     filters.childAgeBands.length
       ? 'Dzieci ' + filters.childAgeBands.join(', ') + ' lat'

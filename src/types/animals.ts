@@ -5,6 +5,5 @@ export interface AnimalCount {
 }
 export interface GroupAnimals {
   animals: AnimalCount[];
-  welcomesAnimals: boolean;
 }
 export type TripAnimals = GroupAnimals;

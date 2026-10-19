@@ -26,11 +26,6 @@ export function AnimalInformation({ animals }: { animals: TripAnimals }) {
       <AppText variant="label">
         {animalCountSummary(animals.animals) || 'Bez zwierząt'}
       </AppText>
-      {animals.welcomesAnimals ? (
-        <AppText variant="caption" color="textSecondary">
-          Zwierzęta innych ekip mile widziane
-        </AppText>
-      ) : null}
     </View>
   );
 }

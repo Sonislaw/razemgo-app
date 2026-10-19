@@ -38,7 +38,8 @@ import {
   tripFromForm,
   validateTripForm,
 } from '@/features/trips/own-trips-state';
-import { TripDateField } from '@/features/trips/trip-date-field';
+import { DateRangeField } from '@/components/trips/date-range-field';
+import { DateRangeSheet } from '@/components/trips/date-range-sheet';
 import {
   ownTripDates,
   ownTripPlace,
@@ -73,6 +74,7 @@ export default function TripEditorScreen() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [errors, setErrors] = useState<string[]>([]);
   const [confirmExit, setConfirmExit] = useState(false);
+  const [showDates, setShowDates] = useState(false);
   const submitting = useRef(false);
   const update = <K extends keyof TripForm>(key: K, value: TripForm[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -246,10 +248,6 @@ export default function TripEditorScreen() {
                         setForm((current) => ({
                           ...current,
                           mode: option.mode,
-                          dateFlexibilityDays:
-                            option.mode === 'planned'
-                              ? 0
-                              : current.dateFlexibilityDays,
                         }));
                         setErrors([]);
                       }}
@@ -284,47 +282,16 @@ export default function TripEditorScreen() {
                     </Pressable>
                   ))}
                 </View>
-                <View style={[layout.row, { alignItems: 'flex-start' }]}>
-                  <View style={{ flex: 1 }}>
-                    <TripDateField
-                      label="Od"
-                      value={form.startDate}
-                      initialMonth={form.endDate}
-                      onChange={(date) => update('startDate', date)}
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <TripDateField
-                      label="Do"
-                      value={form.endDate}
-                      initialMonth={form.startDate}
-                      onChange={(date) => update('endDate', date)}
-                    />
-                  </View>
+                <View style={{ gap: 8 }}>
+                  <AppText variant="label">Termin wyjazdu</AppText>
+                  <DateRangeField
+                    range={{ startDate: form.startDate, endDate: form.endDate }}
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      setShowDates(true);
+                    }}
+                  />
                 </View>
-                {form.mode === 'flexible' ? (
-                  <View style={{ gap: 8 }}>
-                    <AppText variant="label">Elastyczność terminu</AppText>
-                    <View style={layout.wrap}>
-                      {([0, 1, 3, 7] as const).map((days) => (
-                        <Chip
-                          key={days}
-                          label={
-                            days
-                              ? `±${days} ${days === 1 ? 'dzień' : 'dni'}`
-                              : 'Dokładne daty'
-                          }
-                          selected={form.dateFlexibilityDays === days}
-                          onPress={() => update('dateFlexibilityDays', days)}
-                        />
-                      ))}
-                    </View>
-                    <AppText variant="caption" color="textSecondary">
-                      Możecie przesunąć cały wyjazd o wybraną liczbę dni.
-                      Długość pobytu pozostaje taka sama.
-                    </AppText>
-                  </View>
-                ) : null}
               </>
             ) : step === 2 ? (
               <>
@@ -509,12 +476,7 @@ export default function TripEditorScreen() {
                     {form.mode === 'planned' ? 'Mam plan' : 'Szukam pomysłu'} ·{' '}
                     {ownTripPlace(preview)}
                   </AppText>
-                  <AppText variant="label">
-                    {ownTripDates(preview)}
-                    {preview.dateFlexibilityDays
-                      ? ` · ±${preview.dateFlexibilityDays} ${preview.dateFlexibilityDays === 1 ? 'dzień' : 'dni'}`
-                      : ''}
-                  </AppText>
+                  <AppText variant="label">{ownTripDates(preview)}</AppText>
                   <AppText variant="caption">
                     {form.travelModes.join(', ')}
                   </AppText>
@@ -596,6 +558,17 @@ export default function TripEditorScreen() {
           </View>
         </View>
       </KeyboardAvoidingView>
+      {showDates ? (
+        <DateRangeSheet
+          initialRange={{ startDate: form.startDate, endDate: form.endDate }}
+          onClose={() => setShowDates(false)}
+          onApply={(range) => {
+            setForm((current) => ({ ...current, ...range }));
+            setErrors([]);
+            setShowDates(false);
+          }}
+        />
+      ) : null}
       {confirmExit ? (
         <BottomSheet
           title="Opuścić kreator?"

@@ -129,12 +129,7 @@ export default function OwnTripDetailsScreen() {
             </View>
             <View style={layout.row}>
               <Icon name="calendar" size={20} />
-              <AppText style={{ flex: 1 }}>
-                {ownTripDates(trip)}
-                {trip.mode === 'flexible' && trip.dateFlexibilityDays
-                  ? ` · ±${trip.dateFlexibilityDays} ${trip.dateFlexibilityDays === 1 ? 'dzień' : 'dni'}`
-                  : ''}
-              </AppText>
+              <AppText style={{ flex: 1 }}>{ownTripDates(trip)}</AppText>
             </View>
           </View>
           <Card style={{ gap: 12 }}>
@@ -213,11 +208,8 @@ export default function OwnTripDetailsScreen() {
             </View>
             <AppText variant="caption" color="textSecondary">
               Propozycje liczymy z sześciu przykładowych planów według regionu,
-              wspólnych nocy i wybranego towarzystwa
-              {trip.mode === 'flexible' && trip.dateFlexibilityDays
-                ? ', z uwzględnieniem elastyczności dat'
-                : ''}
-              . Zaproszenia i ekipy dotyczą wyłącznie tego wyjazdu.
+              wspólnych nocy i wybranego towarzystwa. Zaproszenia i ekipy
+              dotyczą wyłącznie tego wyjazdu.
             </AppText>
             <Button
               label="Znajdź towarzystwo"

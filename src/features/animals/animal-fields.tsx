@@ -1,7 +1,6 @@
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { AppText, Chip, layout } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
-import { useTheme } from '@/hooks/use-theme';
 import { ProfileCounter } from '@/features/profile/profile-form-fields';
 import { ANIMAL_OPTIONS } from './animal-data';
 import type { GroupAnimals } from '@/types/animals';
@@ -11,7 +10,6 @@ interface AnimalFieldsProps {
   onChange: (value: GroupAnimals) => void;
 }
 export function GroupAnimalFields({ value, onChange }: AnimalFieldsProps) {
-  const theme = useTheme();
   return (
     <View style={{ gap: 12 }}>
       <AppText variant="caption" color="textSecondary">
@@ -60,29 +58,6 @@ export function GroupAnimalFields({ value, onChange }: AnimalFieldsProps) {
           }
         />
       ))}
-      <Pressable
-        accessibilityRole="checkbox"
-        accessibilityState={{ checked: value.welcomesAnimals }}
-        aria-checked={value.welcomesAnimals}
-        accessibilityLabel="Chętnie poznamy ekipy ze zwierzętami"
-        onPress={() =>
-          onChange({ ...value, welcomesAnimals: !value.welcomesAnimals })
-        }
-        style={[
-          layout.row,
-          {
-            minHeight: 48,
-            padding: 12,
-            borderRadius: 14,
-            backgroundColor: theme.muted,
-          },
-        ]}
-      >
-        <Icon name={value.welcomesAnimals ? 'check' : 'paw'} size={20} />
-        <AppText variant="label" style={{ flex: 1 }}>
-          Chętnie poznamy ekipy ze zwierzętami
-        </AppText>
-      </Pressable>
     </View>
   );
 }

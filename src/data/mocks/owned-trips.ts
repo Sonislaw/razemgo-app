@@ -5,7 +5,6 @@ export const DEMO_OWN_TRIPS: OwnedTrip[] = MY_TRIPS.map((trip) => ({
   ...trip,
   status: 'published',
   visibility: 'public',
-  dateFlexibilityDays: 0,
   travelModes: [...MY_GROUP.travelModes],
   matching: { groupKinds: ['family'], childAgeBands: ['4–6', '7–9'] },
 }));

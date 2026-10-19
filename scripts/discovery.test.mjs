@@ -14,20 +14,139 @@ import {
   getMatchFacts,
   formatSharedNights,
   toggleDiscoveryTripMode,
-  updateDiscoveryDate,
+  updateDiscoveryDateRange,
   clearDiscoveryDates,
   getDiscoveryDateRangeError,
   resolveDiscoveryRange,
+  getDiscoveryReferenceRange,
 } from '../src/features/discovery/filter-trips.ts';
 import { DEMO_COMPATIBILITY_SCORES } from '../src/data/mocks/compatibility.ts';
 import { sortDiscoveryProposals } from '../src/features/discovery/sort-proposals.ts';
+import {
+  calendarMonthCells,
+  selectCalendarDate,
+  shiftCalendarMonth,
+  rangeDurationLabel,
+} from '../src/features/trips/date-range-calendar.ts';
+
+test('calendar range selection spans months and restarts on an earlier, equal or third date', () => {
+  const first = selectCalendarDate(
+    { startDate: '', endDate: '' },
+    '2027-12-30',
+  );
+  assert.deepEqual(first, { startDate: '2027-12-30', endDate: '' });
+  const complete = selectCalendarDate(first, '2028-01-03');
+  assert.deepEqual(complete, {
+    startDate: '2027-12-30',
+    endDate: '2028-01-03',
+  });
+  assert.equal(rangeDurationLabel(complete), '4 noce');
+  assert.deepEqual(selectCalendarDate(first, '2027-12-28'), {
+    startDate: '2027-12-28',
+    endDate: '',
+  });
+  assert.deepEqual(selectCalendarDate(first, '2027-12-30'), first);
+  assert.deepEqual(selectCalendarDate(complete, '2028-02-01'), {
+    startDate: '2028-02-01',
+    endDate: '',
+  });
+  assert.deepEqual(first, { startDate: '2027-12-30', endDate: '' });
+  assert.equal(selectCalendarDate(first, '2027-02-29'), first);
+});
+
+test('calendar uses Monday columns, leap days and year transitions independently of timezone', () => {
+  assert.deepEqual(calendarMonthCells('2027-02').slice(0, 7), [
+    '2027-02-01',
+    '2027-02-02',
+    '2027-02-03',
+    '2027-02-04',
+    '2027-02-05',
+    '2027-02-06',
+    '2027-02-07',
+  ]);
+  assert.equal(calendarMonthCells('2027-02').filter(Boolean).length, 28);
+  assert.equal(calendarMonthCells('2028-02').filter(Boolean).length, 29);
+  assert.equal(calendarMonthCells('2026-10')[3], '2026-10-01');
+  assert.equal(shiftCalendarMonth('2027-12', 1), '2028-01');
+  assert.equal(shiftCalendarMonth('2028-01', -1), '2027-12');
+  assert.equal(
+    rangeDurationLabel({ startDate: '2027-03-27', endDate: '2027-03-29' }),
+    '2 noce',
+  );
+});
+
+test('custom-date tolerance really broadens discovery while exact mode retains the selected dates', () => {
+  const range = { startDate: '2027-05-25', endDate: '2027-05-28' };
+  const exact = updateDiscoveryDateRange(INITIAL_FILTERS, range);
+  assert.deepEqual(filterProposals(DEMO_PROPOSALS, exact), []);
+  assert.deepEqual(
+    filterProposals(
+      DEMO_PROPOSALS,
+      updateDiscoveryDateRange(exact, range, 1),
+    ).map(({ trip }) => trip.id),
+    ['demo-coast'],
+  );
+  assert.deepEqual(
+    filterProposals(
+      DEMO_PROPOSALS,
+      updateDiscoveryDateRange(exact, range, 2),
+    ).map(({ trip }) => trip.id),
+    ['demo-coast', 'demo-mountains'],
+  );
+  assert.deepEqual(
+    filterProposals(
+      DEMO_PROPOSALS,
+      updateDiscoveryDateRange(exact, range, 3),
+    ).map(({ trip }) => trip.id),
+    ['demo-coast', 'demo-mountains', 'demo-forest'],
+  );
+  const before = updateDiscoveryDateRange(
+    INITIAL_FILTERS,
+    { startDate: '2027-05-20', endDate: '2027-05-21' },
+    1,
+  );
+  assert.deepEqual(
+    filterProposals(DEMO_PROPOSALS, before).map(({ trip }) => trip.id),
+    ['demo-mountains', 'demo-forest'],
+  );
+  assert.deepEqual(exact.customDateRange, range);
+  assert.equal(exact.dateFlexibilityDays, 0);
+});
+
+test('tolerance shifts a whole stay and reset removes it without mutating the supplied range', () => {
+  const range = Object.freeze({
+    startDate: '2027-05-21',
+    endDate: '2027-05-24',
+  });
+  const filters = updateDiscoveryDateRange(INITIAL_FILTERS, range, 3);
+  const longStay = { startDate: '2027-05-18', endDate: '2027-05-27' };
+  const reference = getDiscoveryReferenceRange(filters, range, longStay);
+  assert.equal(sharedNights(reference, longStay), 3);
+  assert.equal(
+    Date.parse(reference.endDate) - Date.parse(reference.startDate),
+    3 * 86400000,
+  );
+  assert.notEqual(filters.customDateRange, range);
+  assert.equal(clearDiscoveryDates(filters).dateFlexibilityDays, 0);
+  assert.equal(
+    updateDiscoveryDateRange(filters, range, 20).dateFlexibilityDays,
+    7,
+  );
+  assert.equal(
+    updateDiscoveryDateRange(filters, range, -1).dateFlexibilityDays,
+    0,
+  );
+  assert.equal(
+    updateDiscoveryDateRange(filters, range, NaN).dateFlexibilityDays,
+    0,
+  );
+});
 
 test('custom dates filter by overlapping stays and combine with other filters', () => {
-  const filters = updateDiscoveryDate(
-    updateDiscoveryDate(INITIAL_FILTERS, 'startDate', '2027-05-21'),
-    'endDate',
-    '2027-05-24',
-  );
+  const filters = updateDiscoveryDateRange(INITIAL_FILTERS, {
+    startDate: '2027-05-21',
+    endDate: '2027-05-24',
+  });
   assert.deepEqual(resolveDiscoveryRange(filters), {
     startDate: '2027-05-21',
     endDate: '2027-05-24',
@@ -87,7 +206,10 @@ test('changing dates from an own trip uses an exact custom range without mutatin
     customDateRange: { startDate: '2027-05-21', endDate: '2027-05-24' },
   };
   const snapshot = JSON.stringify(original);
-  const changed = updateDiscoveryDate(original, 'startDate', '2027-05-22');
+  const changed = updateDiscoveryDateRange(original, {
+    ...original.customDateRange,
+    startDate: '2027-05-22',
+  });
   assert.equal(changed.dateRangeId, 'custom');
   assert.equal(changed.dateFlexibilityDays, 0);
   assert.equal(changed.sourceTripId, original.sourceTripId);
@@ -99,14 +221,9 @@ test('changing dates from an own trip uses an exact custom range without mutatin
 });
 
 test('clearing dates preserves other filters and removes the date restriction', () => {
-  const filtered = updateDiscoveryDate(
-    updateDiscoveryDate(
-      { ...INITIAL_FILTERS, location: 'Pomorze', childAgeBands: ['4–6'] },
-      'startDate',
-      '2027-06-01',
-    ),
-    'endDate',
-    '2027-06-03',
+  const filtered = updateDiscoveryDateRange(
+    { ...INITIAL_FILTERS, location: 'Pomorze', childAgeBands: ['4–6'] },
+    { startDate: '2027-06-01', endDate: '2027-06-03' },
   );
   assert.deepEqual(filterProposals(DEMO_PROPOSALS, filtered), []);
   const cleared = clearDiscoveryDates(filtered);

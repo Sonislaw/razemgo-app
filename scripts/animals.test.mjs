@@ -39,25 +39,30 @@ const owned = () => ({
   ...MY_TRIPS[0],
   status: 'published',
   visibility: 'public',
-  dateFlexibilityDays: 0,
   travelModes: ['Kamper'],
   matching: { groupKinds: [], childAgeBands: [] },
 });
 
-test('own animals and welcoming other animals remain independent optional information', () => {
+test('animal profiles keep optional animal counts and discard the removed welcoming preference', () => {
   const value = profile();
   value.group.animals = { animals: [], welcomesAnimals: true };
   const normalized = normalizeProfile(value);
   assert.deepEqual(validateProfile(normalized), []);
-  assert.equal(normalized.group.animals.welcomesAnimals, true);
+  assert.equal(
+    Object.hasOwn(normalized.group.animals, 'welcomesAnimals'),
+    false,
+  );
+  assert.equal(value.group.animals.welcomesAnimals, true);
   assert.deepEqual(normalized.group.animals.animals, []);
 });
 
 test('new trips inherit a separate editable animal list without any confirmation state', () => {
   const value = profile();
+  value.group.animals.welcomesAnimals = true;
   const draft = newTripForm(value);
   assert.equal(draft.animals.animals[0].kind, 'dog');
   assert.equal(Object.hasOwn(draft.animals, 'attendance'), false);
+  assert.equal(Object.hasOwn(draft.animals, 'welcomesAnimals'), false);
   draft.animals.animals[0].count = 2;
   assert.equal(value.group.animals.animals[0].count, 1);
   draft.animals = emptyAnimals();
@@ -171,7 +176,6 @@ test('trip edit and duplicate preserve animal counts independently of the origin
   });
   const form = toTripForm(copy.trips[1]);
   form.animals.animals[0].count = 2;
-  form.animals.welcomesAnimals = false;
   const saved = ownTripsReducer(copy, {
     type: 'save',
     id: copy.trips[1].id,
@@ -182,7 +186,8 @@ test('trip edit and duplicate preserve animal counts independently of the origin
   });
   assert.equal(saved.trips[1].animals.animals[0].count, 2);
   assert.equal(saved.trips[0].animals.animals[0].count, 1);
-  assert.equal(saved.trips[0].animals.welcomesAnimals, true);
+  assert.equal(Object.hasOwn(saved.trips[0].animals, 'welcomesAnimals'), false);
+  assert.equal(Object.hasOwn(saved.trips[1].animals, 'welcomesAnimals'), false);
   assert.equal(MY_GROUP.animals.animals[0].count, 1);
 });
 

@@ -26,7 +26,6 @@ const trips = MY_TRIPS.map((trip) => ({
   ...trip,
   status: 'published',
   visibility: 'public',
-  dateFlexibilityDays: 0,
   travelModes: [...MY_GROUP.travelModes],
   matching: { groupKinds: ['family'], childAgeBands: ['4–6', '7–9'] },
 }));
@@ -88,7 +87,7 @@ test('trip recommendations combine date, region, group and optional ages and exp
   assert.ok(!result.some((item) => item.proposal.trip.id === 'demo-lake'));
 });
 
-test('recommendation dates shift one real stay without summing plans or extending their duration', () => {
+test('recommendations use exact trip dates and ignore legacy tolerance in both planning modes', () => {
   const late = {
     ...DEMO_PROPOSALS[0],
     trip: {
@@ -111,8 +110,9 @@ test('recommendation dates shift one real stay without summing plans or extendin
     today,
   );
   assert.equal(result.length, 1);
-  assert.equal(result[0].nights, 3);
-  assert.equal(result[0].dateShifted, true);
+  assert.equal(result[0].nights, 0);
+  assert.equal(result[0].dateShifted, false);
+  assert.notEqual(result[0].source, 'trip');
   const fixed = selectHomeRecommendations(
     [late],
     profile,

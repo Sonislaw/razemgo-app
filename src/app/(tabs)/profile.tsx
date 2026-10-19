@@ -140,11 +140,6 @@ export default function ProfileScreen() {
               Bez zwierząt
             </AppText>
           )}
-          {group.animals.welcomesAnimals ? (
-            <AppText variant="caption" color="textSecondary">
-              Zwierzęta innych ekip mile widziane
-            </AppText>
-          ) : null}
         </ProfileSectionCard>
         <ProfileSectionCard
           title="Jak podróżujemy"

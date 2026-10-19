@@ -28,21 +28,18 @@ export function clearDiscoveryDates(
     dateFlexibilityDays: 0,
   };
 }
-export function updateDiscoveryDate(
+export function updateDiscoveryDateRange(
   filters: DiscoveryFilters,
-  field: keyof DateRange,
-  value: string,
+  range: DateRange,
+  tolerance = 0,
 ): DiscoveryFilters {
-  const range = {
-    startDate: filters.customDateRange?.startDate ?? '',
-    endDate: filters.customDateRange?.endDate ?? '',
-    [field]: value,
-  };
   return {
     ...filters,
     dateRangeId: 'custom',
-    customDateRange: range,
-    dateFlexibilityDays: 0,
+    customDateRange: { ...range },
+    dateFlexibilityDays: Number.isFinite(tolerance)
+      ? Math.min(7, Math.max(0, Math.trunc(tolerance)))
+      : 0,
   };
 }
 export function getDiscoveryDateRangeError(
@@ -131,11 +128,7 @@ export function getDiscoveryReferenceRange(
   range: DateRange | undefined,
   candidate: DateRange,
 ): DateRange | undefined {
-  if (
-    !range ||
-    filters.dateRangeId !== 'own-trip' ||
-    !filters.dateFlexibilityDays
-  )
+  if (!range || filters.dateRangeId === 'all' || !filters.dateFlexibilityDays)
     return range;
   const flexibility = Math.min(
     7,
@@ -309,8 +302,7 @@ export function selectHomeRecommendations(
           startDate: ownTrip.startDate,
           endDate: ownTrip.endDate,
         },
-        dateFlexibilityDays:
-          ownTrip.mode === 'flexible' ? ownTrip.dateFlexibilityDays : 0,
+        dateFlexibilityDays: 0,
         location: place.region,
         childAgeBands: ownTrip.matching.childAgeBands,
         groupKinds: ownTrip.matching.groupKinds,

@@ -27,9 +27,11 @@ import {
   INITIAL_FILTERS,
   resolveDiscoveryRange,
   toggleDiscoveryTripMode,
-  updateDiscoveryDate,
+  updateDiscoveryDateRange,
 } from './filter-trips';
-import { TripDateField } from '@/features/trips/trip-date-field';
+import { DateRangeSheet } from '@/components/trips/date-range-sheet';
+import { DateRangeField } from '@/components/trips/date-range-field';
+import { dateToleranceLabel } from '@/features/trips/date-range-calendar';
 import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import {
   Fonts,
@@ -54,6 +56,7 @@ export function DiscoveryFiltersSheet({
 }: DiscoveryFiltersSheetProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const [showDateRange, setShowDateRange] = useState(false);
   const [draft, setDraft] = useState<DiscoveryFilters>(() => ({
     ...initialFilters,
     tripModes: [...initialFilters.tripModes],
@@ -237,35 +240,21 @@ export function DiscoveryFiltersSheet({
                 ) : null}
               </View>
               <AppText variant="caption" color="textSecondary">
-                Wybierz daty w kalendarzu lub wpisz je ręcznie. Pusty zakres
-                oznacza dowolny termin.
+                Zaznacz zakres w kalendarzu i wybierz dokładny lub przybliżony
+                termin.
               </AppText>
-              <View style={[layout.row, { alignItems: 'flex-start' }]}>
-                <View style={styles.flex}>
-                  <TripDateField
-                    label="Od"
-                    value={draft.customDateRange?.startDate ?? ''}
-                    onChange={(value) =>
-                      setDraft((current) =>
-                        updateDiscoveryDate(current, 'startDate', value),
-                      )
-                    }
-                    initialMonth={draft.customDateRange?.endDate}
-                  />
-                </View>
-                <View style={styles.flex}>
-                  <TripDateField
-                    label="Do"
-                    value={draft.customDateRange?.endDate ?? ''}
-                    onChange={(value) =>
-                      setDraft((current) =>
-                        updateDiscoveryDate(current, 'endDate', value),
-                      )
-                    }
-                    initialMonth={draft.customDateRange?.startDate}
-                  />
-                </View>
-              </View>
+              <DateRangeField
+                range={dateRange}
+                caption={
+                  dateRange
+                    ? dateToleranceLabel(draft.dateFlexibilityDays ?? 0)
+                    : undefined
+                }
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setShowDateRange(true);
+                }}
+              />
               {dateError ? (
                 <AppText
                   accessibilityRole="alert"
@@ -276,12 +265,6 @@ export function DiscoveryFiltersSheet({
                 </AppText>
               ) : null}
             </View>
-            {draft.dateRangeId === 'own-trip' && !!draft.dateFlexibilityDays ? (
-              <AppText variant="caption" color="textSecondary">
-                Cały wyjazd można przesunąć o ±{draft.dateFlexibilityDays} dni.
-                Porównujemy pobyty o niezmienionej długości.
-              </AppText>
-            ) : null}
             <View style={layout.stack}>
               <AppText variant="label">Miejsce lub region</AppText>
               <View
@@ -398,6 +381,20 @@ export function DiscoveryFiltersSheet({
               }}
             />
           </View>
+          {showDateRange ? (
+            <DateRangeSheet
+              allowTolerance
+              initialRange={dateRange}
+              initialTolerance={draft.dateFlexibilityDays}
+              onClose={() => setShowDateRange(false)}
+              onApply={(range, tolerance) => {
+                setDraft((current) =>
+                  updateDiscoveryDateRange(current, range, tolerance),
+                );
+                setShowDateRange(false);
+              }}
+            />
+          ) : null}
         </View>
       </KeyboardAvoidingView>
     </Modal>

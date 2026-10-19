@@ -11,10 +11,10 @@ export const ANIMAL_OPTIONS: { kind: AnimalKind; label: string }[] = [
   { kind: 'other', label: 'Inne zwierzę' },
 ];
 export function emptyAnimals(): GroupAnimals {
-  return { animals: [], welcomesAnimals: false };
+  return { animals: [] };
 }
 export function cloneAnimals(value: GroupAnimals): GroupAnimals {
-  return { ...value, animals: value.animals.map((item) => ({ ...item })) };
+  return { animals: value.animals.map((item) => ({ ...item })) };
 }
 export function validateAnimalCounts(value: AnimalCount[]): string[] {
   return value.some(

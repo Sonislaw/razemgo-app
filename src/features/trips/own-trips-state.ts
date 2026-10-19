@@ -84,8 +84,7 @@ export function discoveryFiltersForTrip(trip: OwnedTrip): DiscoveryFilters {
         }
       : undefined,
     location: place.region,
-    dateFlexibilityDays:
-      trip.mode === 'flexible' ? trip.dateFlexibilityDays : 0,
+    dateFlexibilityDays: 0,
     groupKinds: [...trip.matching.groupKinds],
     childAgeBands: [...trip.matching.childAgeBands],
   };
@@ -99,8 +98,6 @@ export function toTripForm(trip: OwnedTrip): TripForm {
     endDate: trip.endDate,
     placeName: place.name,
     region: place.region,
-    dateFlexibilityDays:
-      trip.mode === 'flexible' ? trip.dateFlexibilityDays : 0,
     travelModes: [...trip.travelModes],
     interests: [...trip.interests],
     description: trip.description,
@@ -119,7 +116,6 @@ export function newTripForm(profile: TravelerProfile): TripForm {
     endDate: '',
     placeName: '',
     region: '',
-    dateFlexibilityDays: 0,
     travelModes: [...profile.group.travelModes],
     interests: [],
     description: '',
@@ -173,8 +169,6 @@ export function tripFromForm(
     landscape: form.landscape,
     interests: [...form.interests],
     travelModes: [...form.travelModes],
-    dateFlexibilityDays:
-      form.mode === 'flexible' ? form.dateFlexibilityDays : 0,
     visibility: form.visibility,
     status,
     animals: cloneAnimals(form.animals),

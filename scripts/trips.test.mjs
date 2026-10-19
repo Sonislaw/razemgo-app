@@ -41,7 +41,6 @@ const fixture = MY_TRIPS.map((trip) => ({
   ...trip,
   status: 'published',
   visibility: 'public',
-  dateFlexibilityDays: 0,
   travelModes: [...MY_GROUP.travelModes],
   matching: { groupKinds: ['family'], childAgeBands: ['4–6', '7–9'] },
 }));
@@ -261,7 +260,7 @@ test('search joins place and date filters, handles Polish letters, sorts upcomin
   );
 });
 
-test('finding company passes exact dates, flexibility and preferences into real local discovery filters', () => {
+test('finding company passes exact trip dates and preferences; tolerance is set only in search filters', () => {
   const trip = initial().trips[0];
   const filters = discoveryFiltersForTrip(trip);
   assert.equal(filters.sourceTripId, trip.id);
@@ -285,10 +284,11 @@ test('finding company passes exact dates, flexibility and preferences into real 
     startDate: '2027-05-21',
     endDate: '2027-05-24',
   });
-  assert.equal(flexible.dateFlexibilityDays, 3);
+  assert.equal(flexible.dateFlexibilityDays, 0);
+  const flexibleSearch = { ...flexible, dateFlexibilityDays: 3 };
   const longStay = { startDate: '2027-05-18', endDate: '2027-05-27' };
   const reference = getDiscoveryReferenceRange(
-    flexible,
+    flexibleSearch,
     flexible.customDateRange,
     longStay,
   );
@@ -300,7 +300,7 @@ test('finding company passes exact dates, flexibility and preferences into real 
   const later = { startDate: '2027-05-24', endDate: '2027-05-27' };
   assert.equal(sharedNights(trip, later), 0);
   assert.deepEqual(
-    getDiscoveryReferenceRange(flexible, flexible.customDateRange, later),
+    getDiscoveryReferenceRange(flexibleSearch, flexible.customDateRange, later),
     later,
   );
   const pairs = {
@@ -315,43 +315,50 @@ test('finding company passes exact dates, flexibility and preferences into real 
   );
 });
 
-test('fixed plans clear hidden flexibility on edit, save, duplicate and discovery while keeping their dates', () => {
-  const legacy = { ...initial().trips[0], dateFlexibilityDays: 7 };
-  const before = JSON.stringify(legacy);
-  assert.equal(toTripForm(legacy).dateFlexibilityDays, 0);
-  assert.equal(discoveryFiltersForTrip(legacy).dateFlexibilityDays, 0);
-  const values = { ...form(), dateFlexibilityDays: 3 };
-  for (const draft of [true, false]) {
-    const saved = save(initial(), draft, undefined, values).trips.at(-1);
-    assert.equal(saved.dateFlexibilityDays, 0);
-    assert.equal(saved.startDate, values.startDate);
-    assert.equal(saved.endDate, values.endDate);
+test('both planning modes drop legacy tolerance on load, edit, save, duplicate and discovery', () => {
+  for (const original of initial().trips) {
+    const legacy = { ...original, dateFlexibilityDays: 7 };
+    const before = JSON.stringify(legacy);
+    assert.equal(
+      Object.hasOwn(toTripForm(legacy), 'dateFlexibilityDays'),
+      false,
+    );
+    assert.equal(discoveryFiltersForTrip(legacy).dateFlexibilityDays, 0);
+    const values = { ...toTripForm(legacy), dateFlexibilityDays: 3 };
+    for (const draft of [true, false]) {
+      const saved = save(initial(), draft, undefined, values).trips.at(-1);
+      assert.equal(Object.hasOwn(saved, 'dateFlexibilityDays'), false);
+      assert.equal(saved.startDate, values.startDate);
+      assert.equal(saved.endDate, values.endDate);
+    }
+    const state = createOwnTripsState([legacy]);
+    assert.equal(Object.hasOwn(state.trips[0], 'dateFlexibilityDays'), false);
+    assert.equal(
+      Object.hasOwn(
+        reduce(state, { type: 'duplicate', id: legacy.id }).trips.at(-1),
+        'dateFlexibilityDays',
+      ),
+      false,
+    );
+    assert.equal(JSON.stringify(legacy), before);
   }
-  const state = createOwnTripsState([legacy]);
-  assert.equal(state.trips[0].dateFlexibilityDays, 0);
-  assert.equal(
-    reduce(state, { type: 'duplicate', id: legacy.id }).trips.at(-1)
-      .dateFlexibilityDays,
-    0,
-  );
-  assert.equal(JSON.stringify(legacy), before);
 });
 
-test('flexible plans retain their flexibility until converted to a fixed plan', () => {
-  for (const days of [0, 1, 3, 7]) {
+test('trip type changes retain dates and never restore tolerance from older form data', () => {
+  for (const days of [0, 1, 2, 3, 7]) {
     const values = { ...form(), mode: 'flexible', dateFlexibilityDays: days };
     const trip = tripFromForm(values, 'flexible', MY_GROUP.id, 'published');
-    assert.equal(trip.dateFlexibilityDays, days);
-    assert.equal(toTripForm(trip).dateFlexibilityDays, days);
-    assert.equal(discoveryFiltersForTrip(trip).dateFlexibilityDays, days);
+    assert.equal(Object.hasOwn(trip, 'dateFlexibilityDays'), false);
+    assert.equal(Object.hasOwn(toTripForm(trip), 'dateFlexibilityDays'), false);
+    assert.equal(discoveryFiltersForTrip(trip).dateFlexibilityDays, 0);
     assert.equal(
       tripFromForm(
         { ...toTripForm(trip), mode: 'planned' },
         trip.id,
         trip.groupId,
         trip.status,
-      ).dateFlexibilityDays,
-      0,
+      ).startDate,
+      trip.startDate,
     );
   }
 });

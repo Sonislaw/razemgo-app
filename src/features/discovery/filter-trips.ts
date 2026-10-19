@@ -6,10 +6,16 @@ import type {
   TripMode,
   TripProposal,
   TravelGroup,
+  TripPlace,
 } from '../../types/travel';
+import type { LocationOption } from '../../types/location';
 import type { OwnedTrip } from '../../types/owned-trip';
 import type { TravelerProfile } from '../../types/profile';
 import { isValidDate } from '../trips/own-trips-state.ts';
+import {
+  findTripLocation,
+  tripLocationIdForPlace,
+} from '../trips/trip-locations.ts';
 
 export const INITIAL_FILTERS: DiscoveryFilters = {
   tripModes: ['planned', 'flexible'],
@@ -18,6 +24,53 @@ export const INITIAL_FILTERS: DiscoveryFilters = {
   childAgeBands: [],
   animalKinds: [],
 };
+export function selectDiscoveryLocation(
+  filters: DiscoveryFilters,
+  id: string,
+): DiscoveryFilters {
+  const location = findTripLocation(id);
+  return {
+    ...filters,
+    locationId: location?.id,
+    location: location?.name ?? '',
+  };
+}
+export function updateDiscoveryLocationQuery(
+  filters: DiscoveryFilters,
+  query: string,
+): DiscoveryFilters {
+  return { ...filters, locationId: undefined, location: query };
+}
+
+// Older demo areas use geographic names instead of province names.
+const LEGACY_DEMO_PROVINCES: Record<string, string> = {
+  pomorze: 'pomorskie',
+  'dolny slask': 'dolnośląskie',
+};
+function matchesSelectedLocation(
+  place: TripPlace,
+  selected: LocationOption,
+): boolean {
+  const candidate =
+    findTripLocation(tripLocationIdForPlace(place)) ??
+    findTripLocation(
+      'pl-region:' +
+        (LEGACY_DEMO_PROVINCES[normalizeLocation(place.region)] ??
+          place.region.toLocaleLowerCase('pl-PL')),
+    );
+  if (!candidate) return false;
+  if (selected.kind === 'country')
+    return (
+      normalizeLocation(candidate.country) ===
+      normalizeLocation(selected.country)
+    );
+  if (selected.kind === 'region')
+    return (
+      selected.id === candidate.id ||
+      normalizeLocation(selected.name) === normalizeLocation(candidate.region)
+    );
+  return selected.id === candidate.id;
+}
 export function clearDiscoveryDates(
   filters: DiscoveryFilters,
 ): DiscoveryFilters {
@@ -90,6 +143,7 @@ export function filterProposals(
   dateRange?: DateRange,
 ): TripProposal[] {
   const location = normalizeLocation(filters.location);
+  const selectedLocation = findTripLocation(filters.locationId);
   if (
     filters.dateRangeId !== 'all' &&
     getDiscoveryDateRangeError(filters.customDateRange)
@@ -108,10 +162,12 @@ export function filterProposals(
       ? 'Pomorze Pomorskie'
       : '';
     if (
-      location &&
-      !normalizeLocation(getTripLocation(trip) + ' ' + legacyRegion).includes(
-        location,
-      )
+      selectedLocation
+        ? !matchesSelectedLocation(place, selectedLocation)
+        : location &&
+          !normalizeLocation(
+            getTripLocation(trip) + ' ' + legacyRegion,
+          ).includes(location)
     )
       return false;
     if (

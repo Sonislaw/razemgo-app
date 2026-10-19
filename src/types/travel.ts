@@ -51,6 +51,7 @@ export interface DiscoveryFilters {
   tripModes: TripMode[];
   dateRangeId: 'all' | 'custom' | 'own-trip';
   location: string;
+  locationId?: string;
   childAgeBands: ChildAgeBand[];
   customDateRange?: DateRange;
   animalKinds?: AnimalKind[];

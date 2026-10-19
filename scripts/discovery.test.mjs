@@ -19,6 +19,8 @@ import {
   getDiscoveryDateRangeError,
   resolveDiscoveryRange,
   getDiscoveryReferenceRange,
+  selectDiscoveryLocation,
+  updateDiscoveryLocationQuery,
 } from '../src/features/discovery/filter-trips.ts';
 import { DEMO_COMPATIBILITY_SCORES } from '../src/data/mocks/compatibility.ts';
 import { sortDiscoveryProposals } from '../src/features/discovery/sort-proposals.ts';
@@ -457,6 +459,64 @@ test('search handles Polish diacritics, uppercase and outer whitespace', () => {
     filterProposals(DEMO_PROPOSALS, { ...INITIAL_FILTERS, location: 'leba' })[0]
       .trip.id,
     'demo-friends',
+  );
+});
+
+test('selected localities keep their identity and region/country selections include their plans', () => {
+  for (const [id, expected] of [
+    ['pl-locality:4259', ['demo-coast']],
+    ['pl-locality:4258', []],
+    ['pl-locality:21411', ['demo-lake']],
+    ['pl-locality:21409', []],
+    ['pl-region:pomorskie', ['demo-coast', 'demo-forest', 'demo-friends']],
+    ['pl-region:dolnośląskie', ['demo-mountains']],
+    ['pl-region:warmińsko-mazurskie', ['demo-lake']],
+    ['country:PL', DEMO_PROPOSALS.map(({ trip }) => trip.id)],
+    ['demo-location-slowenia', []],
+  ]) {
+    const filters = selectDiscoveryLocation(INITIAL_FILTERS, id);
+    assert.equal(filters.locationId, id);
+    assert.ok(filters.location.length);
+    assert.deepEqual(
+      filterProposals(DEMO_PROPOSALS, filters).map(({ trip }) => trip.id),
+      expected,
+    );
+  }
+});
+
+test('changing or clearing the search query removes the old selection and keeps other filters', () => {
+  const selected = selectDiscoveryLocation(
+    { ...INITIAL_FILTERS, childAgeBands: ['7–9'] },
+    'pl-locality:4259',
+  );
+  const snapshot = JSON.stringify(selected);
+  const changed = updateDiscoveryLocationQuery(selected, 'leba');
+  assert.equal(changed.location, 'leba');
+  assert.equal(changed.locationId, undefined);
+  assert.deepEqual(changed.childAgeBands, ['7–9']);
+  assert.equal(JSON.stringify(selected), snapshot);
+  const cleared = selectDiscoveryLocation(selected, '');
+  assert.equal(cleared.location, '');
+  assert.equal(cleared.locationId, undefined);
+  assert.deepEqual(cleared.childAgeBands, ['7–9']);
+  assert.equal(filterProposals(DEMO_PROPOSALS, INITIAL_FILTERS).length, 6);
+});
+
+test('selected locations combine with dates, age and announcement type filters', () => {
+  const filters = updateDiscoveryDateRange(
+    selectDiscoveryLocation(
+      { ...INITIAL_FILTERS, childAgeBands: ['7–9'] },
+      'pl-region:pomorskie',
+    ),
+    { startDate: '2027-05-21', endDate: '2027-05-24' },
+  );
+  assert.deepEqual(
+    filterProposals(DEMO_PROPOSALS, filters).map(({ trip }) => trip.id),
+    ['demo-coast'],
+  );
+  assert.deepEqual(
+    filterProposals(DEMO_PROPOSALS, { ...filters, tripModes: ['flexible'] }),
+    [],
   );
 });
 

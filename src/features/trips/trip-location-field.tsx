@@ -18,16 +18,27 @@ export function TripLocationField({
   value,
   mode,
   onChange,
+  required = true,
+  query: controlledQuery,
+  onQueryChange,
 }: {
   value: string;
   mode: TripMode;
   onChange: (id: string) => void;
+  required?: boolean;
+  query?: string;
+  onQueryChange?: (query: string) => void;
 }) {
   const theme = useTheme();
   const label =
     mode === 'planned' ? 'Miasto lub wieś' : 'Miejscowość, region lub kraj';
   const input = useRef<TextInput>(null);
-  const [query, setQuery] = useState('');
+  const [localQuery, setLocalQuery] = useState('');
+  const query = controlledQuery ?? localQuery;
+  const setQuery = (text: string) => {
+    setLocalQuery(text);
+    onQueryChange?.(text);
+  };
   const [expanded, setExpanded] = useState(false);
   const selected = findTripLocation(value);
   const results = searchTripLocations(query, mode);
@@ -35,7 +46,9 @@ export function TripLocationField({
 
   return (
     <View style={styles.field}>
-      <AppText variant="label">{label} · wymagane</AppText>
+      <AppText variant="label">
+        {label} · {required ? 'wymagane' : 'opcjonalnie'}
+      </AppText>
       <View
         style={[
           styles.search,
@@ -51,9 +64,10 @@ export function TripLocationField({
           ref={input}
           accessibilityLabel={label}
           accessibilityHint={
-            mode === 'planned'
-              ? 'Pole wymagane. Wybierz miasto lub wieś z podpowiedzi.'
-              : 'Pole wymagane. Wpisz nazwę i wybierz lokalizację z podpowiedzi.'
+            (required ? 'Pole wymagane. ' : 'Opcjonalnie. ') +
+            (mode === 'planned'
+              ? 'Wybierz miasto lub wieś z podpowiedzi.'
+              : 'Wpisz nazwę i wybierz lokalizację z podpowiedzi.')
           }
           placeholder={
             mode === 'planned'
@@ -63,9 +77,9 @@ export function TripLocationField({
           placeholderTextColor={theme.textSecondary}
           value={selected?.name ?? query}
           onChangeText={(text) => {
+            onChange('');
             setQuery(text);
             setExpanded(true);
-            onChange('');
           }}
           onFocus={() => setExpanded(true)}
           autoCorrect={false}

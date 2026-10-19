@@ -7,7 +7,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  TextInput,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,6 +18,7 @@ import {
   layout,
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
+import { ChipRow } from '@/components/ui/chip-row';
 import { CHILD_AGE_BANDS, DEMO_PROPOSALS } from '@/data/mocks/travel';
 import {
   clearDiscoveryDates,
@@ -26,23 +26,20 @@ import {
   getDiscoveryDateRangeError,
   INITIAL_FILTERS,
   resolveDiscoveryRange,
+  selectDiscoveryLocation,
   toggleDiscoveryTripMode,
   updateDiscoveryDateRange,
+  updateDiscoveryLocationQuery,
 } from './filter-trips';
 import { DateRangeSheet } from '@/components/trips/date-range-sheet';
 import { DateRangeField } from '@/components/trips/date-range-field';
 import { dateToleranceLabel } from '@/features/trips/date-range-calendar';
 import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
-import {
-  Fonts,
-  MaxContentWidth,
-  Radius,
-  Spacing,
-  Typography,
-} from '@/constants/theme';
+import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { ChildAgeBand, DiscoveryFilters } from '@/types/travel';
 import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
+import { TripLocationField } from '@/features/trips/trip-location-field';
 
 interface DiscoveryFiltersSheetProps {
   initialFilters: DiscoveryFilters;
@@ -143,88 +140,70 @@ export function DiscoveryFiltersSheet({
                 Wybierz jeden lub oba typy. Co najmniej jeden musi pozostać
                 zaznaczony.
               </AppText>
-              {(
-                [
-                  {
-                    mode: 'planned',
-                    label: 'Mam plan',
-                    description: 'Wyjazdy z ustalonym celem',
-                  },
-                  {
-                    mode: 'flexible',
-                    label: 'Szukam pomysłu',
-                    description: 'Kierunek do wspólnego wyboru',
-                  },
-                ] as const
-              ).map((option) => {
-                const selected = draft.tripModes.includes(option.mode);
-                return (
-                  <Pressable
-                    key={option.mode}
-                    accessibilityRole="checkbox"
-                    accessibilityLabel={option.label}
-                    accessibilityState={{ checked: selected }}
-                    aria-checked={selected}
-                    accessibilityHint={
-                      selected && draft.tripModes.length === 1
-                        ? 'Zaznacz drugi typ, aby odznaczyć ten.'
-                        : undefined
-                    }
-                    onPress={() =>
-                      setDraft((current) => ({
-                        ...current,
-                        tripModes: toggleDiscoveryTripMode(
-                          current.tripModes,
-                          option.mode,
-                        ),
-                      }))
-                    }
-                    style={({ pressed }) => [
-                      layout.row,
-                      {
-                        minHeight: 64,
-                        padding: 12,
-                        borderRadius: 16,
-                        borderWidth: 1,
-                        borderColor: selected
-                          ? theme.primaryStrong
-                          : theme.border,
-                        backgroundColor: selected
-                          ? theme.muted
-                          : theme.backgroundElement,
-                        opacity: pressed ? 0.7 : 1,
-                      },
-                    ]}
-                  >
-                    <View
-                      style={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: 6,
-                        borderWidth: 1,
-                        borderColor: selected
-                          ? theme.primaryStrong
-                          : theme.border,
-                        backgroundColor: selected
-                          ? theme.primaryStrong
-                          : theme.backgroundElement,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}
+              <ChipRow horizontal label="Typ ogłoszenia">
+                {(
+                  [
+                    {
+                      mode: 'planned',
+                      label: 'Mam plan',
+                    },
+                    {
+                      mode: 'flexible',
+                      label: 'Szukam pomysłu',
+                    },
+                  ] as const
+                ).map((option) => {
+                  const selected = draft.tripModes.includes(option.mode);
+                  return (
+                    <Pressable
+                      key={option.mode}
+                      accessibilityRole="checkbox"
+                      accessibilityLabel={option.label}
+                      accessibilityState={{ checked: selected }}
+                      aria-checked={selected}
+                      accessibilityHint={
+                        selected && draft.tripModes.length === 1
+                          ? 'Zaznacz drugi typ, aby odznaczyć ten.'
+                          : undefined
+                      }
+                      onPress={() =>
+                        setDraft((current) => ({
+                          ...current,
+                          tripModes: toggleDiscoveryTripMode(
+                            current.tripModes,
+                            option.mode,
+                          ),
+                        }))
+                      }
+                      style={({ pressed }) => [
+                        layout.row,
+                        {
+                          minHeight: 48,
+                          paddingHorizontal: 12,
+                          paddingVertical: 6,
+                          borderRadius: Radius.pill,
+                          borderWidth: 1,
+                          borderColor: selected
+                            ? theme.primaryStrong
+                            : theme.border,
+                          backgroundColor: selected
+                            ? theme.backgroundSelected
+                            : theme.muted,
+                          opacity: pressed ? 0.7 : 1,
+                        },
+                      ]}
                     >
-                      {selected ? (
-                        <Icon name="check" size={18} color={theme.onPrimary} />
-                      ) : null}
-                    </View>
-                    <View style={{ flex: 1, gap: 2 }}>
-                      <AppText variant="label">{option.label}</AppText>
-                      <AppText variant="caption" color="textSecondary">
-                        {option.description}
+                      {selected ? <Icon name="check" size={15} /> : null}
+                      <AppText
+                        variant="label"
+                        color={selected ? 'primaryStrong' : 'text'}
+                      >
+                        {option.label}
                       </AppText>
-                    </View>
-                  </Pressable>
-                );
-              })}
+                    </Pressable>
+                  );
+                })}
+              </ChipRow>
             </View>
             <View style={layout.stack}>
               <View style={layout.row}>
@@ -266,31 +245,20 @@ export function DiscoveryFiltersSheet({
               ) : null}
             </View>
             <View style={layout.stack}>
-              <AppText variant="label">Miejsce lub region</AppText>
-              <View
-                style={[
-                  styles.inputRow,
-                  {
-                    borderColor: theme.border,
-                    backgroundColor: theme.background,
-                  },
-                ]}
-              >
-                <Icon name="pin" size={20} />
-                <TextInput
-                  accessibilityLabel="Miejsce lub region"
-                  placeholder="Np. Chłapowo, Mazury lub Sudety"
-                  placeholderTextColor={theme.textSecondary}
-                  value={draft.location}
-                  onChangeText={(location) =>
-                    setDraft((current) => ({ ...current, location }))
-                  }
-                  autoCorrect={false}
-                  returnKeyType="done"
-                  onSubmitEditing={Keyboard.dismiss}
-                  style={[styles.input, { color: theme.text }]}
-                />
-              </View>
+              <TripLocationField
+                mode="flexible"
+                required={false}
+                value={draft.locationId ?? ''}
+                query={draft.location}
+                onChange={(id) =>
+                  setDraft((current) => selectDiscoveryLocation(current, id))
+                }
+                onQueryChange={(query) =>
+                  setDraft((current) =>
+                    updateDiscoveryLocationQuery(current, query),
+                  )
+                }
+              />
               <AppText variant="caption" color="textSecondary">
                 Szukamy w celach wyjazdów i obszarach do wspólnego wyboru.
               </AppText>
@@ -300,7 +268,7 @@ export function DiscoveryFiltersSheet({
                 <AppText variant="label">
                   Towarzystwo z preferencji wyjazdu
                 </AppText>
-                <View style={layout.wrap}>
+                <ChipRow horizontal label="Towarzystwo z preferencji wyjazdu">
                   {GROUP_KIND_OPTIONS.map((option) => (
                     <Chip
                       key={option.value}
@@ -318,7 +286,7 @@ export function DiscoveryFiltersSheet({
                       }
                     />
                   ))}
-                </View>
+                </ChipRow>
               </View>
             ) : null}
             <View style={layout.stack}>
@@ -326,7 +294,7 @@ export function DiscoveryFiltersSheet({
               <AppText variant="caption" color="textSecondary">
                 Opcjonalnie · możesz wybrać kilka przedziałów
               </AppText>
-              <View style={layout.wrap}>
+              <ChipRow horizontal label="Towarzystwo dla dzieci">
                 {CHILD_AGE_BANDS.map((band) => (
                   <Chip
                     key={band}
@@ -336,14 +304,14 @@ export function DiscoveryFiltersSheet({
                     onPress={() => toggleAge(band)}
                   />
                 ))}
-              </View>
+              </ChipRow>
             </View>
             <View style={layout.stack}>
               <AppText variant="label">Zwierzęta na wyjeździe</AppText>
               <AppText variant="caption" color="textSecondary">
                 Opcjonalnie · możesz wybrać kilka rodzajów
               </AppText>
-              <View style={layout.wrap}>
+              <ChipRow horizontal label="Zwierzęta na wyjeździe">
                 {ANIMAL_OPTIONS.map(({ kind, label }) => (
                   <Chip
                     key={kind}
@@ -360,7 +328,7 @@ export function DiscoveryFiltersSheet({
                     }
                   />
                 ))}
-              </View>
+              </ChipRow>
             </View>
           </ScrollView>
           <View style={[styles.footer, { borderTopColor: theme.border }]}>
@@ -427,21 +395,5 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.three,
     borderTopWidth: 1,
     gap: Spacing.two,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    borderWidth: 1,
-    borderRadius: Radius.small,
-    paddingHorizontal: 12,
-  },
-  input: {
-    flex: 1,
-    minWidth: 0,
-    minHeight: 52,
-    paddingVertical: 12,
-    fontFamily: Fonts.sans,
-    ...Typography.body,
   },
 });

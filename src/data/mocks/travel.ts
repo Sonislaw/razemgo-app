@@ -126,7 +126,11 @@ export const DEMO_TRIPS: TripPlan[] = [
 
     groupId: 'demo-1',
     mode: 'planned',
-    destination: { name: 'Chłapowo', region: 'Pomorze' },
+    destination: {
+      name: 'Chłapowo',
+      region: 'Pomorze',
+      locationId: 'pl-locality:4259',
+    },
     startDate: '2027-05-22',
     endDate: '2027-05-25',
     description:
@@ -140,7 +144,11 @@ export const DEMO_TRIPS: TripPlan[] = [
 
     groupId: 'demo-2',
     mode: 'planned',
-    destination: { name: 'Mikołajki', region: 'Mazury' },
+    destination: {
+      name: 'Mikołajki',
+      region: 'Mazury',
+      locationId: 'pl-locality:21411',
+    },
     startDate: '2027-06-04',
     endDate: '2027-06-07',
     description:
@@ -182,7 +190,11 @@ export const DEMO_TRIPS: TripPlan[] = [
 
     groupId: 'demo-5',
     mode: 'planned',
-    destination: { name: 'Łeba', region: 'Pomorze' },
+    destination: {
+      name: 'Łeba',
+      region: 'Pomorze',
+      locationId: 'pl-locality:19313',
+    },
     startDate: '2027-06-18',
     endDate: '2027-06-21',
     description:
@@ -196,7 +208,11 @@ export const DEMO_TRIPS: TripPlan[] = [
 
     groupId: 'demo-6',
     mode: 'planned',
-    destination: { name: 'Wetlina', region: 'Bieszczady' },
+    destination: {
+      name: 'Wetlina',
+      region: 'Bieszczady',
+      locationId: 'pl-locality:38408',
+    },
     startDate: '2027-06-05',
     endDate: '2027-06-08',
     description:

@@ -34,6 +34,8 @@ import {
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import {
   getTripStatus,
+  changeTripLocation,
+  changeTripMode,
   newTripForm,
   toTripForm,
   todayDate,
@@ -52,6 +54,10 @@ import type { TripForm } from '@/types/owned-trip';
 import { TripAnimalFields } from '@/features/animals/animal-fields';
 import { AnimalInformation } from '@/features/animals/animal-ui';
 import { TripLocationField } from '@/features/trips/trip-location-field';
+import {
+  findTripLocation,
+  isConcreteTripLocation,
+} from '@/features/trips/trip-locations';
 
 const toggle = <T,>(values: T[], value: T): T[] =>
   values.includes(value)
@@ -70,9 +76,10 @@ export default function TripEditorScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const existing = state.trips.find((trip) => trip.id === id);
-  const [initial] = useState(() =>
-    existing ? toTripForm(existing) : newTripForm(profile),
-  );
+  const [initial] = useState(() => {
+    const values = existing ? toTripForm(existing) : newTripForm(profile);
+    return changeTripMode(values, values.mode);
+  });
   const [form, setForm] = useState<TripForm>(initial);
   const modeLabel = form.mode === 'planned' ? 'Mam plan' : 'Szukam pomysłu';
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -325,10 +332,9 @@ export default function TripEditorScreen() {
                         checked: form.mode === option.mode,
                       }}
                       onPress={() => {
-                        setForm((current) => ({
-                          ...current,
-                          mode: option.mode,
-                        }));
+                        setForm((current) =>
+                          changeTripMode(current, option.mode),
+                        );
                         setErrors([]);
                       }}
                       style={[
@@ -376,9 +382,23 @@ export default function TripEditorScreen() {
             ) : step === 2 ? (
               <>
                 <TripLocationField
+                  mode={form.mode}
                   value={form.locationId}
-                  onChange={(id) => update('locationId', id)}
+                  onChange={(id) => {
+                    setForm((current) => changeTripLocation(current, id));
+                    setErrors([]);
+                  }}
                 />
+                {form.mode === 'planned' &&
+                isConcreteTripLocation(findTripLocation(form.locationId)) ? (
+                  <ProfileTextField
+                    label="Nazwa kempingu"
+                    value={form.campgroundName}
+                    onChangeText={(value) => update('campgroundName', value)}
+                    maxLength={120}
+                    hint="Opcjonalnie — jeśli wiecie już, gdzie się zatrzymacie."
+                  />
+                ) : null}
                 <View style={{ gap: 8 }}>
                   <AppText variant="label">
                     Jak podróżujecie na ten wyjazd?
@@ -531,6 +551,11 @@ export default function TripEditorScreen() {
                   <AppText variant="label">
                     {modeLabel} · {ownTripPlace(preview)}
                   </AppText>
+                  {preview.campgroundName ? (
+                    <AppText variant="label">
+                      Kemping: {preview.campgroundName}
+                    </AppText>
+                  ) : null}
                   <AppText variant="label">{ownTripDates(preview)}</AppText>
                   <AppText variant="caption">
                     {form.travelModes.join(', ')}

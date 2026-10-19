@@ -4,6 +4,7 @@ import { AppText, layout } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { Fonts, Radius, Typography } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import type { TripMode } from '@/types/travel';
 import {
   findTripLocation,
   locationContext,
@@ -13,21 +14,23 @@ import {
   MIN_LOCATION_QUERY_LENGTH,
 } from './trip-locations';
 
-const label = 'Miejscowość, region lub kraj';
-
 export function TripLocationField({
   value,
+  mode,
   onChange,
 }: {
   value: string;
+  mode: TripMode;
   onChange: (id: string) => void;
 }) {
   const theme = useTheme();
+  const label =
+    mode === 'planned' ? 'Miasto lub wieś' : 'Miejscowość, region lub kraj';
   const input = useRef<TextInput>(null);
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState(false);
   const selected = findTripLocation(value);
-  const results = searchTripLocations(query);
+  const results = searchTripLocations(query, mode);
   const showSuggestions = expanded && !selected;
 
   return (
@@ -47,8 +50,16 @@ export function TripLocationField({
         <TextInput
           ref={input}
           accessibilityLabel={label}
-          accessibilityHint="Pole wymagane. Wpisz nazwę i wybierz lokalizację z podpowiedzi."
-          placeholder="Wpisz nazwę lokalizacji"
+          accessibilityHint={
+            mode === 'planned'
+              ? 'Pole wymagane. Wybierz miasto lub wieś z podpowiedzi.'
+              : 'Pole wymagane. Wpisz nazwę i wybierz lokalizację z podpowiedzi.'
+          }
+          placeholder={
+            mode === 'planned'
+              ? 'Wpisz nazwę miejscowości'
+              : 'Wpisz nazwę lokalizacji'
+          }
           placeholderTextColor={theme.textSecondary}
           value={selected?.name ?? query}
           onChangeText={(text) => {
@@ -159,7 +170,9 @@ export function TripLocationField({
         </View>
       ) : (
         <AppText variant="caption" color="textSecondary">
-          Wpisz nazwę i wybierz lokalizację z podpowiedzi.
+          {mode === 'planned'
+            ? 'Wybierz konkretną miejscowość, do której jedziecie.'
+            : 'Wpisz nazwę i wybierz lokalizację z podpowiedzi.'}
         </AppText>
       )}
       {selected?.source === 'demo' ? (

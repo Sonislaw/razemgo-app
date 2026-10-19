@@ -1,7 +1,7 @@
 import { DEMO_LOCATIONS } from '../../data/mocks/locations.ts';
 import { POLISH_LOCALITIES } from '../../data/locations/polish-localities.ts';
 import type { LocationOption } from '../../types/location';
-import type { TripPlace } from '../../types/travel';
+import type { TripMode, TripPlace } from '../../types/travel';
 
 export const LOCATION_KIND_LABELS: Record<LocationOption['kind'], string> = {
   locality: 'Miejscowość',
@@ -12,6 +12,19 @@ export const LOCATION_KIND_LABELS: Record<LocationOption['kind'], string> = {
 };
 export const TRIP_LOCATION_REQUIRED_ERROR =
   'Wybierz lokalizację z podpowiedzi — miejscowość, region lub kraj.';
+export const PLANNED_TRIP_LOCATION_REQUIRED_ERROR =
+  'W trybie „Mam plan” wybierz miasto lub wieś z podpowiedzi.';
+
+export function isConcreteTripLocation(location?: LocationOption): boolean {
+  return !!location && ['locality', 'city', 'village'].includes(location.kind);
+}
+
+export function isLocationAllowedForTrip(
+  location: LocationOption,
+  mode: TripMode,
+): boolean {
+  return mode === 'flexible' || isConcreteTripLocation(location);
+}
 
 function normalize(value: string): string {
   return value
@@ -125,7 +138,10 @@ export function findTripLocation(id?: string): LocationOption | undefined {
   return location;
 }
 
-export function searchTripLocations(query: string): LocationOption[] {
+export function searchTripLocations(
+  query: string,
+  mode: TripMode = 'flexible',
+): LocationOption[] {
   const value = normalize(query)
     .replace(/[,.;]+/gu, ' ')
     .replace(/\s+/gu, ' ')
@@ -137,12 +153,17 @@ export function searchTripLocations(query: string): LocationOption[] {
       'pl-locality:4259',
       'demo-location-kaszuby',
       'demo-location-slowenia',
-    ].map((id) => findTripLocation(id)!);
+    ]
+      .map((id) => findTripLocation(id)!)
+      .filter((location) => isLocationAllowedForTrip(location, mode));
   if (value.length < MIN_LOCATION_QUERY_LENGTH) return [];
-  if (value === 'polska') return [findTripLocation('country:PL')!];
+  if (value === 'polska' && mode === 'flexible')
+    return [findTripLocation('country:PL')!];
   const terms = value.split(' ');
   const buckets = terms
-    .filter((term) => term.length >= 2 && term !== 'polska')
+    .filter(
+      (term) => term.length >= 2 && (term !== 'polska' || terms.length === 1),
+    )
     .map((term) => POLISH_LOCALITIES.prefixes[term.slice(0, 2)] ?? []);
   const candidates = buckets.length
     ? buckets.reduce((smallest, bucket) =>
@@ -158,7 +179,9 @@ export function searchTripLocations(query: string): LocationOption[] {
     a.entry.id.localeCompare(b.entry.id);
   for (const entry of [
     ...candidates.map(entryForRow),
-    ...supplementaryEntries,
+    ...supplementaryEntries.filter((entry) =>
+      isLocationAllowedForTrip(findTripLocation(entry.id)!, mode),
+    ),
   ]) {
     if (!terms.every((term) => entry.text.includes(term))) continue;
     const score =

@@ -128,6 +128,9 @@ export default function OwnTripDetailsScreen() {
               <Icon name="pin" size={20} />
               <AppText style={{ flex: 1 }}>{ownTripPlace(trip)}</AppText>
             </View>
+            {trip.mode === 'planned' && trip.campgroundName ? (
+              <AppText>Kemping: {trip.campgroundName}</AppText>
+            ) : null}
             <View style={layout.row}>
               <Icon name="calendar" size={20} />
               <AppText style={{ flex: 1 }}>{ownTripDates(trip)}</AppText>

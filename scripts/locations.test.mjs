@@ -10,11 +10,14 @@ import {
   locationContext,
   MAX_LOCATION_SUGGESTIONS,
   searchTripLocations,
+  PLANNED_TRIP_LOCATION_REQUIRED_ERROR,
 } from '../src/features/trips/trip-locations.ts';
 import {
   createOwnTripsState,
   ownTripsReducer,
   toTripForm,
+  changeTripMode,
+  validateTripForm,
 } from '../src/features/trips/own-trips-state.ts';
 import { MY_GROUP, MY_TRIPS } from '../src/data/mocks/travel.ts';
 
@@ -83,6 +86,106 @@ test('legacy ids resolve to real source locations and explicit demo regions stay
   assert.equal(findTripLocation('pl-locality:999999999'), undefined);
   assert.equal(findTripLocation('constructor'), undefined);
   assert.equal(findTripLocation('__proto__'), undefined);
+});
+
+test('planned search only returns cities and villages before applying its result limit', () => {
+  for (const query of [
+    '',
+    'pomorskie',
+    'polska',
+    'kaszuby',
+    'gdansk',
+    'chlapowo',
+  ]) {
+    const result = searchTripLocations(query, 'planned');
+    assert.ok(
+      result.every((item) =>
+        ['city', 'village', 'locality'].includes(item.kind),
+      ),
+    );
+  }
+  assert.equal(
+    searchTripLocations('pomorskie', 'planned').length,
+    MAX_LOCATION_SUGGESTIONS,
+  );
+  assert.equal(searchTripLocations('polska', 'planned')[0].kind, 'village');
+  assert.deepEqual(searchTripLocations('slowenia', 'planned'), []);
+  assert.equal(searchTripLocations('pomorskie', 'flexible')[0].kind, 'region');
+  assert.equal(searchTripLocations('polska', 'flexible')[0].kind, 'country');
+  assert.equal(searchTripLocations('slowenia', 'flexible')[0].kind, 'country');
+});
+
+test('planned publication rejects a region or country while flexible publication accepts it', () => {
+  const state = createOwnTripsState(
+    MY_TRIPS.map((trip) => ({
+      ...trip,
+      status: 'published',
+      visibility: 'public',
+      travelModes: MY_GROUP.travelModes,
+      matching: { groupKinds: ['family'], childAgeBands: [] },
+    })),
+  );
+  const base = toTripForm(state.trips[0]);
+  for (const locationId of [
+    'pl-region:pomorskie',
+    'country:PL',
+    'demo-location-kaszuby',
+    'demo-location-slowenia',
+  ]) {
+    const planned = { ...base, mode: 'planned', locationId };
+    assert.ok(
+      validateTripForm(planned, 2).includes(
+        PLANNED_TRIP_LOCATION_REQUIRED_ERROR,
+      ),
+    );
+    const action = {
+      type: 'save',
+      form: planned,
+      groupId: state.trips[0].groupId,
+      draft: false,
+      today: '2026-10-19',
+    };
+    assert.equal(ownTripsReducer(state, action), state);
+    const flexible = { ...planned, mode: 'flexible' };
+    assert.deepEqual(validateTripForm(flexible), []);
+    const saved = ownTripsReducer(state, { ...action, form: flexible });
+    assert.equal(saved.trips.length, state.trips.length + 1);
+    assert.equal(toTripForm(saved.trips.at(-1)).locationId, locationId);
+  }
+});
+
+test('switching to a concrete plan clears broad locations and preserves concrete locations and other form values', () => {
+  const base = {
+    mode: 'flexible',
+    locationId: 'pl-region:pomorskie',
+    campgroundName: '',
+    startDate: '2027-05-21',
+    endDate: '2027-05-24',
+    description: 'Wspólny weekend',
+    travelModes: ['Przyczepa'],
+  };
+  for (const locationId of [
+    'pl-region:pomorskie',
+    'country:PL',
+    'demo-location-kaszuby',
+    'demo-location-slowenia',
+  ]) {
+    const original = { ...base, locationId };
+    const switched = changeTripMode(original, 'planned');
+    assert.equal(switched.locationId, '');
+    assert.equal(switched.mode, 'planned');
+    assert.deepEqual(
+      { ...switched, mode: original.mode, locationId },
+      original,
+    );
+    assert.equal(original.locationId, locationId);
+    assert.equal(changeTripMode(original, 'flexible').locationId, locationId);
+  }
+  for (const locationId of ['pl-locality:4259', 'pl-locality:8457']) {
+    const planned = changeTripMode({ ...base, locationId }, 'planned');
+    assert.equal(planned.locationId, locationId);
+    assert.equal(changeTripMode(planned, 'flexible').locationId, locationId);
+  }
 });
 
 test('publication and editing retain a selected village id even for names repeated within a province', () => {

@@ -24,6 +24,7 @@ export interface TripForm {
   startDate: string;
   endDate: string;
   locationId: string;
+  campgroundName: string;
   travelModes: string[];
   interests: string[];
   description: string;

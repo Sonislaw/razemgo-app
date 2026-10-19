@@ -6,6 +6,8 @@ import {
   DEMO_PROPOSALS,
 } from '../src/data/mocks/travel.ts';
 import {
+  changeTripLocation,
+  changeTripMode,
   createOwnTripsState,
   discoveryFiltersForTrip,
   EMPTY_TRIP_FILTERS,
@@ -33,6 +35,7 @@ import { getTripHeadline } from '../src/features/trips/trip-headline.ts';
 import {
   searchTripLocations,
   TRIP_LOCATION_REQUIRED_ERROR,
+  PLANNED_TRIP_LOCATION_REQUIRED_ERROR,
 } from '../src/features/trips/trip-locations.ts';
 const today = '2026-10-18';
 const profile = {
@@ -94,7 +97,11 @@ test('a selected location is mandatory for publishing in both modes; a typed nam
     for (const locationId of ['', 'Chłapowo', 'unknown-location']) {
       const values = { ...form(), mode, locationId };
       assert.ok(
-        validateTripForm(values, 2).includes(TRIP_LOCATION_REQUIRED_ERROR),
+        validateTripForm(values, 2).includes(
+          mode === 'planned'
+            ? PLANNED_TRIP_LOCATION_REQUIRED_ERROR
+            : TRIP_LOCATION_REQUIRED_ERROR,
+        ),
       );
       const state = initial();
       assert.equal(save(state, false, undefined, values), state);
@@ -111,7 +118,7 @@ test('legacy demo places resolve to selections and city, region and country sele
   assert.equal(Object.hasOwn(form(), 'placeName'), false);
   assert.equal(Object.hasOwn(form(), 'region'), false);
   for (const mode of ['planned', 'flexible']) {
-    for (const location of searchTripLocations('')) {
+    for (const location of searchTripLocations('', mode)) {
       const values = { ...form(), mode, locationId: location.id };
       assert.deepEqual(validateTripForm(values), []);
       let state = save(initial(), false, undefined, values);
@@ -135,6 +142,103 @@ test('legacy demo places resolve to selections and city, region and country sele
       assert.equal(toTripForm(state.trips.at(-1)).locationId, location.id);
       assert.equal(state.trips.at(-1).status, 'draft');
     }
+  }
+});
+
+test('campground is optional; its name is trimmed, saved, editable and copied for concrete plans', () => {
+  assert.equal(newTripForm(profile).campgroundName, '');
+  assert.equal(form().campgroundName, '');
+  for (const locationId of ['pl-locality:4259', 'pl-locality:8457']) {
+    const values = {
+      ...form(),
+      locationId,
+      campgroundName: '  Pod Sosnami  ',
+    };
+    assert.deepEqual(validateTripForm(values), []);
+    let state = save(initial(), false, undefined, values);
+    const trip = state.trips.at(-1);
+    assert.equal(trip.campgroundName, 'Pod Sosnami');
+    assert.equal(toTripForm(trip).campgroundName, 'Pod Sosnami');
+    state = save(state, false, trip.id, {
+      ...toTripForm(trip),
+      campgroundName: 'Nad Morzem',
+    });
+    const copy = reduce(state, { type: 'duplicate', id: trip.id }).trips.at(-1);
+    assert.equal(copy.campgroundName, 'Nad Morzem');
+    assert.equal(
+      createOwnTripsState([copy]).trips[0].campgroundName,
+      'Nad Morzem',
+    );
+    const cleared = save(state, false, trip.id, {
+      ...toTripForm(state.trips.at(-1)),
+      campgroundName: '   ',
+    }).trips.at(-1);
+    assert.equal(cleared.campgroundName, undefined);
+    assert.equal(toTripForm(cleared).campgroundName, '');
+  }
+});
+
+test('campground follows the selected locality; changing or clearing it removes a stale name', () => {
+  const values = { ...form(), campgroundName: 'Pod Sosnami' };
+  const before = JSON.stringify(values);
+  assert.equal(
+    changeTripLocation(values, values.locationId).campgroundName,
+    'Pod Sosnami',
+  );
+  assert.equal(changeTripMode(values, 'flexible').campgroundName, '');
+  assert.equal(
+    changeTripMode(values, 'flexible').locationId,
+    values.locationId,
+  );
+  assert.equal(
+    changeTripMode(changeTripMode(values, 'flexible'), 'planned')
+      .campgroundName,
+    '',
+  );
+  for (const locationId of [
+    '',
+    'pl-locality:8457',
+    'pl-region:pomorskie',
+    'country:PL',
+  ]) {
+    const changed = changeTripLocation(values, locationId);
+    assert.equal(changed.campgroundName, '');
+    assert.equal(changed.locationId, locationId);
+    assert.equal(changed.description, values.description);
+  }
+  assert.equal(JSON.stringify(values), before);
+});
+
+test('flexible plans cannot retain a hidden campground name for any location, including drafts and legacy data', () => {
+  for (const locationId of [
+    '',
+    'Chłapowo',
+    'pl-region:pomorskie',
+    'country:PL',
+    'pl-locality:4259',
+    'pl-locality:8457',
+  ]) {
+    const values = {
+      ...form(),
+      mode: 'flexible',
+      locationId,
+      campgroundName: 'Stara nazwa',
+    };
+    const trip = tripFromForm(values, 'preview', MY_GROUP.id, 'draft');
+    assert.equal(trip.campgroundName, undefined);
+    assert.equal(
+      save(initial(), true, undefined, values).trips.at(-1).campgroundName,
+      undefined,
+    );
+    assert.equal(
+      toTripForm({ ...trip, campgroundName: 'Stara nazwa' }).campgroundName,
+      '',
+    );
+    assert.equal(
+      createOwnTripsState([{ ...trip, campgroundName: 'Stara nazwa' }]).trips[0]
+        .campgroundName,
+      undefined,
+    );
   }
 });
 

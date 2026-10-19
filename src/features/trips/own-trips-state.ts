@@ -6,10 +6,13 @@ import type {
   TripStatus,
 } from '../../types/owned-trip';
 import type { TravelerProfile } from '../../types/profile';
-import type { DiscoveryFilters } from '../../types/travel';
+import type { DiscoveryFilters, TripMode } from '../../types/travel';
 import { cloneAnimals, validateAnimals } from '../animals/animal-data.ts';
 import {
   findTripLocation,
+  isConcreteTripLocation,
+  isLocationAllowedForTrip,
+  PLANNED_TRIP_LOCATION_REQUIRED_ERROR,
   tripLocationIdForPlace,
   TRIP_LOCATION_REQUIRED_ERROR,
 } from './trip-locations.ts';
@@ -101,6 +104,7 @@ export function toTripForm(trip: OwnedTrip): TripForm {
     startDate: trip.startDate,
     endDate: trip.endDate,
     locationId: tripLocationIdForPlace(place),
+    campgroundName: trip.mode === 'planned' ? (trip.campgroundName ?? '') : '',
     travelModes: [...trip.travelModes],
     interests: [...trip.interests],
     description: trip.description,
@@ -117,6 +121,7 @@ export function newTripForm(profile: TravelerProfile): TripForm {
     startDate: '',
     endDate: '',
     locationId: '',
+    campgroundName: '',
     travelModes: [...profile.group.travelModes],
     interests: [],
     description: '',
@@ -127,6 +132,31 @@ export function newTripForm(profile: TravelerProfile): TripForm {
     animals: cloneAnimals(profile.group.animals),
   };
 }
+export function changeTripLocation(
+  form: TripForm,
+  locationId: string,
+): TripForm {
+  return {
+    ...form,
+    locationId,
+    campgroundName:
+      form.mode === 'planned' &&
+      locationId === form.locationId &&
+      isConcreteTripLocation(findTripLocation(locationId))
+        ? form.campgroundName
+        : '',
+  };
+}
+export function changeTripMode(form: TripForm, mode: TripMode): TripForm {
+  const location = findTripLocation(form.locationId);
+  return changeTripLocation(
+    { ...form, mode },
+    location && !isLocationAllowedForTrip(location, mode)
+      ? ''
+      : form.locationId,
+  );
+}
+
 export function validateTripForm(form: TripForm, step?: 1 | 2 | 3): string[] {
   const errors: string[] = [];
   if (!step || step === 1) {
@@ -139,10 +169,21 @@ export function validateTripForm(form: TripForm, step?: 1 | 2 | 3): string[] {
   }
   if (!step || step === 2) {
     errors.push(...validateAnimals(form.animals.animals));
-    if (!findTripLocation(form.locationId))
-      errors.push(TRIP_LOCATION_REQUIRED_ERROR);
+    const location = findTripLocation(form.locationId);
+    if (!location || !isLocationAllowedForTrip(location, form.mode))
+      errors.push(
+        form.mode === 'planned'
+          ? PLANNED_TRIP_LOCATION_REQUIRED_ERROR
+          : TRIP_LOCATION_REQUIRED_ERROR,
+      );
     if (!form.travelModes.length)
       errors.push('Wybierz przynajmniej jeden sposób podróżowania.');
+    if (
+      form.mode === 'planned' &&
+      isConcreteTripLocation(location) &&
+      form.campgroundName.trim().length > 120
+    )
+      errors.push('Skróć nazwę kempingu do 120 znaków.');
     if (form.description.trim().length > 1000)
       errors.push('Skróć opis do 1000 znaków.');
   }
@@ -154,12 +195,18 @@ export function tripFromForm(
   groupId: string,
   status: TripStatus,
 ): OwnedTrip {
+  const location = findTripLocation(form.locationId);
+  const campgroundName =
+    form.mode === 'planned' && isConcreteTripLocation(location)
+      ? form.campgroundName.trim()
+      : '';
   const base = {
     id,
     groupId,
     startDate: form.startDate,
     endDate: form.endDate,
     description: form.description.trim(),
+    ...(campgroundName ? { campgroundName } : {}),
     landscape: form.landscape,
     interests: [...form.interests],
     travelModes: [...form.travelModes],
@@ -171,7 +218,6 @@ export function tripFromForm(
       childAgeBands: [...form.childAgeBands],
     },
   };
-  const location = findTripLocation(form.locationId);
   const place = {
     name: location?.name ?? '',
     region: location?.region ?? '',

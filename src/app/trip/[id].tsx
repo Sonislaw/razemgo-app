@@ -91,6 +91,9 @@ export default function TripDetailsScreen() {
           <Icon name="pin" />
           <AppText style={styles.flex}>{getTripLocation(trip)}</AppText>
         </View>
+        {trip.mode === 'planned' && trip.campgroundName ? (
+          <AppText>Kemping: {trip.campgroundName}</AppText>
+        ) : null}
         <View style={layout.row}>
           <Icon name="calendar" />
           <AppText style={styles.flex}>{formatTripDates(trip)}</AppText>

@@ -25,10 +25,15 @@ import {
   filterProposals,
   formatTripDates,
   getDiscoveryReferenceRange,
+  getTripLocation,
   resolveDiscoveryRange,
   sharedNights,
 } from '../src/features/discovery/filter-trips.ts';
 import { getTripHeadline } from '../src/features/trips/trip-headline.ts';
+import {
+  searchTripLocations,
+  TRIP_LOCATION_REQUIRED_ERROR,
+} from '../src/features/trips/trip-locations.ts';
 const today = '2026-10-18';
 const profile = {
   group: MY_GROUP,
@@ -56,6 +61,85 @@ const save = (state, draft, id, values = form()) =>
     draft,
     today,
   });
+
+test('demo location search narrows by name and context without case or Polish accents', () => {
+  assert.equal(searchTripLocations('').length, 5);
+  assert.deepEqual(
+    searchTripLocations('  CHŁA ').map((item) => item.name),
+    ['Chłapowo'],
+  );
+  assert.deepEqual(
+    searchTripLocations('chla').map((item) => item.name),
+    ['Chłapowo'],
+  );
+  assert.deepEqual(
+    searchTripLocations('gdansk').map((item) => item.name),
+    ['Gdańsk'],
+  );
+  assert.deepEqual(
+    searchTripLocations('pomorskie polska').map((item) => item.name),
+    ['Chłapowo', 'Gdańsk', 'Kaszuby'],
+  );
+  assert.deepEqual(
+    searchTripLocations('slowenia').map((item) => item.kind),
+    ['country'],
+  );
+  assert.deepEqual(
+    searchTripLocations('Slovenia').map((item) => item.name),
+    ['Słowenia'],
+  );
+  assert.deepEqual(searchTripLocations('Atlantyda'), []);
+});
+
+test('a selected demo location is mandatory for publishing in both modes; a typed name cannot bypass validation', () => {
+  assert.equal(newTripForm(profile).locationId, '');
+  for (const mode of ['planned', 'flexible']) {
+    for (const locationId of ['', 'Chłapowo', 'unknown-location']) {
+      const values = { ...form(), mode, locationId };
+      assert.ok(
+        validateTripForm(values, 2).includes(TRIP_LOCATION_REQUIRED_ERROR),
+      );
+      const state = initial();
+      assert.equal(save(state, false, undefined, values), state);
+    }
+  }
+});
+
+test('legacy demo places resolve to selections and city, region and country selections survive edits and copies', () => {
+  assert.equal(form().locationId, 'demo-location-chlapowo');
+  assert.equal(
+    toTripForm(initial().trips[1]).locationId,
+    'demo-location-kaszuby',
+  );
+  assert.equal(Object.hasOwn(form(), 'placeName'), false);
+  assert.equal(Object.hasOwn(form(), 'region'), false);
+  for (const mode of ['planned', 'flexible']) {
+    for (const location of searchTripLocations('')) {
+      const values = { ...form(), mode, locationId: location.id };
+      assert.deepEqual(validateTripForm(values), []);
+      let state = save(initial(), false, undefined, values);
+      const trip = state.trips.at(-1);
+      const place =
+        trip.mode === 'planned' ? trip.destination : trip.travelArea;
+      assert.equal(place.name, location.name);
+      assert.equal(place.region, location.region);
+      assert.equal(place.locationId, location.id);
+      assert.equal(toTripForm(trip).locationId, location.id);
+      assert.ok(!getTripLocation(trip).endsWith(', '));
+      assert.equal(
+        discoveryFiltersForTrip(trip).location,
+        location.region || location.name,
+      );
+      state = save(state, false, trip.id, {
+        ...toTripForm(trip),
+        description: 'Zmiana opisu',
+      });
+      state = reduce(state, { type: 'duplicate', id: trip.id });
+      assert.equal(toTripForm(state.trips.at(-1)).locationId, location.id);
+      assert.equal(state.trips.at(-1).status, 'draft');
+    }
+  }
+});
 
 test('trip headlines use the first eight description words and normalize whitespace', () => {
   const trip = {
@@ -198,14 +282,13 @@ test('planning mode and lifecycle are independent; changing mode removes stale d
   const switched = save(state, false, state.trips[0].id, {
     ...form(),
     mode: 'flexible',
-    placeName: 'Sudety',
-    region: 'Dolny Śląsk',
+    locationId: 'demo-location-kaszuby',
   });
   const trip = switched.trips[0];
   assert.equal(trip.mode, 'flexible');
   assert.equal(trip.status, 'published');
   assert.equal('destination' in trip, false);
-  assert.equal(trip.travelArea.name, 'Sudety');
+  assert.equal(trip.travelArea.name, 'Kaszuby');
   const paused = reduce(switched, {
     type: 'status',
     id: trip.id,

@@ -28,16 +28,21 @@ interface TripBase extends DateRange {
   landscape: LandscapeKind;
   animals: TripAnimals;
 }
+export interface TripPlace {
+  name: string;
+  region: string;
+  locationId?: string;
+}
 export type TripPlan = TripBase &
   (
     | {
         mode: 'planned';
-        destination: { name: string; region: string };
+        destination: TripPlace;
         travelArea?: never;
       }
     | {
         mode: 'flexible';
-        travelArea: { name: string; region: string };
+        travelArea: TripPlace;
         destination?: never;
       }
   );

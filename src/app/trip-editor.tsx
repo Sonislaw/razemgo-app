@@ -51,6 +51,7 @@ import {
 import type { TripForm } from '@/types/owned-trip';
 import { TripAnimalFields } from '@/features/animals/animal-fields';
 import { AnimalInformation } from '@/features/animals/animal-ui';
+import { TripLocationField } from '@/features/trips/trip-location-field';
 
 const toggle = <T,>(values: T[], value: T): T[] =>
   values.includes(value)
@@ -79,6 +80,7 @@ export default function TripEditorScreen() {
   const [confirmExit, setConfirmExit] = useState(false);
   const [showDates, setShowDates] = useState(false);
   const submitting = useRef(false);
+  const formScroll = useRef<ScrollView>(null);
   const update = <K extends keyof TripForm>(key: K, value: TripForm[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
     setErrors([]);
@@ -126,7 +128,10 @@ export default function TripEditorScreen() {
     if (submitting.current) return;
     const result = saveTrip(form, id, draft);
     setErrors(result.errors);
-    if (result.errors.length) return;
+    if (result.errors.length) {
+      formScroll.current?.scrollTo({ y: 0, animated: true });
+      return;
+    }
     submitting.current = true;
     Keyboard.dismiss();
     router.dismissTo('/trips');
@@ -142,6 +147,8 @@ export default function TripEditorScreen() {
     )
       validation.push('Wybierz termin z powrotem w przyszłości.');
     setErrors(validation);
+    if (validation.length)
+      formScroll.current?.scrollTo({ y: 0, animated: true });
     if (!validation.length) {
       Keyboard.dismiss();
       setStep(step === 1 ? 2 : 3);
@@ -247,7 +254,8 @@ export default function TripEditorScreen() {
           </View>
         </View>
         <ScrollView
-          key={step + '-' + errors.length}
+          key={step}
+          ref={formScroll}
           style={{ flex: 1 }}
           contentInsetAdjustmentBehavior="never"
           automaticallyAdjustKeyboardInsets={false}
@@ -367,27 +375,9 @@ export default function TripEditorScreen() {
               </>
             ) : step === 2 ? (
               <>
-                <ProfileTextField
-                  label={
-                    form.mode === 'planned'
-                      ? 'Miejscowość'
-                      : 'Preferowany obszar'
-                  }
-                  value={form.placeName}
-                  onChangeText={(value) => update('placeName', value)}
-                  maxLength={80}
-                  hint={
-                    form.mode === 'planned'
-                      ? 'Np. Chłapowo — cel wspólnego wyjazdu.'
-                      : 'Np. Kaszuby — dokładny cel możecie ustalić później.'
-                  }
-                />
-                <ProfileTextField
-                  label="Region"
-                  value={form.region}
-                  onChangeText={(value) => update('region', value)}
-                  maxLength={80}
-                  hint="Np. Pomorze. Miejsce zamieszkania nie określa celu wyjazdu."
+                <TripLocationField
+                  value={form.locationId}
+                  onChange={(id) => update('locationId', id)}
                 />
                 <View style={{ gap: 8 }}>
                   <AppText variant="label">

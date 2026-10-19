@@ -8,6 +8,11 @@ import type {
 import type { TravelerProfile } from '../../types/profile';
 import type { DiscoveryFilters } from '../../types/travel';
 import { cloneAnimals, validateAnimals } from '../animals/animal-data.ts';
+import {
+  findTripLocation,
+  tripLocationIdForPlace,
+  TRIP_LOCATION_REQUIRED_ERROR,
+} from './trip-locations.ts';
 
 export const TRIP_STATUS_LABELS: Record<TripStatus, string> = {
   draft: 'Szkic',
@@ -83,7 +88,7 @@ export function discoveryFiltersForTrip(trip: OwnedTrip): DiscoveryFilters {
           endDate: trip.endDate,
         }
       : undefined,
-    location: place.region,
+    location: place.region || place.name,
     dateFlexibilityDays: 0,
     groupKinds: [...trip.matching.groupKinds],
     childAgeBands: [...trip.matching.childAgeBands],
@@ -95,8 +100,7 @@ export function toTripForm(trip: OwnedTrip): TripForm {
     mode: trip.mode,
     startDate: trip.startDate,
     endDate: trip.endDate,
-    placeName: place.name,
-    region: place.region,
+    locationId: tripLocationIdForPlace(place),
     travelModes: [...trip.travelModes],
     interests: [...trip.interests],
     description: trip.description,
@@ -112,8 +116,7 @@ export function newTripForm(profile: TravelerProfile): TripForm {
     mode: 'planned',
     startDate: '',
     endDate: '',
-    placeName: '',
-    region: '',
+    locationId: '',
     travelModes: [...profile.group.travelModes],
     interests: [],
     description: '',
@@ -136,12 +139,8 @@ export function validateTripForm(form: TripForm, step?: 1 | 2 | 3): string[] {
   }
   if (!step || step === 2) {
     errors.push(...validateAnimals(form.animals.animals));
-    if (!form.placeName.trim() || !form.region.trim())
-      errors.push(
-        form.mode === 'planned'
-          ? 'Podaj miejscowość i region celu wyjazdu.'
-          : 'Podaj preferowany obszar i region. Dokładny cel ustalicie później.',
-      );
+    if (!findTripLocation(form.locationId))
+      errors.push(TRIP_LOCATION_REQUIRED_ERROR);
     if (!form.travelModes.length)
       errors.push('Wybierz przynajmniej jeden sposób podróżowania.');
     if (form.description.trim().length > 1000)
@@ -172,7 +171,12 @@ export function tripFromForm(
       childAgeBands: [...form.childAgeBands],
     },
   };
-  const place = { name: form.placeName.trim(), region: form.region.trim() };
+  const location = findTripLocation(form.locationId);
+  const place = {
+    name: location?.name ?? '',
+    region: location?.region ?? '',
+    ...(location ? { locationId: location.id } : {}),
+  };
   return form.mode === 'planned'
     ? { ...base, mode: 'planned', destination: place }
     : { ...base, mode: 'flexible', travelArea: place };

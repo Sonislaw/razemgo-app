@@ -23,8 +23,7 @@ export interface TripForm {
   mode: TripMode;
   startDate: string;
   endDate: string;
-  placeName: string;
-  region: string;
+  locationId: string;
   travelModes: string[];
   interests: string[];
   description: string;

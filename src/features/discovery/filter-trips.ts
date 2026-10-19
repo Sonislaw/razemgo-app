@@ -82,7 +82,7 @@ export function sharedNights(a: DateRange, b: DateRange): number {
 }
 export function getTripLocation(trip: TripPlan): string {
   const place = trip.mode === 'planned' ? trip.destination : trip.travelArea;
-  return place.name + ', ' + place.region;
+  return [place.name, place.region].filter(Boolean).join(', ');
 }
 export function filterProposals(
   proposals: TripProposal[],

@@ -97,7 +97,13 @@ test('recommendation dates shift one real stay without summing plans or extendin
       endDate: '2027-05-30',
     },
   };
-  const flexible = { ...trips[0], dateFlexibilityDays: 3 };
+  const { destination, ...base } = trips[0];
+  const flexible = {
+    ...base,
+    mode: 'flexible',
+    travelArea: destination,
+    dateFlexibilityDays: 3,
+  };
   const result = selectHomeRecommendations(
     [late],
     profile,
@@ -107,6 +113,15 @@ test('recommendation dates shift one real stay without summing plans or extendin
   assert.equal(result.length, 1);
   assert.equal(result[0].nights, 3);
   assert.equal(result[0].dateShifted, true);
+  const fixed = selectHomeRecommendations(
+    [late],
+    profile,
+    [{ ...trips[0], dateFlexibilityDays: 3 }],
+    today,
+  );
+  assert.equal(fixed[0].nights, 0);
+  assert.equal(fixed[0].dateShifted, false);
+  assert.notEqual(fixed[0].source, 'trip');
 });
 
 test('without a searchable plan, profile interests drive suggestions and never invent date agreement', () => {

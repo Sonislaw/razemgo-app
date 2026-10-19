@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
 
 export const SYMBOLS = {
+  sort: { ios: 'arrow.up.arrow.down', android: 'sort', web: 'sort' },
   paw: { ios: 'pawprint', android: 'pets', web: 'pets' },
   pause: { ios: 'pause', android: 'pause', web: 'pause' },
   copy: { ios: 'doc.on.doc', android: 'content_copy', web: 'content_copy' },

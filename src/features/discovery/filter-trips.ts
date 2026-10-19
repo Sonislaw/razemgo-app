@@ -1,22 +1,72 @@
 import type {
   ChildAgeBand,
   DateRange,
-  DemoDateRange,
   DiscoveryFilters,
   TripPlan,
+  TripMode,
   TripProposal,
   TravelGroup,
 } from '../../types/travel';
 import type { OwnedTrip } from '../../types/owned-trip';
 import type { TravelerProfile } from '../../types/profile';
+import { isValidDate } from '../trips/own-trips-state.ts';
 
 export const INITIAL_FILTERS: DiscoveryFilters = {
-  mode: 'planned',
+  tripModes: ['planned', 'flexible'],
   dateRangeId: 'all',
   location: '',
   childAgeBands: [],
   animalKinds: [],
 };
+export function clearDiscoveryDates(
+  filters: DiscoveryFilters,
+): DiscoveryFilters {
+  return {
+    ...filters,
+    dateRangeId: 'all',
+    customDateRange: undefined,
+    dateFlexibilityDays: 0,
+  };
+}
+export function updateDiscoveryDate(
+  filters: DiscoveryFilters,
+  field: keyof DateRange,
+  value: string,
+): DiscoveryFilters {
+  const range = {
+    startDate: filters.customDateRange?.startDate ?? '',
+    endDate: filters.customDateRange?.endDate ?? '',
+    [field]: value,
+  };
+  return {
+    ...filters,
+    dateRangeId: 'custom',
+    customDateRange: range,
+    dateFlexibilityDays: 0,
+  };
+}
+export function getDiscoveryDateRangeError(
+  range?: DateRange,
+): string | undefined {
+  if (!range) return undefined;
+  if (!range.startDate || !range.endDate)
+    return 'Uzupełnij obie daty: „Od” i „Do”.';
+  if (!isValidDate(range.startDate) || !isValidDate(range.endDate))
+    return 'Wybierz poprawne daty.';
+  if (range.endDate <= range.startDate)
+    return 'Data „Do” musi przypadać po dacie „Od”.';
+  return undefined;
+}
+export function toggleDiscoveryTripMode(
+  modes: TripMode[],
+  mode: TripMode,
+): TripMode[] {
+  return modes.includes(mode)
+    ? modes.length === 1
+      ? modes
+      : modes.filter((item) => item !== mode)
+    : [...modes, mode];
+}
 export function normalizeLocation(value: string): string {
   return value
     .trim()
@@ -43,10 +93,14 @@ export function filterProposals(
   dateRange?: DateRange,
 ): TripProposal[] {
   const location = normalizeLocation(filters.location);
-  const range =
-    dateRange ??
-    (filters.dateRangeId === 'own-trip' ? filters.customDateRange : undefined);
+  if (
+    filters.dateRangeId !== 'all' &&
+    getDiscoveryDateRangeError(filters.customDateRange)
+  )
+    return [];
+  const range = dateRange ?? resolveDiscoveryRange(filters);
   const matching = proposals.filter(({ trip, group }) => {
+    if (!filters.tripModes.includes(trip.mode)) return false;
     const reference = getDiscoveryReferenceRange(filters, range, trip);
     if (reference && sharedNights(trip, reference) <= 0) return false;
     if (filters.groupKinds?.length && !filters.groupKinds.includes(group.kind))
@@ -70,12 +124,7 @@ export function filterProposals(
       return false;
     return true;
   });
-  const preferredMode = filters.mode === 'planned' ? 'flexible' : 'planned';
-  return matching.sort(
-    (a, b) =>
-      Number(b.trip.mode === preferredMode) -
-      Number(a.trip.mode === preferredMode),
-  );
+  return matching;
 }
 export function getDiscoveryReferenceRange(
   filters: DiscoveryFilters,
@@ -124,11 +173,11 @@ export function getDiscoveryReferenceRange(
 }
 export function resolveDiscoveryRange(
   filters: DiscoveryFilters,
-  ranges: DemoDateRange[],
 ): DateRange | undefined {
-  return filters.dateRangeId === 'own-trip'
+  return filters.dateRangeId !== 'all' &&
+    !getDiscoveryDateRangeError(filters.customDateRange)
     ? filters.customDateRange
-    : ranges.find((range) => range.id === filters.dateRangeId);
+    : undefined;
 }
 export function formatTripDates(trip: DateRange): string {
   const format = (date: string) =>
@@ -254,13 +303,14 @@ export function selectHomeRecommendations(
       const place =
         ownTrip.mode === 'planned' ? ownTrip.destination : ownTrip.travelArea;
       const filters: DiscoveryFilters = {
-        mode: ownTrip.mode,
+        tripModes: ['planned', 'flexible'],
         dateRangeId: 'own-trip',
         customDateRange: {
           startDate: ownTrip.startDate,
           endDate: ownTrip.endDate,
         },
-        dateFlexibilityDays: ownTrip.dateFlexibilityDays,
+        dateFlexibilityDays:
+          ownTrip.mode === 'flexible' ? ownTrip.dateFlexibilityDays : 0,
         location: place.region,
         childAgeBands: ownTrip.matching.childAgeBands,
         groupKinds: ownTrip.matching.groupKinds,

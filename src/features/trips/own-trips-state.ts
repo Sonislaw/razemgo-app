@@ -74,7 +74,7 @@ export function discoveryFiltersForTrip(trip: OwnedTrip): DiscoveryFilters {
   const place = trip.mode === 'planned' ? trip.destination : trip.travelArea;
   const valid = isValidDate(trip.startDate) && isValidDate(trip.endDate);
   return {
-    mode: trip.mode,
+    tripModes: ['planned', 'flexible'],
     sourceTripId: trip.id,
     dateRangeId: valid ? 'own-trip' : 'all',
     customDateRange: valid
@@ -84,7 +84,8 @@ export function discoveryFiltersForTrip(trip: OwnedTrip): DiscoveryFilters {
         }
       : undefined,
     location: place.region,
-    dateFlexibilityDays: trip.dateFlexibilityDays,
+    dateFlexibilityDays:
+      trip.mode === 'flexible' ? trip.dateFlexibilityDays : 0,
     groupKinds: [...trip.matching.groupKinds],
     childAgeBands: [...trip.matching.childAgeBands],
   };
@@ -98,7 +99,8 @@ export function toTripForm(trip: OwnedTrip): TripForm {
     endDate: trip.endDate,
     placeName: place.name,
     region: place.region,
-    dateFlexibilityDays: trip.dateFlexibilityDays,
+    dateFlexibilityDays:
+      trip.mode === 'flexible' ? trip.dateFlexibilityDays : 0,
     travelModes: [...trip.travelModes],
     interests: [...trip.interests],
     description: trip.description,
@@ -171,7 +173,8 @@ export function tripFromForm(
     landscape: form.landscape,
     interests: [...form.interests],
     travelModes: [...form.travelModes],
-    dateFlexibilityDays: form.dateFlexibilityDays,
+    dateFlexibilityDays:
+      form.mode === 'flexible' ? form.dateFlexibilityDays : 0,
     visibility: form.visibility,
     status,
     animals: cloneAnimals(form.animals),

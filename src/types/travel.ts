@@ -43,8 +43,8 @@ export type TripPlan = TripBase &
       }
   );
 export interface DiscoveryFilters {
-  mode: TripMode;
-  dateRangeId: string;
+  tripModes: TripMode[];
+  dateRangeId: 'all' | 'custom' | 'own-trip';
   location: string;
   childAgeBands: ChildAgeBand[];
   customDateRange?: DateRange;

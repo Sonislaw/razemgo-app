@@ -266,15 +266,21 @@ test('finding company passes exact dates, flexibility and preferences into real 
   const filters = discoveryFiltersForTrip(trip);
   assert.equal(filters.sourceTripId, trip.id);
   assert.equal(filters.location, 'Pomorze');
-  assert.deepEqual(resolveDiscoveryRange(filters, []), {
+  assert.deepEqual(resolveDiscoveryRange(filters), {
     startDate: trip.startDate,
     endDate: trip.endDate,
   });
   assert.deepEqual(
     filterProposals(DEMO_PROPOSALS, filters).map((item) => item.trip.id),
-    ['demo-forest', 'demo-coast'],
+    ['demo-coast', 'demo-forest'],
   );
-  const flexible = discoveryFiltersForTrip({ ...trip, dateFlexibilityDays: 3 });
+  const flexibleTrip = tripFromForm(
+    { ...toTripForm(trip), mode: 'flexible', dateFlexibilityDays: 3 },
+    trip.id,
+    trip.groupId,
+    'published',
+  );
+  const flexible = discoveryFiltersForTrip(flexibleTrip);
   assert.deepEqual(flexible.customDateRange, {
     startDate: '2027-05-21',
     endDate: '2027-05-24',
@@ -307,6 +313,47 @@ test('finding company passes exact dates, flexibility and preferences into real 
     filterProposals(DEMO_PROPOSALS, pairs).map((item) => item.trip.id),
     ['demo-mountains'],
   );
+});
+
+test('fixed plans clear hidden flexibility on edit, save, duplicate and discovery while keeping their dates', () => {
+  const legacy = { ...initial().trips[0], dateFlexibilityDays: 7 };
+  const before = JSON.stringify(legacy);
+  assert.equal(toTripForm(legacy).dateFlexibilityDays, 0);
+  assert.equal(discoveryFiltersForTrip(legacy).dateFlexibilityDays, 0);
+  const values = { ...form(), dateFlexibilityDays: 3 };
+  for (const draft of [true, false]) {
+    const saved = save(initial(), draft, undefined, values).trips.at(-1);
+    assert.equal(saved.dateFlexibilityDays, 0);
+    assert.equal(saved.startDate, values.startDate);
+    assert.equal(saved.endDate, values.endDate);
+  }
+  const state = createOwnTripsState([legacy]);
+  assert.equal(state.trips[0].dateFlexibilityDays, 0);
+  assert.equal(
+    reduce(state, { type: 'duplicate', id: legacy.id }).trips.at(-1)
+      .dateFlexibilityDays,
+    0,
+  );
+  assert.equal(JSON.stringify(legacy), before);
+});
+
+test('flexible plans retain their flexibility until converted to a fixed plan', () => {
+  for (const days of [0, 1, 3, 7]) {
+    const values = { ...form(), mode: 'flexible', dateFlexibilityDays: days };
+    const trip = tripFromForm(values, 'flexible', MY_GROUP.id, 'published');
+    assert.equal(trip.dateFlexibilityDays, days);
+    assert.equal(toTripForm(trip).dateFlexibilityDays, days);
+    assert.equal(discoveryFiltersForTrip(trip).dateFlexibilityDays, days);
+    assert.equal(
+      tripFromForm(
+        { ...toTripForm(trip), mode: 'planned' },
+        trip.id,
+        trip.groupId,
+        trip.status,
+      ).dateFlexibilityDays,
+      0,
+    );
+  }
 });
 
 test('deletion keeps other trips, stale editors cannot resurrect removed plans, restart restores examples', () => {

@@ -131,7 +131,7 @@ export default function OwnTripDetailsScreen() {
               <Icon name="calendar" size={20} />
               <AppText style={{ flex: 1 }}>
                 {ownTripDates(trip)}
-                {trip.dateFlexibilityDays
+                {trip.mode === 'flexible' && trip.dateFlexibilityDays
                   ? ` · ±${trip.dateFlexibilityDays} ${trip.dateFlexibilityDays === 1 ? 'dzień' : 'dni'}`
                   : ''}
               </AppText>
@@ -214,7 +214,7 @@ export default function OwnTripDetailsScreen() {
             <AppText variant="caption" color="textSecondary">
               Propozycje liczymy z sześciu przykładowych planów według regionu,
               wspólnych nocy i wybranego towarzystwa
-              {trip.dateFlexibilityDays
+              {trip.mode === 'flexible' && trip.dateFlexibilityDays
                 ? ', z uwzględnieniem elastyczności dat'
                 : ''}
               . Zaproszenia i ekipy dotyczą wyłącznie tego wyjazdu.

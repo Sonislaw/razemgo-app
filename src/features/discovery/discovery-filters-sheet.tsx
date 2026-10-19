@@ -19,17 +19,17 @@ import {
   layout,
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
+import { CHILD_AGE_BANDS, DEMO_PROPOSALS } from '@/data/mocks/travel';
 import {
-  CHILD_AGE_BANDS,
-  DEMO_DATE_RANGES,
-  DEMO_PROPOSALS,
-} from '@/data/mocks/travel';
-import {
+  clearDiscoveryDates,
   filterProposals,
-  formatTripDates,
+  getDiscoveryDateRangeError,
   INITIAL_FILTERS,
   resolveDiscoveryRange,
+  toggleDiscoveryTripMode,
+  updateDiscoveryDate,
 } from './filter-trips';
+import { TripDateField } from '@/features/trips/trip-date-field';
 import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import {
   Fonts,
@@ -56,12 +56,16 @@ export function DiscoveryFiltersSheet({
   const insets = useSafeAreaInsets();
   const [draft, setDraft] = useState<DiscoveryFilters>(() => ({
     ...initialFilters,
+    tripModes: [...initialFilters.tripModes],
     childAgeBands: [...initialFilters.childAgeBands],
     animalKinds: [...(initialFilters.animalKinds ?? [])],
+    customDateRange: initialFilters.customDateRange
+      ? { ...initialFilters.customDateRange }
+      : undefined,
   }));
-  const dateRange = resolveDiscoveryRange(draft, DEMO_DATE_RANGES);
+  const dateRange = resolveDiscoveryRange(draft);
+  const dateError = getDiscoveryDateRangeError(draft.customDateRange);
   const resultCount = filterProposals(DEMO_PROPOSALS, draft, dateRange).length;
-  const planned = draft.mode === 'planned';
   const toggleAge = (band: ChildAgeBand) =>
     setDraft((current) => ({
       ...current,
@@ -115,9 +119,7 @@ export function DiscoveryFiltersSheet({
                 Filtry wyjazdów
               </AppText>
               <AppText variant="caption" color="textSecondary">
-                {planned
-                  ? 'Dopasuj termin i kierunek.'
-                  : 'Określ dostępność i obszar poszukiwań.'}
+                Wybierz typ ogłoszenia, termin i miejsce.
               </AppText>
             </View>
             <IconButton
@@ -133,48 +135,146 @@ export function DiscoveryFiltersSheet({
             keyboardDismissMode="on-drag"
           >
             <View style={layout.stack}>
-              <AppText variant="label">
-                {planned ? 'Kiedy wyjeżdżacie?' : 'Kiedy macie wolne?'}
-              </AppText>
+              <AppText variant="label">Typ ogłoszenia</AppText>
               <AppText variant="caption" color="textSecondary">
-                Przykładowe terminy · 2027
+                Wybierz jeden lub oba typy. Co najmniej jeden musi pozostać
+                zaznaczony.
               </AppText>
-              <View style={layout.wrap}>
-                {draft.customDateRange ? (
-                  <Chip
-                    label={
-                      'Z wyjazdu: ' + formatTripDates(draft.customDateRange)
+              {(
+                [
+                  {
+                    mode: 'planned',
+                    label: 'Mam plan',
+                    description: 'Wyjazdy z ustalonym celem',
+                  },
+                  {
+                    mode: 'flexible',
+                    label: 'Szukam pomysłu',
+                    description: 'Kierunek do wspólnego wyboru',
+                  },
+                ] as const
+              ).map((option) => {
+                const selected = draft.tripModes.includes(option.mode);
+                return (
+                  <Pressable
+                    key={option.mode}
+                    accessibilityRole="checkbox"
+                    accessibilityLabel={option.label}
+                    accessibilityState={{ checked: selected }}
+                    aria-checked={selected}
+                    accessibilityHint={
+                      selected && draft.tripModes.length === 1
+                        ? 'Zaznacz drugi typ, aby odznaczyć ten.'
+                        : undefined
                     }
-                    selected={draft.dateRangeId === 'own-trip'}
                     onPress={() =>
                       setDraft((current) => ({
                         ...current,
-                        dateRangeId: 'own-trip',
+                        tripModes: toggleDiscoveryTripMode(
+                          current.tripModes,
+                          option.mode,
+                        ),
                       }))
                     }
+                    style={({ pressed }) => [
+                      layout.row,
+                      {
+                        minHeight: 64,
+                        padding: 12,
+                        borderRadius: 16,
+                        borderWidth: 1,
+                        borderColor: selected
+                          ? theme.primaryStrong
+                          : theme.border,
+                        backgroundColor: selected
+                          ? theme.muted
+                          : theme.backgroundElement,
+                        opacity: pressed ? 0.7 : 1,
+                      },
+                    ]}
+                  >
+                    <View
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 6,
+                        borderWidth: 1,
+                        borderColor: selected
+                          ? theme.primaryStrong
+                          : theme.border,
+                        backgroundColor: selected
+                          ? theme.primaryStrong
+                          : theme.backgroundElement,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {selected ? (
+                        <Icon name="check" size={18} color={theme.onPrimary} />
+                      ) : null}
+                    </View>
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <AppText variant="label">{option.label}</AppText>
+                      <AppText variant="caption" color="textSecondary">
+                        {option.description}
+                      </AppText>
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <View style={layout.stack}>
+              <View style={layout.row}>
+                <AppText variant="label" style={styles.flex}>
+                  Termin wyjazdu
+                </AppText>
+                {draft.customDateRange ? (
+                  <IconButton
+                    label="Wyczyść termin"
+                    icon="close"
+                    onPress={() => setDraft(clearDiscoveryDates)}
                   />
                 ) : null}
-                <Chip
-                  label="Dowolny termin"
-                  selected={draft.dateRangeId === 'all'}
-                  onPress={() =>
-                    setDraft((current) => ({ ...current, dateRangeId: 'all' }))
-                  }
-                />
-                {DEMO_DATE_RANGES.map((range) => (
-                  <Chip
-                    key={range.id}
-                    label={range.label}
-                    selected={draft.dateRangeId === range.id}
-                    onPress={() =>
-                      setDraft((current) => ({
-                        ...current,
-                        dateRangeId: range.id,
-                      }))
-                    }
-                  />
-                ))}
               </View>
+              <AppText variant="caption" color="textSecondary">
+                Wybierz daty w kalendarzu lub wpisz je ręcznie. Pusty zakres
+                oznacza dowolny termin.
+              </AppText>
+              <View style={[layout.row, { alignItems: 'flex-start' }]}>
+                <View style={styles.flex}>
+                  <TripDateField
+                    label="Od"
+                    value={draft.customDateRange?.startDate ?? ''}
+                    onChange={(value) =>
+                      setDraft((current) =>
+                        updateDiscoveryDate(current, 'startDate', value),
+                      )
+                    }
+                    initialMonth={draft.customDateRange?.endDate}
+                  />
+                </View>
+                <View style={styles.flex}>
+                  <TripDateField
+                    label="Do"
+                    value={draft.customDateRange?.endDate ?? ''}
+                    onChange={(value) =>
+                      setDraft((current) =>
+                        updateDiscoveryDate(current, 'endDate', value),
+                      )
+                    }
+                    initialMonth={draft.customDateRange?.startDate}
+                  />
+                </View>
+              </View>
+              {dateError ? (
+                <AppText
+                  accessibilityRole="alert"
+                  accessibilityLiveRegion="polite"
+                  variant="caption"
+                >
+                  {dateError}
+                </AppText>
+              ) : null}
             </View>
             {draft.dateRangeId === 'own-trip' && !!draft.dateFlexibilityDays ? (
               <AppText variant="caption" color="textSecondary">
@@ -183,9 +283,7 @@ export function DiscoveryFiltersSheet({
               </AppText>
             ) : null}
             <View style={layout.stack}>
-              <AppText variant="label">
-                {planned ? 'Dokąd jedziecie?' : 'Jaki obszar Was interesuje?'}
-              </AppText>
+              <AppText variant="label">Miejsce lub region</AppText>
               <View
                 style={[
                   styles.inputRow,
@@ -197,14 +295,8 @@ export function DiscoveryFiltersSheet({
               >
                 <Icon name="pin" size={20} />
                 <TextInput
-                  accessibilityLabel={
-                    planned ? 'Kierunek wyjazdu' : 'Obszar poszukiwań'
-                  }
-                  placeholder={
-                    planned
-                      ? 'Np. Chłapowo lub Pomorze'
-                      : 'Np. Mazury lub Sudety'
-                  }
+                  accessibilityLabel="Miejsce lub region"
+                  placeholder="Np. Chłapowo, Mazury lub Sudety"
                   placeholderTextColor={theme.textSecondary}
                   value={draft.location}
                   onChangeText={(location) =>
@@ -217,9 +309,7 @@ export function DiscoveryFiltersSheet({
                 />
               </View>
               <AppText variant="caption" color="textSecondary">
-                {planned
-                  ? 'Miejscowość lub region celu wyjazdu.'
-                  : 'Region wspólnego spotkania. Dokładny cel ustalicie później.'}
+                Szukamy w celach wyjazdów i obszarach do wspólnego wyboru.
               </AppText>
             </View>
             {draft.sourceTripId ? (
@@ -294,11 +384,15 @@ export function DiscoveryFiltersSheet({
             <Button
               label="Wyczyść"
               variant="secondary"
-              onPress={() => setDraft({ ...INITIAL_FILTERS, mode: draft.mode })}
+              onPress={() => setDraft({ ...INITIAL_FILTERS })}
             />
             <Button
-              label={'Pokaż wyniki · ' + resultCount}
+              label={
+                dateError ? 'Pokaż wyniki' : 'Pokaż wyniki · ' + resultCount
+              }
+              disabled={Boolean(dateError)}
               onPress={() => {
+                if (dateError) return;
                 Keyboard.dismiss();
                 onApply(draft);
               }}

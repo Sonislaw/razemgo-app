@@ -19,8 +19,7 @@ import {
 } from '@/components/ui/primitives';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Icon } from '@/components/ui/icon';
-import { CHILD_AGE_BANDS, DEMO_DATE_RANGES } from '@/data/mocks/travel';
-import { IS_DEMO_MODE } from '@/constants/app';
+import { CHILD_AGE_BANDS } from '@/data/mocks/travel';
 import { MaxContentWidth } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useProfile } from '@/features/profile/profile-context';
@@ -223,7 +222,7 @@ export default function TripEditorScreen() {
                       {
                         mode: 'planned',
                         label: 'Mam plan',
-                        description: 'Znamy cel wyjazdu. Szukamy towarzystwa.',
+                        description: 'Znamy cel i termin. Szukamy towarzystwa.',
                         icon: 'pin',
                       },
                       {
@@ -243,7 +242,17 @@ export default function TripEditorScreen() {
                       accessibilityState={{
                         checked: form.mode === option.mode,
                       }}
-                      onPress={() => update('mode', option.mode)}
+                      onPress={() => {
+                        setForm((current) => ({
+                          ...current,
+                          mode: option.mode,
+                          dateFlexibilityDays:
+                            option.mode === 'planned'
+                              ? 0
+                              : current.dateFlexibilityDays,
+                        }));
+                        setErrors([]);
+                      }}
                       style={[
                         layout.row,
                         {
@@ -275,65 +284,47 @@ export default function TripEditorScreen() {
                     </Pressable>
                   ))}
                 </View>
-                <TripDateField
-                  label="Wyjazd"
-                  value={form.startDate}
-                  onChange={(date) => update('startDate', date)}
-                />
-                <TripDateField
-                  label="Powrót"
-                  value={form.endDate}
-                  initialMonth={form.startDate}
-                  onChange={(date) => update('endDate', date)}
-                />
-                {IS_DEMO_MODE ? (
+                <View style={[layout.row, { alignItems: 'flex-start' }]}>
+                  <View style={{ flex: 1 }}>
+                    <TripDateField
+                      label="Od"
+                      value={form.startDate}
+                      initialMonth={form.endDate}
+                      onChange={(date) => update('startDate', date)}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <TripDateField
+                      label="Do"
+                      value={form.endDate}
+                      initialMonth={form.startDate}
+                      onChange={(date) => update('endDate', date)}
+                    />
+                  </View>
+                </View>
+                {form.mode === 'flexible' ? (
                   <View style={{ gap: 8 }}>
-                    <AppText variant="caption" color="textSecondary">
-                      Przykładowe terminy · 2027
-                    </AppText>
+                    <AppText variant="label">Elastyczność terminu</AppText>
                     <View style={layout.wrap}>
-                      {DEMO_DATE_RANGES.map((range) => (
+                      {([0, 1, 3, 7] as const).map((days) => (
                         <Chip
-                          key={range.id}
-                          label={range.label}
-                          selected={
-                            form.startDate === range.startDate &&
-                            form.endDate === range.endDate
+                          key={days}
+                          label={
+                            days
+                              ? `±${days} ${days === 1 ? 'dzień' : 'dni'}`
+                              : 'Dokładne daty'
                           }
-                          onPress={() => {
-                            setForm((current) => ({
-                              ...current,
-                              startDate: range.startDate,
-                              endDate: range.endDate,
-                            }));
-                            setErrors([]);
-                          }}
+                          selected={form.dateFlexibilityDays === days}
+                          onPress={() => update('dateFlexibilityDays', days)}
                         />
                       ))}
                     </View>
+                    <AppText variant="caption" color="textSecondary">
+                      Możecie przesunąć cały wyjazd o wybraną liczbę dni.
+                      Długość pobytu pozostaje taka sama.
+                    </AppText>
                   </View>
                 ) : null}
-                <View style={{ gap: 8 }}>
-                  <AppText variant="label">Elastyczność terminu</AppText>
-                  <View style={layout.wrap}>
-                    {([0, 1, 3, 7] as const).map((days) => (
-                      <Chip
-                        key={days}
-                        label={
-                          days
-                            ? `±${days} ${days === 1 ? 'dzień' : 'dni'}`
-                            : 'Dokładne daty'
-                        }
-                        selected={form.dateFlexibilityDays === days}
-                        onPress={() => update('dateFlexibilityDays', days)}
-                      />
-                    ))}
-                  </View>
-                  <AppText variant="caption" color="textSecondary">
-                    Możecie przesunąć cały wyjazd o wybraną liczbę dni. Długość
-                    pobytu pozostaje taka sama.
-                  </AppText>
-                </View>
               </>
             ) : step === 2 ? (
               <>
@@ -520,8 +511,8 @@ export default function TripEditorScreen() {
                   </AppText>
                   <AppText variant="label">
                     {ownTripDates(preview)}
-                    {form.dateFlexibilityDays
-                      ? ` · ±${form.dateFlexibilityDays} ${form.dateFlexibilityDays === 1 ? 'dzień' : 'dni'}`
+                    {preview.dateFlexibilityDays
+                      ? ` · ±${preview.dateFlexibilityDays} ${preview.dateFlexibilityDays === 1 ? 'dzień' : 'dni'}`
                       : ''}
                   </AppText>
                   <AppText variant="caption">

@@ -81,7 +81,7 @@ test('animal filters are optional, combine species with OR, and do not change th
       ...INITIAL_FILTERS,
       animalKinds: ['cat', 'dog'],
     }).map((item) => item.trip.id),
-    ['demo-mountains', 'demo-coast', 'demo-bieszczady'],
+    ['demo-coast', 'demo-mountains', 'demo-bieszczady'],
   );
   assert.equal(
     filterProposals(DEMO_PROPOSALS, {

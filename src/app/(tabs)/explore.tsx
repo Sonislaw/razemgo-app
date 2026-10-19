@@ -11,53 +11,53 @@ import {
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
-import { DEMO_DATE_RANGES, DEMO_PROPOSALS } from '@/data/mocks/travel';
+import { DEMO_PROPOSALS } from '@/data/mocks/travel';
 import { DEMO_COMPATIBILITY_SCORES } from '@/data/mocks/compatibility';
 import {
   filterProposals,
-  getMatchFacts,
   INITIAL_FILTERS,
   resolveDiscoveryRange,
   formatTripDates,
-  getDiscoveryReferenceRange,
 } from '@/features/discovery/filter-trips';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { DiscoveryFiltersSheet } from '@/features/discovery/discovery-filters-sheet';
+import { DiscoverySortSheet } from '@/features/discovery/discovery-sort-sheet';
+import { sortDiscoveryProposals } from '@/features/discovery/sort-proposals';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useProfile } from '@/features/profile/profile-context';
 import { getPreferredChildAges } from '@/features/profile/profile-data';
-import type { TripMode } from '@/types/travel';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
-import { isArchivedTrip, todayDate } from '@/features/trips/own-trips-state';
 import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
 
-const modes: { mode: TripMode; label: string }[] = [
-  { mode: 'planned', label: 'Mam plan' },
-  { mode: 'flexible', label: 'Szukam pomysłu' },
-];
 export default function ExploreScreen() {
   const theme = useTheme();
-  const { filters, setFilters } = useDiscovery();
+  const { filters, setFilters, sort, setSort } = useDiscovery();
   const { profile } = useProfile();
   const { state: ownTrips } = useOwnTrips();
-  const ownPlans = ownTrips.trips.filter(
-    (trip) => trip.status !== 'draft' && !isArchivedTrip(trip, todayDate()),
-  );
+  const preferredAges = getPreferredChildAges(profile, filters.childAgeBands);
   const [showFilters, setShowFilters] = useState(false);
-  const dateRange = resolveDiscoveryRange(filters, DEMO_DATE_RANGES);
-  const proposals = filterProposals(DEMO_PROPOSALS, filters, dateRange);
+  const [showSort, setShowSort] = useState(false);
+  const dateRange = resolveDiscoveryRange(filters);
+  const proposals = sortDiscoveryProposals(
+    filterProposals(DEMO_PROPOSALS, filters, dateRange),
+    sort,
+    DEMO_COMPATIBILITY_SCORES,
+  );
   const activeCount =
+    Number(filters.tripModes.length === 1) +
     Number(filters.dateRangeId !== 'all') +
     Number(Boolean(filters.location.trim())) +
     Number(filters.childAgeBands.length > 0) +
     Number(Boolean(filters.groupKinds?.length)) +
     Number(Boolean(filters.animalKinds?.length));
   const summary = [
-    filters.dateRangeId === 'own-trip' && dateRange
-      ? formatTripDates(dateRange)
-      : DEMO_DATE_RANGES.find((range) => range.id === filters.dateRangeId)
-          ?.label,
+    filters.tripModes.length === 1
+      ? filters.tripModes[0] === 'planned'
+        ? 'Mam plan'
+        : 'Szukam pomysłu'
+      : '',
+    dateRange ? formatTripDates(dateRange) : '',
     filters.location.trim(),
     filters.childAgeBands.length
       ? 'Dzieci ' + filters.childAgeBands.join(', ') + ' lat'
@@ -73,7 +73,7 @@ export default function ExploreScreen() {
   ]
     .filter(Boolean)
     .join(' · ');
-  const reset = () => setFilters({ ...INITIAL_FILTERS, mode: filters.mode });
+  const reset = () => setFilters({ ...INITIAL_FILTERS });
   return (
     <Screen>
       <View style={styles.controls}>
@@ -97,45 +97,11 @@ export default function ExploreScreen() {
             />
           </View>
         ) : null}
-        <View
-          accessibilityRole="tablist"
-          style={[styles.segment, { backgroundColor: theme.muted }]}
-        >
-          {modes.map(({ mode, label }) => (
-            <Pressable
-              key={mode}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: filters.mode === mode }}
-              accessibilityLabel={label}
-              onPress={() => setFilters((current) => ({ ...current, mode }))}
-              style={({ pressed }) => [
-                styles.segmentItem,
-                {
-                  backgroundColor:
-                    filters.mode === mode
-                      ? theme.backgroundElement
-                      : theme.muted,
-                  opacity: pressed ? 0.7 : 1,
-                },
-              ]}
-            >
-              <AppText
-                variant="label"
-                color={
-                  filters.mode === mode ? 'primaryStrong' : 'textSecondary'
-                }
-                style={{ textAlign: 'center' }}
-              >
-                {label}
-              </AppText>
-            </Pressable>
-          ))}
-        </View>
         <View style={layout.row}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Otwórz filtry"
-            accessibilityHint="Wybierz termin, miejsce i wiek dzieci"
+            accessibilityHint="Wybierz typ ogłoszenia, termin, miejsce i wiek dzieci"
             onPress={() => setShowFilters(true)}
             style={({ pressed }) => [
               styles.filterBar,
@@ -152,7 +118,7 @@ export default function ExploreScreen() {
                 Filtry{activeCount ? ' · ' + activeCount : ''}
               </AppText>
               <AppText variant="caption" color="textSecondary">
-                {summary || 'Termin, miejsce, wiek dzieci'}
+                {summary || 'Typ ogłoszenia, termin, miejsce'}
               </AppText>
             </View>
             <Icon name="arrow" size={18} />
@@ -164,49 +130,56 @@ export default function ExploreScreen() {
       </View>
       <View style={styles.results}>
         <View style={styles.resultsHeader}>
-          <AppText
-            variant="heading"
-            accessibilityRole="header"
-            accessibilityLiveRegion="polite"
-            style={styles.resultTitle}
+          <View style={styles.flex}>
+            <AppText
+              variant="heading"
+              accessibilityRole="header"
+              accessibilityLiveRegion="polite"
+              style={styles.resultTitle}
+            >
+              Propozycje dla Was · {proposals.length}
+            </AppText>
+            <AppText variant="caption" color="textSecondary">
+              Dane demonstracyjne
+            </AppText>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              'Sortowanie: ' +
+              (sort === 'compatibility' ? 'Najwyższa zgodność' : 'Domyślnie')
+            }
+            accessibilityHint="Zmień kolejność wyników"
+            onPress={() => setShowSort(true)}
+            style={({ pressed }) => [
+              styles.sortButton,
+              {
+                backgroundColor: theme.muted,
+                opacity: pressed ? 0.7 : 1,
+              },
+            ]}
           >
-            Propozycje dla Was · {proposals.length}
-          </AppText>
-          <AppText variant="caption" color="textSecondary">
-            Dane demonstracyjne
-          </AppText>
-        </View>
-        <View style={{ gap: 4 }}>
-          <AppText
-            variant="caption"
-            color="primaryStrong"
-            accessibilityLiveRegion="polite"
-          >
-            {filters.mode === 'planned'
-              ? 'Najpierw ekipy szukające pomysłu.'
-              : 'Najpierw wyjazdy z ustalonym celem.'}
-          </AppText>
-          <AppText variant="caption" color="textSecondary">
-            {dateRange
-              ? filters.dateRangeId === 'own-trip' &&
-                filters.dateFlexibilityDays
-                ? `Możliwe wspólne noce po przesunięciu wyjazdu o maks. ${filters.dateFlexibilityDays} dni.`
-                : 'Wspólne noce według wybranego terminu.'
-              : 'Wspólne noce według Waszych przykładowych planów.'}
-          </AppText>
+            <Icon name="sort" size={18} />
+            <AppText
+              variant="label"
+              color="primaryStrong"
+              style={styles.sortLabel}
+            >
+              {sort === 'compatibility' ? 'Zgodność' : 'Domyślnie'}
+            </AppText>
+          </Pressable>
         </View>
         {proposals.length ? (
           proposals.map((proposal) => (
             <DiscoveryTripCard
               key={proposal.trip.id}
               {...proposal}
-              facts={getMatchFacts(
-                proposal,
-                profile.group,
-                ownPlans,
-                getDiscoveryReferenceRange(filters, dateRange, proposal.trip),
-                getPreferredChildAges(profile, filters.childAgeBands),
-              )}
+              facts={{
+                ageBands: proposal.group.childAgeBands,
+                matchingAgeBands: proposal.group.childAgeBands.filter((band) =>
+                  preferredAges.includes(band),
+                ),
+              }}
               demoScore={DEMO_COMPATIBILITY_SCORES[proposal.trip.id]}
             />
           ))
@@ -230,25 +203,22 @@ export default function ExploreScreen() {
           }}
         />
       ) : null}
+      {showSort ? (
+        <DiscoverySortSheet
+          sort={sort}
+          onClose={() => setShowSort(false)}
+          onSelect={(value) => {
+            setSort(value);
+            setShowSort(false);
+          }}
+        />
+      ) : null}
     </Screen>
   );
 }
 const styles = StyleSheet.create({
   controls: { gap: 12 },
   flex: { flex: 1 },
-  segment: {
-    flexDirection: 'row',
-    borderRadius: Radius.small,
-    padding: Spacing.one,
-    gap: Spacing.one,
-  },
-  segmentItem: {
-    flex: 1,
-    minHeight: 48,
-    padding: 8,
-    justifyContent: 'center',
-    borderRadius: Radius.small,
-  },
   filterBar: {
     flex: 1,
     flexDirection: 'row',
@@ -263,9 +233,19 @@ const styles = StyleSheet.create({
   resultsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'wrap',
     gap: Spacing.two,
     justifyContent: 'space-between',
   },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 48,
+    maxWidth: '50%',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 6,
+    borderRadius: Radius.small,
+  },
+  sortLabel: { flexShrink: 1 },
   resultTitle: { fontSize: 18, lineHeight: 24 },
 });

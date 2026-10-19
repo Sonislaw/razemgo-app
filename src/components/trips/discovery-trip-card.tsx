@@ -8,16 +8,13 @@ import {
   formatTripDates,
   getTripLocation,
 } from '@/features/discovery/filter-trips';
-import {
-  formatSharedNights,
-  type MatchFacts,
-} from '@/features/discovery/filter-trips';
+import type { MatchFacts } from '@/features/discovery/filter-trips';
 import type { TripProposal } from '@/types/travel';
 import { CompactTripCard } from './compact-trip-card';
 import { TripAnimalTag } from '@/features/animals/animal-ui';
 
 interface DiscoveryTripCardProps extends TripProposal {
-  facts: MatchFacts;
+  facts: Pick<MatchFacts, 'ageBands' | 'matchingAgeBands'>;
   demoScore?: number;
 }
 export function DiscoveryTripCard({
@@ -83,25 +80,6 @@ export function DiscoveryTripCard({
                 : 'Bez dzieci'}
           </AppText>
         </View>
-        {facts.nights !== null ? (
-          <View
-            style={[
-              styles.fact,
-              {
-                backgroundColor:
-                  facts.nights > 0 ? theme.positiveBackground : theme.muted,
-              },
-            ]}
-          >
-            <AppText
-              variant="caption"
-              color={facts.nights > 0 ? 'positive' : 'textSecondary'}
-              style={styles.shrink}
-            >
-              {formatSharedNights(facts.nights)}
-            </AppText>
-          </View>
-        ) : null}
       </View>
       <TripAnimalTag animals={trip.animals} />
       <AppText variant="caption" color="textSecondary">

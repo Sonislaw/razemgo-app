@@ -1,5 +1,6 @@
 import { View } from 'react-native';
-import { AppText, Chip, layout } from '@/components/ui/primitives';
+import { AppText, Chip } from '@/components/ui/primitives';
+import { ChipRow } from '@/components/ui/chip-row';
 import { ANIMAL_OPTIONS } from './animal-data';
 import type { GroupAnimals } from '@/types/animals';
 
@@ -7,13 +8,17 @@ interface AnimalFieldsProps {
   value: GroupAnimals;
   onChange: (value: GroupAnimals) => void;
 }
-export function GroupAnimalFields({ value, onChange }: AnimalFieldsProps) {
+export function GroupAnimalFields({
+  value,
+  onChange,
+  horizontal = false,
+}: AnimalFieldsProps & { horizontal?: boolean }) {
   return (
     <View style={{ gap: 12 }}>
       <AppText variant="caption" color="textSecondary">
         Opcjonalnie · zaznaczcie zwierzęta, z którymi podróżujecie.
       </AppText>
-      <View style={layout.wrap}>
+      <ChipRow horizontal={horizontal} label="Zwierzęta">
         <Chip
           label="Bez zwierząt"
           selected={!value.animals.length}
@@ -35,7 +40,7 @@ export function GroupAnimalFields({ value, onChange }: AnimalFieldsProps) {
             }
           />
         ))}
-      </View>
+      </ChipRow>
     </View>
   );
 }
@@ -43,7 +48,7 @@ export function TripAnimalFields(props: AnimalFieldsProps) {
   return (
     <View style={{ gap: 8 }}>
       <AppText variant="label">Zwierzęta na tym wyjeździe</AppText>
-      <GroupAnimalFields {...props} />
+      <GroupAnimalFields {...props} horizontal />
     </View>
   );
 }

@@ -20,6 +20,7 @@ import {
   layout,
 } from '@/components/ui/primitives';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
+import { ChipRow } from '@/components/ui/chip-row';
 import { Icon } from '@/components/ui/icon';
 import { CHILD_AGE_BANDS } from '@/data/mocks/travel';
 import { MaxContentWidth } from '@/constants/theme';
@@ -399,11 +400,19 @@ export default function TripEditorScreen() {
                     hint="Opcjonalnie — jeśli wiecie już, gdzie się zatrzymacie."
                   />
                 ) : null}
+                <ProfileTextField
+                  label="Opis wyjazdu"
+                  value={form.description}
+                  onChangeText={(value) => update('description', value)}
+                  maxLength={1000}
+                  multiline
+                  hint="Opcjonalnie. Początek opisu pokażemy na karcie wyjazdu — opowiedzcie, co planujecie."
+                />
                 <View style={{ gap: 8 }}>
                   <AppText variant="label">
                     Jak podróżujecie na ten wyjazd?
                   </AppText>
-                  <View style={layout.wrap}>
+                  <ChipRow horizontal label="Sposób podróżowania">
                     {TRAVEL_MODE_OPTIONS.map((mode) => (
                       <Chip
                         key={mode}
@@ -414,13 +423,13 @@ export default function TripEditorScreen() {
                         }
                       />
                     ))}
-                  </View>
+                  </ChipRow>
                 </View>
                 <View style={{ gap: 8 }}>
                   <AppText variant="label">
                     Co chcecie robić? · opcjonalnie
                   </AppText>
-                  <View style={layout.wrap}>
+                  <ChipRow horizontal label="Zainteresowania">
                     {INTEREST_OPTIONS.map((interest) => (
                       <Chip
                         key={interest}
@@ -431,19 +440,11 @@ export default function TripEditorScreen() {
                         }
                       />
                     ))}
-                  </View>
+                  </ChipRow>
                 </View>
-                <ProfileTextField
-                  label="Opis wyjazdu"
-                  value={form.description}
-                  onChangeText={(value) => update('description', value)}
-                  maxLength={1000}
-                  multiline
-                  hint="Opcjonalnie. Początek opisu pokażemy na karcie wyjazdu — opowiedzcie, co planujecie."
-                />
                 <View style={{ gap: 8 }}>
                   <AppText variant="label">Klimat wyjazdu</AppText>
-                  <View style={layout.wrap}>
+                  <ChipRow horizontal label="Klimat wyjazdu">
                     {(
                       [
                         { value: 'coast', label: 'Morze' },
@@ -459,7 +460,7 @@ export default function TripEditorScreen() {
                         onPress={() => update('landscape', item.value)}
                       />
                     ))}
-                  </View>
+                  </ChipRow>
                 </View>
                 <TripAnimalFields
                   value={form.animals}
@@ -474,7 +475,7 @@ export default function TripEditorScreen() {
                     Możecie wybrać kilka grup. Brak wyboru oznacza dowolne
                     towarzystwo.
                   </AppText>
-                  <View style={layout.wrap}>
+                  <ChipRow horizontal label="Towarzystwo na wyjazd">
                     {GROUP_KIND_OPTIONS.map((option) => (
                       <Chip
                         key={option.value}
@@ -488,13 +489,13 @@ export default function TripEditorScreen() {
                         }
                       />
                     ))}
-                  </View>
+                  </ChipRow>
                 </View>
                 <View style={{ gap: 8 }}>
                   <AppText variant="label">
                     Preferowany wiek dzieci · opcjonalnie
                   </AppText>
-                  <View style={layout.wrap}>
+                  <ChipRow horizontal label="Preferowany wiek dzieci">
                     {CHILD_AGE_BANDS.map((band) => (
                       <Chip
                         key={band}
@@ -511,11 +512,11 @@ export default function TripEditorScreen() {
                         }
                       />
                     ))}
-                  </View>
+                  </ChipRow>
                 </View>
                 <View style={{ gap: 8 }}>
                   <AppText variant="label">Widoczność planu</AppText>
-                  <View style={layout.wrap}>
+                  <ChipRow horizontal label="Widoczność planu">
                     {(
                       [
                         { value: 'public', label: 'Dla społeczności' },
@@ -529,7 +530,7 @@ export default function TripEditorScreen() {
                         onPress={() => update('visibility', option.value)}
                       />
                     ))}
-                  </View>
+                  </ChipRow>
                   <AppText variant="caption" color="textSecondary">
                     {['completed', 'cancelled'].includes(previousStatus)
                       ? 'Zapis zachowa status archiwalnego wyjazdu. Aby zaplanować kolejny, wybierz „Duplikuj jako szkic” z jego menu.'

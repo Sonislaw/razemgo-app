@@ -1,0 +1,11 @@
+{
+  "repository": "https://github.com/jjbartek/polskie-miejscowosci",
+  "author": "jjbartek",
+  "commit": "f10df1ef9c5d6602787fdf9f409771859463cad5",
+  "asOf": "2021-05-11",
+  "count": 43989,
+  "sourceSha256": "aad5fbb9f4ad3dbeb388f51c9ed7fe07912cecfe774c54d7766a618cd2669e5b",
+  "licenseFile": "https://raw.githubusercontent.com/jjbartek/polskie-miejscowosci/f10df1ef9c5d6602787fdf9f409771859463cad5/LICENSE",
+  "packageLicenseIdentifier": "CC-BY-1.0",
+  "transformation": "Dictionary encoded Province, District and Commune; locality fields preserved as tuples."
+}

@@ -102,9 +102,16 @@ export function filterProposals(
     if (reference && sharedNights(trip, reference) <= 0) return false;
     if (filters.groupKinds?.length && !filters.groupKinds.includes(group.kind))
       return false;
+    const place = trip.mode === 'planned' ? trip.destination : trip.travelArea;
+    // Keep searches from earlier demo plans compatible with the province name.
+    const legacyRegion = /^(pomorze|pomorskie)$/iu.test(place.region)
+      ? 'Pomorze Pomorskie'
+      : '';
     if (
       location &&
-      !normalizeLocation(getTripLocation(trip)).includes(location)
+      !normalizeLocation(getTripLocation(trip) + ' ' + legacyRegion).includes(
+        location,
+      )
     )
       return false;
     if (

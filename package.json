@@ -34,6 +34,7 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "locations:import": "node scripts/import-localities.mjs",
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
@@ -45,6 +46,7 @@
     "test:profile": "node --test scripts/profile.test.mjs",
     "test:messaging": "node --test scripts/messaging.test.mjs",
     "test:trips": "node --test scripts/trips.test.mjs",
+    "test:locations": "node --test scripts/locations.test.mjs",
     "test:home": "node --test scripts/home.test.mjs",
     "test:animals": "node --test scripts/animals.test.mjs"
   },

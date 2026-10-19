@@ -9,6 +9,8 @@ import {
   locationContext,
   LOCATION_KIND_LABELS,
   searchTripLocations,
+  MAX_LOCATION_SUGGESTIONS,
+  MIN_LOCATION_QUERY_LENGTH,
 } from './trip-locations';
 
 const label = 'Miejscowość, region lub kraj';
@@ -92,15 +94,18 @@ export function TripLocationField({
             color="textSecondary"
             accessibilityLiveRegion="polite"
           >
-            {results.length
-              ? `Podpowiedzi lokalizacji · ${results.length}`
-              : 'Brak pasujących lokalizacji'}
+            {query.trim().length > 0 &&
+            query.trim().length < MIN_LOCATION_QUERY_LENGTH
+              ? `Wpisz co najmniej ${MIN_LOCATION_QUERY_LENGTH} znaki`
+              : results.length
+                ? `Podpowiedzi lokalizacji · ${results.length}`
+                : 'Brak pasujących lokalizacji'}
           </AppText>
           {results.map((location) => (
             <Pressable
               key={location.id}
               accessibilityRole="button"
-              accessibilityLabel={`Wybierz lokalizację: ${location.name}, ${locationContext(location)}, ${LOCATION_KIND_LABELS[location.kind]}`}
+              accessibilityLabel={`Wybierz lokalizację: ${location.name}, ${locationContext(location)}, ${LOCATION_KIND_LABELS[location.kind]}${location.source === 'demo' ? ', demo' : ''}`}
               onPress={() => {
                 setQuery('');
                 setExpanded(false);
@@ -134,12 +139,21 @@ export function TripLocationField({
                 style={styles.kind}
               >
                 {LOCATION_KIND_LABELS[location.kind]}
+                {location.source === 'demo' ? ' · demo' : ''}
               </AppText>
             </Pressable>
           ))}
-          {!results.length ? (
+          {!results.length &&
+          query.trim().length >= MIN_LOCATION_QUERY_LENGTH ? (
             <AppText variant="caption" color="textSecondary">
-              Spróbuj np. „Chłapowo”, „Kaszuby” lub „Słowenia”.
+              Sprawdź pisownię lub wpisz inną nazwę. Możesz dopisać gminę,
+              powiat albo województwo.
+            </AppText>
+          ) : null}
+          {results.length === MAX_LOCATION_SUGGESTIONS ? (
+            <AppText variant="caption" color="textSecondary">
+              Pokazujemy pierwsze {MAX_LOCATION_SUGGESTIONS} propozycji. Dopisz
+              gminę, powiat lub województwo, aby zawęzić wybór.
             </AppText>
           ) : null}
         </View>
@@ -148,9 +162,11 @@ export function TripLocationField({
           Wpisz nazwę i wybierz lokalizację z podpowiedzi.
         </AppText>
       )}
-      <AppText variant="caption" color="textSecondary">
-        Przykładowe lokalizacje · demo
-      </AppText>
+      {selected?.source === 'demo' ? (
+        <AppText variant="caption" color="textSecondary">
+          Przykładowa lokalizacja · demo
+        </AppText>
+      ) : null}
     </View>
   );
 }

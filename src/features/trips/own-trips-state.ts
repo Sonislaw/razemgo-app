@@ -210,10 +210,13 @@ export function selectOwnTrips(
       if (isArchivedTrip(trip, today) !== archived) return false;
       const place =
         trip.mode === 'planned' ? trip.destination : trip.travelArea;
+      const regionAlias = /^(pomorze|pomorskie)$/iu.test(place.region)
+        ? 'Pomorze Pomorskie'
+        : '';
       if (
         query &&
         !normalizeSearch(
-          `${trip.description} ${place.name} ${place.region}`,
+          `${trip.description} ${place.name} ${place.region} ${regionAlias}`,
         ).includes(query)
       )
         return false;

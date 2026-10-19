@@ -62,23 +62,20 @@ const save = (state, draft, id, values = form()) =>
     today,
   });
 
-test('demo location search narrows by name and context without case or Polish accents', () => {
+test('location search narrows by name and context without case or Polish accents', () => {
   assert.equal(searchTripLocations('').length, 5);
   assert.deepEqual(
-    searchTripLocations('  CHŁA ').map((item) => item.name),
+    searchTripLocations('  CHŁAPOWO PUCKI ').map((item) => item.name),
     ['Chłapowo'],
   );
   assert.deepEqual(
-    searchTripLocations('chla').map((item) => item.name),
-    ['Chłapowo'],
+    searchTripLocations('chlapowo').map((item) => item.region),
+    ['pomorskie', 'wielkopolskie'],
   );
+  assert.deepEqual(searchTripLocations('gdansk')[0].name, 'Gdańsk');
   assert.deepEqual(
-    searchTripLocations('gdansk').map((item) => item.name),
-    ['Gdańsk'],
-  );
-  assert.deepEqual(
-    searchTripLocations('pomorskie polska').map((item) => item.name),
-    ['Chłapowo', 'Gdańsk', 'Kaszuby'],
+    searchTripLocations('gdansk pomorskie polska')[0].name,
+    'Gdańsk',
   );
   assert.deepEqual(
     searchTripLocations('slowenia').map((item) => item.kind),
@@ -91,7 +88,7 @@ test('demo location search narrows by name and context without case or Polish ac
   assert.deepEqual(searchTripLocations('Atlantyda'), []);
 });
 
-test('a selected demo location is mandatory for publishing in both modes; a typed name cannot bypass validation', () => {
+test('a selected location is mandatory for publishing in both modes; a typed name cannot bypass validation', () => {
   assert.equal(newTripForm(profile).locationId, '');
   for (const mode of ['planned', 'flexible']) {
     for (const locationId of ['', 'Chłapowo', 'unknown-location']) {
@@ -106,7 +103,7 @@ test('a selected demo location is mandatory for publishing in both modes; a type
 });
 
 test('legacy demo places resolve to selections and city, region and country selections survive edits and copies', () => {
-  assert.equal(form().locationId, 'demo-location-chlapowo');
+  assert.equal(form().locationId, 'pl-locality:4259');
   assert.equal(
     toTripForm(initial().trips[1]).locationId,
     'demo-location-kaszuby',
@@ -440,7 +437,7 @@ test('finding company passes exact trip dates and preferences; tolerance is set 
   const trip = initial().trips[0];
   const filters = discoveryFiltersForTrip(trip);
   assert.equal(filters.sourceTripId, trip.id);
-  assert.equal(filters.location, 'Pomorze');
+  assert.equal(filters.location, 'pomorskie');
   assert.deepEqual(resolveDiscoveryRange(filters), {
     startDate: trip.startDate,
     endDate: trip.endDate,

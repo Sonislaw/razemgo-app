@@ -1,4 +1,5 @@
-import { Pressable, View } from 'react-native';
+import { Image, type ImageProps } from 'expo-image';
+import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { AppText, layout } from '@/components/ui/primitives';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
@@ -6,78 +7,98 @@ import { useTheme } from '@/hooks/use-theme';
 export function HomeAction({
   label,
   description,
-  icon,
+  illustration,
   onPress,
   variant = 'primary',
+  density = 'regular',
+  showIllustration = true,
+  showDescription = true,
+  style,
 }: {
   label: string;
   description: string;
-  icon: IconName;
+  illustration: ImageProps['source'];
   onPress: () => void;
   variant?: 'primary' | 'secondary';
+  density?: 'regular' | 'compact' | 'minimal';
+  showIllustration?: boolean;
+  showDescription?: boolean;
+  style?: StyleProp<ViewStyle>;
 }) {
   const theme = useTheme();
   const primary = variant === 'primary';
-  const foreground = primary ? theme.onPrimary : theme.primaryStrong;
+  const minimal = density === 'minimal';
+  const compact = density !== 'regular';
+  const artworkSize = minimal ? 56 : compact ? 88 : 112;
   return (
-    <View style={{ gap: 10 }}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        accessibilityHint={description}
-        onPress={onPress}
-        style={({ pressed }) => [
-          layout.row,
-          {
-            minHeight: 84,
-            padding: 16,
-            gap: 12,
-            borderRadius: 20,
-            borderWidth: 1,
-            borderColor: primary ? theme.primary : theme.border,
-            backgroundColor: primary
-              ? theme.primary
-              : theme.backgroundSelected,
-            opacity: pressed ? 0.75 : 1,
-          },
-        ]}
-      >
-        <View
-          style={{
-            width: 44,
-            height: 44,
-            flexShrink: 0,
-            borderRadius: 14,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: primary
-              ? 'rgba(255, 255, 255, 0.15)'
-              : theme.backgroundElement,
-          }}
-        >
-          <Icon name={icon} color={foreground} size={26} />
-        </View>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityHint={description}
+      onPress={onPress}
+      style={({ pressed }) => [
+        layout.row,
+        {
+          minHeight: minimal ? 76 : compact ? 108 : 144,
+          padding: minimal ? 8 : compact ? 12 : 16,
+          gap: compact ? 8 : 12,
+          borderRadius: 24,
+          borderWidth: 1,
+          borderColor: primary ? theme.border : theme.accent,
+          backgroundColor: primary ? theme.backgroundSelected : theme.hero,
+          opacity: pressed ? 0.75 : 1,
+        },
+        style,
+      ]}
+    >
+      <View style={{ flex: 1, minWidth: 0, gap: compact ? 4 : 8 }}>
         <AppText
           variant="heading"
+          color="primaryStrong"
           style={{
-            flex: 1,
-            minWidth: 0,
-            fontSize: 20,
-            lineHeight: 26,
-            color: foreground,
+            fontSize: minimal ? 16 : 20,
+            lineHeight: minimal ? 22 : 26,
           }}
         >
           {label}
         </AppText>
-        <Icon name="arrow" color={foreground} size={22} />
-      </Pressable>
-      <AppText
-        color="textSecondary"
-        style={{ fontSize: 14, lineHeight: 21, paddingHorizontal: 4 }}
+        {showDescription ? (
+          <AppText
+            color="textSecondary"
+            style={{
+              fontSize: minimal ? 12 : compact ? 13 : 14,
+              lineHeight: minimal ? 16 : compact ? 18 : 20,
+            }}
+          >
+            {description}
+          </AppText>
+        ) : null}
+      </View>
+      {showIllustration ? (
+        <Image
+          source={illustration}
+          style={{ width: artworkSize, height: artworkSize, flexShrink: 0 }}
+          contentFit="contain"
+          accessible={false}
+          alt=""
+        />
+      ) : null}
+      <View
+        style={{
+          width: minimal ? 24 : 28,
+          height: minimal ? 24 : 28,
+          borderRadius: 14,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: theme.backgroundElement,
+          ...(showIllustration
+            ? { position: 'absolute', right: 8, bottom: 8 }
+            : { flexShrink: 0 }),
+        }}
       >
-        {description}
-      </AppText>
-    </View>
+        <Icon name="arrow" size={16} />
+      </View>
+    </Pressable>
   );
 }
 

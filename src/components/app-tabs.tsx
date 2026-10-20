@@ -29,6 +29,7 @@ export default function AppTabs() {
         <NativeTabs.Trigger
           key={tab.name}
           name={tab.name}
+          disableAutomaticContentInsets={tab.name === 'index'}
           disableTransparentOnScrollEdge
           accessibilityLabel={
             tab.label +

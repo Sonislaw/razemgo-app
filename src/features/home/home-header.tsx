@@ -21,6 +21,7 @@ export function HomeHeader({
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
+  const compact = width < 360;
   const artworkHeight = Math.min(width / 3, 180);
   const artworkOffset = Math.min(44, artworkHeight * 0.35);
   return (
@@ -54,26 +55,43 @@ export function HomeHeader({
         style={{
           position: 'relative',
           zIndex: 1,
-          paddingLeft: Math.max(Spacing.four, insets.left),
-          paddingRight: Math.max(Spacing.four, insets.right),
+          paddingLeft: Math.max(
+            compact ? Spacing.three : Spacing.four,
+            insets.left,
+          ),
+          paddingRight: Math.max(
+            compact ? Spacing.three : Spacing.four,
+            insets.right,
+          ),
         }}
       >
         <View style={[layout.row, styles.toolbar]}>
-          <View style={[layout.row, styles.brand]}>
-            <Image
-              source={require('@/assets/images/zgrana-symbol.svg')}
-              style={{ width: 28, height: 28 }}
-              contentFit="contain"
-              accessible={false}
-            />
-            <AppText
-              variant="heading"
-              color="brand"
-              style={{ fontSize: width < 360 ? 16 : 18, flexShrink: 1 }}
-              numberOfLines={1}
+          <View style={styles.brandSlot}>
+            <View
+              style={[
+                layout.row,
+                styles.brand,
+                {
+                  backgroundColor: `${theme.backgroundElement}80`,
+                  paddingHorizontal: compact ? 8 : 10,
+                },
+              ]}
             >
-              RazemGo
-            </AppText>
+              <Image
+                source={require('@/assets/images/zgrana-symbol.svg')}
+                style={{ width: compact ? 24 : 28, height: compact ? 24 : 28 }}
+                contentFit="contain"
+                accessible={false}
+              />
+              <AppText
+                variant="heading"
+                color="brand"
+                style={{ fontSize: compact ? 16 : 18, flexShrink: 1 }}
+                numberOfLines={1}
+              >
+                ZgranaGo
+              </AppText>
+            </View>
           </View>
           {IS_DEMO_MODE ? (
             <Pressable
@@ -135,7 +153,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     gap: 4,
   },
-  brand: { flex: 1, minWidth: 0, gap: 6 },
+  brandSlot: { flex: 1, minWidth: 0, alignItems: 'flex-start' },
+  brand: {
+    maxWidth: '100%',
+    minHeight: 44,
+    gap: 6,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
   demoButton: {
     minWidth: 48,
     minHeight: 48,

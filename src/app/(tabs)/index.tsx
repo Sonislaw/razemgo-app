@@ -1,4 +1,3 @@
-import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { useState } from 'react';
@@ -13,16 +12,8 @@ import {
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { IS_DEMO_MODE } from '@/constants/app';
-import { DEMO_GROUPS, DEMO_PROPOSALS } from '@/data/mocks/travel';
 import { useTheme } from '@/hooks/use-theme';
 import { useProfile } from '@/features/profile/profile-context';
-import { useOwnTrips } from '@/features/trips/own-trips-context';
-import {
-  discoveryFiltersForTrip,
-  isSearchingTrip,
-  selectNextTrip,
-  todayDate,
-} from '@/features/trips/own-trips-state';
 import { useMessaging } from '@/features/messaging/messaging-context';
 import {
   notificationCount,
@@ -31,41 +22,16 @@ import {
 } from '@/features/messaging/messaging-state';
 import { CountBadge } from '@/features/messaging/messaging-ui';
 import { useDiscovery } from '@/features/discovery/discovery-context';
-import {
-  INITIAL_FILTERS,
-  selectHomeRecommendations,
-  type HomeRecommendation,
-} from '@/features/discovery/filter-trips';
+import { INITIAL_FILTERS } from '@/features/discovery/filter-trips';
 import { HomeDemoControls } from '@/features/home/home-demo-controls';
-import {
-  ActivityPreview,
-  HomeSection,
-  NextTripPreview,
-  RecommendationPreview,
-} from '@/features/home/home-ui';
+import { ActivityPreview, HomeAction } from '@/features/home/home-ui';
 
 export default function HomeScreen() {
   const theme = useTheme();
   const { profile, hasProfile } = useProfile();
-  const { state: ownTrips } = useOwnTrips();
   const { state: mailbox, dispatch: dispatchMessages } = useMessaging();
   const { setFilters } = useDiscovery();
   const [demoOpen, setDemoOpen] = useState(false);
-  const today = todayDate();
-  const nearest = selectNextTrip(ownTrips.trips, today);
-  const nextSearchable = selectNextTrip(
-    ownTrips.trips.filter((trip) => isSearchingTrip(trip, today)),
-    today,
-  );
-  const draft = ownTrips.trips.find((trip) => trip.status === 'draft');
-  const recommendations = selectHomeRecommendations(
-    DEMO_PROPOSALS,
-    profile,
-    ownTrips.trips,
-    today,
-    mailbox.blockedGroupIds,
-  );
-  const source = recommendations[0]?.source;
   const pending =
     mailbox.loadStatus === 'ready' ? pendingReceivedCount(mailbox) : 0;
   const unread =
@@ -77,37 +43,13 @@ export default function HomeScreen() {
         )
       : 0;
   const total = notificationCount(mailbox);
-  const received = mailbox.invitations.filter(
-    (item) =>
-      item.direction === 'received' &&
-      item.status === 'pending' &&
-      !mailbox.blockedGroupIds.includes(item.groupId),
-  );
-  const firstSender = DEMO_GROUPS.find(
-    (group) => group.id === received[0]?.groupId,
-  )?.name;
   const openMessages = (view: 'conversations' | 'invitations') => {
     dispatchMessages({ type: 'view', view, direction: 'received' });
     router.navigate('/messages');
   };
-  const discover = (item?: HomeRecommendation) => {
-    const context = item
-      ? ownTrips.trips.find((trip) => trip.id === item.ownTripId)
-      : nextSearchable;
-    setFilters(
-      context ? discoveryFiltersForTrip(context) : { ...INITIAL_FILTERS },
-    );
+  const discover = () => {
+    setFilters({ ...INITIAL_FILTERS });
     router.navigate('/explore');
-  };
-  const openRecommendation = (item: HomeRecommendation) => {
-    const context = ownTrips.trips.find((trip) => trip.id === item.ownTripId);
-    setFilters(
-      context ? discoveryFiltersForTrip(context) : { ...INITIAL_FILTERS },
-    );
-    router.push({
-      pathname: '/trip/[id]',
-      params: { id: item.proposal.trip.id },
-    });
   };
   const completeProfile = () =>
     router.push({ pathname: '/edit-profile', params: { from: 'home' } });
@@ -209,22 +151,20 @@ export default function HomeScreen() {
               ) : null}
             </View>
           </View>
-          <View style={[layout.row, { alignItems: 'stretch' }]}>
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <Button
-                label="Znajdź ekipę"
-                icon="compass"
-                onPress={() => discover()}
-              />
-            </View>
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <Button
-                label="Dodaj wyjazd"
-                icon="plus"
-                variant="secondary"
-                onPress={() => router.push('/trip-editor')}
-              />
-            </View>
+          <View style={{ gap: 24, paddingVertical: 8 }}>
+            <HomeAction
+              label="Znajdź ekipę"
+              description="Poznajcie podróżników z podobnymi planami i ruszcie razem w drogę."
+              icon="people"
+              onPress={discover}
+            />
+            <HomeAction
+              label="Dodaj wyjazd"
+              description="Macie cel albo wolny termin? Dodajcie plan i zaproście innych do wspólnej przygody."
+              icon="plus"
+              variant="secondary"
+              onPress={() => router.push('/trip-editor')}
+            />
           </View>
           {!hasProfile ? (
             <Card style={{ gap: 8, backgroundColor: theme.muted }}>
@@ -244,83 +184,6 @@ export default function HomeScreen() {
                 onPress={completeProfile}
               />
             </Card>
-          ) : null}
-          {nearest ? (
-            <HomeSection
-              title={
-                nearest.startDate <= today
-                  ? 'Wasz wyjazd trwa'
-                  : 'Najbliższy wyjazd'
-              }
-              action="Wyjazdy"
-              onAction={() => router.navigate('/trips')}
-            >
-              <NextTripPreview
-                trip={nearest}
-                onPress={() =>
-                  router.push({
-                    pathname: '/trips/[id]',
-                    params: { id: nearest.id },
-                  })
-                }
-              />
-            </HomeSection>
-          ) : hasProfile ? (
-            <HomeSection
-              title={
-                draft ? 'Wróćcie do swojego planu' : 'Wasza następna przygoda'
-              }
-              action="Wyjazdy"
-              onAction={() => router.navigate('/trips')}
-            >
-              <Card style={{ gap: 8 }}>
-                <AppText variant="label" style={{ fontSize: 16 }}>
-                  {draft
-                    ? getTripHeadline(draft)
-                    : ownTrips.trips.length
-                      ? 'Czas na kolejny wspólny wyjazd'
-                      : 'Zaplanujcie pierwszą przygodę'}
-                </AppText>
-                <AppText variant="caption" color="textSecondary">
-                  {draft
-                    ? 'Szkic czeka na uzupełnienie i publikację.'
-                    : 'Macie cel albo po prostu wolny termin? Zapiszcie plan i poznajcie towarzyszy podróży.'}
-                </AppText>
-                <Button
-                  label={
-                    draft
-                      ? 'Dokończ szkic'
-                      : ownTrips.trips.length
-                        ? 'Zaplanuj kolejny wyjazd'
-                        : 'Zaplanuj pierwszy wyjazd'
-                  }
-                  variant="secondary"
-                  icon={draft ? 'edit' : 'plus'}
-                  onPress={() =>
-                    router.push(
-                      draft
-                        ? { pathname: '/trip-editor', params: { id: draft.id } }
-                        : '/trip-editor',
-                    )
-                  }
-                />
-              </Card>
-            </HomeSection>
-          ) : null}
-          {pending ? (
-            <ActivityPreview
-              title={'Nowe zaproszenia · ' + pending}
-              description={
-                firstSender
-                  ? firstSender +
-                    (pending > 1
-                      ? ' i inne ekipy czekają na odpowiedź.'
-                      : ' czeka na odpowiedź.')
-                  : 'Poznajcie ekipy, które chcą się z Wami skontaktować.'
-              }
-              icon="people"
-              onPress={() => openMessages('invitations')}
-            />
           ) : null}
           {unread ? (
             <ActivityPreview
@@ -342,49 +205,6 @@ export default function HomeScreen() {
               onPress={() => openMessages('conversations')}
             />
           ) : null}
-          <HomeSection
-            title={
-              source === 'trip'
-                ? 'Poznajcie innych'
-                : source === 'interests'
-                  ? 'W podobnym klimacie'
-                  : 'Może właśnie tutaj?'
-            }
-            action="Zobacz więcej"
-            onAction={() => discover(recommendations[0])}
-          >
-            <AppText variant="caption" color="textSecondary">
-              {source === 'trip'
-                ? 'Podobne terminy i kierunki'
-                : source === 'interests'
-                  ? 'Według Waszych zainteresowań'
-                  : 'Inspiracje na kolejne wyjazdy'}
-              {IS_DEMO_MODE ? ' · dane demo' : ''}
-            </AppText>
-            {recommendations.map((item) => (
-              <RecommendationPreview
-                key={item.proposal.trip.id}
-                item={item}
-                onPress={() => openRecommendation(item)}
-              />
-            ))}
-            {!recommendations.length ? (
-              <Card style={{ gap: 8 }}>
-                <AppText variant="label">
-                  Na razie bez nowych propozycji
-                </AppText>
-                <AppText variant="caption" color="textSecondary">
-                  Zajrzyjcie do Odkrywaj i wybierzcie inny termin lub kierunek.
-                </AppText>
-                <Button
-                  label="Otwórz Odkrywaj"
-                  variant="secondary"
-                  icon="compass"
-                  onPress={() => discover()}
-                />
-              </Card>
-            ) : null}
-          </HomeSection>
         </View>
       </Screen>
       {demoOpen ? (

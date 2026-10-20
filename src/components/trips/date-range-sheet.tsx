@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import {
   FlatList,
-  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SheetModal, SheetSurface } from '@/components/ui/sheet-modal';
 import {
   AppText,
   Button,
@@ -107,14 +107,7 @@ export function DateRangeSheet({
     }).format(new Date(month + '-01T00:00:00Z'));
 
   return (
-    <Modal
-      transparent
-      visible
-      animationType="slide"
-      onRequestClose={onClose}
-      statusBarTranslucent
-      navigationBarTranslucent
-    >
+    <SheetModal onRequestClose={onClose}>
       <View style={styles.overlay}>
         <Pressable
           accessibilityRole="button"
@@ -122,7 +115,7 @@ export function DateRangeSheet({
           onPress={onClose}
           style={[StyleSheet.absoluteFill, { backgroundColor: theme.scrim }]}
         />
-        <View
+        <SheetSurface
           role="dialog"
           accessibilityLabel="Wybierz daty"
           accessibilityViewIsModal
@@ -132,7 +125,6 @@ export function DateRangeSheet({
             {
               backgroundColor: theme.backgroundElement,
               marginTop: insets.top,
-              paddingBottom: Math.max(12, insets.bottom),
             },
           ]}
         >
@@ -377,9 +369,9 @@ export function DateRangeSheet({
               }}
             />
           </View>
-        </View>
+        </SheetSurface>
       </View>
-    </Modal>
+    </SheetModal>
   );
 }
 

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -10,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SheetModal, SheetSurface } from '@/components/ui/sheet-modal';
 import {
   AppText,
   Button,
@@ -81,14 +81,7 @@ export function DiscoveryFiltersSheet({
     onClose();
   };
   return (
-    <Modal
-      transparent
-      visible
-      animationType="slide"
-      onRequestClose={close}
-      statusBarTranslucent
-      navigationBarTranslucent
-    >
+    <SheetModal onRequestClose={close}>
       <KeyboardAvoidingView
         style={styles.overlay}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -102,7 +95,7 @@ export function DiscoveryFiltersSheet({
           accessibilityRole="button"
           accessibilityLabel="Zamknij panel filtrów"
         />
-        <View
+        <SheetSurface
           role="dialog"
           accessibilityLabel="Filtry wyjazdów"
           accessibilityViewIsModal
@@ -111,7 +104,6 @@ export function DiscoveryFiltersSheet({
             styles.sheet,
             {
               backgroundColor: theme.backgroundElement,
-              paddingBottom: Math.max(Spacing.three, insets.bottom),
               marginTop: insets.top,
             },
           ]}
@@ -392,9 +384,9 @@ export function DiscoveryFiltersSheet({
               }}
             />
           ) : null}
-        </View>
+        </SheetSurface>
       </KeyboardAvoidingView>
-    </Modal>
+    </SheetModal>
   );
 }
 const styles = StyleSheet.create({

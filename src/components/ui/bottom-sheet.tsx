@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -11,6 +10,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, IconButton } from './primitives';
+import { SheetModal, SheetSurface } from './sheet-modal';
 import { MaxContentWidth, Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -30,14 +30,7 @@ export function BottomSheet({
     onClose();
   };
   return (
-    <Modal
-      transparent
-      visible
-      animationType="slide"
-      onRequestClose={close}
-      statusBarTranslucent
-      navigationBarTranslucent
-    >
+    <SheetModal onRequestClose={close}>
       <KeyboardAvoidingView
         style={styles.overlay}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -51,7 +44,7 @@ export function BottomSheet({
           onPress={close}
           style={StyleSheet.absoluteFill}
         />
-        <View
+        <SheetSurface
           role="dialog"
           accessibilityLabel={title}
           accessibilityViewIsModal
@@ -61,7 +54,6 @@ export function BottomSheet({
             {
               backgroundColor: theme.backgroundElement,
               marginTop: insets.top,
-              paddingBottom: Math.max(16, insets.bottom),
             },
           ]}
         >
@@ -92,9 +84,9 @@ export function BottomSheet({
           >
             {children}
           </ScrollView>
-        </View>
+        </SheetSurface>
       </KeyboardAvoidingView>
-    </Modal>
+    </SheetModal>
   );
 }
 const styles = StyleSheet.create({

@@ -23,6 +23,7 @@ export const INITIAL_FILTERS: DiscoveryFilters = {
   location: '',
   childAgeBands: [],
   animalKinds: [],
+  landscapeKinds: [],
 };
 export function selectDiscoveryLocation(
   filters: DiscoveryFilters,
@@ -152,6 +153,11 @@ export function filterProposals(
   const range = dateRange ?? resolveDiscoveryRange(filters);
   const matching = proposals.filter(({ trip, group }) => {
     if (!filters.tripModes.includes(trip.mode)) return false;
+    if (
+      filters.landscapeKinds?.length &&
+      !filters.landscapeKinds.includes(trip.landscape)
+    )
+      return false;
     const reference = getDiscoveryReferenceRange(filters, range, trip);
     if (reference && sharedNights(trip, reference) <= 0) return false;
     if (filters.groupKinds?.length && !filters.groupKinds.includes(group.kind))

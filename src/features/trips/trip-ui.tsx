@@ -8,7 +8,7 @@ import {
   layout,
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
-import { TripThumbnail } from '@/components/trips/trip-thumbnail';
+import { TripCardHeading } from '@/components/trips/trip-card-heading';
 import { CompactTripCard } from '@/components/trips/compact-trip-card';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { useTheme } from '@/hooks/use-theme';
@@ -113,24 +113,23 @@ export function OwnTripCard({
           onPress={onMenu}
         />
       </View>
-      <View style={[layout.row, { alignItems: 'flex-start' }]}>
-        <TripThumbnail kind={trip.landscape} />
-        <View style={{ flex: 1, gap: 4 }}>
-          <AppText
-            accessibilityRole="header"
-            variant="label"
-            style={{ fontSize: 17, lineHeight: 22 }}
-            numberOfLines={2}
-          >
-            {getTripHeadline(trip)}
-          </AppText>
-          <AppText variant="caption" color="textSecondary" numberOfLines={2}>
-            {ownTripPlace(trip)}
-          </AppText>
-          <AppText variant="caption" color="textSecondary">
-            {ownTripDates(trip)}
-          </AppText>
-        </View>
+      <TripCardHeading title={getTripHeadline(trip)} landscape={trip.landscape} />
+      <View style={layout.row}>
+        <Icon name="pin" size={16} />
+        <AppText
+          variant="label"
+          color="textSecondary"
+          style={{ flex: 1, minWidth: 0 }}
+          numberOfLines={2}
+        >
+          {ownTripPlace(trip)}
+        </AppText>
+      </View>
+      <View style={layout.row}>
+        <Icon name="calendar" size={16} />
+        <AppText variant="caption" color="textSecondary" style={{ flex: 1 }}>
+          {ownTripDates(trip)}
+        </AppText>
       </View>
       <View style={{ paddingTop: 8 }}>
         <TripAnimalTag animals={trip.animals} />

@@ -356,6 +356,67 @@ test('each trip type filters the actual advertised mode', () => {
   );
 });
 
+test('landscape selection supports one or several choices and preserves source order', () => {
+  for (const [landscapeKinds, expected] of [
+    [['forest'], ['demo-forest']],
+    [['lake', 'coast'], ['demo-coast', 'demo-lake', 'demo-friends']],
+  ]) {
+    assert.deepEqual(
+      filterProposals(DEMO_PROPOSALS, {
+        ...INITIAL_FILTERS,
+        landscapeKinds,
+      }).map(({ trip }) => trip.id),
+      expected,
+    );
+  }
+});
+
+test('landscapes combine with dates, location, ages and announcement type', () => {
+  const filters = updateDiscoveryDateRange(
+    {
+      ...INITIAL_FILTERS,
+      landscapeKinds: ['forest', 'mountain'],
+      tripModes: ['flexible'],
+      location: 'Pomorze',
+      childAgeBands: ['4–6'],
+    },
+    { startDate: '2027-05-21', endDate: '2027-05-24' },
+  );
+  const snapshot = JSON.stringify({ filters, proposals: DEMO_PROPOSALS });
+  assert.deepEqual(
+    filterProposals(DEMO_PROPOSALS, filters).map(({ trip }) => trip.id),
+    ['demo-forest'],
+  );
+  assert.deepEqual(
+    filterProposals(DEMO_PROPOSALS, { ...filters, landscapeKinds: ['coast'] }),
+    [],
+  );
+  assert.equal(
+    JSON.stringify({ filters, proposals: DEMO_PROPOSALS }),
+    snapshot,
+  );
+});
+
+test('empty or omitted landscape selections leave discovery unrestricted', () => {
+  const filtered = { ...INITIAL_FILTERS, landscapeKinds: ['forest'] };
+  assert.equal(filterProposals(DEMO_PROPOSALS, filtered).length, 1);
+  assert.deepEqual(
+    filterProposals(DEMO_PROPOSALS, { ...filtered, landscapeKinds: [] }),
+    DEMO_PROPOSALS,
+  );
+  assert.deepEqual(
+    filterProposals(DEMO_PROPOSALS, {
+      ...INITIAL_FILTERS,
+      landscapeKinds: undefined,
+    }),
+    DEMO_PROPOSALS,
+  );
+  assert.deepEqual(
+    filterProposals(DEMO_PROPOSALS, INITIAL_FILTERS),
+    DEMO_PROPOSALS,
+  );
+});
+
 test('trip types combine with dates, location and ages without mutating filters or proposals', () => {
   const snapshot = JSON.stringify(DEMO_PROPOSALS);
   const filters = {

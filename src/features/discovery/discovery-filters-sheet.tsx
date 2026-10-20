@@ -40,6 +40,7 @@ import { useTheme } from '@/hooks/use-theme';
 import type { ChildAgeBand, DiscoveryFilters } from '@/types/travel';
 import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
 import { TripLocationField } from '@/features/trips/trip-location-field';
+import { LANDSCAPE_OPTIONS } from '@/constants/landscape-options';
 
 interface DiscoveryFiltersSheetProps {
   initialFilters: DiscoveryFilters;
@@ -59,6 +60,7 @@ export function DiscoveryFiltersSheet({
     tripModes: [...initialFilters.tripModes],
     childAgeBands: [...initialFilters.childAgeBands],
     animalKinds: [...(initialFilters.animalKinds ?? [])],
+    landscapeKinds: [...(initialFilters.landscapeKinds ?? [])],
     customDateRange: initialFilters.customDateRange
       ? { ...initialFilters.customDateRange }
       : undefined,
@@ -119,7 +121,7 @@ export function DiscoveryFiltersSheet({
                 Filtry wyjazdów
               </AppText>
               <AppText variant="caption" color="textSecondary">
-                Wybierz typ ogłoszenia, termin i miejsce.
+                Wybierz typ ogłoszenia, termin, miejsce i klimat.
               </AppText>
             </View>
             <IconButton
@@ -203,6 +205,32 @@ export function DiscoveryFiltersSheet({
                     </Pressable>
                   );
                 })}
+              </ChipRow>
+            </View>
+            <View style={layout.stack}>
+              <AppText variant="label">Klimat wyjazdu</AppText>
+              <AppText variant="caption" color="textSecondary">
+                Możesz wybrać kilka klimatów. Brak wyboru pokazuje wszystkie.
+              </AppText>
+              <ChipRow horizontal label="Klimat wyjazdu">
+                {LANDSCAPE_OPTIONS.map(({ value, label }) => (
+                  <Chip
+                    key={value}
+                    label={label}
+                    accessibilityLabel={'Klimat wyjazdu: ' + label}
+                    selected={draft.landscapeKinds?.includes(value)}
+                    onPress={() =>
+                      setDraft((current) => ({
+                        ...current,
+                        landscapeKinds: current.landscapeKinds?.includes(value)
+                          ? current.landscapeKinds.filter(
+                              (kind) => kind !== value,
+                            )
+                          : [...(current.landscapeKinds ?? []), value],
+                      }))
+                    }
+                  />
+                ))}
               </ChipRow>
             </View>
             <View style={layout.stack}>

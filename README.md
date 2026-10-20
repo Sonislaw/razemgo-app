@@ -2,6 +2,8 @@
 
 Mobilna aplikacja do poznawania towarzyszy wspólnych wyjazdów. Pierwsza wersja interfejsu zawiera pięć zakładek: **Start, Odkrywaj, Wyjazdy, Wiadomości, Profil**.
 
+Interfejs nie pokazuje oznaczeń wersji demonstracyjnej ani dopisków o przykładowych danych. Dane i stan nadal działają lokalnie jak wcześniej. `IS_DEMO_MODE` w `src/constants/app.ts` jest domyślnie wyłączone i steruje wyłącznie oznaczeniami oraz narzędziami scenariuszy opisanymi poniżej; nie zmienia źródła danych.
+
 ## Uruchomienie w Expo Go
 
 Projekt zachowuje **Expo SDK 57**, React Native 0.86 i Expo Router. Do pracy zalecany jest Node.js 24 (wbudowana obsługa TypeScript jest również używana w testach).

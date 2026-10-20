@@ -54,6 +54,7 @@ export interface DiscoveryFilters {
   childAgeBands: ChildAgeBand[];
   customDateRange?: DateRange;
   animalKinds?: AnimalKind[];
+  landscapeKinds?: LandscapeKind[];
   dateFlexibilityDays?: number;
   sourceTripId?: string;
   groupKinds?: TravelGroup['kind'][];

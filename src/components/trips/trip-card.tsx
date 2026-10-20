@@ -39,9 +39,6 @@ export function TripCard({
           <AppText variant="caption" color="primaryStrong">
             {trip.mode === 'planned' ? 'MAM PLAN' : 'SZUKAM POMYSŁU'}
           </AppText>
-          <AppText variant="caption" color="textSecondary">
-            · WYJAZD DEMONSTRACYJNY
-          </AppText>
         </View>
         <AppText variant="heading" accessibilityRole="header">
           {getTripHeadline(trip)}

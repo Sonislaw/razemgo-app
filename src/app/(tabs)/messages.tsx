@@ -335,14 +335,14 @@ export default function MessagesScreen() {
             <MailboxEmpty
               icon="refresh"
               title="Wczytujemy skrzynkę"
-              description="Przykładowy stan ładowania. W tej wersji nie łączymy się z siecią."
+              description="To może potrwać chwilę."
             >
               <ActivityIndicator
                 color={theme.primaryStrong}
                 style={{ marginBottom: 12 }}
               />
               <Button
-                label="Zakończ symulację ładowania"
+                label="Odśwież skrzynkę"
                 variant="secondary"
                 onPress={() => dispatch({ type: 'ready' })}
               />
@@ -351,7 +351,7 @@ export default function MessagesScreen() {
             <MailboxEmpty
               icon="water"
               title="Nie udało się wczytać skrzynki"
-              description="Symulowany błąd połączenia. Wasze lokalne wiadomości pozostają w skrzynce."
+              description="Spróbujcie ponownie. Wasze wiadomości pozostają w skrzynce."
             >
               <Button
                 label="Spróbuj ponownie"
@@ -368,7 +368,7 @@ export default function MessagesScreen() {
                     color="textSecondary"
                     style={{ paddingVertical: 4 }}
                   >
-                    Rozmowy: {conversations.length} · dane przykładowe
+                    Rozmowy: {conversations.length}
                   </AppText>
                   {conversations.map((conversation) => (
                     <ConversationRow

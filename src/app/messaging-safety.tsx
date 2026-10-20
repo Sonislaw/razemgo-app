@@ -49,11 +49,6 @@ export default function MessagingSafetyScreen() {
             decydujecie, czym dzielicie się z drugą ekipą. Unikajcie podawania
             dokładnego adresu i wrażliwych danych.
           </AppText>
-          <AppText variant="caption" color="textSecondary">
-            To wersja demonstracyjna: nie ma weryfikacji wieku, kont ani obsługi
-            moderatorskiej. Blokady i zgłoszenia działają tylko lokalnie do
-            restartu aplikacji.
-          </AppText>
         </Card>
         <Card style={{ gap: 12 }}>
           <AppText variant="label" accessibilityRole="header">
@@ -71,7 +66,7 @@ export default function MessagingSafetyScreen() {
                   <GroupAvatar groupId={id} size={40} />
                   <AppText variant="label" style={{ flex: 1 }}>
                     {DEMO_GROUPS.find((group) => group.id === id)?.name ??
-                      'Przykładowa ekipa'}
+                      'Ekipa'}
                   </AppText>
                 </View>
                 <Button
@@ -85,20 +80,13 @@ export default function MessagingSafetyScreen() {
         </Card>
         <Card style={{ gap: 8 }}>
           <AppText variant="label" accessibilityRole="header">
-            Lokalne zgłoszenia · {state.reports.length}
-          </AppText>
-          <AppText
-            color="textSecondary"
-            style={{ fontSize: 14, lineHeight: 21 }}
-          >
-            Zgłoszenia demonstracyjne nie są wysyłane do moderacji. W przyszłej
-            wersji będzie tu dostępna rzeczywista obsługa bezpieczeństwa kont.
+            Zgłoszenia · {state.reports.length}
           </AppText>
           {state.reports.map((report) => (
             <AppText key={report.id} variant="caption">
               {DEMO_GROUPS.find((group) => group.id === report.groupId)?.name ??
                 'Ekipa'}{' '}
-              · {report.reason} · zapis lokalny
+              · {report.reason}
             </AppText>
           ))}
         </Card>

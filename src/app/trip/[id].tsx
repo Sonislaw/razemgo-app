@@ -47,7 +47,7 @@ export default function TripDetailsScreen() {
       <Screen>
         <EmptyState
           title="Nie znaleźliśmy tego wyjazdu"
-          description="Ten przykładowy wyjazd nie jest dostępny. Wróć do listy propozycji."
+          description="Ten wyjazd nie jest dostępny. Wróć do listy propozycji."
           action={
             <Button
               label="Przejdź do Odkrywaj"
@@ -117,11 +117,7 @@ export default function TripDetailsScreen() {
         }}
       >
         <AppText variant="heading" accessibilityRole="header" color="positive">
-          {score !== undefined ? score + '% zgodności · demo' : 'Co Was łączy?'}
-        </AppText>
-        <AppText variant="caption" color="textSecondary">
-          Przykładowa ocena zgodności. Poniższe przedziały wieku i
-          zainteresowania pochodzą z danych demonstracyjnych.
+          {score !== undefined ? score + '% zgodności' : 'Co Was łączy?'}
         </AppText>
         <AppText variant="label">
           {facts.matchingAgeBands.length
@@ -141,10 +137,7 @@ export default function TripDetailsScreen() {
         </AppText>
       </Card>
       <Card>
-        <SectionTitle
-          title={group.name}
-          detail="Przykładowa grupa podróżników"
-        />
+        <SectionTitle title={group.name} />
         <AppText>
           {group.adultCount} {group.adultCount === 1 ? 'dorosły' : 'dorosłych'}
           {group.childAgeBands.length
@@ -154,9 +147,6 @@ export default function TripDetailsScreen() {
         <AppText color="textSecondary">{group.travelModes.join(', ')}</AppText>
       </Card>
       <TripContactAction proposal={proposal} />
-      <AppText variant="caption" color="textSecondary">
-        Grupy, wyjazdy i wiadomości są fikcyjne.
-      </AppText>
     </Screen>
   );
 }

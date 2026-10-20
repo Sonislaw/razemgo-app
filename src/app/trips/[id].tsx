@@ -59,8 +59,7 @@ export default function OwnTripDetailsScreen() {
           Ten wyjazd nie jest dostępny
         </AppText>
         <AppText color="textSecondary">
-          Mógł zostać usunięty albo pochodzi z poprzedniej sesji
-          demonstracyjnej.
+          Mógł zostać usunięty. Wróćcie do listy swoich wyjazdów.
         </AppText>
         <Button label="Wróć do wyjazdów" onPress={back} />
       </Screen>
@@ -211,7 +210,7 @@ export default function OwnTripDetailsScreen() {
               ))}
             </View>
             <AppText variant="caption" color="textSecondary">
-              Propozycje liczymy z sześciu przykładowych planów według regionu,
+              Propozycje dobieramy według regionu,
               wspólnych nocy i wybranego towarzystwa. Zaproszenia i ekipy
               dotyczą wyłącznie tego wyjazdu.
             </AppText>
@@ -253,7 +252,7 @@ export default function OwnTripDetailsScreen() {
                     <AppText variant="label" style={{ flex: 1 }}>
                       {DEMO_GROUPS.find(
                         (group) => group.id === conversation.groupId,
-                      )?.name ?? 'Przykładowa ekipa'}
+                      )?.name ?? 'Ekipa'}
                     </AppText>
                   </View>
                   <Button

@@ -43,12 +43,12 @@ export function TripActions({
         <>
           <AppText color="textSecondary">
             {confirm === 'delete'
-              ? 'Wyjazd zniknie z Waszej listy. Lokalne rozmowy pozostaną w Wiadomościach. Tej operacji nie można cofnąć w bieżącej sesji.'
+              ? 'Wyjazd zniknie z Waszej listy. Rozmowy pozostaną w Wiadomościach. Tej operacji nie można cofnąć.'
               : confirm === 'cancel'
                 ? 'Wyjazd trafi do archiwum i nie będzie przyjmował nowych zaproszeń. Dotychczasowe rozmowy pozostaną dostępne.'
                 : confirm === 'complete'
                   ? 'Wyjazd zostanie oznaczony jako zakończony i trafi do archiwum. Dotychczasowe rozmowy pozostaną dostępne.'
-                  : 'Plan będzie widoczny dla społeczności i otwarty na nowe zaproszenia. W tej wersji jest to wyłącznie stan lokalny.'}
+                  : 'Plan będzie widoczny dla społeczności i otwarty na nowe zaproszenia.'}
           </AppText>
           <Button
             label={

@@ -30,6 +30,7 @@ import { getPreferredChildAges } from '@/features/profile/profile-data';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
 import { getTripHeadline } from '@/features/trips/trip-headline';
+import { LANDSCAPE_OPTIONS } from '@/constants/landscape-options';
 
 export default function ExploreScreen() {
   const theme = useTheme();
@@ -54,7 +55,8 @@ export default function ExploreScreen() {
     Number(Boolean(filters.location.trim())) +
     Number(filters.childAgeBands.length > 0) +
     Number(Boolean(filters.groupKinds?.length)) +
-    Number(Boolean(filters.animalKinds?.length));
+    Number(Boolean(filters.animalKinds?.length)) +
+    Number(Boolean(filters.landscapeKinds?.length));
   const summary = [
     filters.tripModes.length === 1
       ? filters.tripModes[0] === 'planned'
@@ -68,6 +70,14 @@ export default function ExploreScreen() {
           : '')
       : '',
     filters.location.trim(),
+    filters.landscapeKinds?.length
+      ? 'Klimat: ' +
+        LANDSCAPE_OPTIONS.filter((option) =>
+          filters.landscapeKinds?.includes(option.value),
+        )
+          .map((option) => option.label)
+          .join(', ')
+      : '',
     filters.childAgeBands.length
       ? 'Dzieci ' + filters.childAgeBands.join(', ') + ' lat'
       : '',
@@ -109,7 +119,7 @@ export default function ExploreScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Otwórz filtry"
-            accessibilityHint="Wybierz typ ogłoszenia, termin, miejsce i wiek dzieci"
+            accessibilityHint="Wybierz typ ogłoszenia, klimat, termin, miejsce i wiek dzieci"
             onPress={() => setShowFilters(true)}
             style={({ pressed }) => [
               styles.filterBar,
@@ -126,7 +136,7 @@ export default function ExploreScreen() {
                 Filtry{activeCount ? ' · ' + activeCount : ''}
               </AppText>
               <AppText variant="caption" color="textSecondary">
-                {summary || 'Typ ogłoszenia, termin, miejsce'}
+                {summary || 'Typ, termin, miejsce i klimat'}
               </AppText>
             </View>
             <Icon name="arrow" size={18} />
@@ -146,9 +156,6 @@ export default function ExploreScreen() {
               style={styles.resultTitle}
             >
               Propozycje dla Was · {proposals.length}
-            </AppText>
-            <AppText variant="caption" color="textSecondary">
-              Dane demonstracyjne
             </AppText>
           </View>
           <Pressable
@@ -194,7 +201,7 @@ export default function ExploreScreen() {
         ) : (
           <EmptyState
             title="Jeszcze się mijamy"
-            description="Żaden przykładowy plan nie pasuje do tych filtrów. Spróbuj innego regionu, terminu, wieku dzieci lub rodzaju zwierząt."
+            description="Żaden plan nie pasuje do tych filtrów. Zmień klimat wyjazdu lub pozostałe kryteria."
             action={
               <Button label="Pokaż wszystkie propozycje" onPress={reset} />
             }

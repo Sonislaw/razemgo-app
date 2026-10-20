@@ -21,7 +21,7 @@ export function ConversationSafety({
   const blocked = state.blockedGroupIds.includes(conversation.groupId);
   return (
     <MessagingSheet
-      title={reporting ? 'Zgłoś konto · demo' : 'Bezpieczna rozmowa'}
+      title={reporting ? 'Zgłoś konto' : 'Bezpieczna rozmowa'}
       onClose={onClose}
     >
       {reporting ? (
@@ -44,12 +44,8 @@ export function ConversationSafety({
               />
             ))}
           </View>
-          <AppText variant="caption" color="textSecondary">
-            To demonstracja: zgłoszenie zostanie zapisane tylko w bieżącej
-            sesji. Nie trafi do moderatora ani innej osoby.
-          </AppText>
           <Button
-            label="Zapisz zgłoszenie lokalnie"
+            label="Zapisz zgłoszenie"
             icon="flag"
             onPress={() => {
               dispatch({
@@ -86,7 +82,7 @@ export function ConversationSafety({
             }}
           />
           <AppText variant="caption" color="textSecondary">
-            Blokada wstrzymuje lokalną rozmowę i nowe zaproszenia tej ekipy.
+            Blokada wstrzymuje rozmowę i nowe zaproszenia tej ekipy.
             Możecie ją cofnąć w dowolnej chwili.
           </AppText>
           <Button

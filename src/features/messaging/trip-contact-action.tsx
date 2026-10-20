@@ -80,7 +80,6 @@ export function TripContactAction({ proposal }: { proposal: TripProposal }) {
         {unavailableSource
           ? 'Wyjazd, dla którego szukacie towarzystwa, nie przyjmuje nowych zaproszeń. Zmieńcie jego status albo wyczyśćcie kryteria w Odkrywaj. '
           : ''}
-        Zaproszenia i czat działają demonstracyjnie, tylko w bieżącej sesji.
         Kontakt między dorosłymi po akceptacji zaproszenia.
       </AppText>
       {composing ? (
@@ -127,10 +126,10 @@ export function TripContactAction({ proposal }: { proposal: TripProposal }) {
             }}
           />
           <AppText variant="caption" color="textSecondary">
-            {text.length}/{MAX_INVITATION_LENGTH} · zaproszenie demonstracyjne
+            {text.length}/{MAX_INVITATION_LENGTH}
           </AppText>
           <Button
-            label="Wyślij zaproszenie · demo"
+            label="Wyślij zaproszenie"
             icon="send"
             disabled={
               !text.trim() ||

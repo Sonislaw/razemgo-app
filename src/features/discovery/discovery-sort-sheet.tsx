@@ -54,8 +54,7 @@ export function DiscoverySortSheet({
         })}
       </View>
       <AppText variant="caption" color="textSecondary">
-        Zgodność od najwyższej do najniższej. Procenty są przykładowe — to dane
-        demonstracyjne.
+        Zgodność od najwyższej do najniższej.
       </AppText>
     </BottomSheet>
   );

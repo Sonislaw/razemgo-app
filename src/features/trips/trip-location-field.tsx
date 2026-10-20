@@ -130,7 +130,7 @@ export function TripLocationField({
             <Pressable
               key={location.id}
               accessibilityRole="button"
-              accessibilityLabel={`Wybierz lokalizację: ${location.name}, ${locationContext(location)}, ${LOCATION_KIND_LABELS[location.kind]}${location.source === 'demo' ? ', demo' : ''}`}
+              accessibilityLabel={`Wybierz lokalizację: ${location.name}, ${locationContext(location)}, ${LOCATION_KIND_LABELS[location.kind]}`}
               onPress={() => {
                 setQuery('');
                 setExpanded(false);
@@ -164,7 +164,6 @@ export function TripLocationField({
                 style={styles.kind}
               >
                 {LOCATION_KIND_LABELS[location.kind]}
-                {location.source === 'demo' ? ' · demo' : ''}
               </AppText>
             </Pressable>
           ))}
@@ -189,11 +188,6 @@ export function TripLocationField({
             : 'Wpisz nazwę i wybierz lokalizację z podpowiedzi.'}
         </AppText>
       )}
-      {selected?.source === 'demo' ? (
-        <AppText variant="caption" color="textSecondary">
-          Przykładowa lokalizacja · demo
-        </AppText>
-      ) : null}
     </View>
   );
 }

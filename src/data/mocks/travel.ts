@@ -35,7 +35,7 @@ export const DEMO_DATE_RANGES: DemoDateRange[] = [
 ];
 export const MY_GROUP: TravelGroup = {
   id: 'demo-us',
-  name: 'Przykładowa rodzina',
+  name: 'Nasza rodzina',
   kind: 'family',
   adultCount: 2,
   childCount: 2,
@@ -47,7 +47,7 @@ export const MY_GROUP: TravelGroup = {
 export const DEMO_GROUPS: TravelGroup[] = [
   {
     id: 'demo-1',
-    name: 'Rodzina A · demo',
+    name: 'Rodzina A',
     kind: 'family',
     adultCount: 2,
     childCount: 2,
@@ -58,7 +58,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
   },
   {
     id: 'demo-2',
-    name: 'Rodzina B · demo',
+    name: 'Rodzina B',
     kind: 'family',
     adultCount: 2,
     childCount: 2,
@@ -69,7 +69,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
   },
   {
     id: 'demo-3',
-    name: 'Para C · demo',
+    name: 'Para C',
     kind: 'couple',
     adultCount: 2,
     childCount: 0,
@@ -80,7 +80,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
   },
   {
     id: 'demo-4',
-    name: 'Rodzina D · demo',
+    name: 'Rodzina D',
     kind: 'family',
     adultCount: 1,
     childCount: 2,
@@ -91,7 +91,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
   },
   {
     id: 'demo-5',
-    name: 'Grupa E · demo',
+    name: 'Grupa E',
     kind: 'friends',
     adultCount: 3,
     childCount: 0,
@@ -102,7 +102,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
   },
   {
     id: 'demo-6',
-    name: 'Rodzina F · demo',
+    name: 'Rodzina F',
     kind: 'family',
     adultCount: 2,
     childCount: 2,

@@ -77,7 +77,7 @@ export default function ChatScreen() {
       <Screen>
         <MailboxEmpty
           title="Rozmowa jeszcze niedostępna"
-          description="Kontakt rozpoczyna się po akceptacji zaproszenia. Dane demonstracyjne znikają po restarcie aplikacji."
+          description="Kontakt rozpoczyna się po akceptacji zaproszenia."
         >
           <Button label="Wróć do Wiadomości" onPress={back} />
         </MailboxEmpty>
@@ -186,7 +186,7 @@ export default function ChatScreen() {
             style={{ padding: 12, backgroundColor: theme.positiveBackground }}
           >
             <AppText variant="caption" color="positive">
-              Zgłoszenie zapisane lokalnie. Nie wysłano go do moderacji.
+              Zgłoszenie zapisane.
             </AppText>
           </View>
         ) : null}
@@ -264,7 +264,7 @@ export default function ChatScreen() {
                     {self
                       ? item.status === 'failed'
                         ? ' · Nie wysłano'
-                        : ' · Wysłano · demo'
+                        : ' · Wysłano'
                       : ''}
                   </AppText>
                 </View>
@@ -273,9 +273,7 @@ export default function ChatScreen() {
                     style={{ alignSelf: 'flex-end', maxWidth: '90%', gap: 4 }}
                   >
                     <AppText variant="caption" color="textSecondary">
-                      {state.simulateSendError
-                        ? 'Wyłącz symulację błędu w panelu Demo i spróbuj ponownie.'
-                        : 'Wiadomość pozostała na urządzeniu.'}
+                      Nie udało się wysłać wiadomości. Spróbujcie ponownie.
                     </AppText>
                     <Button
                       label="Ponów wysyłanie"
@@ -319,8 +317,7 @@ export default function ChatScreen() {
                   color="textSecondary"
                   style={{ paddingHorizontal: 12, paddingTop: 8 }}
                 >
-                  Wysyłanie niedostępne podczas symulacji ładowania lub błędu
-                  skrzynki.
+                  Wysyłanie chwilowo niedostępne. Spróbujcie ponownie za chwilę.
                 </AppText>
               ) : null}
               <View

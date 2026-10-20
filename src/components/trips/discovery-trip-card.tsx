@@ -12,6 +12,7 @@ import {
 import type { MatchFacts } from '@/features/discovery/filter-trips';
 import type { TripProposal } from '@/types/travel';
 import { CompactTripCard } from './compact-trip-card';
+import { TripCardHeading } from './trip-card-heading';
 import { TripAnimalTag } from '@/features/animals/animal-ui';
 
 interface DiscoveryTripCardProps extends TripProposal {
@@ -45,19 +46,12 @@ export function DiscoveryTripCard({
             ]}
           >
             <AppText variant="caption" color="positive" style={styles.bold}>
-              {score}% zgodności · demo
+              {score}% zgodności
             </AppText>
           </View>
         ) : null}
       </View>
-      <AppText
-        variant="heading"
-        accessibilityRole="header"
-        style={styles.title}
-        numberOfLines={2}
-      >
-        {getTripHeadline(trip)}
-      </AppText>
+      <TripCardHeading title={getTripHeadline(trip)} landscape={trip.landscape} />
       <View style={layout.row}>
         <Icon name="pin" size={16} />
         <AppText variant="label" color="textSecondary" style={styles.flex}>
@@ -109,7 +103,6 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   shrink: { flexShrink: 1 },
   bold: { fontWeight: '700' },
-  title: { fontSize: 18, lineHeight: 24 },
   score: {
     borderRadius: Radius.pill,
     paddingHorizontal: 8,

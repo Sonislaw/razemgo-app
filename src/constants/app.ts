@@ -1,2 +1,2 @@
-// The current MVP uses local example data; there are no connected user accounts.
-export const IS_DEMO_MODE = true;
+// Controls preview tools and labels only. Local example data is still used.
+export const IS_DEMO_MODE = false;

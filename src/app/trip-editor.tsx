@@ -25,6 +25,7 @@ import { Icon } from '@/components/ui/icon';
 import { ScenicFooter } from '@/components/ui/scenic-footer';
 import { CHILD_AGE_BANDS } from '@/data/mocks/travel';
 import { MaxContentWidth } from '@/constants/theme';
+import { LANDSCAPE_OPTIONS } from '@/constants/landscape-options';
 import { useTheme } from '@/hooks/use-theme';
 import { useProfile } from '@/features/profile/profile-context';
 import { ProfileTextField } from '@/features/profile/profile-form-fields';
@@ -106,8 +107,7 @@ export default function TripEditorScreen() {
           Ten wyjazd nie jest dostępny
         </AppText>
         <AppText color="textSecondary">
-          Mógł zostać usunięty albo pochodzi z poprzedniej sesji
-          demonstracyjnej.
+          Mógł zostać usunięty. Wróćcie do listy swoich wyjazdów.
         </AppText>
         <Button
           label="Wróć do wyjazdów"
@@ -446,14 +446,7 @@ export default function TripEditorScreen() {
                 <View style={{ gap: 8 }}>
                   <AppText variant="label">Klimat wyjazdu</AppText>
                   <ChipRow horizontal label="Klimat wyjazdu">
-                    {(
-                      [
-                        { value: 'coast', label: 'Morze' },
-                        { value: 'lake', label: 'Jeziora' },
-                        { value: 'mountain', label: 'Góry' },
-                        { value: 'forest', label: 'Las' },
-                      ] as const
-                    ).map((item) => (
+                    {LANDSCAPE_OPTIONS.map((item) => (
                       <Chip
                         key={item.value}
                         label={item.label}
@@ -539,7 +532,7 @@ export default function TripEditorScreen() {
                         ? 'Prywatny plan będzie wstrzymany i niewidoczny w wyszukiwarce. Wznowienie poszukiwań udostępni go społeczności.'
                         : previousStatus === 'paused'
                           ? 'Zapis zachowa wstrzymane poszukiwania. Możecie je później wznowić z menu wyjazdu.'
-                          : 'Opublikowany plan będzie otwarty na zaproszenia. W demo wszystkie zmiany pozostają lokalne.'}
+                          : 'Opublikowany plan będzie otwarty na zaproszenia.'}
                   </AppText>
                 </View>
                 <Card style={{ gap: 8, backgroundColor: theme.hero }}>

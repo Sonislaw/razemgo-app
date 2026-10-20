@@ -4,7 +4,6 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  Text,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -25,7 +24,6 @@ import { INITIAL_FILTERS } from '@/features/discovery/filter-trips';
 import { HomeDemoControls } from '@/features/home/home-demo-controls';
 import { HomeAction } from '@/features/home/home-ui';
 import { HomeHeader } from '@/features/home/home-header';
-import { HomeTravelIllustration } from '@/features/home/home-travel-illustration';
 
 export default function HomeScreen() {
   const theme = useTheme();
@@ -37,8 +35,6 @@ export default function HomeScreen() {
   const [demoOpen, setDemoOpen] = useState(false);
   const [canvasHeight, setCanvasHeight] = useState(height);
   const [mainHeight, setMainHeight] = useState(0);
-  const [introHeight, setIntroHeight] = useState(0);
-  const [actionsHeight, setActionsHeight] = useState(0);
   const landscape = width >= 600 && canvasHeight < 500;
   const density =
     mainHeight > 0 &&
@@ -50,15 +46,6 @@ export default function HomeScreen() {
   const minimal = density === 'minimal';
   const shortScreen = mainHeight > 0 && mainHeight < 270;
   const contentGap = minimal ? 8 : density === 'compact' ? 16 : 24;
-  // Reserve a visible strip even before native layout measurements arrive.
-  // Short screens use smaller action cards to keep the footer visible too.
-  const illustrationHeight =
-    !landscape
-      ? Math.max(
-          32,
-          Math.min(72, mainHeight - introHeight - actionsHeight - contentGap - 12),
-        )
-      : 0;
   const showIllustrations = !landscape && !(minimal && fontScale > 1.2);
   const showDescriptions = !shortScreen;
   const footerHeight = Math.min(width / 3, 180, Math.max(68, canvasHeight * 0.19));
@@ -83,15 +70,22 @@ export default function HomeScreen() {
     <>
       <AppText
         accessibilityRole="header"
-        color="textSecondary"
-        variant="body"
+        variant="heading"
         style={{
-          fontSize: minimal ? 12 : density === 'compact' ? 14 : 16,
-          lineHeight: minimal ? 16 : density === 'compact' ? 20 : 24,
+          fontSize: minimal ? 20 : density === 'compact' ? 24 : 28,
+          lineHeight: minimal ? 26 : density === 'compact' ? 30 : 36,
         }}
       >
-        <Text style={{ fontWeight: '700' }}>RazemGo</Text>
-        {' - łączymy ludzi z pasją do wolności.'}
+        Podróżujcie razem.
+      </AppText>
+      <AppText
+        color="textSecondary"
+        style={{
+          fontSize: minimal ? 13 : density === 'compact' ? 14 : 16,
+          lineHeight: minimal ? 18 : density === 'compact' ? 20 : 24,
+        }}
+      >
+        Znajdźcie towarzystwo na kolejną przygodę.
       </AppText>
       {!hasProfile ? (
         <AppText variant="label" color="textSecondary">
@@ -150,17 +144,12 @@ export default function HomeScreen() {
               <View
                 style={[
                   styles.introduction,
-                  landscape ? { width: 148 } : undefined,
+                  landscape
+                    ? { width: 148, transform: [{ translateY: -Spacing.three }] }
+                    : undefined,
                 ]}
               >
-                {!landscape ? (
-                  <HomeTravelIllustration height={illustrationHeight} />
-                ) : null}
-                <View
-                  onLayout={(event) =>
-                    setIntroHeight(event.nativeEvent.layout.height)
-                  }
-                >
+                <View style={{ gap: 8 }}>
                   {hasProfile ? (
                     introduction
                   ) : (
@@ -168,7 +157,7 @@ export default function HomeScreen() {
                       accessibilityRole="button"
                       accessibilityLabel="Uzupełnij profil"
                       onPress={completeProfile}
-                      style={{ gap: 4, minHeight: 48, justifyContent: 'center' }}
+                      style={{ gap: 8, minHeight: 48, justifyContent: 'center' }}
                     >
                       {introduction}
                     </Pressable>
@@ -176,17 +165,15 @@ export default function HomeScreen() {
                 </View>
               </View>
               <View
-                onLayout={(event) =>
-                  setActionsHeight(event.nativeEvent.layout.height)
-                }
                 style={{
                   gap: minimal ? 8 : 12,
+                  transform: [{ translateY: -Spacing.three }],
                   ...(landscape ? { flex: 1, flexDirection: 'row' } : {}),
                 }}
               >
                 <HomeAction
                   label="Znajdź ekipę"
-                  description="Poznajcie ekipę na wspólny wyjazd."
+                  description="Poznajcie podróżników z podobnymi planami."
                   illustration={require('@/assets/images/home/find-crew.png')}
                   density={density}
                   showIllustration={showIllustrations}
@@ -196,7 +183,7 @@ export default function HomeScreen() {
                 />
                 <HomeAction
                   label="Dodaj wyjazd"
-                  description="Podajcie cel lub wybierzcie „Szukam pomysłu”."
+                  description="Zaplanujcie wyjazd i znajdźcie towarzystwo."
                   illustration={require('@/assets/images/home/plan-trip.png')}
                   density={density}
                   showIllustration={showIllustrations}
@@ -230,5 +217,5 @@ const styles = StyleSheet.create({
   canvas: { flex: 1, minHeight: 0 },
   main: { flex: 1, minHeight: 0, justifyContent: 'center', alignItems: 'center' },
   content: { width: '100%' },
-  introduction: { gap: 4, transform: [{ translateY: -Spacing.three }] },
+  introduction: { gap: 4, transform: [{ translateY: -48 }] },
 });

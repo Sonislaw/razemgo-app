@@ -8,6 +8,7 @@ import {
   Pressable,
   StyleSheet,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,6 +21,10 @@ import {
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { ScenicFooter } from '@/components/ui/scenic-footer';
+import {
+  getScenicHeaderLayout,
+  ScenicHeaderBackground,
+} from '@/components/ui/scenic-header';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { Fonts, MaxContentWidth, Typography } from '@/constants/theme';
 import { DEMO_MAILBOX } from '@/data/mocks/messaging';
@@ -54,6 +59,8 @@ export default function ChatScreen() {
   const { state, dispatch } = useMessaging();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const { height: headerHeight } = getScenicHeaderLayout(width);
   const [draft, setDraft] = useState('');
   const [safetyOpen, setSafetyOpen] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);
@@ -112,9 +119,12 @@ export default function ChatScreen() {
             {
               borderBottomColor: theme.border,
               backgroundColor: theme.backgroundElement,
+              minHeight: headerHeight,
+              paddingBottom: headerHeight - 56,
             },
           ]}
         >
+          <ScenicHeaderBackground style={{ top: 0 }} />
           <IconButton label="Wróć do Wiadomości" icon="back" onPress={back} />
           <GroupAvatar groupId={conversation.groupId} size={40} />
           <View style={{ flex: 1, minWidth: 0 }}>

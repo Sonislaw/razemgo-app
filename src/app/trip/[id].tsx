@@ -8,6 +8,7 @@ import {
   Chip,
   DemoBadge,
   EmptyState,
+  HeaderRow,
   IconButton,
   Screen,
   SectionTitle,
@@ -68,13 +69,13 @@ export default function TripDetailsScreen() {
   const score = DEMO_COMPATIBILITY_SCORES[trip.id];
   return (
     <Screen>
-      <View style={[layout.row, { flexWrap: 'wrap' }]}>
+      <HeaderRow style={{ flexWrap: 'wrap' }}>
         <IconButton icon="back" label="Wróć do listy wyjazdów" onPress={back} />
         <AppText variant="label" style={styles.flex}>
           Wyjazd
         </AppText>
         <DemoBadge />
-      </View>
+      </HeaderRow>
       <View style={styles.illustration}>
         <Landscape kind={trip.landscape} />
       </View>

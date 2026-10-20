@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import {
   AppText,
   Button,
+  HeaderRow,
   IconButton,
   layout,
 } from '@/components/ui/primitives';
@@ -75,7 +76,7 @@ export function TripPageHeader({
   onMenu?: () => void;
 }) {
   return (
-    <View style={layout.row}>
+    <HeaderRow>
       <IconButton label="Wróć do wyjazdów" icon="back" onPress={onBack} />
       <AppText variant="heading" accessibilityRole="header" style={{ flex: 1 }}>
         {title}
@@ -83,7 +84,7 @@ export function TripPageHeader({
       {onMenu ? (
         <IconButton label="Opcje wyjazdu" icon="more" onPress={onMenu} />
       ) : null}
-    </View>
+    </HeaderRow>
   );
 }
 export function TripDemoNote() {

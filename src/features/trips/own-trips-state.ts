@@ -29,6 +29,13 @@ export const EMPTY_TRIP_FILTERS: OwnTripFilters = {
   startDate: '',
   endDate: '',
 };
+export const MIN_TRIP_DESCRIPTION_LENGTH = 20;
+export const MAX_TRIP_DESCRIPTION_LENGTH = 1000;
+
+export function tripDescriptionLength(description: string): number {
+  return Array.from(description.trim().replace(/\s+/gu, ' ')).length;
+}
+
 export function todayDate(): string {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -184,8 +191,12 @@ export function validateTripForm(form: TripForm, step?: 1 | 2 | 3): string[] {
       form.campgroundName.trim().length > 120
     )
       errors.push('Skróć nazwę kempingu do 120 znaków.');
-    if (form.description.trim().length > 1000)
-      errors.push('Skróć opis do 1000 znaków.');
+    if (tripDescriptionLength(form.description) < MIN_TRIP_DESCRIPTION_LENGTH)
+      errors.push(
+        `Opis wyjazdu musi mieć co najmniej ${MIN_TRIP_DESCRIPTION_LENGTH} znaków. Rozwiń opis swoich planów; zbędne spacje nie zwiększają długości.`,
+      );
+    if (form.description.trim().length > MAX_TRIP_DESCRIPTION_LENGTH)
+      errors.push(`Skróć opis do ${MAX_TRIP_DESCRIPTION_LENGTH} znaków.`);
   }
   return errors;
 }

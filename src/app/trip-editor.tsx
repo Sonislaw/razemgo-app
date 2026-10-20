@@ -23,6 +23,7 @@ import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { ChipRow } from '@/components/ui/chip-row';
 import { Icon } from '@/components/ui/icon';
 import { ScenicFooter } from '@/components/ui/scenic-footer';
+import { ScenicHeaderBackground } from '@/components/ui/scenic-header';
 import { CHILD_AGE_BANDS } from '@/data/mocks/travel';
 import { MaxContentWidth } from '@/constants/theme';
 import { LANDSCAPE_OPTIONS } from '@/constants/landscape-options';
@@ -37,12 +38,15 @@ import {
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import {
   getTripStatus,
+  MAX_TRIP_DESCRIPTION_LENGTH,
+  MIN_TRIP_DESCRIPTION_LENGTH,
   changeTripLocation,
   changeTripMode,
   newTripForm,
   toTripForm,
   todayDate,
   tripFromForm,
+  tripDescriptionLength,
   validateTripForm,
 } from '@/features/trips/own-trips-state';
 import { DateRangeField } from '@/components/trips/date-range-field';
@@ -179,6 +183,7 @@ export default function TripEditorScreen() {
             borderBottomColor: theme.border,
           }}
         >
+          <ScenicHeaderBackground style={{ top: insets.top + 4 }} />
           <View
             style={{
               width: '100%',
@@ -205,9 +210,18 @@ export default function TripEditorScreen() {
                   {existing ? 'Edytuj wyjazd' : 'Nowy wyjazd'}
                 </AppText>
                 <View style={[layout.wrap, { rowGap: 4 }]}>
-                  <AppText variant="caption" color="textSecondary">
-                    Krok {step} z 3
-                  </AppText>
+                  <View
+                    style={{
+                      paddingHorizontal: 8,
+                      paddingVertical: 2,
+                      borderRadius: 12,
+                      backgroundColor: `${theme.backgroundElement}E6`,
+                    }}
+                  >
+                    <AppText variant="caption" color="text">
+                      Krok {step} z 3
+                    </AppText>
+                  </View>
                   <View
                     accessible
                     accessibilityLabel={'Typ wyjazdu: ' + modeLabel}
@@ -402,12 +416,12 @@ export default function TripEditorScreen() {
                   />
                 ) : null}
                 <ProfileTextField
-                  label="Opis wyjazdu"
+                  label="Opis wyjazdu · wymagane"
                   value={form.description}
                   onChangeText={(value) => update('description', value)}
-                  maxLength={1000}
+                  maxLength={MAX_TRIP_DESCRIPTION_LENGTH}
                   multiline
-                  hint="Opcjonalnie. Początek opisu pokażemy na karcie wyjazdu — opowiedzcie, co planujecie."
+                  hint={`Min. ${MIN_TRIP_DESCRIPTION_LENGTH} znaków · ${tripDescriptionLength(form.description)}/${MAX_TRIP_DESCRIPTION_LENGTH}. Początek opisu pokażemy na karcie wyjazdu.`}
                 />
                 <View style={{ gap: 8 }}>
                   <AppText variant="label">

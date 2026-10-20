@@ -5,6 +5,7 @@ import {
   AppText,
   Button,
   DemoBadge,
+  HeaderRow,
   Screen,
   layout,
 } from '@/components/ui/primitives';
@@ -17,7 +18,7 @@ export default function WelcomeScreen() {
   const { hasProfile } = useProfile();
   return (
     <Screen>
-      <View style={[layout.row, { paddingVertical: 8 }]}>
+      <HeaderRow style={{ paddingTop: 8 }}>
         <Image
           source={require('@/assets/images/zgrana-symbol.svg')}
           style={{ width: 40, height: 40 }}
@@ -27,7 +28,7 @@ export default function WelcomeScreen() {
         <AppText variant="heading" color="brand">
           RazemGo
         </AppText>
-      </View>
+      </HeaderRow>
       <View
         style={{
           borderRadius: 28,

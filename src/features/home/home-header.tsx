@@ -6,6 +6,10 @@ import { CountBadge } from '@/features/messaging/messaging-ui';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import {
+  getScenicHeaderLayout,
+  ScenicHeaderBackground,
+} from '@/components/ui/scenic-header';
 
 export function HomeHeader({
   notifications,
@@ -22,35 +26,19 @@ export function HomeHeader({
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const compact = width < 360;
-  const artworkHeight = Math.min(width / 3, 180);
-  const artworkOffset = Math.min(44, artworkHeight * 0.35);
+  const logoSize = 48;
+  const { height } = getScenicHeaderLayout(width);
   return (
     <View
       style={[
         styles.header,
-        { height: Math.max(88, artworkHeight - artworkOffset) },
+        { height },
       ]}
     >
-      <View
+      <ScenicHeaderBackground
         testID="home-header-divider"
-        style={styles.background}
-        pointerEvents="none"
-        accessible={false}
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      >
-        <Image
-          source={require('@/assets/images/home-header-meadow.png')}
-          style={[
-            styles.artwork,
-            { height: artworkHeight, top: -artworkOffset },
-          ]}
-          contentFit="cover"
-          contentPosition="bottom"
-          accessible={false}
-          alt=""
-        />
-      </View>
+        style={{ opacity: 1 }}
+      />
       <View
         style={{
           position: 'relative',
@@ -68,29 +56,25 @@ export function HomeHeader({
         <View style={[layout.row, styles.toolbar]}>
           <View style={styles.brandSlot}>
             <View
+              accessible
+              accessibilityRole="image"
+              accessibilityLabel="Logo ZgranaGo"
               style={[
-                layout.row,
                 styles.brand,
                 {
-                  backgroundColor: `${theme.backgroundElement}80`,
-                  paddingHorizontal: compact ? 8 : 10,
+                  backgroundColor: `${theme.backgroundElement}CC`,
+                  width: logoSize,
+                  height: logoSize,
+                  borderRadius: logoSize / 2,
                 },
               ]}
             >
               <Image
                 source={require('@/assets/images/zgrana-symbol.svg')}
-                style={{ width: compact ? 24 : 28, height: compact ? 24 : 28 }}
+                style={{ width: compact ? 30 : 34, height: compact ? 30 : 34 }}
                 contentFit="contain"
                 accessible={false}
               />
-              <AppText
-                variant="heading"
-                color="brand"
-                style={{ fontSize: compact ? 16 : 18, flexShrink: 1 }}
-                numberOfLines={1}
-              >
-                ZgranaGo
-              </AppText>
             </View>
           </View>
           {IS_DEMO_MODE ? (
@@ -138,15 +122,6 @@ export function HomeHeader({
 
 const styles = StyleSheet.create({
   header: { width: '100%', marginBottom: Spacing.three },
-  background: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    top: -Spacing.three,
-    overflow: 'hidden',
-  },
-  artwork: { position: 'absolute', left: 0, width: '100%' },
   toolbar: {
     width: '100%',
     maxWidth: MaxContentWidth,
@@ -155,11 +130,8 @@ const styles = StyleSheet.create({
   },
   brandSlot: { flex: 1, minWidth: 0, alignItems: 'flex-start' },
   brand: {
-    maxWidth: '100%',
-    minHeight: 44,
-    gap: 6,
-    paddingVertical: 6,
-    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   demoButton: {
     minWidth: 48,

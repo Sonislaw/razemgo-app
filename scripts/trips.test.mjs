@@ -136,7 +136,7 @@ test('legacy demo places resolve to selections and city, region and country sele
       );
       state = save(state, false, trip.id, {
         ...toTripForm(trip),
-        description: 'Zmiana opisu',
+        description: 'Zmieniamy opis wspólnego wyjazdu.',
       });
       state = reduce(state, { type: 'duplicate', id: trip.id });
       assert.equal(toTripForm(state.trips.at(-1)).locationId, location.id);
@@ -296,15 +296,15 @@ test('empty descriptions get a destination or area label and unfinished drafts s
   assert.equal(getTripHeadline(blank), 'Wyjazd do zaplanowania');
 });
 
-test('publishing and editing need no name or description and ignore legacy title input', () => {
-  const values = { ...form(), description: '', title: 'Stara nazwa' };
+test('publishing and editing use the description without a name and ignore legacy title input', () => {
+  const values = { ...form(), title: 'Stara nazwa' };
   assert.deepEqual(validateTripForm(values), []);
   const state = save(initial(), false, undefined, values);
   const trip = state.trips.at(-1);
   assert.equal(Object.hasOwn(trip, 'title'), false);
   assert.equal(Object.hasOwn(toTripForm(trip), 'title'), false);
   assert.equal(Object.hasOwn(newTripForm(profile), 'title'), false);
-  assert.equal(getTripHeadline(trip), 'Wyjazd · Chłapowo');
+  assert.equal(getTripHeadline(trip), getTripHeadline(MY_TRIPS[0]));
   const updated = save(state, false, trip.id, {
     ...values,
     description: 'Wspólne ognisko nad morzem',
@@ -314,6 +314,76 @@ test('publishing and editing need no name or description and ignore legacy title
     'Wspólne ognisko nad morzem',
   );
   assert.equal(updated.trips.at(-1).id, trip.id);
+});
+
+test('both modes require a real minimum description before step 3, publication, editing or resuming', () => {
+  for (const mode of ['planned', 'flexible']) {
+    for (const description of [
+      '',
+      '  \n\t ',
+      'ab',
+      '  ab  ',
+      'a                      b',
+      'Wyjazd pod namiotam',
+      '🚐'.repeat(10),
+    ]) {
+      const values = { ...form(), mode, description };
+      assert.deepEqual(validateTripForm(values, 1), []);
+      assert.match(validateTripForm(values, 2).join(' '), /Opis wyjazdu.*20/);
+      assert.match(validateTripForm(values).join(' '), /Opis wyjazdu.*20/);
+      const state = initial();
+      assert.equal(save(state, false, undefined, values), state);
+      assert.equal(save(state, false, state.trips[0].id, values), state);
+      const paused = createOwnTripsState([
+        tripFromForm(values, state.trips[0].id, MY_GROUP.id, 'paused'),
+      ]);
+      assert.equal(
+        reduce(paused, {
+          type: 'status',
+          id: paused.trips[0].id,
+          status: 'published',
+          today,
+        }),
+        paused,
+      );
+    }
+  }
+});
+
+test('description boundaries ignore extra whitespace and retain the supplied text', () => {
+  for (const description of [
+    'Wyjazd pod namiotami',
+    '  Wyjazd  \n pod\t namiotami  ',
+    'ą'.repeat(1000),
+  ]) {
+    const values = { ...form(), description };
+    assert.deepEqual(validateTripForm(values, 2), []);
+    assert.deepEqual(validateTripForm(values), []);
+    const state = save(initial(), false, undefined, values);
+    assert.equal(state.trips.length, 3);
+    assert.equal(state.trips.at(-1).description, description.trim());
+  }
+  const values = { ...form(), description: 'ą'.repeat(1001) };
+  assert.match(validateTripForm(values).join(' '), /1000/);
+  const state = initial();
+  assert.equal(save(state, false, undefined, values), state);
+});
+
+test('a short description can be saved as a draft and must be completed before publishing it', () => {
+  const values = { ...form(), description: 'ab' };
+  const state = save(initial(), true, undefined, values);
+  const draft = state.trips.at(-1);
+  assert.equal(draft.status, 'draft');
+  assert.equal(draft.description, 'ab');
+  assert.equal(toTripForm(draft).description, 'ab');
+  assert.equal(save(state, false, draft.id, toTripForm(draft)), state);
+  const published = save(state, false, draft.id, {
+    ...toTripForm(draft),
+    description: 'Spokojny weekend nad morzem z rowerami.',
+  });
+  assert.equal(published.trips.length, state.trips.length);
+  assert.equal(published.trips.at(-1).id, draft.id);
+  assert.equal(published.trips.at(-1).status, 'published');
 });
 
 test('own-trip search also finds words beyond the short description excerpt', () => {
@@ -371,10 +441,13 @@ test('publishing adds a complete plan; editing retains its id without duplicates
   assert.equal(state.lastSavedId, 'local-trip-1');
   const updated = save(state, false, 'local-trip-1', {
     ...form(),
-    description: 'Zmieniony opis',
+    description: 'Zmieniony opis naszego wyjazdu',
   });
   assert.equal(updated.trips.length, 3);
-  assert.equal(getTripHeadline(updated.trips.at(-1)), 'Zmieniony opis');
+  assert.equal(
+    getTripHeadline(updated.trips.at(-1)),
+    'Zmieniony opis naszego wyjazdu',
+  );
   assert.equal(updated.revision, state.revision + 1);
 });
 

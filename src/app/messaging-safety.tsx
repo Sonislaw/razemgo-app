@@ -4,6 +4,7 @@ import {
   AppText,
   Button,
   Card,
+  HeaderRow,
   IconButton,
   Screen,
   layout,
@@ -18,7 +19,7 @@ export default function MessagingSafetyScreen() {
   return (
     <Screen>
       <View style={{ gap: 12 }}>
-        <View style={layout.row}>
+        <HeaderRow>
           <IconButton
             label="Wróć do Wiadomości"
             icon="back"
@@ -31,7 +32,7 @@ export default function MessagingSafetyScreen() {
           >
             Bezpieczeństwo rozmów
           </AppText>
-        </View>
+        </HeaderRow>
         <Card style={{ gap: 12 }}>
           <View style={layout.row}>
             <Icon name="shield" />

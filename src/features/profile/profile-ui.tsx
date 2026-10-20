@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { AppText, IconButton, layout } from '@/components/ui/primitives';
+import { AppText, HeaderRow, IconButton, layout } from '@/components/ui/primitives';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -15,12 +15,12 @@ export function ProfileSubpageHeader({
   backLabel?: string;
 }) {
   return (
-    <View style={layout.row}>
+    <HeaderRow>
       <IconButton icon="back" label={backLabel} onPress={onBack} />
       <AppText variant="heading" accessibilityRole="header" style={{ flex: 1 }}>
         {title}
       </AppText>
-    </View>
+    </HeaderRow>
   );
 }
 

@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
   type TextProps,
   type ViewProps,
@@ -22,6 +23,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { Icon, type IconName } from './icon';
 import { ScenicFooter } from './scenic-footer';
+import { getScenicHeaderLayout, ScenicHeaderBackground } from './scenic-header';
 
 export interface AppTextProps extends TextProps {
   variant?: keyof typeof Typography;
@@ -70,6 +72,11 @@ export function Screen({
         },
       ]}
     >
+      {!header ? (
+        <ScenicHeaderBackground
+          style={{ top: Platform.OS === 'ios' ? 0 : insets.top }}
+        />
+      ) : null}
       {header}
       <View
         style={[
@@ -102,9 +109,23 @@ export interface PageHeaderProps {
   title: string;
   actions?: ReactNode;
 }
+export function HeaderRow({ style, ...props }: ViewProps) {
+  const { width } = useWindowDimensions();
+  const { height } = getScenicHeaderLayout(width);
+  return (
+    <View
+      {...props}
+      style={[
+        styles.pageHeader,
+        { minHeight: height, paddingBottom: height - 48 },
+        style,
+      ]}
+    />
+  );
+}
 export function PageHeader({ title, actions }: PageHeaderProps) {
   return (
-    <View style={styles.pageHeader}>
+    <HeaderRow>
       <AppText
         accessibilityRole="header"
         variant="heading"
@@ -113,7 +134,7 @@ export function PageHeader({ title, actions }: PageHeaderProps) {
         {title}
       </AppText>
       {actions ? <View style={layout.row}>{actions}</View> : null}
-    </View>
+    </HeaderRow>
   );
 }
 export interface ButtonProps {

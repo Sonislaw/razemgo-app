@@ -4,6 +4,7 @@ import {
   Platform,
   Pressable,
   StyleSheet,
+  Text,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -24,6 +25,7 @@ import { INITIAL_FILTERS } from '@/features/discovery/filter-trips';
 import { HomeDemoControls } from '@/features/home/home-demo-controls';
 import { HomeAction } from '@/features/home/home-ui';
 import { HomeHeader } from '@/features/home/home-header';
+import { HomeTravelIllustration } from '@/features/home/home-travel-illustration';
 
 export default function HomeScreen() {
   const theme = useTheme();
@@ -35,21 +37,30 @@ export default function HomeScreen() {
   const [demoOpen, setDemoOpen] = useState(false);
   const [canvasHeight, setCanvasHeight] = useState(height);
   const [mainHeight, setMainHeight] = useState(0);
+  const [introHeight, setIntroHeight] = useState(0);
+  const [actionsHeight, setActionsHeight] = useState(0);
   const landscape = width >= 600 && canvasHeight < 500;
   const density =
     mainHeight > 0 &&
-    (mainHeight < 330 || (fontScale > 1.2 && mainHeight < 440))
+    (mainHeight < 370 || (fontScale > 1.2 && mainHeight < 440))
       ? 'minimal'
-      : mainHeight > 0 && mainHeight < 400
+      : mainHeight > 0 && mainHeight < 460
         ? 'compact'
         : 'regular';
   const minimal = density === 'minimal';
+  const shortScreen = mainHeight > 0 && mainHeight < 270;
+  const contentGap = minimal ? 8 : density === 'compact' ? 16 : 24;
+  // Reserve a visible strip even before native layout measurements arrive.
+  // Short screens use smaller action cards to keep the footer visible too.
+  const illustrationHeight =
+    !landscape
+      ? Math.max(
+          32,
+          Math.min(72, mainHeight - introHeight - actionsHeight - contentGap - 12),
+        )
+      : 0;
   const showIllustrations = !landscape && !(minimal && fontScale > 1.2);
-  const showDescriptions = !(
-    fontScale > 1.35 &&
-    mainHeight > 0 &&
-    mainHeight < 270
-  );
+  const showDescriptions = !shortScreen;
   const footerHeight = Math.min(width / 3, 180, Math.max(68, canvasHeight * 0.19));
   const pending =
     mailbox.loadStatus === 'ready' ? pendingReceivedCount(mailbox) : 0;
@@ -72,13 +83,15 @@ export default function HomeScreen() {
     <>
       <AppText
         accessibilityRole="header"
-        variant="label"
+        color="textSecondary"
+        variant="body"
         style={{
           fontSize: minimal ? 12 : density === 'compact' ? 14 : 16,
           lineHeight: minimal ? 16 : density === 'compact' ? 20 : 24,
         }}
       >
-        Łączymy podróżujących kamperem, przyczepą, kampervanem lub z namiotem.
+        <Text style={{ fontWeight: '700' }}>RazemGo</Text>
+        {' - łączymy ludzi z pasją do wolności.'}
       </AppText>
       {!hasProfile ? (
         <AppText variant="label" color="textSecondary">
@@ -130,30 +143,42 @@ export default function HomeScreen() {
                   maxWidth: landscape ? 960 : MaxContentWidth,
                   flexDirection: landscape ? 'row' : 'column',
                   alignItems: landscape ? 'center' : 'stretch',
-                  gap: minimal ? 8 : density === 'compact' ? 16 : 24,
+                  gap: contentGap,
                 },
               ]}
             >
-              {hasProfile ? (
-                <View style={{ gap: 4, ...(landscape ? { width: 148 } : {}) }}>
-                  {introduction}
-                </View>
-              ) : (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Uzupełnij profil"
-                  onPress={completeProfile}
-                  style={{
-                    gap: 4,
-                    minHeight: 48,
-                    justifyContent: 'center',
-                    ...(landscape ? { width: 148 } : {}),
-                  }}
-                >
-                  {introduction}
-                </Pressable>
-              )}
               <View
+                style={[
+                  styles.introduction,
+                  landscape ? { width: 148 } : undefined,
+                ]}
+              >
+                {!landscape ? (
+                  <HomeTravelIllustration height={illustrationHeight} />
+                ) : null}
+                <View
+                  onLayout={(event) =>
+                    setIntroHeight(event.nativeEvent.layout.height)
+                  }
+                >
+                  {hasProfile ? (
+                    introduction
+                  ) : (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Uzupełnij profil"
+                      onPress={completeProfile}
+                      style={{ gap: 4, minHeight: 48, justifyContent: 'center' }}
+                    >
+                      {introduction}
+                    </Pressable>
+                  )}
+                </View>
+              </View>
+              <View
+                onLayout={(event) =>
+                  setActionsHeight(event.nativeEvent.layout.height)
+                }
                 style={{
                   gap: minimal ? 8 : 12,
                   ...(landscape ? { flex: 1, flexDirection: 'row' } : {}),
@@ -205,4 +230,5 @@ const styles = StyleSheet.create({
   canvas: { flex: 1, minHeight: 0 },
   main: { flex: 1, minHeight: 0, justifyContent: 'center', alignItems: 'center' },
   content: { width: '100%' },
+  introduction: { gap: 4, transform: [{ translateY: -Spacing.three }] },
 });

@@ -29,7 +29,7 @@ export function HomeAction({
   const primary = variant === 'primary';
   const minimal = density === 'minimal';
   const compact = density !== 'regular';
-  const artworkSize = minimal ? 56 : compact ? 88 : 112;
+  const artworkSize = minimal ? (showDescription ? 56 : 40) : compact ? 88 : 112;
   return (
     <Pressable
       accessibilityRole="button"
@@ -39,7 +39,7 @@ export function HomeAction({
       style={({ pressed }) => [
         layout.row,
         {
-          minHeight: minimal ? 76 : compact ? 108 : 144,
+          minHeight: minimal ? (showDescription ? 76 : 56) : compact ? 108 : 144,
           padding: minimal ? 8 : compact ? 12 : 16,
           gap: compact ? 8 : 12,
           borderRadius: 24,

@@ -9,8 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-screens/experimental';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppText, layout } from '@/components/ui/primitives';
-import { Icon } from '@/components/ui/icon';
+import { AppText } from '@/components/ui/primitives';
 import { ScenicFooter } from '@/components/ui/scenic-footer';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -69,35 +68,21 @@ export default function HomeScreen() {
   };
   const completeProfile = () =>
     router.push({ pathname: '/edit-profile', params: { from: 'home' } });
-  const greeting = (
+  const introduction = (
     <>
-      <View style={layout.row}>
-        <AppText
-          accessibilityRole="header"
-          variant="heading"
-          style={{
-            fontSize: minimal ? 20 : 24,
-            lineHeight: minimal ? 26 : 30,
-            flexShrink: 1,
-          }}
-        >
-          {hasProfile
-            ? 'Cześć, ekipo!'
-            : minimal
-              ? 'Cześć!'
-              : 'Cześć, podróżnicy!'}
-        </AppText>
-        <Icon
-          name={hasProfile ? 'sun' : 'profile'}
-          color={theme.energy}
-          size={22}
-        />
-      </View>
-      {!minimal || !hasProfile ? (
+      <AppText
+        accessibilityRole="header"
+        variant="label"
+        style={{
+          fontSize: minimal ? 12 : density === 'compact' ? 14 : 16,
+          lineHeight: minimal ? 16 : density === 'compact' ? 20 : 24,
+        }}
+      >
+        Łączymy podróżujących kamperem, przyczepą, kampervanem lub z namiotem.
+      </AppText>
+      {!hasProfile ? (
         <AppText variant="label" color="textSecondary">
-          {hasProfile
-            ? 'W drogę najlepiej razem.'
-            : 'Uzupełnijcie profil ekipy →'}
+          Uzupełnijcie profil ekipy →
         </AppText>
       ) : null}
     </>
@@ -151,7 +136,7 @@ export default function HomeScreen() {
             >
               {hasProfile ? (
                 <View style={{ gap: 4, ...(landscape ? { width: 148 } : {}) }}>
-                  {greeting}
+                  {introduction}
                 </View>
               ) : (
                 <Pressable
@@ -165,7 +150,7 @@ export default function HomeScreen() {
                     ...(landscape ? { width: 148 } : {}),
                   }}
                 >
-                  {greeting}
+                  {introduction}
                 </Pressable>
               )}
               <View
@@ -176,7 +161,7 @@ export default function HomeScreen() {
               >
                 <HomeAction
                   label="Znajdź ekipę"
-                  description="Poznajcie ludzi na wspólną drogę."
+                  description="Poznajcie ekipę na wspólny wyjazd."
                   illustration={require('@/assets/images/home/find-crew.png')}
                   density={density}
                   showIllustration={showIllustrations}
@@ -186,7 +171,7 @@ export default function HomeScreen() {
                 />
                 <HomeAction
                   label="Dodaj wyjazd"
-                  description="Cel lub wolny termin? Dodajcie plan."
+                  description="Podajcie cel lub wybierzcie „Szukam pomysłu”."
                   illustration={require('@/assets/images/home/plan-trip.png')}
                   density={density}
                   showIllustration={showIllustrations}

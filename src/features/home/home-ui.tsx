@@ -44,7 +44,7 @@ export function HomeAction({
           gap: compact ? 8 : 12,
           borderRadius: 24,
           borderWidth: 1,
-          borderColor: primary ? theme.border : theme.accent,
+          borderColor: primary ? theme.border : `${theme.accent}40`,
           backgroundColor: primary ? theme.backgroundSelected : theme.hero,
           opacity: pressed ? 0.75 : 1,
         },

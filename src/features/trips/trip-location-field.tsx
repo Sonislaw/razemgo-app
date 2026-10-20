@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { AppText, layout } from '@/components/ui/primitives';
+import { AppText, FieldLabel, layout } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { Fonts, Radius, Typography } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -19,6 +19,8 @@ export function TripLocationField({
   mode,
   onChange,
   required = true,
+  label: customLabel,
+  hint,
   query: controlledQuery,
   onQueryChange,
 }: {
@@ -26,12 +28,15 @@ export function TripLocationField({
   mode: TripMode;
   onChange: (id: string) => void;
   required?: boolean;
+  label?: string;
+  hint?: string;
   query?: string;
   onQueryChange?: (query: string) => void;
 }) {
   const theme = useTheme();
   const label =
-    mode === 'planned' ? 'Miasto lub wieś' : 'Miejscowość, region lub kraj';
+    customLabel ??
+    (mode === 'planned' ? 'Miasto lub wieś' : 'Miejscowość, region lub kraj');
   const input = useRef<TextInput>(null);
   const [localQuery, setLocalQuery] = useState('');
   const query = controlledQuery ?? localQuery;
@@ -46,9 +51,12 @@ export function TripLocationField({
 
   return (
     <View style={styles.field}>
-      <AppText variant="label">
-        {label} · {required ? 'wymagane' : 'opcjonalnie'}
-      </AppText>
+      <FieldLabel required={required}>{label}</FieldLabel>
+      {hint ? (
+        <AppText variant="caption" color="textSecondary">
+          {hint}
+        </AppText>
+      ) : null}
       <View
         style={[
           styles.search,
@@ -64,7 +72,8 @@ export function TripLocationField({
           ref={input}
           accessibilityLabel={label}
           accessibilityHint={
-            (required ? 'Pole wymagane. ' : 'Opcjonalnie. ') +
+            (required ? 'Pole wymagane. ' : '') +
+            (hint ? hint + ' ' : '') +
             (mode === 'planned'
               ? 'Wybierz miasto lub wieś z podpowiedzi.'
               : 'Wpisz nazwę i wybierz lokalizację z podpowiedzi.')
@@ -181,13 +190,13 @@ export function TripLocationField({
             </AppText>
           ) : null}
         </View>
-      ) : (
+      ) : !hint ? (
         <AppText variant="caption" color="textSecondary">
           {mode === 'planned'
             ? 'Wybierz konkretną miejscowość, do której jedziecie.'
             : 'Wpisz nazwę i wybierz lokalizację z podpowiedzi.'}
         </AppText>
-      )}
+      ) : null}
     </View>
   );
 }

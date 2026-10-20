@@ -14,6 +14,7 @@ import {
   AppText,
   Button,
   Chip,
+  FieldLabel,
   IconButton,
   layout,
 } from '@/components/ui/primitives';
@@ -137,7 +138,7 @@ export function DiscoveryFiltersSheet({
             keyboardDismissMode="on-drag"
           >
             <View style={layout.stack}>
-              <AppText variant="label">Typ ogłoszenia</AppText>
+              <FieldLabel>Typ ogłoszenia</FieldLabel>
               <AppText variant="caption" color="textSecondary">
                 Wybierz jeden lub oba typy. Co najmniej jeden musi pozostać
                 zaznaczony.
@@ -208,7 +209,7 @@ export function DiscoveryFiltersSheet({
               </ChipRow>
             </View>
             <View style={layout.stack}>
-              <AppText variant="label">Klimat wyjazdu</AppText>
+              <FieldLabel>Klimat wyjazdu</FieldLabel>
               <AppText variant="caption" color="textSecondary">
                 Możesz wybrać kilka klimatów. Brak wyboru pokazuje wszystkie.
               </AppText>
@@ -235,9 +236,9 @@ export function DiscoveryFiltersSheet({
             </View>
             <View style={layout.stack}>
               <View style={layout.row}>
-                <AppText variant="label" style={styles.flex}>
+                <FieldLabel style={styles.flex}>
                   Termin wyjazdu
-                </AppText>
+                </FieldLabel>
                 {draft.customDateRange ? (
                   <IconButton
                     label="Wyczyść termin"
@@ -293,9 +294,9 @@ export function DiscoveryFiltersSheet({
             </View>
             {draft.sourceTripId ? (
               <View style={layout.stack}>
-                <AppText variant="label">
+                <FieldLabel>
                   Towarzystwo z preferencji wyjazdu
-                </AppText>
+                </FieldLabel>
                 <ChipRow horizontal label="Towarzystwo z preferencji wyjazdu">
                   {GROUP_KIND_OPTIONS.map((option) => (
                     <Chip
@@ -318,9 +319,9 @@ export function DiscoveryFiltersSheet({
               </View>
             ) : null}
             <View style={layout.stack}>
-              <AppText variant="label">Towarzystwo dla dzieci</AppText>
+              <FieldLabel>Towarzystwo dla dzieci</FieldLabel>
               <AppText variant="caption" color="textSecondary">
-                Opcjonalnie · możesz wybrać kilka przedziałów
+                Możesz wybrać kilka przedziałów.
               </AppText>
               <ChipRow horizontal label="Towarzystwo dla dzieci">
                 {CHILD_AGE_BANDS.map((band) => (
@@ -335,9 +336,9 @@ export function DiscoveryFiltersSheet({
               </ChipRow>
             </View>
             <View style={layout.stack}>
-              <AppText variant="label">Zwierzęta na wyjeździe</AppText>
+              <FieldLabel>Zwierzęta na wyjeździe</FieldLabel>
               <AppText variant="caption" color="textSecondary">
-                Opcjonalnie · możesz wybrać kilka rodzajów
+                Możesz wybrać kilka rodzajów.
               </AppText>
               <ChipRow horizontal label="Zwierzęta na wyjeździe">
                 {ANIMAL_OPTIONS.map(({ kind, label }) => (

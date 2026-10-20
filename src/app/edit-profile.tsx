@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   Chip,
+  FieldLabel,
   Screen,
   SectionTitle,
   layout,
@@ -78,6 +79,7 @@ export default function EditProfileScreen() {
           <SectionTitle title="Nasza ekipa" />
           <ProfileTextField
             label="Nazwa ekipy"
+            required
             value={draft.group.name}
             maxLength={40}
             onChangeText={(name) =>
@@ -89,6 +91,7 @@ export default function EditProfileScreen() {
           />
           <ProfileCounter
             label="Dorośli"
+            required
             value={draft.group.adultCount}
             min={1}
             max={8}
@@ -117,10 +120,9 @@ export default function EditProfileScreen() {
           />
           {draft.group.childCount > 0 ? (
             <View style={layout.stack}>
-              <AppText variant="label">Wiek dzieci</AppText>
+              <FieldLabel>Wiek dzieci</FieldLabel>
               <AppText variant="caption" color="textSecondary">
-                Opcjonalnie. Wybierz przybliżone przedziały — bez imion i dat
-                urodzenia.
+                Wybierz przybliżone przedziały — bez imion i dat urodzenia.
               </AppText>
               <View style={layout.wrap}>
                 {CHILD_AGE_BANDS.map((band) => (
@@ -166,6 +168,7 @@ export default function EditProfileScreen() {
         <Card>
           <SectionTitle
             title="Jak podróżujemy"
+            required
             detail="Możecie wybrać kilka sposobów."
           />
           <View style={layout.wrap}>
@@ -219,7 +222,7 @@ export default function EditProfileScreen() {
       {show('matching') ? (
         <Card>
           <SectionTitle title="Kogo chcemy poznać?" />
-          <AppText variant="label">Towarzystwo na wyjazd</AppText>
+          <FieldLabel>Towarzystwo na wyjazd</FieldLabel>
           <View style={layout.wrap}>
             {GROUP_KIND_OPTIONS.map((option) => (
               <Chip
@@ -245,7 +248,7 @@ export default function EditProfileScreen() {
           <AppText variant="caption" color="textSecondary">
             Brak wyboru oznacza otwartość na wszystkich podróżników.
           </AppText>
-          <AppText variant="label">Preferowany wiek dzieci</AppText>
+          <FieldLabel>Preferowany wiek dzieci</FieldLabel>
           <View style={layout.wrap}>
             {CHILD_AGE_BANDS.map((band) => (
               <Chip
@@ -269,8 +272,8 @@ export default function EditProfileScreen() {
             ))}
           </View>
           <AppText variant="caption" color="textSecondary">
-            Opcjonalnie. To preferencja dotycząca towarzystwa, niezależna od
-            wieku Waszych dzieci.
+            To preferencja dotycząca towarzystwa, niezależna od wieku Waszych
+            dzieci.
           </AppText>
           <ProfileTextField
             label="Kilka słów o towarzystwie"

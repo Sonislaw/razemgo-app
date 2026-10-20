@@ -27,8 +27,7 @@ export function OwnTripFiltersSheet({
         maxLength={80}
       />
       <AppText variant="caption" color="textSecondary">
-        Termin jest opcjonalny. Możesz określić jedną granicę lub cały
-        przedział.
+        Możesz określić jedną granicę terminu lub cały przedział.
       </AppText>
       <View style={{ gap: 12 }}>
         <TripDateField

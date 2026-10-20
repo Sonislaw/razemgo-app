@@ -47,6 +47,27 @@ export function AppText({
     />
   );
 }
+export function FieldLabel({
+  children,
+  required = false,
+  variant = 'label',
+  ...props
+}: AppTextProps & { required?: boolean }) {
+  return (
+    <AppText {...props} variant={variant}>
+      {children}
+      {required ? (
+        <AppText
+          variant="caption"
+          color="primaryStrong"
+          style={{ fontWeight: '700' }}
+        >
+          {' -\u00a0wymagane'}
+        </AppText>
+      ) : null}
+    </AppText>
+  );
+}
 export function Screen({
   children,
   header,
@@ -309,15 +330,21 @@ export function EmptyState({
 export function SectionTitle({
   title,
   detail,
+  required = false,
 }: {
   title: string;
   detail?: string;
+  required?: boolean;
 }) {
   return (
     <View style={{ gap: Spacing.one }}>
-      <AppText variant="heading" accessibilityRole="header">
+      <FieldLabel
+        variant="heading"
+        accessibilityRole="header"
+        required={required}
+      >
         {title}
-      </AppText>
+      </FieldLabel>
       {detail ? (
         <AppText variant="label" color="textSecondary">
           {detail}

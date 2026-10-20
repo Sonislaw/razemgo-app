@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { AppText, layout } from '@/components/ui/primitives';
+import { AppText, FieldLabel, layout } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { Fonts, Radius, Typography } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -11,6 +11,7 @@ export function ProfileTextField({
   maxLength,
   multiline = false,
   hint,
+  required = false,
 }: {
   label: string;
   value: string;
@@ -18,13 +19,15 @@ export function ProfileTextField({
   maxLength: number;
   multiline?: boolean;
   hint?: string;
+  required?: boolean;
 }) {
   const theme = useTheme();
   return (
     <View style={styles.field}>
-      <AppText variant="label">{label}</AppText>
+      <FieldLabel required={required}>{label}</FieldLabel>
       <TextInput
         accessibilityLabel={label}
+        accessibilityHint={required ? 'Pole wymagane.' : undefined}
         value={value}
         onChangeText={onChangeText}
         maxLength={maxLength}
@@ -55,19 +58,21 @@ export function ProfileCounter({
   min,
   max,
   onChange,
+  required = false,
 }: {
   label: string;
   value: number;
   min: number;
   max: number;
   onChange: (value: number) => void;
+  required?: boolean;
 }) {
   const theme = useTheme();
   return (
     <View style={styles.counterRow}>
-      <AppText variant="label" style={{ flex: 1 }}>
+      <FieldLabel required={required} style={{ flex: 1 }}>
         {label}
-      </AppText>
+      </FieldLabel>
       <View style={layout.row}>
         <Pressable
           accessibilityRole="button"

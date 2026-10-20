@@ -15,6 +15,7 @@ import {
   Button,
   Card,
   Chip,
+  FieldLabel,
   IconButton,
   Screen,
   layout,
@@ -70,12 +71,6 @@ const toggle = <T,>(values: T[], value: T): T[] =>
   values.includes(value)
     ? values.filter((item) => item !== value)
     : [...values, value];
-const titles = [
-  'Jaki macie plan?',
-  'Dokąd i jak podróżujecie?',
-  'Kogo chcecie poznać?',
-];
-
 export default function TripEditorScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { state, saveTrip } = useOwnTrips();
@@ -89,6 +84,13 @@ export default function TripEditorScreen() {
   });
   const [form, setForm] = useState<TripForm>(initial);
   const modeLabel = form.mode === 'planned' ? 'Mam plan' : 'Szukam pomysłu';
+  const titles = [
+    'Jaki macie plan?',
+    form.mode === 'flexible'
+      ? 'Jaki kierunek Was interesuje?'
+      : 'Dokąd i jak podróżujecie?',
+    'Kogo chcecie poznać?',
+  ];
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [errors, setErrors] = useState<string[]>([]);
   const [confirmExit, setConfirmExit] = useState(false);
@@ -388,7 +390,7 @@ export default function TripEditorScreen() {
                   ))}
                 </View>
                 <View style={{ gap: 8 }}>
-                  <AppText variant="label">Termin wyjazdu</AppText>
+                  <FieldLabel required>Termin wyjazdu</FieldLabel>
                   <DateRangeField
                     range={{ startDate: form.startDate, endDate: form.endDate }}
                     onPress={() => {
@@ -403,6 +405,16 @@ export default function TripEditorScreen() {
                 <TripLocationField
                   mode={form.mode}
                   value={form.locationId}
+                  label={
+                    form.mode === 'flexible'
+                      ? 'Preferowany obszar wyjazdu'
+                      : undefined
+                  }
+                  hint={
+                    form.mode === 'flexible'
+                      ? 'Wskaż miejscowość, region lub kraj, w którym chcecie podróżować. Konkretne miejsce wybierzecie wspólnie z ekipą.'
+                      : undefined
+                  }
                   onChange={(id) => {
                     setForm((current) => changeTripLocation(current, id));
                     setErrors([]);
@@ -415,11 +427,12 @@ export default function TripEditorScreen() {
                     value={form.campgroundName}
                     onChangeText={(value) => update('campgroundName', value)}
                     maxLength={120}
-                    hint="Opcjonalnie — jeśli wiecie już, gdzie się zatrzymacie."
+                    hint="Jeśli wiecie już, gdzie się zatrzymacie."
                   />
                 ) : null}
                 <ProfileTextField
-                  label="Opis wyjazdu · wymagane"
+                  label="Opis wyjazdu"
+                  required
                   value={form.description}
                   onChangeText={(value) => update('description', value)}
                   maxLength={MAX_TRIP_DESCRIPTION_LENGTH}
@@ -427,9 +440,9 @@ export default function TripEditorScreen() {
                   hint={`Min. ${MIN_TRIP_DESCRIPTION_LENGTH} znaków · ${tripDescriptionLength(form.description)}/${MAX_TRIP_DESCRIPTION_LENGTH}. Początek opisu pokażemy na karcie wyjazdu.`}
                 />
                 <View style={{ gap: 8 }}>
-                  <AppText variant="label">
+                  <FieldLabel required>
                     Jak podróżujecie na ten wyjazd?
-                  </AppText>
+                  </FieldLabel>
                   <ChipRow horizontal label="Sposób podróżowania">
                     {TRAVEL_MODE_OPTIONS.map((mode) => (
                       <Chip
@@ -444,9 +457,7 @@ export default function TripEditorScreen() {
                   </ChipRow>
                 </View>
                 <View style={{ gap: 8 }}>
-                  <AppText variant="label">
-                    Co chcecie robić? · opcjonalnie
-                  </AppText>
+                  <FieldLabel>Co chcecie robić?</FieldLabel>
                   <ChipRow horizontal label="Zainteresowania">
                     {INTEREST_OPTIONS.map((interest) => (
                       <Chip
@@ -461,7 +472,7 @@ export default function TripEditorScreen() {
                   </ChipRow>
                 </View>
                 <View style={{ gap: 8 }}>
-                  <AppText variant="label">Klimat wyjazdu</AppText>
+                  <FieldLabel>Klimat wyjazdu</FieldLabel>
                   <ChipRow horizontal label="Klimat wyjazdu">
                     {LANDSCAPE_OPTIONS.map((item) => (
                       <Chip
@@ -481,7 +492,7 @@ export default function TripEditorScreen() {
             ) : (
               <>
                 <View style={{ gap: 8 }}>
-                  <AppText variant="label">Towarzystwo na wyjazd</AppText>
+                  <FieldLabel>Towarzystwo na wyjazd</FieldLabel>
                   <AppText variant="caption" color="textSecondary">
                     Możecie wybrać kilka grup. Brak wyboru oznacza dowolne
                     towarzystwo.
@@ -503,9 +514,7 @@ export default function TripEditorScreen() {
                   </ChipRow>
                 </View>
                 <View style={{ gap: 8 }}>
-                  <AppText variant="label">
-                    Preferowany wiek dzieci · opcjonalnie
-                  </AppText>
+                  <FieldLabel>Preferowany wiek dzieci</FieldLabel>
                   <ChipRow horizontal label="Preferowany wiek dzieci">
                     {CHILD_AGE_BANDS.map((band) => (
                       <Chip
@@ -526,7 +535,7 @@ export default function TripEditorScreen() {
                   </ChipRow>
                 </View>
                 <View style={{ gap: 8 }}>
-                  <AppText variant="label">Widoczność planu</AppText>
+                  <FieldLabel>Widoczność planu</FieldLabel>
                   <ChipRow horizontal label="Widoczność planu">
                     {(
                       [
@@ -597,9 +606,6 @@ export default function TripEditorScreen() {
               </>
             )}
             <TripDemoNote />
-            <AppText variant="caption" color="textSecondary">
-              Niezapisane zmiany znikają po opuszczeniu kreatora.
-            </AppText>
           </View>
           <ScenicFooter
             leftInset={Math.max(24, insets.left)}

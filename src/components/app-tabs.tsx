@@ -1,7 +1,7 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { useTheme } from '@/hooks/use-theme';
 import { TAB_ITEMS } from '@/constants/navigation';
-import { SYMBOLS } from '@/components/ui/icon';
+import { TAB_ICONS } from '@/constants/tab-icons';
 import { useMessaging } from '@/features/messaging/messaging-context';
 import { notificationCount } from '@/features/messaging/messaging-state';
 
@@ -43,8 +43,8 @@ export default function AppTabs() {
             {tab.label}
           </NativeTabs.Trigger.Label>
           <NativeTabs.Trigger.Icon
-            sf={SYMBOLS[tab.icon].ios}
-            md={SYMBOLS[tab.icon].android}
+            src={TAB_ICONS[tab.icon].native}
+            renderingMode="template"
           />
           {tab.name === 'messages' && notifications > 0 ? (
             <NativeTabs.Trigger.Badge>

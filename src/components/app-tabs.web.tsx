@@ -6,10 +6,11 @@ import {
   type TabTriggerSlotProps,
 } from 'expo-router/ui';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/ui/primitives';
-import { Icon, type IconName } from '@/components/ui/icon';
 import { TAB_ITEMS } from '@/constants/navigation';
+import { TAB_ICONS, type TabIconName } from '@/constants/tab-icons';
 import { useTheme } from '@/hooks/use-theme';
 import { MaxContentWidth, Radius } from '@/constants/theme';
 import { useMessaging } from '@/features/messaging/messaging-context';
@@ -22,7 +23,7 @@ function TabButton({
   icon,
   count = 0,
   ...props
-}: TabTriggerSlotProps & { icon: IconName; count?: number }) {
+}: TabTriggerSlotProps & { icon: TabIconName; count?: number }) {
   const theme = useTheme();
   return (
     <Pressable
@@ -46,10 +47,13 @@ function TabButton({
           },
         ]}
       >
-        <Icon
-          name={icon}
-          size={22}
-          color={isFocused ? theme.primaryStrong : theme.textSecondary}
+        <Image
+          source={TAB_ICONS[icon].web[isFocused ? 'selected' : 'default']}
+          tintColor={isFocused ? theme.primaryStrong : theme.textSecondary}
+          contentFit="contain"
+          style={{ width: 26, height: 26 }}
+          accessible={false}
+          alt=""
         />
         {count ? (
           <View style={{ position: 'absolute', top: -5, right: 0 }}>

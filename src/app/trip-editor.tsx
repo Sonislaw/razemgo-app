@@ -189,7 +189,7 @@ export default function TripEditorScreen() {
               width: '100%',
               maxWidth: MaxContentWidth,
               alignSelf: 'center',
-              gap: 12,
+              gap: 8,
             }}
           >
             <View style={layout.row}>
@@ -205,56 +205,59 @@ export default function TripEditorScreen() {
                   }
                 }}
               />
-              <View style={{ flex: 1, gap: 4 }}>
+              <View style={{ flex: 1, minWidth: 0 }}>
                 <AppText accessibilityRole="header" variant="heading">
                   {existing ? 'Edytuj wyjazd' : 'Nowy wyjazd'}
                 </AppText>
-                <View style={[layout.wrap, { rowGap: 4 }]}>
-                  <View
-                    style={{
-                      paddingHorizontal: 8,
-                      paddingVertical: 2,
-                      borderRadius: 12,
-                      backgroundColor: `${theme.backgroundElement}E6`,
-                    }}
-                  >
-                    <AppText variant="caption" color="text">
-                      Krok {step} z 3
-                    </AppText>
-                  </View>
-                  <View
-                    accessible
-                    accessibilityLabel={'Typ wyjazdu: ' + modeLabel}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 4,
-                      maxWidth: '100%',
-                      paddingHorizontal: 8,
-                      paddingVertical: 2,
-                      borderRadius: 12,
-                      backgroundColor: theme.backgroundSelected,
-                    }}
-                  >
-                    <Icon
-                      name={form.mode === 'planned' ? 'pin' : 'compass'}
-                      size={14}
-                    />
-                    <AppText
-                      variant="caption"
-                      color="primaryStrong"
-                      style={{ flexShrink: 1 }}
-                    >
-                      {modeLabel}
-                    </AppText>
-                  </View>
-                </View>
               </View>
               <IconButton
                 label="Zamknij kreator"
                 icon="close"
                 onPress={close}
               />
+            </View>
+            <View style={[layout.row, { gap: 4 }]}>
+              <View
+                style={{
+                  flexShrink: 0,
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
+                  borderRadius: 12,
+                  backgroundColor: `${theme.backgroundElement}E6`,
+                }}
+              >
+                <AppText variant="caption" color="text" numberOfLines={1}>
+                  Krok {step} z 3
+                </AppText>
+              </View>
+              <View
+                accessible
+                accessibilityLabel={'Typ wyjazdu: ' + modeLabel}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                  flexShrink: 1,
+                  minWidth: 0,
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
+                  borderRadius: 12,
+                  backgroundColor: theme.backgroundSelected,
+                }}
+              >
+                <Icon
+                  name={form.mode === 'planned' ? 'pin' : 'compass'}
+                  size={14}
+                />
+                <AppText
+                  variant="caption"
+                  color="primaryStrong"
+                  numberOfLines={1}
+                  style={{ flexShrink: 1 }}
+                >
+                  {modeLabel}
+                </AppText>
+              </View>
             </View>
             <View
               accessible

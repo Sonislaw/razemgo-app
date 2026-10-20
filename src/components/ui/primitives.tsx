@@ -47,9 +47,11 @@ export function AppText({
 }
 export function Screen({
   children,
+  header,
   adjustKeyboardInsets = true,
 }: {
   children: ReactNode;
+  header?: ReactNode;
   adjustKeyboardInsets?: boolean;
 }) {
   const theme = useTheme();
@@ -68,6 +70,7 @@ export function Screen({
         },
       ]}
     >
+      {header}
       <View
         style={[
           styles.screenContent,

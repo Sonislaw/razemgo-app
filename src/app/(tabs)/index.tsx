@@ -1,17 +1,14 @@
 import { router } from 'expo-router';
-import { Image } from 'expo-image';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import {
   AppText,
   Button,
   Card,
-  IconButton,
   Screen,
   layout,
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
-import { IS_DEMO_MODE } from '@/constants/app';
 import { useTheme } from '@/hooks/use-theme';
 import { useProfile } from '@/features/profile/profile-context';
 import { useMessaging } from '@/features/messaging/messaging-context';
@@ -20,11 +17,11 @@ import {
   pendingReceivedCount,
   unreadCount,
 } from '@/features/messaging/messaging-state';
-import { CountBadge } from '@/features/messaging/messaging-ui';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { INITIAL_FILTERS } from '@/features/discovery/filter-trips';
 import { HomeDemoControls } from '@/features/home/home-demo-controls';
 import { ActivityPreview, HomeAction } from '@/features/home/home-ui';
+import { HomeHeader } from '@/features/home/home-header';
 
 export default function HomeScreen() {
   const theme = useTheme();
@@ -55,80 +52,25 @@ export default function HomeScreen() {
     router.push({ pathname: '/edit-profile', params: { from: 'home' } });
   return (
     <>
-      <Screen>
+      <Screen
+        header={
+          <HomeHeader
+            notifications={total}
+            onOpenDemo={() => setDemoOpen(true)}
+            onOpenMessages={() =>
+              openMessages(pending ? 'invitations' : 'conversations')
+            }
+            onOpenSettings={() =>
+              router.push({
+                pathname: '/settings',
+                params: { from: 'home' },
+              })
+            }
+          />
+        }
+      >
         <View style={{ gap: 16 }}>
           <View style={{ gap: 8 }}>
-            <View style={[layout.row, { gap: 4 }]}>
-              <View style={[layout.row, { flex: 1, minWidth: 0, gap: 6 }]}>
-                <Image
-                  source={require('@/assets/images/zgrana-symbol.svg')}
-                  style={{ width: 28, height: 28 }}
-                  contentFit="contain"
-                  accessible={false}
-                />
-                <AppText
-                  variant="heading"
-                  color="brand"
-                  style={{ fontSize: 18, flexShrink: 1 }}
-                  numberOfLines={1}
-                >
-                  RazemGo
-                </AppText>
-              </View>
-              {IS_DEMO_MODE ? (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Warianty ekranu Start"
-                  onPress={() => setDemoOpen(true)}
-                  style={{
-                    minWidth: 48,
-                    minHeight: 48,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                >
-                  <View
-                    style={{
-                      backgroundColor: theme.hero,
-                      paddingHorizontal: 8,
-                      paddingVertical: 4,
-                      borderRadius: 12,
-                    }}
-                  >
-                    <AppText variant="caption">Demo</AppText>
-                  </View>
-                </Pressable>
-              ) : null}
-              <View>
-                <IconButton
-                  icon="bell"
-                  label={
-                    'Otwórz Wiadomości' + (total ? ', nowe: ' + total : '')
-                  }
-                  onPress={() =>
-                    openMessages(pending ? 'invitations' : 'conversations')
-                  }
-                />
-                {total ? (
-                  <View
-                    pointerEvents="none"
-                    style={{ position: 'absolute', top: -2, right: -2 }}
-                  >
-                    <CountBadge count={total} />
-                  </View>
-                ) : null}
-              </View>
-              <IconButton
-                icon="settings"
-                label="Ustawienia aplikacji"
-                onPress={() =>
-                  router.push({
-                    pathname: '/settings',
-                    params: { from: 'home' },
-                  })
-                }
-              />
-            </View>
             <View style={{ gap: 2 }}>
               <View style={layout.row}>
                 <AppText

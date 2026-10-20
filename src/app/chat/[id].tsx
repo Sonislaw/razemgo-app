@@ -19,6 +19,7 @@ import {
   layout,
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
+import { ScenicFooter } from '@/components/ui/scenic-footer';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { Fonts, MaxContentWidth, Typography } from '@/constants/theme';
 import { DEMO_MAILBOX } from '@/data/mocks/messaging';
@@ -197,6 +198,12 @@ export default function ChatScreen() {
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           contentContainerStyle={{ padding: 16, gap: 12, flexGrow: 1 }}
+          ListFooterComponent={ScenicFooter}
+          ListFooterComponentStyle={{
+            marginTop: 'auto',
+            marginHorizontal: -16,
+            marginBottom: -16,
+          }}
           onContentSizeChange={() =>
             list.current?.scrollToEnd({ animated: false })
           }

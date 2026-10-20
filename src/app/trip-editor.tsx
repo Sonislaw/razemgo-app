@@ -22,6 +22,7 @@ import {
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { ChipRow } from '@/components/ui/chip-row';
 import { Icon } from '@/components/ui/icon';
+import { ScenicFooter } from '@/components/ui/scenic-footer';
 import { CHILD_AGE_BANDS } from '@/data/mocks/travel';
 import { MaxContentWidth } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -272,7 +273,6 @@ export default function TripEditorScreen() {
           contentContainerStyle={{
             flexGrow: 1,
             paddingTop: 16,
-            paddingBottom: 32,
             paddingLeft: Math.max(24, insets.left),
             paddingRight: Math.max(24, insets.right),
           }}
@@ -283,6 +283,7 @@ export default function TripEditorScreen() {
               maxWidth: MaxContentWidth,
               alignSelf: 'center',
               gap: 16,
+              paddingBottom: 32,
             }}
           >
             <AppText variant="heading" accessibilityRole="header">
@@ -590,6 +591,10 @@ export default function TripEditorScreen() {
               Niezapisane zmiany znikają po opuszczeniu kreatora.
             </AppText>
           </View>
+          <ScenicFooter
+            leftInset={Math.max(24, insets.left)}
+            rightInset={Math.max(24, insets.right)}
+          />
         </ScrollView>
         <View
           style={{

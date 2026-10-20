@@ -21,6 +21,7 @@ import {
 import { useTheme } from '@/hooks/use-theme';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { Icon, type IconName } from './icon';
+import { ScenicFooter } from './scenic-footer';
 
 export interface AppTextProps extends TextProps {
   variant?: keyof typeof Typography;
@@ -64,12 +65,21 @@ export function Screen({
         styles.scroll,
         {
           paddingTop: Spacing.three + (Platform.OS === 'ios' ? 0 : insets.top),
-          paddingLeft: Math.max(Spacing.four, insets.left),
-          paddingRight: Math.max(Spacing.four, insets.right),
         },
       ]}
     >
-      <View style={styles.screen}>{children}</View>
+      <View
+        style={[
+          styles.screenContent,
+          {
+            paddingLeft: Math.max(Spacing.four, insets.left),
+            paddingRight: Math.max(Spacing.four, insets.right),
+          },
+        ]}
+      >
+        <View style={styles.screen}>{children}</View>
+      </View>
+      <ScenicFooter />
     </ScrollView>
   );
 }
@@ -299,7 +309,12 @@ export const layout = StyleSheet.create({
   section: { gap: Spacing.three },
 });
 const styles = StyleSheet.create({
-  scroll: { flexGrow: 1, alignItems: 'center', paddingBottom: Spacing.five },
+  scroll: { flexGrow: 1, alignItems: 'center' },
+  screenContent: {
+    width: '100%',
+    alignItems: 'center',
+    paddingBottom: Spacing.five,
+  },
   screen: { width: '100%', maxWidth: MaxContentWidth, gap: Spacing.four },
   pageHeader: {
     minHeight: 48,

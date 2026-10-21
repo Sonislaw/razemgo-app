@@ -16,6 +16,7 @@ import { MaxContentWidth, Radius } from '@/constants/theme';
 import { useMessaging } from '@/features/messaging/messaging-context';
 import { notificationCount } from '@/features/messaging/messaging-state';
 import { CountBadge } from '@/features/messaging/messaging-ui';
+import { TabBarGradient } from '@/components/ui/tab-bar-gradient';
 
 function TabButton({
   children,
@@ -102,6 +103,7 @@ export default function AppTabs() {
             </TabButton>
           </TabTrigger>
         ))}
+        <TabBarGradient />
       </TabList>
     </Tabs>
   );

@@ -6,31 +6,51 @@ import { LANDSCAPE_OPTIONS } from '@/constants/landscape-options';
 import { useTheme } from '@/hooks/use-theme';
 import type { LandscapeKind } from '@/types/travel';
 
-export function TripLandscapePicker({
-  value,
-  onChange,
-}: {
-  value: LandscapeKind;
-  onChange: (value: LandscapeKind) => void;
-}) {
+type LandscapePickerProps =
+  | {
+      multiple?: false;
+      value: LandscapeKind;
+      onChange: (value: LandscapeKind) => void;
+    }
+  | {
+      multiple: true;
+      value: LandscapeKind[];
+      onChange: (values: LandscapeKind[]) => void;
+    };
+
+export function TripLandscapePicker(props: LandscapePickerProps) {
   const theme = useTheme();
   return (
     <View
-      testID="trip-landscape-picker"
-      accessibilityRole="radiogroup"
+      testID={
+        props.multiple ? 'discovery-landscape-picker' : 'trip-landscape-picker'
+      }
+      accessibilityRole={props.multiple ? undefined : 'radiogroup'}
       accessibilityLabel="Klimat wyjazdu"
       style={styles.row}
     >
       {LANDSCAPE_OPTIONS.map((option) => {
-        const selected = value === option.value;
+        const selected = props.multiple
+          ? props.value.includes(option.value)
+          : props.value === option.value;
         return (
           <Pressable
             key={option.value}
-            accessibilityRole="radio"
-            accessibilityLabel={option.label}
+            accessibilityRole={props.multiple ? 'checkbox' : 'radio'}
+            accessibilityLabel={
+              props.multiple ? 'Klimat wyjazdu: ' + option.label : option.label
+            }
             accessibilityState={{ checked: selected }}
             aria-checked={selected}
-            onPress={() => onChange(option.value)}
+            onPress={() => {
+              if (props.multiple)
+                props.onChange(
+                  selected
+                    ? props.value.filter((value) => value !== option.value)
+                    : [...props.value, option.value],
+                );
+              else props.onChange(option.value);
+            }}
             style={({ pressed }) => [
               styles.option,
               { opacity: pressed ? 0.75 : 1 },

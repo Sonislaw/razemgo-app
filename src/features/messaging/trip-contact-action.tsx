@@ -71,7 +71,7 @@ export function TripContactAction({ proposal }: { proposal: TripProposal }) {
       ) : (
         <Button
           label="Zaproś do kontaktu"
-          icon="chat"
+          icon="campfire-chat"
           disabled={state.loadStatus !== 'ready' || unavailableSource}
           onPress={() => setComposing(true)}
         />

@@ -1,5 +1,7 @@
+import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
+import { TAB_ICONS } from '@/constants/tab-icons';
 import { useTheme } from '@/hooks/use-theme';
 
 export const SYMBOLS = {
@@ -67,7 +69,7 @@ export const SYMBOLS = {
   tent: { ios: 'tent', android: 'camping', web: 'camping' },
   water: { ios: 'water.waves', android: 'water', web: 'water' },
 } as const;
-export type IconName = keyof typeof SYMBOLS;
+export type IconName = keyof typeof SYMBOLS | 'campfire-chat';
 export interface IconProps {
   name: IconName;
   size?: number;
@@ -83,13 +85,28 @@ export function Icon({ name, size = 22, color }: IconProps) {
       aria-hidden
       style={{ width: size, height: size }}
     >
-      <SymbolView
-        name={SYMBOLS[name]}
-        size={size}
-        tintColor={color ?? theme.primaryStrong}
-        style={{ width: size, height: size }}
-        accessible={false}
-      />
+      {name === 'campfire-chat' ? (
+        <Image
+          source={
+            Platform.OS === 'web'
+              ? TAB_ICONS['campfire-chat'].web.default
+              : TAB_ICONS['campfire-chat'].native.default
+          }
+          tintColor={color ?? theme.primaryStrong}
+          contentFit="contain"
+          style={{ width: size, height: size }}
+          accessible={false}
+          alt=""
+        />
+      ) : (
+        <SymbolView
+          name={SYMBOLS[name]}
+          size={size}
+          tintColor={color ?? theme.primaryStrong}
+          style={{ width: size, height: size }}
+          accessible={false}
+        />
+      )}
     </View>
   );
 }

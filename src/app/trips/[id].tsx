@@ -10,7 +10,7 @@ import {
   Screen,
   layout,
 } from '@/components/ui/primitives';
-import { Icon } from '@/components/ui/icon';
+import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
 import { Landscape } from '@/components/trips/landscape';
 import { DEMO_OWN_TRIPS } from '@/data/mocks/owned-trips';
 import { DEMO_GROUPS, DEMO_PROPOSALS } from '@/data/mocks/travel';
@@ -125,14 +125,14 @@ export default function OwnTripDetailsScreen() {
               {trip.visibility === 'private' ? ' · plan prywatny' : ''}
             </AppText>
             <View style={layout.row}>
-              <Icon name="pin" size={20} />
+              <TripPlanningIcon kind={trip.mode} size={24} framed={false} />
               <AppText style={{ flex: 1 }}>{ownTripPlace(trip)}</AppText>
             </View>
             {trip.mode === 'planned' && trip.campgroundName ? (
               <AppText>Kemping: {trip.campgroundName}</AppText>
             ) : null}
             <View style={layout.row}>
-              <Icon name="calendar" size={20} />
+              <TripPlanningIcon kind="dates" size={24} framed={false} />
               <AppText style={{ flex: 1 }}>{ownTripDates(trip)}</AppText>
             </View>
           </View>

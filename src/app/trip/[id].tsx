@@ -15,7 +15,7 @@ import {
   layout,
 } from '@/components/ui/primitives';
 import { Landscape } from '@/components/trips/landscape';
-import { Icon } from '@/components/ui/icon';
+import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
 import { DEMO_PROPOSALS } from '@/data/mocks/travel';
 import { DEMO_COMPATIBILITY_SCORES } from '@/data/mocks/compatibility';
 import {
@@ -70,9 +70,9 @@ export default function TripDetailsScreen() {
   const score = DEMO_COMPATIBILITY_SCORES[trip.id];
   return (
     <Screen>
-      <HeaderRow style={{ flexWrap: 'wrap' }}>
+      <HeaderRow>
         <IconButton icon="back" label="Wróć do listy wyjazdów" onPress={back} />
-        <AppText variant="label" style={styles.flex}>
+        <AppText variant="heading" accessibilityRole="header" style={styles.flex}>
           Wyjazd
         </AppText>
         <DemoBadge />
@@ -90,14 +90,14 @@ export default function TripDetailsScreen() {
           {getTripHeadline(trip)}
         </AppText>
         <View style={layout.row}>
-          <Icon name="pin" />
+          <TripPlanningIcon kind={trip.mode} size={24} framed={false} />
           <AppText style={styles.flex}>{getTripLocation(trip)}</AppText>
         </View>
         {trip.mode === 'planned' && trip.campgroundName ? (
           <AppText>Kemping: {trip.campgroundName}</AppText>
         ) : null}
         <View style={layout.row}>
-          <Icon name="calendar" />
+          <TripPlanningIcon kind="dates" size={24} framed={false} />
           <AppText style={styles.flex}>{formatTripDates(trip)}</AppText>
         </View>
       </View>

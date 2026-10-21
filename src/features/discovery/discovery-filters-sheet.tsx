@@ -42,7 +42,7 @@ import type { ChildAgeBand, DiscoveryFilters } from '@/types/travel';
 import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
 import { AnimalChoice } from '@/features/animals/animal-portrait';
 import { TripLocationField } from '@/features/trips/trip-location-field';
-import { LANDSCAPE_OPTIONS } from '@/constants/landscape-options';
+import { TripLandscapePicker } from '@/features/trips/trip-landscape-picker';
 
 interface DiscoveryFiltersSheetProps {
   initialFilters: DiscoveryFilters;
@@ -206,26 +206,13 @@ export function DiscoveryFiltersSheet({
               <AppText variant="caption" color="textSecondary">
                 Możesz wybrać kilka klimatów. Brak wyboru pokazuje wszystkie.
               </AppText>
-              <ChipRow horizontal label="Klimat wyjazdu">
-                {LANDSCAPE_OPTIONS.map(({ value, label }) => (
-                  <Chip
-                    key={value}
-                    label={label}
-                    accessibilityLabel={'Klimat wyjazdu: ' + label}
-                    selected={draft.landscapeKinds?.includes(value)}
-                    onPress={() =>
-                      setDraft((current) => ({
-                        ...current,
-                        landscapeKinds: current.landscapeKinds?.includes(value)
-                          ? current.landscapeKinds.filter(
-                              (kind) => kind !== value,
-                            )
-                          : [...(current.landscapeKinds ?? []), value],
-                      }))
-                    }
-                  />
-                ))}
-              </ChipRow>
+              <TripLandscapePicker
+                multiple
+                value={draft.landscapeKinds ?? []}
+                onChange={(landscapeKinds) =>
+                  setDraft((current) => ({ ...current, landscapeKinds }))
+                }
+              />
             </View>
             <View style={layout.stack}>
               <View style={layout.row}>

@@ -13,6 +13,7 @@ import type { MatchFacts } from '@/features/discovery/filter-trips';
 import type { TripProposal } from '@/types/travel';
 import { CompactTripCard } from './compact-trip-card';
 import { TripCardHeading } from './trip-card-heading';
+import { TripPlanningIcon } from './trip-planning-icon';
 import { TripAnimalTag } from '@/features/animals/animal-ui';
 
 interface DiscoveryTripCardProps extends TripProposal {
@@ -53,14 +54,14 @@ export function DiscoveryTripCard({
       </View>
       <TripCardHeading title={getTripHeadline(trip)} landscape={trip.landscape} />
       <View style={layout.row}>
-        <Icon name="pin" size={16} />
+        <TripPlanningIcon kind={trip.mode} size={22} framed={false} />
         <AppText variant="label" color="textSecondary" style={styles.flex}>
           {getTripLocation(trip)}
           {trip.mode === 'flexible' ? ' · cel do ustalenia' : ''}
         </AppText>
       </View>
       <View style={layout.row}>
-        <Icon name="calendar" size={16} />
+        <TripPlanningIcon kind="dates" size={22} framed={false} />
         <AppText variant="caption" color="textSecondary" style={styles.flex}>
           {formatTripDates(trip)}
         </AppText>

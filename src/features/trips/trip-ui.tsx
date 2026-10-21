@@ -11,6 +11,7 @@ import {
 import { Icon } from '@/components/ui/icon';
 import { TripCardHeading } from '@/components/trips/trip-card-heading';
 import { CompactTripCard } from '@/components/trips/compact-trip-card';
+import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { useTheme } from '@/hooks/use-theme';
 import type { OwnedTrip, TripStatus } from '@/types/owned-trip';
@@ -116,7 +117,7 @@ export function OwnTripCard({
       </View>
       <TripCardHeading title={getTripHeadline(trip)} landscape={trip.landscape} />
       <View style={layout.row}>
-        <Icon name="pin" size={16} />
+        <TripPlanningIcon kind={trip.mode} size={22} framed={false} />
         <AppText
           variant="label"
           color="textSecondary"
@@ -127,7 +128,7 @@ export function OwnTripCard({
         </AppText>
       </View>
       <View style={layout.row}>
-        <Icon name="calendar" size={16} />
+        <TripPlanningIcon kind="dates" size={22} framed={false} />
         <AppText variant="caption" color="textSecondary" style={{ flex: 1 }}>
           {ownTripDates(trip)}
         </AppText>

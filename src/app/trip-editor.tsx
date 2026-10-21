@@ -65,6 +65,7 @@ import { TripAnimalFields } from '@/features/animals/animal-fields';
 import { AnimalInformation } from '@/features/animals/animal-ui';
 import { TripLocationField } from '@/features/trips/trip-location-field';
 import { TripLandscapePicker } from '@/features/trips/trip-landscape-picker';
+import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
 import {
   findTripLocation,
   isConcreteTripLocation,
@@ -250,10 +251,7 @@ export default function TripEditorScreen() {
                   backgroundColor: theme.backgroundSelected,
                 }}
               >
-                <Icon
-                  name={form.mode === 'planned' ? 'pin' : 'compass'}
-                  size={14}
-                />
+                <TripPlanningIcon kind={form.mode} size={16} framed={false} />
                 <AppText
                   variant="caption"
                   color="primaryStrong"
@@ -336,14 +334,12 @@ export default function TripEditorScreen() {
                         mode: 'planned',
                         label: 'Mam plan',
                         description: 'Znam cel i termin. Szukam towarzystwa.',
-                        icon: 'pin',
                       },
                       {
                         mode: 'flexible',
                         label: 'Szukam pomysłu',
                         description:
                           'Mam wolny termin. Miejsce wybiorę razem z ekipą.',
-                        icon: 'compass',
                       },
                     ] as const
                   ).map((option) => (
@@ -379,7 +375,7 @@ export default function TripEditorScreen() {
                         },
                       ]}
                     >
-                      <Icon name={option.icon} size={24} />
+                      <TripPlanningIcon kind={option.mode} />
                       <View style={{ flex: 1, gap: 4 }}>
                         <AppText variant="label">{option.label}</AppText>
                         <AppText variant="caption" color="textSecondary">
@@ -395,6 +391,7 @@ export default function TripEditorScreen() {
                 <View style={{ gap: 8 }}>
                   <FieldLabel required>Termin wyjazdu</FieldLabel>
                   <DateRangeField
+                    leadingIcon={<TripPlanningIcon kind="dates" size={40} />}
                     range={{ startDate: form.startDate, endDate: form.endDate }}
                     onPress={() => {
                       Keyboard.dismiss();

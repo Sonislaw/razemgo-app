@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
@@ -12,10 +13,12 @@ import type { DateRange } from '@/types/travel';
 export function DateRangeField({
   range,
   caption,
+  leadingIcon,
   onPress,
 }: {
   range?: DateRange;
   caption?: string;
+  leadingIcon?: ReactNode;
   onPress: () => void;
 }) {
   const theme = useTheme();
@@ -39,7 +42,7 @@ export function DateRangeField({
         },
       ]}
     >
-      <Icon name="calendar" size={22} />
+      {leadingIcon ?? <Icon name="calendar" size={22} />}
       <View style={{ flex: 1 }}>
         <AppText variant="label">{title}</AppText>
         <AppText variant="caption" color="textSecondary">

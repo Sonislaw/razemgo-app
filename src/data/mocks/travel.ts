@@ -40,7 +40,7 @@ export const MY_GROUP: TravelGroup = {
   adultCount: 2,
   childCount: 2,
   childAgeBands: ['4–6', '7–9'],
-  travelModes: ['Przyczepa', 'Samochód'],
+  travelModes: ['Przyczepa'],
   interests: ['Rowery', 'Spokojny wypoczynek', 'Ognisko'],
   animals: { animals: [{ kind: 'dog' }] },
 };
@@ -96,7 +96,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
     adultCount: 3,
     childCount: 0,
     childAgeBands: [],
-    travelModes: ['Samochód', 'Namiot'],
+    travelModes: ['Namiot'],
     interests: ['Rowery', 'Plaża', 'Gry planszowe'],
     animals: { animals: [] },
   },

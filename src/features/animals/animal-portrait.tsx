@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Chip } from '@/components/ui/primitives';
+import { IllustrationChoice } from '@/components/ui/illustration-choice';
 import { Icon } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
 import type { AnimalKind } from '@/types/animals';
@@ -63,7 +64,6 @@ export function AnimalChoice({
   selected?: boolean;
   onPress: () => void;
 }) {
-  const theme = useTheme();
   if (kind === 'other')
     return (
       <Chip
@@ -74,28 +74,13 @@ export function AnimalChoice({
       />
     );
   return (
-    <Pressable
-      accessibilityRole="checkbox"
-      accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ checked: selected }}
-      aria-checked={selected}
+    <IllustrationChoice
+      label={accessibilityLabel}
+      selected={selected}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.choice,
-        {
-          borderColor: selected ? theme.primaryStrong : theme.border,
-          backgroundColor: theme.backgroundElement,
-          opacity: pressed ? 0.7 : 1,
-        },
-      ]}
     >
       <AnimalPortrait kind={kind} size={54} />
-      {selected ? (
-        <View style={[styles.check, { backgroundColor: theme.primaryStrong }]}>
-          <Icon name="check" size={12} color={theme.onPrimary} />
-        </View>
-      ) : null}
-    </Pressable>
+    </IllustrationChoice>
   );
 }
 
@@ -115,23 +100,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
-  },
-  choice: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    borderWidth: 2,
-    padding: 3,
-    flexShrink: 0,
-  },
-  check: {
-    position: 'absolute',
-    right: 0,
-    bottom: 0,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

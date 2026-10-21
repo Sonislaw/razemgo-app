@@ -37,6 +37,7 @@ import { isConversationAccepted } from '@/features/messaging/messaging-state';
 import { GroupAvatar } from '@/features/messaging/messaging-ui';
 import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import { AnimalInformation } from '@/features/animals/animal-ui';
+import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 
 export function generateStaticParams() {
   return DEMO_OWN_TRIPS.map((trip) => ({ id: trip.id }));
@@ -143,10 +144,13 @@ export default function OwnTripDetailsScreen() {
               {trip.description ||
                 'Jeszcze bez opisu. Możesz uzupełnić go w edycji.'}
             </AppText>
-            <AppText variant="label">
-              {trip.travelModes.join(', ') ||
-                'Sposób podróżowania do uzupełnienia'}
-            </AppText>
+            {trip.travelModes.length ? (
+              <TravelModeBadges modes={trip.travelModes} />
+            ) : (
+              <AppText variant="label">
+                Sposób podróżowania do uzupełnienia
+              </AppText>
+            )}
             {trip.interests.length ? (
               <View style={layout.wrap}>
                 {trip.interests.map((value) => (

@@ -33,8 +33,11 @@ import { ProfileTextField } from '@/features/profile/profile-form-fields';
 import {
   GROUP_KIND_OPTIONS,
   INTEREST_OPTIONS,
-  TRAVEL_MODE_OPTIONS,
 } from '@/features/profile/profile-options';
+import {
+  TravelModeBadges,
+  TravelModePicker,
+} from '@/features/profile/travel-mode-ui';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import {
   getTripStatus,
@@ -443,18 +446,11 @@ export default function TripEditorScreen() {
                   <FieldLabel required>
                     Jak podróżujesz na ten wyjazd?
                   </FieldLabel>
-                  <ChipRow horizontal label="Sposób podróżowania">
-                    {TRAVEL_MODE_OPTIONS.map((mode) => (
-                      <Chip
-                        key={mode}
-                        label={mode}
-                        selected={form.travelModes.includes(mode)}
-                        onPress={() =>
-                          update('travelModes', toggle(form.travelModes, mode))
-                        }
-                      />
-                    ))}
-                  </ChipRow>
+                  <TravelModePicker
+                    horizontal
+                    value={form.travelModes}
+                    onChange={(travelModes) => update('travelModes', travelModes)}
+                  />
                 </View>
                 <View style={{ gap: 8 }}>
                   <FieldLabel>Co chcesz robić?</FieldLabel>
@@ -572,9 +568,7 @@ export default function TripEditorScreen() {
                     </AppText>
                   ) : null}
                   <AppText variant="label">{ownTripDates(preview)}</AppText>
-                  <AppText variant="caption">
-                    {form.travelModes.join(', ')}
-                  </AppText>
+                  <TravelModeBadges modes={form.travelModes} />
                   <AnimalInformation animals={form.animals} />
                   {form.description ? (
                     <AppText style={{ fontSize: 14, lineHeight: 21 }}>

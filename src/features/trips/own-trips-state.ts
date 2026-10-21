@@ -112,7 +112,7 @@ export function toTripForm(trip: OwnedTrip): TripForm {
     endDate: trip.endDate,
     locationId: tripLocationIdForPlace(place),
     campgroundName: trip.mode === 'planned' ? (trip.campgroundName ?? '') : '',
-    travelModes: [...trip.travelModes],
+    travelModes: trip.travelModes.slice(0, 1),
     interests: [...trip.interests],
     description: trip.description,
     landscape: trip.landscape,
@@ -129,7 +129,7 @@ export function newTripForm(profile: TravelerProfile): TripForm {
     endDate: '',
     locationId: '',
     campgroundName: '',
-    travelModes: [...profile.group.travelModes],
+    travelModes: profile.group.travelModes.slice(0, 1),
     interests: [],
     description: '',
     landscape: 'coast',
@@ -183,8 +183,8 @@ export function validateTripForm(form: TripForm, step?: 1 | 2 | 3): string[] {
           ? PLANNED_TRIP_LOCATION_REQUIRED_ERROR
           : TRIP_LOCATION_REQUIRED_ERROR,
       );
-    if (!form.travelModes.length)
-      errors.push('Wybierz przynajmniej jeden sposób podróżowania.');
+    if (form.travelModes.length !== 1)
+      errors.push('Wybierz jeden sposób podróżowania.');
     if (
       form.mode === 'planned' &&
       isConcreteTripLocation(location) &&
@@ -220,7 +220,7 @@ export function tripFromForm(
     ...(campgroundName ? { campgroundName } : {}),
     landscape: form.landscape,
     interests: [...form.interests],
-    travelModes: [...form.travelModes],
+    travelModes: form.travelModes.slice(0, 1),
     visibility: form.visibility,
     status,
     animals: cloneAnimals(form.animals),

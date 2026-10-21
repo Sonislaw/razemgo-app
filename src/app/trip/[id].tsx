@@ -30,6 +30,7 @@ import { useProfile } from '@/features/profile/profile-context';
 import { getPreferredChildAges } from '@/features/profile/profile-data';
 import { TripContactAction } from '@/features/messaging/trip-contact-action';
 import { AnimalInformation } from '@/features/animals/animal-ui';
+import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 
 export function generateStaticParams() {
   return DEMO_PROPOSALS.map(({ trip }) => ({ id: trip.id }));
@@ -145,7 +146,7 @@ export default function TripDetailsScreen() {
             ? ' · dzieci: ' + group.childAgeBands.join(', ') + ' lat'
             : ' · bez dzieci'}
         </AppText>
-        <AppText color="textSecondary">{group.travelModes.join(', ')}</AppText>
+        <TravelModeBadges modes={group.travelModes} />
       </Card>
       <TripContactAction proposal={proposal} />
     </Screen>

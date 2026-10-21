@@ -22,8 +22,8 @@ import {
 import {
   GROUP_KIND_OPTIONS,
   INTEREST_OPTIONS,
-  TRAVEL_MODE_OPTIONS,
 } from '@/features/profile/profile-options';
+import { TravelModePicker } from '@/features/profile/travel-mode-ui';
 import { ProfileSubpageHeader } from '@/features/profile/profile-ui';
 import type { ProfileSection } from '@/types/profile';
 import { useTheme } from '@/hooks/use-theme';
@@ -169,27 +169,17 @@ export default function EditProfileScreen() {
           <SectionTitle
             title="Jak podróżuję"
             required
-            detail="Możesz wybrać kilka sposobów."
+            detail="Wybierz jeden sposób podróżowania."
           />
-          <View style={layout.wrap}>
-            {TRAVEL_MODE_OPTIONS.map((mode) => (
-              <Chip
-                key={mode}
-                label={mode}
-                accessibilityLabel={'Sposób podróżowania: ' + mode}
-                selected={draft.group.travelModes.includes(mode)}
-                onPress={() =>
-                  setDraft((current) => ({
-                    ...current,
-                    group: {
-                      ...current.group,
-                      travelModes: toggle(current.group.travelModes, mode),
-                    },
-                  }))
-                }
-              />
-            ))}
-          </View>
+          <TravelModePicker
+            value={draft.group.travelModes}
+            onChange={(travelModes) =>
+              setDraft((current) => ({
+                ...current,
+                group: { ...current.group, travelModes },
+              }))
+            }
+          />
         </Card>
       ) : null}
       {show('interests') ? (

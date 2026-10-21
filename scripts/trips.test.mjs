@@ -65,6 +65,29 @@ const save = (state, draft, id, values = form()) =>
     today,
   });
 
+test('trips keep one travel mode through legacy load, profile defaults and draft saves; publication rejects multiple choices', () => {
+  const legacy = { ...fixture[0], travelModes: ['Przyczepa', 'Samochód'] };
+  assert.deepEqual(toTripForm(legacy).travelModes, ['Przyczepa']);
+  assert.deepEqual(createOwnTripsState([legacy]).trips[0].travelModes, ['Przyczepa']);
+  assert.deepEqual(legacy.travelModes, ['Przyczepa', 'Samochód']);
+  const legacyProfile = {
+    ...profile,
+    group: { ...profile.group, travelModes: ['Kamper', 'Van'] },
+  };
+  assert.deepEqual(newTripForm(legacyProfile).travelModes, ['Kamper']);
+  const state = initial();
+  const values = { ...form(), travelModes: ['Namiot', 'Samochód'] };
+  assert.deepEqual(validateTripForm(values, 2), ['Wybierz jeden sposób podróżowania.']);
+  assert.equal(save(state, false, state.trips[0].id, values), state);
+  const draftState = save(state, true, undefined, values);
+  assert.deepEqual(draftState.trips.at(-1).travelModes, ['Namiot']);
+  assert.deepEqual(values.travelModes, ['Namiot', 'Samochód']);
+  values.travelModes = [];
+  assert.deepEqual(validateTripForm(values, 2), ['Wybierz jeden sposób podróżowania.']);
+  values.travelModes = ['Van'];
+  assert.deepEqual(validateTripForm(values, 2), []);
+});
+
 test('location search narrows by name and context without case or Polish accents', () => {
   assert.equal(searchTripLocations('').length, 5);
   assert.deepEqual(

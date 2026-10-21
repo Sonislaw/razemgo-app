@@ -39,6 +39,22 @@ test('two children may share one age band or leave age unspecified', () => {
   assert.equal(formatGroupSize(2, 2), '2 dorosłych · 2 dzieci');
 });
 
+test('travel mode is required and exclusive; legacy profiles retain their first choice without mutating the source', () => {
+  const legacy = {
+    ...example,
+    group: { ...example.group, travelModes: ['Przyczepa', 'Samochód'] },
+  };
+  assert.deepEqual(cloneProfile(legacy).group.travelModes, ['Przyczepa']);
+  assert.deepEqual(normalizeProfile(legacy).group.travelModes, ['Przyczepa']);
+  assert.deepEqual(legacy.group.travelModes, ['Przyczepa', 'Samochód']);
+  assert.deepEqual(validateProfile(legacy), ['Wybierz jeden sposób podróżowania.']);
+  const draft = cloneProfile(example);
+  draft.group.travelModes = [];
+  assert.deepEqual(validateProfile(draft), ['Wybierz jeden sposób podróżowania.']);
+  draft.group.travelModes = ['Kamper'];
+  assert.deepEqual(validateProfile(draft), []);
+});
+
 test('normalizing an adult-only profile clears old ages without changing matching preferences', () => {
   const draft = cloneProfile(example);
   draft.group.childCount = 0;

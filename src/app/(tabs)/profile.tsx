@@ -21,6 +21,7 @@ import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import { ProfileSectionCard } from '@/features/profile/profile-ui';
 import type { ProfileSection } from '@/types/profile';
 import { AnimalBadge } from '@/features/animals/animal-portrait';
+import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 
 export default function ProfileScreen() {
   const theme = useTheme();
@@ -136,11 +137,7 @@ export default function ProfileScreen() {
           icon="camper"
           onPress={() => edit('travel')}
         >
-          <View style={layout.wrap}>
-            {group.travelModes.map((mode) => (
-              <Chip key={mode} label={mode} />
-            ))}
-          </View>
+          <TravelModeBadges modes={group.travelModes} />
         </ProfileSectionCard>
         <ProfileSectionCard
           title="Co lubię"

@@ -42,7 +42,7 @@ export function cloneProfile(profile: TravelerProfile): TravelerProfile {
       adultCount: profile.group.adultCount,
       childCount: profile.group.childCount,
       childAgeBands: [...profile.group.childAgeBands],
-      travelModes: [...profile.group.travelModes],
+      travelModes: profile.group.travelModes.slice(0, 1),
       interests: [...profile.group.interests],
       animals: cloneAnimals(profile.group.animals),
     },
@@ -84,8 +84,8 @@ export function validateProfile(profile: TravelerProfile): string[] {
     errors.push(
       'Liczba wybranych przedziałów wieku nie może być większa od liczby dzieci.',
     );
-  if (!group.travelModes.length)
-    errors.push('Wybierz przynajmniej jeden sposób podróżowania.');
+  if (group.travelModes.length !== 1)
+    errors.push('Wybierz jeden sposób podróżowania.');
   if (matching.description.trim().length > 240)
     errors.push('Opis preferencji może mieć maksymalnie 240 znaków.');
   return errors;

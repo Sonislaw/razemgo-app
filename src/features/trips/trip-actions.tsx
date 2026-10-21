@@ -43,7 +43,7 @@ export function TripActions({
         <>
           <AppText color="textSecondary">
             {confirm === 'delete'
-              ? 'Wyjazd zniknie z Waszej listy. Rozmowy pozostaną w Wiadomościach. Tej operacji nie można cofnąć.'
+              ? 'Wyjazd zniknie z Twojej listy. Rozmowy pozostaną w Wiadomościach. Tej operacji nie można cofnąć.'
               : confirm === 'cancel'
                 ? 'Wyjazd trafi do archiwum i nie będzie przyjmował nowych zaproszeń. Dotychczasowe rozmowy pozostaną dostępne.'
                 : confirm === 'complete'

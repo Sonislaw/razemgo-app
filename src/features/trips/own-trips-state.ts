@@ -19,7 +19,7 @@ import {
 
 export const TRIP_STATUS_LABELS: Record<TripStatus, string> = {
   draft: 'Szkic',
-  published: 'Szukamy towarzystwa',
+  published: 'Szukam towarzystwa',
   paused: 'Wstrzymany',
   completed: 'Zakończony',
   cancelled: 'Anulowany',

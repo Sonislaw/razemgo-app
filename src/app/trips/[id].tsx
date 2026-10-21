@@ -54,12 +54,12 @@ export default function OwnTripDetailsScreen() {
   if (!trip)
     return (
       <Screen>
-        <TripPageHeader title="Wasz wyjazd" onBack={back} />
+        <TripPageHeader title="Twój wyjazd" onBack={back} />
         <AppText variant="heading" accessibilityRole="header">
           Ten wyjazd nie jest dostępny
         </AppText>
         <AppText color="textSecondary">
-          Mógł zostać usunięty. Wróćcie do listy swoich wyjazdów.
+          Mógł zostać usunięty. Wróć do listy swoich wyjazdów.
         </AppText>
         <Button label="Wróć do wyjazdów" onPress={back} />
       </Screen>
@@ -101,7 +101,7 @@ export default function OwnTripDetailsScreen() {
       <Screen>
         <View style={{ gap: 16 }}>
           <TripPageHeader
-            title="Wasz wyjazd"
+            title="Twój wyjazd"
             onBack={back}
             onMenu={() => setMenu(true)}
           />
@@ -141,7 +141,7 @@ export default function OwnTripDetailsScreen() {
             </AppText>
             <AppText color="textSecondary">
               {trip.description ||
-                'Jeszcze bez opisu. Możecie uzupełnić go w edycji.'}
+                'Jeszcze bez opisu. Możesz uzupełnić go w edycji.'}
             </AppText>
             <AppText variant="label">
               {trip.travelModes.join(', ') ||
@@ -228,7 +228,7 @@ export default function OwnTripDetailsScreen() {
                 {status === 'draft'
                   ? 'Dokończ szkic i opublikuj plan, aby szukać towarzystwa.'
                   : status === 'paused'
-                    ? 'Poszukiwania są wstrzymane. Możecie je wznowić z menu wyjazdu.'
+                    ? 'Poszukiwania są wstrzymane. Możesz je wznowić z menu wyjazdu.'
                     : 'Ten wyjazd jest w archiwum i nie przyjmuje nowych zaproszeń.'}
               </AppText>
             ) : null}
@@ -273,7 +273,7 @@ export default function OwnTripDetailsScreen() {
                 color="textSecondary"
                 style={{ fontSize: 14, lineHeight: 21 }}
               >
-                Jeszcze nie umówiliście się z żadną ekipą. Po zaakceptowaniu
+                Nie masz jeszcze umówionego spotkania z żadną ekipą. Po zaakceptowaniu
                 zaproszenia powiązanego z tym planem pojawi się ona tutaj.
               </AppText>
             )}

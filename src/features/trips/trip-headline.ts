@@ -16,7 +16,7 @@ export function getTripHeadline(trip: TripPlan): string {
   const place = trip.mode === 'planned' ? trip.destination : trip.travelArea;
   const location = place.name.trim() || place.region.trim();
   return location
-    ? (trip.mode === 'planned' ? 'Wyjazd' : 'Szukamy pomysłu') +
+    ? (trip.mode === 'planned' ? 'Wyjazd' : 'Szukam pomysłu') +
         ' · ' +
         location
     : 'Wyjazd do zaplanowania';

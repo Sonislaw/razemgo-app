@@ -220,7 +220,7 @@ export default function ChatScreen() {
           onLayout={() => list.current?.scrollToEnd({ animated: false })}
           ListEmptyComponent={
             <AppText color="textSecondary" style={{ textAlign: 'center' }}>
-              Napiszcie pierwsze „cześć”!
+              Napisz pierwsze „cześć”!
             </AppText>
           }
           renderItem={({ item, index }) => {
@@ -283,7 +283,7 @@ export default function ChatScreen() {
                     style={{ alignSelf: 'flex-end', maxWidth: '90%', gap: 4 }}
                   >
                     <AppText variant="caption" color="textSecondary">
-                      Nie udało się wysłać wiadomości. Spróbujcie ponownie.
+                      Nie udało się wysłać wiadomości. Spróbuj ponownie.
                     </AppText>
                     <Button
                       label="Ponów wysyłanie"
@@ -327,7 +327,7 @@ export default function ChatScreen() {
                   color="textSecondary"
                   style={{ paddingHorizontal: 12, paddingTop: 8 }}
                 >
-                  Wysyłanie chwilowo niedostępne. Spróbujcie ponownie za chwilę.
+                  Wysyłanie chwilowo niedostępne. Spróbuj ponownie za chwilę.
                 </AppText>
               ) : null}
               <View

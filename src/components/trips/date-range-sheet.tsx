@@ -345,8 +345,8 @@ export function DateRangeSheet({
                   style={styles.center}
                 >
                   {tolerance
-                    ? 'Możemy przesunąć cały wyjazd, zachowując jego długość.'
-                    : 'Szukamy wyjazdów pokrywających się z wybranym terminem.'}
+                    ? 'Termin wyjazdu może się przesunąć z zachowaniem jego długości.'
+                    : 'Wyniki obejmują wyjazdy pokrywające się z wybranym terminem.'}
                 </AppText>
               </>
             ) : null}

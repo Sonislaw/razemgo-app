@@ -49,9 +49,9 @@ export default function ProfileScreen() {
         />
         <Card>
           <Icon name="people" size={32} />
-          <AppText variant="heading">Poznajmy Waszą ekipę</AppText>
+          <AppText variant="heading">Przedstaw swoją ekipę</AppText>
           <AppText color="textSecondary">
-            Uzupełnijcie nazwę ekipy i sposób podróżowania.
+            Uzupełnij nazwę ekipy i sposób podróżowania.
           </AppText>
           <Button label="Uzupełnij profil" icon="edit" onPress={() => edit()} />
         </Card>
@@ -93,14 +93,14 @@ export default function ProfileScreen() {
           />
         </Card>
         <ProfileSectionCard
-          title="Nasza ekipa"
+          title="Moja ekipa"
           icon="people"
           onPress={() => edit('crew')}
         >
           <AppText variant="caption" color="textSecondary">
             {group.childCount
-              ? 'Podróżujemy z dziećmi w wieku:'
-              : 'Podróżujemy w dorosłym gronie.'}
+              ? 'Podróżuję z dziećmi w wieku:'
+              : 'Podróżuję w dorosłym gronie.'}
           </AppText>
           {group.childAgeBands.length ? (
             <View style={layout.wrap}>
@@ -115,7 +115,7 @@ export default function ProfileScreen() {
           ) : null}
         </ProfileSectionCard>
         <ProfileSectionCard
-          title="Zwierzęta w naszej ekipie"
+          title="Zwierzęta w mojej ekipie"
           icon="paw"
           onPress={() => edit('animals')}
         >
@@ -132,7 +132,7 @@ export default function ProfileScreen() {
           )}
         </ProfileSectionCard>
         <ProfileSectionCard
-          title="Jak podróżujemy"
+          title="Jak podróżuję"
           icon="camper"
           onPress={() => edit('travel')}
         >
@@ -143,7 +143,7 @@ export default function ProfileScreen() {
           </View>
         </ProfileSectionCard>
         <ProfileSectionCard
-          title="Co lubimy"
+          title="Co lubię"
           icon="sun"
           onPress={() => edit('interests')}
         >
@@ -155,12 +155,12 @@ export default function ProfileScreen() {
             </View>
           ) : (
             <AppText variant="caption" color="textSecondary">
-              Dodajcie swoje zainteresowania.
+              Dodaj swoje zainteresowania.
             </AppText>
           )}
         </ProfileSectionCard>
         <ProfileSectionCard
-          title="Kogo chcemy poznać?"
+          title="Kogo chcę poznać?"
           icon="heart"
           onPress={() => edit('matching')}
         >

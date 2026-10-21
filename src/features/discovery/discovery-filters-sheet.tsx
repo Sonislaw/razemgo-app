@@ -281,7 +281,7 @@ export function DiscoveryFiltersSheet({
                 }
               />
               <AppText variant="caption" color="textSecondary">
-                Szukamy w celach wyjazdów i obszarach do wspólnego wyboru.
+                Wyszukiwanie obejmuje cele wyjazdów i obszary do wspólnego wyboru.
               </AppText>
             </View>
             {draft.sourceTripId ? (

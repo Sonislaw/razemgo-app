@@ -186,7 +186,7 @@ export function IconButton({
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: Radius.pill,
-        backgroundColor: theme.muted,
+        backgroundColor: theme.iconBackground,
         opacity: pressed ? 0.65 : 1,
       })}
     >

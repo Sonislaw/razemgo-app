@@ -85,11 +85,11 @@ export default function TripEditorScreen() {
   const [form, setForm] = useState<TripForm>(initial);
   const modeLabel = form.mode === 'planned' ? 'Mam plan' : 'Szukam pomysłu';
   const titles = [
-    'Jaki macie plan?',
+    'Jaki masz plan?',
     form.mode === 'flexible'
-      ? 'Jaki kierunek Was interesuje?'
-      : 'Dokąd i jak podróżujecie?',
-    'Kogo chcecie poznać?',
+      ? 'Jaki kierunek Cię interesuje?'
+      : 'Dokąd i jak podróżujesz?',
+    'Kogo chcesz poznać?',
   ];
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [errors, setErrors] = useState<string[]>([]);
@@ -113,7 +113,7 @@ export default function TripEditorScreen() {
           Ten wyjazd nie jest dostępny
         </AppText>
         <AppText color="textSecondary">
-          Mógł zostać usunięty. Wróćcie do listy swoich wyjazdów.
+          Mógł zostać usunięty. Wróć do listy swoich wyjazdów.
         </AppText>
         <Button
           label="Wróć do wyjazdów"
@@ -332,14 +332,14 @@ export default function TripEditorScreen() {
                       {
                         mode: 'planned',
                         label: 'Mam plan',
-                        description: 'Znamy cel i termin. Szukamy towarzystwa.',
+                        description: 'Znam cel i termin. Szukam towarzystwa.',
                         icon: 'pin',
                       },
                       {
                         mode: 'flexible',
                         label: 'Szukam pomysłu',
                         description:
-                          'Mamy wolny termin. Miejsce wybierzemy razem.',
+                          'Mam wolny termin. Miejsce wybiorę razem z ekipą.',
                         icon: 'compass',
                       },
                     ] as const
@@ -412,7 +412,7 @@ export default function TripEditorScreen() {
                   }
                   hint={
                     form.mode === 'flexible'
-                      ? 'Wskaż miejscowość, region lub kraj, w którym chcecie podróżować. Konkretne miejsce wybierzecie wspólnie z ekipą.'
+                      ? 'Wskaż miejscowość, region lub kraj, w którym chcesz podróżować. Konkretne miejsce wybierzesz wspólnie z ekipą.'
                       : undefined
                   }
                   onChange={(id) => {
@@ -427,7 +427,7 @@ export default function TripEditorScreen() {
                     value={form.campgroundName}
                     onChangeText={(value) => update('campgroundName', value)}
                     maxLength={120}
-                    hint="Jeśli wiecie już, gdzie się zatrzymacie."
+                    hint="Jeśli wiesz już, gdzie się zatrzymasz."
                   />
                 ) : null}
                 <ProfileTextField
@@ -441,7 +441,7 @@ export default function TripEditorScreen() {
                 />
                 <View style={{ gap: 8 }}>
                   <FieldLabel required>
-                    Jak podróżujecie na ten wyjazd?
+                    Jak podróżujesz na ten wyjazd?
                   </FieldLabel>
                   <ChipRow horizontal label="Sposób podróżowania">
                     {TRAVEL_MODE_OPTIONS.map((mode) => (
@@ -457,7 +457,7 @@ export default function TripEditorScreen() {
                   </ChipRow>
                 </View>
                 <View style={{ gap: 8 }}>
-                  <FieldLabel>Co chcecie robić?</FieldLabel>
+                  <FieldLabel>Co chcesz robić?</FieldLabel>
                   <ChipRow horizontal label="Zainteresowania">
                     {INTEREST_OPTIONS.map((interest) => (
                       <Chip
@@ -494,7 +494,7 @@ export default function TripEditorScreen() {
                 <View style={{ gap: 8 }}>
                   <FieldLabel>Towarzystwo na wyjazd</FieldLabel>
                   <AppText variant="caption" color="textSecondary">
-                    Możecie wybrać kilka grup. Brak wyboru oznacza dowolne
+                    Możesz wybrać kilka grup. Brak wyboru oznacza dowolne
                     towarzystwo.
                   </AppText>
                   <ChipRow horizontal label="Towarzystwo na wyjazd">
@@ -557,7 +557,7 @@ export default function TripEditorScreen() {
                       : form.visibility === 'private'
                         ? 'Prywatny plan będzie wstrzymany i niewidoczny w wyszukiwarce. Wznowienie poszukiwań udostępni go społeczności.'
                         : previousStatus === 'paused'
-                          ? 'Zapis zachowa wstrzymane poszukiwania. Możecie je później wznowić z menu wyjazdu.'
+                          ? 'Zapis zachowa wstrzymane poszukiwania. Możesz je później wznowić z menu wyjazdu.'
                           : 'Opublikowany plan będzie otwarty na zaproszenia.'}
                   </AppText>
                 </View>
@@ -677,7 +677,7 @@ export default function TripEditorScreen() {
           onClose={() => setConfirmExit(false)}
         >
           <AppText color="textSecondary">
-            Macie niezapisane zmiany. Możecie wrócić do edycji
+            Masz niezapisane zmiany. Możesz wrócić do edycji
             {canDraft ? ' albo zachować plan jako szkic' : ''}.
           </AppText>
           <Button

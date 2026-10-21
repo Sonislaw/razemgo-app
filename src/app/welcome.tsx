@@ -39,11 +39,11 @@ export default function WelcomeScreen() {
       >
         <Icon name="sun" size={30} color={theme.energy} />
         <AppText variant="title" accessibilityRole="header">
-          Wasz kierunek.{'\n'}Wasze towarzystwo.
+          Twój kierunek.{'\n'}Twoje towarzystwo.
         </AppText>
         <AppText color="heroMuted">
-          Nad morze, pod namiot, a może gdzieś zupełnie indziej? Poznajcie
-          ludzi, z którymi będzie Wam po drodze.
+          Nad morze, pod namiot, a może gdzieś zupełnie indziej? Poznaj
+          ludzi, z którymi będzie Ci po drodze.
         </AppText>
       </View>
       <View style={{ gap: 16 }}>
@@ -51,13 +51,13 @@ export default function WelcomeScreen() {
           [
             {
               icon: 'people',
-              text: 'Pokażcie, kim jesteście i jak podróżujecie.',
+              text: 'Pokaż, kim jesteś i jak podróżujesz.',
             },
             {
               icon: 'trips',
-              text: 'Zapiszcie konkretny cel albo wolny termin.',
+              text: 'Zapisz konkretny cel albo wolny termin.',
             },
-            { icon: 'chat', text: 'Poznajcie się po akceptacji zaproszenia.' },
+            { icon: 'chat', text: 'Zacznij rozmowę po akceptacji zaproszenia.' },
           ] as const
         ).map((item) => (
           <View key={item.icon} style={layout.row}>

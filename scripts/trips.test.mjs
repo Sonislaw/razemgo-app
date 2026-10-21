@@ -285,7 +285,7 @@ test('empty descriptions get a destination or area label and unfinished drafts s
   );
   assert.equal(
     getTripHeadline({ ...MY_TRIPS[1], description: '' }),
-    'Szukamy pomysłu · Kaszuby',
+    'Szukam pomysłu · Kaszuby',
   );
   const blank = tripFromForm(
     newTripForm(profile),

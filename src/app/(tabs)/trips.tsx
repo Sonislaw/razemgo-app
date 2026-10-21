@@ -234,7 +234,7 @@ function TripsContent() {
                   ? 'Brak pasujących wyjazdów'
                   : archived
                     ? 'Jeszcze bez wspomnień w archiwum'
-                    : 'Dokąd wybierzecie się razem?'}
+                    : 'Dokąd wybierzesz się z ekipą?'}
               </AppText>
               <AppText
                 color="textSecondary"
@@ -243,8 +243,8 @@ function TripsContent() {
                 {filtered
                   ? 'Spróbuj innego miejsca lub terminu.'
                   : archived
-                    ? 'Zakończone i anulowane plany znajdziecie tutaj.'
-                    : 'Macie konkretny cel albo wolny termin? Zapiszcie swój pierwszy plan.'}
+                    ? 'Zakończone i anulowane plany znajdziesz tutaj.'
+                    : 'Masz konkretny cel albo wolny termin? Zapisz swój pierwszy plan.'}
               </AppText>
               <View style={{ alignSelf: 'stretch' }}>
                 <Button

@@ -37,17 +37,17 @@ export default function MessagingSafetyScreen() {
           <View style={layout.row}>
             <Icon name="shield" />
             <AppText variant="label" style={{ flex: 1 }}>
-              Poznajecie się na swoich zasadach
+              Poznawaj innych na swoich zasadach
             </AppText>
           </View>
           <AppText style={{ fontSize: 14, lineHeight: 21 }}>
-            Kontakt jest przeznaczony dla dorosłych. Rozmowę rozpoczynacie
+            Kontakt jest przeznaczony dla dorosłych. Rozmowę rozpoczynasz
             dopiero po akceptacji zaproszenia. Odrzucenie nie wymaga podawania
             przyczyny.
           </AppText>
           <AppText style={{ fontSize: 14, lineHeight: 21 }}>
-            Nie dodajemy automatycznie do czatu danych dzieci z profilu. Sami
-            decydujecie, czym dzielicie się z drugą ekipą. Unikajcie podawania
+            Nie dodajemy automatycznie do czatu danych dzieci z profilu. To Ty
+            decydujesz, czym dzielisz się z drugą ekipą. Unikaj podawania
             dokładnego adresu i wrażliwych danych.
           </AppText>
         </Card>
@@ -57,7 +57,7 @@ export default function MessagingSafetyScreen() {
           </AppText>
           {!state.blockedGroupIds.length ? (
             <AppText color="textSecondary" style={{ fontSize: 14 }}>
-              Nie blokujecie żadnej ekipy. Opcje blokowania znajdziecie w menu
+              Nie masz zablokowanych ekip. Opcje blokowania znajdziesz w menu
               rozmowy.
             </AppText>
           ) : (

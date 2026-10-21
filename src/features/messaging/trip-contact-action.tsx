@@ -78,7 +78,7 @@ export function TripContactAction({ proposal }: { proposal: TripProposal }) {
       )}
       <AppText variant="caption" color="textSecondary">
         {unavailableSource
-          ? 'Wyjazd, dla którego szukacie towarzystwa, nie przyjmuje nowych zaproszeń. Zmieńcie jego status albo wyczyśćcie kryteria w Odkrywaj. '
+          ? 'Wyjazd, dla którego szukasz towarzystwa, nie przyjmuje nowych zaproszeń. Zmień jego status albo wyczyść kryteria w Odkrywaj. '
           : ''}
         Kontakt między dorosłymi po akceptacji zaproszenia.
       </AppText>
@@ -93,19 +93,19 @@ export function TripContactAction({ proposal }: { proposal: TripProposal }) {
           </AppText>
           {ownTrip ? (
             <AppText variant="caption" color="textSecondary">
-              Wasz wyjazd: {getTripHeadline(ownTrip)}
+              Twój wyjazd: {getTripHeadline(ownTrip)}
             </AppText>
           ) : null}
           <AppText
             color="textSecondary"
             style={{ fontSize: 14, lineHeight: 21 }}
           >
-            Przedstawcie się i napiszcie, co Was zainteresowało. Dane dzieci z
+            Przedstaw się i napisz, co Cię zainteresowało. Dane dzieci z
             profilu nie zostaną dodane do wiadomości.
           </AppText>
           <TextInput
             accessibilityLabel="Treść zaproszenia"
-            placeholder="Cześć! Chętnie porozmawiamy o wspólnym wyjeździe…"
+            placeholder="Cześć! Chętnie porozmawiam o wspólnym wyjeździe…"
             placeholderTextColor={theme.textSecondary}
             value={text}
             onChangeText={setText}

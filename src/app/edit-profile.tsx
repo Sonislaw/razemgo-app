@@ -30,11 +30,11 @@ import { useTheme } from '@/hooks/use-theme';
 import { GroupAnimalFields } from '@/features/animals/animal-fields';
 
 const titles: Record<ProfileSection, string> = {
-  crew: 'Nasza ekipa',
-  travel: 'Jak podróżujemy',
-  interests: 'Co lubimy',
-  matching: 'Kogo chcemy poznać?',
-  animals: 'Zwierzęta w naszej ekipie',
+  crew: 'Moja ekipa',
+  travel: 'Jak podróżuję',
+  interests: 'Co lubię',
+  matching: 'Kogo chcę poznać?',
+  animals: 'Zwierzęta w mojej ekipie',
 };
 const toggle = <T,>(values: T[], value: T): T[] =>
   values.includes(value)
@@ -76,7 +76,7 @@ export default function EditProfileScreen() {
       />
       {show('crew') ? (
         <Card>
-          <SectionTitle title="Nasza ekipa" />
+          <SectionTitle title="Moja ekipa" />
           <ProfileTextField
             label="Nazwa ekipy"
             required
@@ -129,7 +129,7 @@ export default function EditProfileScreen() {
                   <Chip
                     key={band}
                     label={band + ' lat'}
-                    accessibilityLabel={'Wiek naszych dzieci: ' + band + ' lat'}
+                    accessibilityLabel={'Wiek moich dzieci: ' + band + ' lat'}
                     selected={draft.group.childAgeBands.includes(band)}
                     onPress={() =>
                       setDraft((current) => ({
@@ -152,7 +152,7 @@ export default function EditProfileScreen() {
       ) : null}
       {show('animals') ? (
         <Card>
-          <SectionTitle title="Zwierzęta w naszej ekipie" />
+          <SectionTitle title="Zwierzęta w mojej ekipie" />
           <GroupAnimalFields
             value={draft.group.animals}
             onChange={(animals) =>
@@ -167,9 +167,9 @@ export default function EditProfileScreen() {
       {show('travel') ? (
         <Card>
           <SectionTitle
-            title="Jak podróżujemy"
+            title="Jak podróżuję"
             required
-            detail="Możecie wybrać kilka sposobów."
+            detail="Możesz wybrać kilka sposobów."
           />
           <View style={layout.wrap}>
             {TRAVEL_MODE_OPTIONS.map((mode) => (
@@ -195,8 +195,8 @@ export default function EditProfileScreen() {
       {show('interests') ? (
         <Card>
           <SectionTitle
-            title="Co lubimy"
-            detail="Co najchętniej robicie na wyjazdach?"
+            title="Co lubię"
+            detail="Co najchętniej robisz na wyjazdach?"
           />
           <View style={layout.wrap}>
             {INTEREST_OPTIONS.map((interest) => (
@@ -221,7 +221,7 @@ export default function EditProfileScreen() {
       ) : null}
       {show('matching') ? (
         <Card>
-          <SectionTitle title="Kogo chcemy poznać?" />
+          <SectionTitle title="Kogo chcę poznać?" />
           <FieldLabel>Towarzystwo na wyjazd</FieldLabel>
           <View style={layout.wrap}>
             {GROUP_KIND_OPTIONS.map((option) => (
@@ -272,7 +272,7 @@ export default function EditProfileScreen() {
             ))}
           </View>
           <AppText variant="caption" color="textSecondary">
-            To preferencja dotycząca towarzystwa, niezależna od wieku Waszych
+            To preferencja dotycząca towarzystwa, niezależna od wieku Twoich
             dzieci.
           </AppText>
           <ProfileTextField

@@ -44,6 +44,7 @@ export function HomeAction({
           gap: compact ? 8 : 12,
           borderRadius: 24,
           borderWidth: 1,
+          overflow: 'visible',
           borderColor: primary ? theme.border : `${theme.accent}40`,
           backgroundColor: primary ? theme.backgroundSelected : theme.hero,
           opacity: pressed ? 0.75 : 1,
@@ -77,8 +78,18 @@ export function HomeAction({
       {showIllustration ? (
         <Image
           source={illustration}
-          style={{ width: artworkSize, height: artworkSize, flexShrink: 0 }}
+          style={{
+            width: artworkSize,
+            height: artworkSize,
+            flexShrink: 0,
+            transform: [
+              { translateX: minimal ? 4 : 8 },
+              { translateY: minimal ? -2 : -4 },
+              { scale: 1.35 },
+            ],
+          }}
           contentFit="contain"
+          pointerEvents="none"
           accessible={false}
           alt=""
         />
@@ -90,7 +101,7 @@ export function HomeAction({
           borderRadius: 14,
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: theme.backgroundElement,
+          backgroundColor: theme.iconBackground,
           ...(showIllustration
             ? { position: 'absolute', right: 8, bottom: 8 }
             : { flexShrink: 0 }),

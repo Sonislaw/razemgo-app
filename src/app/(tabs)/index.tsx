@@ -76,7 +76,7 @@ export default function HomeScreen() {
           lineHeight: minimal ? 26 : density === 'compact' ? 30 : 36,
         }}
       >
-        Podróżujcie razem.
+        Podróżuj razem.
       </AppText>
       <AppText
         color="textSecondary"
@@ -85,11 +85,11 @@ export default function HomeScreen() {
           lineHeight: minimal ? 18 : density === 'compact' ? 20 : 24,
         }}
       >
-        Znajdźcie towarzystwo na kolejną przygodę.
+        Znajdź towarzystwo na kolejną przygodę.
       </AppText>
       {!hasProfile ? (
         <AppText variant="label" color="textSecondary">
-          Uzupełnijcie profil ekipy →
+          Uzupełnij profil ekipy →
         </AppText>
       ) : null}
     </>
@@ -173,7 +173,7 @@ export default function HomeScreen() {
               >
                 <HomeAction
                   label="Znajdź ekipę"
-                  description="Poznajcie podróżników z podobnymi planami."
+                  description="Poznaj podróżników z podobnymi planami."
                   illustration={require('@/assets/images/home/find-crew.png')}
                   density={density}
                   showIllustration={showIllustrations}
@@ -183,7 +183,7 @@ export default function HomeScreen() {
                 />
                 <HomeAction
                   label="Dodaj wyjazd"
-                  description="Zaplanujcie wyjazd i znajdźcie towarzystwo."
+                  description="Zaplanuj wyjazd i znajdź towarzystwo."
                   illustration={require('@/assets/images/home/plan-trip.png')}
                   density={density}
                   showIllustration={showIllustrations}

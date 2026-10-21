@@ -118,7 +118,7 @@ export default function TripDetailsScreen() {
         }}
       >
         <AppText variant="heading" accessibilityRole="header" color="positive">
-          {score !== undefined ? score + '% zgodności' : 'Co Was łączy?'}
+          {score !== undefined ? score + '% zgodności' : 'Co Cię łączy z tą ekipą?'}
         </AppText>
         <AppText variant="label">
           {facts.matchingAgeBands.length
@@ -126,7 +126,7 @@ export default function TripDetailsScreen() {
               facts.matchingAgeBands.join(', ') +
               ' lat'
             : group.childAgeBands.length
-              ? 'Inne przedziały wieku dzieci niż w Waszych preferencjach.'
+              ? 'Inne przedziały wieku dzieci niż w Twoich preferencjach.'
               : 'Grupa podróżuje bez dzieci.'}
         </AppText>
         <AppText variant="label">

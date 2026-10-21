@@ -193,7 +193,7 @@ export function TripLocationField({
       ) : !hint ? (
         <AppText variant="caption" color="textSecondary">
           {mode === 'planned'
-            ? 'Wybierz konkretną miejscowość, do której jedziecie.'
+            ? 'Wybierz konkretną miejscowość, do której jedziesz.'
             : 'Wpisz nazwę i wybierz lokalizację z podpowiedzi.'}
         </AppText>
       ) : null}

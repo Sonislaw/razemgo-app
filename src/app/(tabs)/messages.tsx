@@ -103,7 +103,7 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
                   : last.sender === 'self'
                     ? 'Wy: '
                     : '') + last.text
-              : 'Napiszcie pierwsze „cześć”!'}
+              : 'Napisz pierwsze „cześć”!'}
           </AppText>
           <CountBadge count={unread} />
         </View>
@@ -351,7 +351,7 @@ export default function MessagesScreen() {
             <MailboxEmpty
               icon="water"
               title="Nie udało się wczytać skrzynki"
-              description="Spróbujcie ponownie. Wasze wiadomości pozostają w skrzynce."
+              description="Spróbuj ponownie. Twoje wiadomości pozostają w skrzynce."
             >
               <Button
                 label="Spróbuj ponownie"
@@ -379,8 +379,8 @@ export default function MessagesScreen() {
                 </View>
               ) : (
                 <MailboxEmpty
-                  title="Jeszcze nie macie rozmów"
-                  description="Poznajcie podróżników i zaplanujcie coś razem. Rozmowa zaczyna się po akceptacji zaproszenia."
+                  title="Jeszcze nie masz rozmów"
+                  description="Poznaj podróżników i zaplanuj coś razem z nimi. Rozmowa zaczyna się po akceptacji zaproszenia."
                 >
                   <Button
                     label="Odkryj podróżników"
@@ -431,12 +431,12 @@ export default function MessagesScreen() {
                   title={
                     state.direction === 'received'
                       ? 'Brak otrzymanych zaproszeń'
-                      : 'Jeszcze nie wysłaliście zaproszeń'
+                      : 'Nie masz jeszcze wysłanych zaproszeń'
                   }
                   description={
                     state.direction === 'received'
-                      ? 'Nowe prośby o kontakt pojawią się tutaj. Sami też możecie zrobić pierwszy krok.'
-                      : 'Znajdźcie ciekawy wyjazd i zaproście jego ekipę do rozmowy.'
+                      ? 'Nowe prośby o kontakt pojawią się tutaj. Możesz też zrobić pierwszy krok.'
+                      : 'Znajdź ciekawy wyjazd i zaproś jego ekipę do rozmowy.'
                   }
                 >
                   <Button

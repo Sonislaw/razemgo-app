@@ -26,7 +26,7 @@ export function ConversationSafety({
     >
       {reporting ? (
         <>
-          <AppText variant="label">Co budzi Wasze obawy?</AppText>
+          <AppText variant="label">Co budzi Twoje obawy?</AppText>
           <View style={layout.wrap}>
             {(
               [
@@ -83,7 +83,7 @@ export function ConversationSafety({
           />
           <AppText variant="caption" color="textSecondary">
             Blokada wstrzymuje rozmowę i nowe zaproszenia tej ekipy.
-            Możecie ją cofnąć w dowolnej chwili.
+            Możesz ją cofnąć w dowolnej chwili.
           </AppText>
           <Button
             label="Zgłoś konto"

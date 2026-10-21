@@ -16,7 +16,7 @@ export function GroupAnimalFields({
   return (
     <View style={{ gap: 12 }}>
       <AppText variant="caption" color="textSecondary">
-        Zaznaczcie zwierzęta, z którymi podróżujecie.
+        Zaznacz zwierzęta, z którymi podróżujesz.
       </AppText>
       <ChipRow horizontal={horizontal} label="Zwierzęta">
         <Chip

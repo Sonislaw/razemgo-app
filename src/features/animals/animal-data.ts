@@ -8,7 +8,6 @@ import type {
 export const ANIMAL_OPTIONS: { kind: AnimalKind; label: string }[] = [
   { kind: 'dog', label: 'Pies' },
   { kind: 'cat', label: 'Kot' },
-  { kind: 'other', label: 'Inne zwierzę' },
 ];
 export function emptyAnimals(): GroupAnimals {
   return { animals: [] };

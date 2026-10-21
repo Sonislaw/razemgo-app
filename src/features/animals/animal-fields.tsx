@@ -2,6 +2,7 @@ import { View } from 'react-native';
 import { AppText, Chip, FieldLabel } from '@/components/ui/primitives';
 import { ChipRow } from '@/components/ui/chip-row';
 import { ANIMAL_OPTIONS } from './animal-data';
+import { AnimalChoice } from './animal-portrait';
 import type { GroupAnimals } from '@/types/animals';
 
 interface AnimalFieldsProps {
@@ -25,8 +26,9 @@ export function GroupAnimalFields({
           onPress={() => onChange({ ...value, animals: [] })}
         />
         {ANIMAL_OPTIONS.map(({ kind, label }) => (
-          <Chip
+          <AnimalChoice
             key={kind}
+            kind={kind}
             label={label}
             accessibilityLabel={'Zwierzę w ekipie: ' + label}
             selected={value.animals.some((item) => item.kind === kind)}

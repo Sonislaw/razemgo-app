@@ -40,6 +40,7 @@ import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { ChildAgeBand, DiscoveryFilters } from '@/types/travel';
 import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
+import { AnimalChoice } from '@/features/animals/animal-portrait';
 import { TripLocationField } from '@/features/trips/trip-location-field';
 import { LANDSCAPE_OPTIONS } from '@/constants/landscape-options';
 
@@ -334,8 +335,9 @@ export function DiscoveryFiltersSheet({
               </AppText>
               <ChipRow horizontal label="Zwierzęta na wyjeździe">
                 {ANIMAL_OPTIONS.map(({ kind, label }) => (
-                  <Chip
+                  <AnimalChoice
                     key={kind}
+                    kind={kind}
                     label={label}
                     accessibilityLabel={'Zwierzęta na wyjeździe: ' + label}
                     selected={draft.animalKinds?.includes(kind)}

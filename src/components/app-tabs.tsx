@@ -20,8 +20,8 @@ export default function AppTabs() {
         backBehavior="history"
         backgroundColor={theme.backgroundElement}
         tintColor={theme.primaryStrong}
-        badgeBackgroundColor={theme.primaryStrong}
-        badgeTextColor={theme.onPrimary}
+        badgeBackgroundColor={theme.notificationBackground}
+        badgeTextColor={theme.notificationText}
         iconColor={{
           default: theme.textSecondary,
           selected: theme.primaryStrong,

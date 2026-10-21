@@ -4,5 +4,5 @@ export const LANDSCAPE_OPTIONS = [
   { value: 'coast', label: 'Morze' },
   { value: 'lake', label: 'Jeziora' },
   { value: 'mountain', label: 'Góry' },
-  { value: 'forest', label: 'Las' },
+  { value: 'forest', label: 'Lasy' },
 ] as const satisfies readonly { value: LandscapeKind; label: string }[];

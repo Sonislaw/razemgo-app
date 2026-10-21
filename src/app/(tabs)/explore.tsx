@@ -155,7 +155,7 @@ export default function ExploreScreen() {
               accessibilityLiveRegion="polite"
               style={styles.resultTitle}
             >
-              Propozycje dla Ciebie · {proposals.length}
+              Propozycje · {proposals.length}
             </AppText>
           </View>
           <Pressable

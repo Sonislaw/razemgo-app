@@ -14,11 +14,6 @@ import { ScenicFooter } from '@/components/ui/scenic-footer';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useProfile } from '@/features/profile/profile-context';
-import { useMessaging } from '@/features/messaging/messaging-context';
-import {
-  notificationCount,
-  pendingReceivedCount,
-} from '@/features/messaging/messaging-state';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { INITIAL_FILTERS } from '@/features/discovery/filter-trips';
 import { HomeDemoControls } from '@/features/home/home-demo-controls';
@@ -30,7 +25,6 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { width, height, fontScale } = useWindowDimensions();
   const { hasProfile } = useProfile();
-  const { state: mailbox, dispatch: dispatchMessages } = useMessaging();
   const { setFilters } = useDiscovery();
   const [demoOpen, setDemoOpen] = useState(false);
   const [canvasHeight, setCanvasHeight] = useState(height);
@@ -49,17 +43,6 @@ export default function HomeScreen() {
   const showIllustrations = !landscape && !(minimal && fontScale > 1.2);
   const showDescriptions = !shortScreen;
   const footerHeight = Math.min(width / 3, 180, Math.max(68, canvasHeight * 0.19));
-  const pending =
-    mailbox.loadStatus === 'ready' ? pendingReceivedCount(mailbox) : 0;
-  const total = notificationCount(mailbox);
-  const openMessages = () => {
-    dispatchMessages({
-      type: 'view',
-      view: pending ? 'invitations' : 'conversations',
-      direction: 'received',
-    });
-    router.navigate('/messages');
-  };
   const discover = () => {
     setFilters({ ...INITIAL_FILTERS });
     router.navigate('/explore');
@@ -112,12 +95,7 @@ export default function HomeScreen() {
           ]}
         >
           <HomeHeader
-            notifications={total}
             onOpenDemo={() => setDemoOpen(true)}
-            onOpenMessages={openMessages}
-            onOpenSettings={() =>
-              router.push({ pathname: '/settings', params: { from: 'home' } })
-            }
           />
           <View
             onLayout={(event) => setMainHeight(event.nativeEvent.layout.height)}

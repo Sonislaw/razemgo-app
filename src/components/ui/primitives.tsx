@@ -190,7 +190,7 @@ export function IconButton({
         opacity: pressed ? 0.65 : 1,
       })}
     >
-      <Icon name={icon} size={22} />
+      <Icon name={icon} size={22} color={theme.textSecondary} />
     </Pressable>
   );
 }

@@ -27,7 +27,6 @@ import { ScenicFooter } from '@/components/ui/scenic-footer';
 import { ScenicHeaderBackground } from '@/components/ui/scenic-header';
 import { CHILD_AGE_BANDS } from '@/data/mocks/travel';
 import { MaxContentWidth } from '@/constants/theme';
-import { LANDSCAPE_OPTIONS } from '@/constants/landscape-options';
 import { useTheme } from '@/hooks/use-theme';
 import { useProfile } from '@/features/profile/profile-context';
 import { ProfileTextField } from '@/features/profile/profile-form-fields';
@@ -62,6 +61,7 @@ import type { TripForm } from '@/types/owned-trip';
 import { TripAnimalFields } from '@/features/animals/animal-fields';
 import { AnimalInformation } from '@/features/animals/animal-ui';
 import { TripLocationField } from '@/features/trips/trip-location-field';
+import { TripLandscapePicker } from '@/features/trips/trip-landscape-picker';
 import {
   findTripLocation,
   isConcreteTripLocation,
@@ -473,16 +473,10 @@ export default function TripEditorScreen() {
                 </View>
                 <View style={{ gap: 8 }}>
                   <FieldLabel>Klimat wyjazdu</FieldLabel>
-                  <ChipRow horizontal label="Klimat wyjazdu">
-                    {LANDSCAPE_OPTIONS.map((item) => (
-                      <Chip
-                        key={item.value}
-                        label={item.label}
-                        selected={form.landscape === item.value}
-                        onPress={() => update('landscape', item.value)}
-                      />
-                    ))}
-                  </ChipRow>
+                  <TripLandscapePicker
+                    value={form.landscape}
+                    onChange={(value) => update('landscape', value)}
+                  />
                 </View>
                 <TripAnimalFields
                   value={form.animals}

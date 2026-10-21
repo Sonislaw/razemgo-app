@@ -40,14 +40,14 @@ export function CountBadge({ count }: { count: number }) {
         minHeight: 22,
         paddingHorizontal: 6,
         borderRadius: 12,
-        backgroundColor: theme.primaryStrong,
+        backgroundColor: theme.notificationBackground,
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
       <AppText
         variant="caption"
-        style={{ color: theme.onPrimary, fontWeight: '700' }}
+        style={{ color: theme.notificationText, fontWeight: '700' }}
       >
         {count > 99 ? '99+' : count}
       </AppText>

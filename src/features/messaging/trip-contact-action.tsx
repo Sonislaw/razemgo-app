@@ -76,12 +76,12 @@ export function TripContactAction({ proposal }: { proposal: TripProposal }) {
           onPress={() => setComposing(true)}
         />
       )}
-      <AppText variant="caption" color="textSecondary">
-        {unavailableSource
-          ? 'Wyjazd, dla którego szukasz towarzystwa, nie przyjmuje nowych zaproszeń. Zmień jego status albo wyczyść kryteria w Odkrywaj. '
-          : ''}
-        Kontakt między dorosłymi po akceptacji zaproszenia.
-      </AppText>
+      {unavailableSource ? (
+        <AppText variant="caption" color="textSecondary">
+          Wyjazd, dla którego szukasz towarzystwa, nie przyjmuje nowych zaproszeń.
+          Zmień jego status albo wyczyść kryteria w Odkrywaj.
+        </AppText>
+      ) : null}
       {composing ? (
         <MessagingSheet
           title="Zaproś do kontaktu"

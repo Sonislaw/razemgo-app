@@ -4,12 +4,12 @@ import {
   AppText,
   Button,
   EmptyState,
-  PageHeader,
   IconButton,
   Screen,
   layout,
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
+import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
 import { DEMO_PROPOSALS } from '@/data/mocks/travel';
 import { DEMO_COMPATIBILITY_SCORES } from '@/data/mocks/compatibility';
@@ -94,9 +94,15 @@ export default function ExploreScreen() {
     .join(' · ');
   const reset = () => setFilters({ ...INITIAL_FILTERS });
   return (
-    <Screen>
+    <Screen
+      header={
+        <IllustratedPageHeader
+          title="Odkrywaj"
+          description={'Znajdź wyjazdy i ludzi\nz podobnymi planami.'}
+        />
+      }
+    >
       <View style={styles.controls}>
-        <PageHeader title="Odkrywaj" />
         {filters.sourceTripId ? (
           <View style={layout.row}>
             <AppText

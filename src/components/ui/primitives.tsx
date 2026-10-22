@@ -71,16 +71,19 @@ export function FieldLabel({
 export function Screen({
   children,
   header,
+  testID,
   adjustKeyboardInsets = true,
 }: {
   children: ReactNode;
   header?: ReactNode;
+  testID?: string;
   adjustKeyboardInsets?: boolean;
 }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   return (
     <ScrollView
+      testID={testID}
       style={{ flex: 1, backgroundColor: theme.background }}
       contentInsetAdjustmentBehavior="automatic"
       automaticallyAdjustKeyboardInsets={adjustKeyboardInsets}
@@ -89,7 +92,9 @@ export function Screen({
       contentContainerStyle={[
         styles.scroll,
         {
-          paddingTop: Spacing.three + (Platform.OS === 'ios' ? 0 : insets.top),
+          paddingTop: header
+            ? 0
+            : Spacing.three + (Platform.OS === 'ios' ? 0 : insets.top),
         },
       ]}
     >

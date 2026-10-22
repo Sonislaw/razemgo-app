@@ -7,11 +7,11 @@ import {
   Chip,
   DemoBadge,
   IconButton,
-  PageHeader,
   Screen,
   layout,
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
+import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -35,19 +35,22 @@ export default function ProfileScreen() {
   const preferredGroups = GROUP_KIND_OPTIONS.filter((option) =>
     matching.groupKinds.includes(option.value),
   );
+  const header = (
+    <IllustratedPageHeader
+      title="Mój profil"
+      description={'Twoja ekipa, podróże\ni zainteresowania.'}
+      actions={
+        <IconButton
+          icon="settings"
+          label="Ustawienia aplikacji"
+          onPress={() => router.push('/settings')}
+        />
+      }
+    />
+  );
   if (!hasProfile)
     return (
-      <Screen>
-        <PageHeader
-          title="Mój profil"
-          actions={
-            <IconButton
-              icon="settings"
-              label="Ustawienia aplikacji"
-              onPress={() => router.push('/settings')}
-            />
-          }
-        />
+      <Screen header={header}>
         <Card>
           <Icon name="people" size={32} />
           <AppText variant="heading">Przedstaw swoją ekipę</AppText>
@@ -60,18 +63,8 @@ export default function ProfileScreen() {
       </Screen>
     );
   return (
-    <Screen>
+    <Screen header={header}>
       <View style={styles.content}>
-        <PageHeader
-          title="Mój profil"
-          actions={
-            <IconButton
-              icon="settings"
-              label="Ustawienia aplikacji"
-              onPress={() => router.push('/settings')}
-            />
-          }
-        />
         <Card style={styles.identity}>
           <View style={layout.row}>
             <View style={[styles.avatar, { backgroundColor: theme.hero }]}>

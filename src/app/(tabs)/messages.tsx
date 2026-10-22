@@ -7,11 +7,11 @@ import {
   Button,
   Card,
   IconButton,
-  PageHeader,
   Screen,
   layout,
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
+import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { DEMO_PROPOSALS } from '@/data/mocks/travel';
 import { DemoControls } from '@/features/messaging/demo-controls';
@@ -285,10 +285,11 @@ export default function MessagesScreen() {
   const setView = (view: MailboxView) => dispatch({ type: 'view', view });
   return (
     <>
-      <Screen>
-        <View style={{ gap: 12 }}>
-          <PageHeader
+      <Screen
+        header={
+          <IllustratedPageHeader
             title="Wiadomości"
+            description={'Rozmowy i zaproszenia\nw jednym miejscu.'}
             actions={
               <>
                 {IS_DEMO_MODE ? (
@@ -323,6 +324,9 @@ export default function MessagesScreen() {
               </>
             }
           />
+        }
+      >
+        <View style={{ gap: 12 }}>
           <MessageSegments<MailboxView>
             value={state.view}
             options={[

@@ -6,11 +6,11 @@ import {
   AppText,
   Button,
   IconButton,
-  PageHeader,
   Screen,
   layout,
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
+import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import { useTheme } from '@/hooks/use-theme';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import {
@@ -57,10 +57,12 @@ function TripsContent() {
   const notice = state.trips.find((trip) => trip.id === noticeId);
   return (
     <>
-      <Screen key={noticeId ?? 'initial'}>
-        <View style={{ gap: 12 }}>
-          <PageHeader
+      <Screen
+        key={noticeId ?? 'initial'}
+        header={
+          <IllustratedPageHeader
             title="Moje wyjazdy"
+            description={'Twoje plany\ni wspólne przygody.'}
             actions={
               <Pressable
                 accessibilityRole="button"
@@ -84,6 +86,9 @@ function TripsContent() {
               </Pressable>
             }
           />
+        }
+      >
+        <View style={{ gap: 12 }}>
           {notice ? (
             <View
               accessibilityLiveRegion="polite"

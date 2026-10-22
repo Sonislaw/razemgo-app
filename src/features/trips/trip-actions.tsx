@@ -76,6 +76,7 @@ export function TripActions({
                         ? 'completed'
                         : 'published',
                   today,
+                  publishedAt: new Date().toISOString(),
                 });
                 onClose();
               }

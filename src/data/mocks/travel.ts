@@ -115,6 +115,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
 export const DEMO_TRIPS: TripPlan[] = [
   {
     id: 'demo-coast',
+    publishedAt: '2026-10-20T08:00:00.000Z',
     animals: { animals: [{ kind: 'dog' }] },
 
     groupId: 'demo-1',
@@ -133,6 +134,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-lake',
+    publishedAt: '2026-10-20T12:00:00.000Z',
     animals: { animals: [] },
 
     groupId: 'demo-2',
@@ -151,6 +153,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-mountains',
+    publishedAt: '2026-10-21T08:00:00.000Z',
     animals: { animals: [{ kind: 'cat' }] },
 
     groupId: 'demo-3',
@@ -165,6 +168,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-forest',
+    publishedAt: '2026-10-21T10:00:00.000Z',
     animals: { animals: [] },
 
     groupId: 'demo-4',
@@ -179,6 +183,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-friends',
+    publishedAt: '2026-10-21T14:00:00.000Z',
     animals: { animals: [] },
 
     groupId: 'demo-5',
@@ -197,6 +202,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-bieszczady',
+    publishedAt: '2026-10-21T18:00:00.000Z',
     animals: { animals: [{ kind: 'dog' }] },
 
     groupId: 'demo-6',
@@ -217,6 +223,7 @@ export const DEMO_TRIPS: TripPlan[] = [
 export const MY_TRIPS: TripPlan[] = [
   {
     id: 'demo-my-coast',
+    publishedAt: '2026-10-18T09:00:00.000Z',
     animals: { animals: [{ kind: 'dog' }] },
 
     groupId: MY_GROUP.id,
@@ -231,6 +238,7 @@ export const MY_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-my-idea',
+    publishedAt: '2026-10-19T09:00:00.000Z',
     animals: { animals: [] },
 
     groupId: MY_GROUP.id,

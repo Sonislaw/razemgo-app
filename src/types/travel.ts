@@ -21,6 +21,7 @@ export interface DateRange {
 }
 interface TripBase extends DateRange {
   id: string;
+  publishedAt?: string;
   groupId: string;
   description: string;
   campgroundName?: string;

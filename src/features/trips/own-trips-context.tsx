@@ -60,6 +60,7 @@ export function OwnTripsProvider({ children }: { children: ReactNode }) {
       groupId: profile.group.id,
       draft,
       today,
+      publishedAt: new Date().toISOString(),
     });
     return { id: savedId, errors: [] };
   };

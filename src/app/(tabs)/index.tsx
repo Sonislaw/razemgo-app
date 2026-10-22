@@ -19,29 +19,62 @@ import { INITIAL_FILTERS } from '@/features/discovery/filter-trips';
 import { HomeDemoControls } from '@/features/home/home-demo-controls';
 import { HomeAction } from '@/features/home/home-ui';
 import { HomeHeader } from '@/features/home/home-header';
+import { HomeLatestListing } from '@/features/home/home-latest-listing';
+import { selectLatestListing } from '@/features/home/latest-listing';
+import { DEMO_PROPOSALS } from '@/data/mocks/travel';
+import { useOwnTrips } from '@/features/trips/own-trips-context';
+import { todayDate } from '@/features/trips/own-trips-state';
+import { useMessaging } from '@/features/messaging/messaging-context';
 
 export default function HomeScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { width, height, fontScale } = useWindowDimensions();
-  const { hasProfile } = useProfile();
+  const { hasProfile, profile } = useProfile();
   const { setFilters } = useDiscovery();
+  const { state: ownTrips } = useOwnTrips();
+  const { state: messaging } = useMessaging();
+  const latestListing = selectLatestListing(
+    DEMO_PROPOSALS,
+    ownTrips.trips,
+    profile.group.id,
+    todayDate(),
+    messaging.blockedGroupIds,
+  );
   const [demoOpen, setDemoOpen] = useState(false);
   const [canvasHeight, setCanvasHeight] = useState(height);
   const [mainHeight, setMainHeight] = useState(0);
+  const viewportKey = `${width}:${height}:${fontScale}`;
+  const [fittedLayout, setFittedLayout] = useState({ viewportKey: '', level: 0 });
+  const fitLevel =
+    fittedLayout.viewportKey === viewportKey ? fittedLayout.level : 0;
+  const forceMinimal = fitLevel > 0;
   const landscape = width >= 600 && canvasHeight < 500;
   const density =
+    forceMinimal ||
+    (mainHeight > 0 &&
+      (mainHeight < 420 || (fontScale > 1.2 && mainHeight < 640)))
+      ? 'minimal'
+      : mainHeight > 0 && mainHeight < 580
+        ? 'compact'
+        : 'regular';
+  const minimal = density === 'minimal';
+  // Keep the CTA sizes from before the latest-listing section was added.
+  const actionDensity =
     mainHeight > 0 &&
     (mainHeight < 370 || (fontScale > 1.2 && mainHeight < 440))
       ? 'minimal'
       : mainHeight > 0 && mainHeight < 460
         ? 'compact'
         : 'regular';
-  const minimal = density === 'minimal';
   const shortScreen = mainHeight > 0 && mainHeight < 270;
-  const contentGap = minimal ? 8 : density === 'compact' ? 16 : 24;
-  const showIllustrations = !landscape && !(minimal && fontScale > 1.2);
+  const contentGap = minimal ? 4 : density === 'compact' ? 12 : 16;
+  const showIllustrations =
+    !landscape && !(actionDensity === 'minimal' && fontScale > 1.2);
   const showDescriptions = !shortScreen;
+  const showIntroduction =
+    !landscape && fitLevel < 2 && !(mainHeight > 0 && mainHeight < 230);
+  const compactListing = forceMinimal || (mainHeight > 0 && mainHeight < 600);
   const footerHeight = Math.min(width / 3, 180, Math.max(68, canvasHeight * 0.19));
   const discover = () => {
     setFilters({ ...INITIAL_FILTERS });
@@ -96,6 +129,9 @@ export default function HomeScreen() {
         >
           <HomeHeader
             onOpenDemo={() => setDemoOpen(true)}
+            onCompleteProfile={
+              !showIntroduction && !hasProfile ? completeProfile : undefined
+            }
           />
           <View
             onLayout={(event) => setMainHeight(event.nativeEvent.layout.height)}
@@ -109,6 +145,23 @@ export default function HomeScreen() {
           >
             <View
               testID="home-actions"
+              onLayout={(event) => {
+                if (
+                  mainHeight > 0 &&
+                  event.nativeEvent.layout.height > mainHeight - 16
+                ) {
+                  setFittedLayout((current) => {
+                    const level =
+                      current.viewportKey === viewportKey
+                        ? Math.min(2, current.level + 1)
+                        : 1;
+                    return current.viewportKey === viewportKey &&
+                      current.level === level
+                      ? current
+                      : { viewportKey, level };
+                  });
+                }
+              }}
               style={[
                 styles.content,
                 {
@@ -119,18 +172,9 @@ export default function HomeScreen() {
                 },
               ]}
             >
-              <View
-                style={[
-                  styles.introduction,
-                  landscape
-                    ? { width: 148, transform: [{ translateY: -Spacing.three }] }
-                    : undefined,
-                ]}
-              >
-                <View style={{ gap: 8 }}>
-                  {hasProfile ? (
-                    introduction
-                  ) : (
+              {showIntroduction ? (
+                <View style={styles.introduction}>
+                  {hasProfile ? introduction : (
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel="Uzupełnij profil"
@@ -141,19 +185,20 @@ export default function HomeScreen() {
                     </Pressable>
                   )}
                 </View>
-              </View>
+              ) : null}
               <View
                 style={{
                   gap: minimal ? 8 : 12,
-                  transform: [{ translateY: -Spacing.three }],
-                  ...(landscape ? { flex: 1, flexDirection: 'row' } : {}),
+                  marginVertical: !landscape && fitLevel < 2 ? 8 : 0,
+                  ...(landscape ? { flexDirection: 'row' } : {}),
+                  ...(landscape ? { flex: 2 } : {}),
                 }}
               >
                 <HomeAction
                   label="Znajdź ekipę"
                   description="Poznaj podróżników z podobnymi planami."
                   illustration={require('@/assets/images/home/find-crew.png')}
-                  density={density}
+                  density={actionDensity}
                   showIllustration={showIllustrations}
                   showDescription={showDescriptions}
                   onPress={discover}
@@ -163,7 +208,7 @@ export default function HomeScreen() {
                   label="Dodaj wyjazd"
                   description="Zaplanuj wyjazd i znajdź towarzystwo."
                   illustration={require('@/assets/images/home/plan-trip.png')}
-                  density={density}
+                  density={actionDensity}
                   showIllustration={showIllustrations}
                   showDescription={showDescriptions}
                   variant="secondary"
@@ -171,6 +216,28 @@ export default function HomeScreen() {
                   style={landscape ? { flex: 1 } : undefined}
                 />
               </View>
+              {latestListing ? (
+                <View
+                  testID="home-latest-section"
+                  style={{ gap: minimal ? 4 : 6, ...(landscape ? { flex: 1 } : {}) }}
+                >
+                  {mainHeight === 0 || mainHeight >= 120 ? (
+                    <AppText variant="label" accessibilityRole="header">
+                      Najnowsze ogłoszenie
+                    </AppText>
+                  ) : null}
+                  <HomeLatestListing
+                    trip={latestListing.trip}
+                    compact={compactListing}
+                    onPress={() =>
+                      router.push({
+                        pathname: latestListing.own ? '/trips/[id]' : '/trip/[id]',
+                        params: { id: latestListing.trip.id },
+                      })
+                    }
+                  />
+                </View>
+              ) : null}
             </View>
           </View>
           <View
@@ -193,7 +260,13 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, minHeight: 0 },
   canvas: { flex: 1, minHeight: 0 },
-  main: { flex: 1, minHeight: 0, justifyContent: 'center', alignItems: 'center' },
+  main: {
+    flex: 1,
+    minHeight: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
   content: { width: '100%' },
-  introduction: { gap: 4, transform: [{ translateY: -48 }] },
+  introduction: { gap: 4 },
 });

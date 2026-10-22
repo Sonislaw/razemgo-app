@@ -205,6 +205,7 @@ export function tripFromForm(
   id: string,
   groupId: string,
   status: TripStatus,
+  publishedAt?: string,
 ): OwnedTrip {
   const location = findTripLocation(form.locationId);
   const campgroundName =
@@ -214,6 +215,7 @@ export function tripFromForm(
   const base = {
     id,
     groupId,
+    ...(publishedAt ? { publishedAt } : {}),
     startDate: form.startDate,
     endDate: form.endDate,
     description: form.description.trim(),
@@ -241,7 +243,13 @@ export function tripFromForm(
 export function createOwnTripsState(trips: OwnedTrip[]): OwnTripsState {
   return {
     trips: trips.map((trip) =>
-      tripFromForm(toTripForm(trip), trip.id, trip.groupId, trip.status),
+      tripFromForm(
+        toTripForm(trip),
+        trip.id,
+        trip.groupId,
+        trip.status,
+        trip.publishedAt,
+      ),
     ),
     nextSequence: 1,
     revision: 0,
@@ -306,12 +314,14 @@ export type OwnTripsAction =
       groupId: string;
       draft: boolean;
       today: string;
+      publishedAt?: string;
     }
   | {
       type: 'status';
       id: string;
       status: 'published' | 'paused' | 'completed' | 'cancelled';
       today: string;
+      publishedAt?: string;
     }
   | { type: 'duplicate'; id: string }
   | { type: 'delete'; id: string }
@@ -347,6 +357,10 @@ export function ownTripsReducer(
       existing?.id ?? `local-trip-${state.nextSequence}`,
       action.groupId,
       status,
+      existing?.publishedAt ??
+        (status === 'published'
+          ? action.publishedAt ?? action.today + 'T00:00:00.000Z'
+          : undefined),
     );
     return {
       ...state,
@@ -406,6 +420,12 @@ export function ownTripsReducer(
             status: action.status,
             visibility:
               action.status === 'published' ? 'public' : item.visibility,
+            ...(action.status === 'published' && !item.publishedAt
+              ? {
+                  publishedAt:
+                    action.publishedAt ?? action.today + 'T00:00:00.000Z',
+                }
+              : {}),
           }
         : item,
     ),

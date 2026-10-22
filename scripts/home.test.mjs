@@ -10,8 +10,9 @@ import {
   createEmptyProfile,
   validateProfile,
 } from '../src/features/profile/profile-data.ts';
-import { selectNextTrip } from '../src/features/trips/own-trips-state.ts';
+import { createOwnTripsState, newTripForm, ownTripsReducer, selectNextTrip, toTripForm } from '../src/features/trips/own-trips-state.ts';
 import { selectHomeRecommendations } from '../src/features/discovery/filter-trips.ts';
+import { selectLatestListing } from '../src/features/home/latest-listing.ts';
 
 const today = '2026-10-18';
 const profile = {
@@ -29,6 +30,64 @@ const trips = MY_TRIPS.map((trip) => ({
   travelModes: [...MY_GROUP.travelModes],
   matching: { groupKinds: ['family'], childAgeBands: ['4–6', '7–9'] },
 }));
+
+test('latest listing follows publication time rather than travel dates or input order', () => {
+  const before = JSON.stringify(DEMO_PROPOSALS);
+  for (const proposals of [DEMO_PROPOSALS, [...DEMO_PROPOSALS].reverse()]) {
+    const latest = selectLatestListing(proposals, trips, MY_GROUP.id, '2026-10-22');
+    assert.equal(latest.trip.id, 'demo-bieszczady');
+    assert.equal(latest.own, false);
+  }
+  assert.equal(JSON.stringify(DEMO_PROPOSALS), before);
+});
+
+test('only active public listings appear, including newly published own trips, and blocked groups are skipped', () => {
+  const own = { ...trips[0], id: 'new-own', publishedAt: '2026-10-22T10:30:00.000Z' };
+  assert.deepEqual(selectLatestListing(DEMO_PROPOSALS, [own], MY_GROUP.id, today), { trip: own, own: true });
+  for (const values of [
+    { status: 'draft' }, { status: 'paused' }, { status: 'cancelled' },
+    { status: 'completed' }, { visibility: 'private' },
+    { startDate: '2025-01-01', endDate: '2025-01-05' },
+  ]) {
+    assert.equal(selectLatestListing(DEMO_PROPOSALS, [{ ...own, ...values }], MY_GROUP.id, today).trip.id, 'demo-bieszczady');
+  }
+  assert.equal(selectLatestListing(DEMO_PROPOSALS, [], MY_GROUP.id, today, ['demo-6']).trip.id, 'demo-friends');
+  assert.equal(selectLatestListing([], [], MY_GROUP.id, today), undefined);
+  assert.equal(selectLatestListing(DEMO_PROPOSALS, trips, MY_GROUP.id, '2028-01-01'), undefined);
+});
+
+test('new publication is timestamped once; editing and resuming do not make an older listing look new', () => {
+  const publishedAt = '2026-10-22T10:30:00.000Z';
+  let state = createOwnTripsState(trips);
+  const form = { ...newTripForm(profile), ...toTripForm(trips[0]), description: 'Nowe ogłoszenie z prawdziwym czasem publikacji.' };
+  const save = (id, draft, values = form, timestamp = publishedAt) => {
+    state = ownTripsReducer(state, { type: 'save', id, draft, form: values, groupId: MY_GROUP.id, today: '2026-10-22', publishedAt: timestamp });
+    return state.trips.find(trip => trip.id === state.lastSavedId);
+  };
+  const draft = save(undefined, true);
+  assert.equal(draft.publishedAt, undefined);
+  const published = save(draft.id, false);
+  assert.equal(published.publishedAt, publishedAt);
+  assert.equal(save(published.id, false, form, '2026-10-22T12:00:00.000Z').publishedAt, publishedAt);
+  assert.equal(selectLatestListing(DEMO_PROPOSALS, state.trips, MY_GROUP.id, today).trip.id, published.id);
+  state = ownTripsReducer(state, { type: 'status', id: published.id, status: 'paused', today });
+  state = ownTripsReducer(state, { type: 'status', id: published.id, status: 'published', today, publishedAt: '2026-10-22T14:00:00.000Z' });
+  assert.equal(state.trips.find(trip => trip.id === published.id).publishedAt, publishedAt);
+  state = ownTripsReducer(state, { type: 'duplicate', id: published.id });
+  assert.equal(state.trips.at(-1).publishedAt, undefined);
+  state = ownTripsReducer(state, { type: 'delete', id: published.id });
+  assert.equal(selectLatestListing(DEMO_PROPOSALS, state.trips, MY_GROUP.id, today).trip.id, 'demo-bieszczady');
+});
+
+test('first publication of a private plan gets its public timestamp and cold state initialization preserves it', () => {
+  const values = { ...toTripForm(trips[0]), visibility: 'private' };
+  let state = ownTripsReducer(createOwnTripsState([]), { type: 'save', form: values, draft: false, groupId: MY_GROUP.id, today });
+  const id = state.lastSavedId;
+  assert.equal(state.trips[0].publishedAt, undefined);
+  state = ownTripsReducer(state, { type: 'status', id, status: 'published', today, publishedAt: '2026-10-22T15:00:00.000Z' });
+  assert.equal(state.trips[0].publishedAt, '2026-10-22T15:00:00.000Z');
+  assert.equal(createOwnTripsState(state.trips).trips[0].publishedAt, state.trips[0].publishedAt);
+});
 
 test('nearest scheduled trip is selected by date without mutating order or including drafts, cancellations or ended plans', () => {
   const candidates = [...trips].reverse();

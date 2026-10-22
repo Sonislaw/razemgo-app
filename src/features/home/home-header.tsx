@@ -12,8 +12,10 @@ import {
 
 export function HomeHeader({
   onOpenDemo,
+  onCompleteProfile,
 }: {
   onOpenDemo: () => void;
+  onCompleteProfile?: () => void;
 }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -70,6 +72,24 @@ export function HomeHeader({
               />
             </View>
           </View>
+          {onCompleteProfile ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Uzupełnij profil"
+              onPress={onCompleteProfile}
+              style={{
+                minHeight: 48,
+                paddingHorizontal: 12,
+                borderRadius: 24,
+                justifyContent: 'center',
+                backgroundColor: `${theme.backgroundElement}CC`,
+              }}
+            >
+              <AppText variant="label" color="primaryStrong">
+                Uzupełnij profil →
+              </AppText>
+            </Pressable>
+          ) : null}
           {IS_DEMO_MODE ? (
             <Pressable
               accessibilityRole="button"

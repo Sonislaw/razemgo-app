@@ -6,7 +6,10 @@ import {
   MY_TRIPS,
 } from '../src/data/mocks/travel.ts';
 import { DEMO_MAILBOX } from '../src/data/mocks/messaging.ts';
-import { createMessagingState } from '../src/features/messaging/messaging-state.ts';
+import {
+  createMessagingState,
+  messagingReducer,
+} from '../src/features/messaging/messaging-state.ts';
 import {
   markNotificationsRead,
   notificationQuantity,
@@ -28,7 +31,7 @@ const select = (
   proposals = DEMO_PROPOSALS,
 ) => selectHomeNotifications(proposals, own, mailbox, readKeys, today);
 
-test('two summaries use actual proposals for a published plan and received pending invitations', () => {
+test('summaries use actual proposals for a published plan and received pending invitations', () => {
   const before = JSON.stringify({ trips, DEMO_PROPOSALS, DEMO_MAILBOX });
   const result = select();
   assert.equal(result.suggestions.trip.id, 'demo-my-coast');
@@ -158,6 +161,9 @@ test('Polish notification counts use the correct singular and plural forms', () 
   assert.equal(notificationQuantity(1, 'invitations'), '1 zaproszenie');
   assert.equal(notificationQuantity(22, 'invitations'), '22 zaproszenia');
   assert.equal(notificationQuantity(5, 'invitations'), '5 zaproszeń');
+  assert.equal(notificationQuantity(1, 'messages'), '1 wiadomość');
+  assert.equal(notificationQuantity(2, 'messages'), '2 wiadomości');
+  assert.equal(notificationQuantity(12, 'messages'), '12 wiadomości');
 });
 
 test('notification counts work when Intl.PluralRules is unavailable in the mobile runtime', () => {
@@ -173,7 +179,101 @@ test('notification counts work when Intl.PluralRules is unavailable in the mobil
     assert.equal(notificationQuantity(101, 'invitations'), '101 zaproszeń');
     assert.equal(notificationQuantity(112, 'invitations'), '112 zaproszeń');
     assert.equal(notificationQuantity(123, 'invitations'), '123 zaproszenia');
+    assert.equal(notificationQuantity(1, 'messages'), '1 wiadomość');
+    assert.equal(notificationQuantity(22, 'messages'), '22 wiadomości');
   } finally {
     Intl.PluralRules = original;
   }
+});
+
+test('unread messages point to the conversation with the newest incoming message without mutating the mailbox', () => {
+  const mailbox = createMessagingState(DEMO_MAILBOX, 'conversations');
+  const before = JSON.stringify(mailbox);
+  const result = select([], trips, mailbox);
+  assert.equal(result.messages.count, 3);
+  assert.equal(result.messages.conversationCount, 2);
+  assert.equal(result.messages.conversation.id, 'conversation-in-coast');
+  assert.equal(result.messages.unread, true);
+  assert.equal(result.unreadCount, 2);
+  assert.equal(JSON.stringify(mailbox), before);
+  assert.equal(
+    select([], trips, { ...mailbox, messages: [...mailbox.messages].reverse() })
+      .messages.conversation.id,
+    'conversation-in-coast',
+  );
+});
+
+test('message notifications follow actual chat read state and reappear for a new incoming message', () => {
+  let mailbox = createMessagingState(DEMO_MAILBOX, 'conversations');
+  const initial = select([], trips, mailbox);
+  const readKeys = markNotificationsRead([], initial.messages.keys);
+  assert.equal(
+    select(readKeys, trips, mailbox).messages.unread,
+    true,
+    'Opening a notification cannot acknowledge unread chats',
+  );
+  mailbox = messagingReducer(mailbox, {
+    type: 'read',
+    conversationId: 'conversation-in-coast',
+  });
+  const remaining = select(readKeys, trips, mailbox);
+  assert.equal(remaining.messages.count, 1);
+  assert.equal(
+    remaining.messages.conversation.id,
+    'conversation-out-mountains',
+  );
+  mailbox = messagingReducer(mailbox, {
+    type: 'read',
+    conversationId: remaining.messages.conversation.id,
+  });
+  assert.equal(select(readKeys, trips, mailbox).messages.unread, false);
+  assert.equal(
+    select(readKeys, trips, mailbox).messages.conversation,
+    undefined,
+  );
+  mailbox = messagingReducer(mailbox, {
+    type: 'receive-demo',
+    conversationId: 'conversation-in-lake',
+  });
+  assert.equal(select(readKeys, trips, mailbox).messages.unread, true);
+  assert.equal(select(readKeys, trips, mailbox).messages.count, 1);
+  assert.equal(
+    select(readKeys, trips, mailbox).messages.conversation.id,
+    'conversation-in-lake',
+  );
+});
+
+test('message notifications ignore blocked or unauthorized chats, outgoing, failed and already read messages', () => {
+  const mailbox = createMessagingState(DEMO_MAILBOX, 'conversations');
+  const ignored = mailbox.messages.map((message) => ({
+    ...message,
+    read: true,
+  }));
+  for (const values of [
+    { sender: 'self' },
+    { status: 'failed' },
+    { conversationId: 'nonexistent' },
+  ]) {
+    const state = {
+      ...mailbox,
+      messages: [...ignored, { ...mailbox.messages[2], ...values }],
+    };
+    assert.equal(select([], trips, state).messages.count, 0);
+  }
+  const blocked = messagingReducer(mailbox, {
+    type: 'block',
+    groupId: 'demo-1',
+  });
+  assert.equal(select([], trips, blocked).messages.count, 1);
+  assert.equal(
+    select([], trips, { ...mailbox, invitations: [] }).messages.count,
+    0,
+  );
+  for (const loadStatus of ['loading', 'error']) {
+    assert.equal(
+      select([], trips, { ...mailbox, loadStatus }).messages.count,
+      0,
+    );
+  }
+  assert.equal(select().messages.unread, false);
 });

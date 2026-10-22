@@ -14,9 +14,11 @@ import {
 export function HomeHeader({
   onOpenDemo,
   onCompleteProfile,
+  dense = false,
 }: {
   onOpenDemo: () => void;
   onCompleteProfile?: () => void;
+  dense?: boolean;
 }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -28,12 +30,15 @@ export function HomeHeader({
     <View
       style={[
         styles.header,
-        { height },
+        {
+          height: dense ? 64 : height,
+          marginBottom: dense ? 8 : Spacing.three,
+        },
       ]}
     >
       <ScenicHeaderBackground
         testID="home-header-divider"
-        style={{ opacity: 1 }}
+        style={{ opacity: 1, ...(dense ? { height: 64 + Spacing.three } : {}) }}
       />
       <View
         style={{
@@ -98,12 +103,7 @@ export function HomeHeader({
               onPress={onOpenDemo}
               style={styles.demoButton}
             >
-              <View
-                style={[
-                  styles.demoBadge,
-                  { backgroundColor: theme.hero },
-                ]}
-              >
+              <View style={[styles.demoBadge, { backgroundColor: theme.hero }]}>
                 <AppText variant="caption">Demo</AppText>
               </View>
             </Pressable>

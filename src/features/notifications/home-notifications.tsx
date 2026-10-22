@@ -142,7 +142,7 @@ export function HomeNotifications() {
       (anchor?.x ?? 0) + (anchor?.width ?? 48) / 2 - left - 6,
     ),
   );
-  const { suggestions, invitations } = notifications;
+  const { suggestions, invitations, messages } = notifications;
   const suggestionDescription =
     suggestions.count && suggestions.trip
       ? `${notificationQuantity(suggestions.count, 'proposals')} do ogłoszenia „${getTripHeadline(suggestions.trip)}”`
@@ -155,6 +155,15 @@ export function HomeNotifications() {
       : invitations.count
         ? `${notificationQuantity(invitations.count, 'invitations')} — sprawdź, kto chce Cię poznać.`
         : 'Nie masz oczekujących zaproszeń do kontaktu.';
+  const messageGroup = DEMO_PROPOSALS.find(
+    ({ group }) => group.id === messages.conversation?.groupId,
+  )?.group;
+  const messageDescription =
+    mailbox.loadStatus !== 'ready'
+      ? 'Sprawdź rozmowy w Wiadomościach.'
+      : messages.count
+        ? `Nieodczytane: ${notificationQuantity(messages.count, 'messages')}.${messageGroup ? ' Rozmowa z ekipą „' + messageGroup.name + '”.' : ''}`
+        : 'Nie masz nieodczytanych wiadomości.';
 
   return (
     <>
@@ -293,6 +302,23 @@ export function HomeNotifications() {
                     });
                     close();
                     router.navigate('/messages');
+                  }}
+                />
+                <NotificationRow
+                  id="messages"
+                  title="Nowe wiadomości"
+                  description={messageDescription}
+                  summary={messages}
+                  icon="campfire-chat"
+                  onPress={() => {
+                    dispatch({ type: 'view', view: 'conversations' });
+                    close();
+                    if (messages.conversation) {
+                      router.push({
+                        pathname: '/chat/[id]',
+                        params: { id: messages.conversation.id },
+                      });
+                    } else router.navigate('/messages');
                   }}
                 />
               </ScrollView>

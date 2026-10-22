@@ -2,6 +2,7 @@ import type { MessagingState } from '../../types/messaging';
 import type { OwnedTrip } from '../../types/owned-trip';
 import type { TripProposal } from '../../types/travel';
 import { filterProposals } from '../discovery/filter-trips.ts';
+import { unreadCount } from '../messaging/messaging-state.ts';
 import {
   discoveryFiltersForTrip,
   isSearchingTrip,
@@ -82,16 +83,50 @@ export function selectHomeNotifications(
   });
   const suggestions = { ...summary(proposalKeys), trip: source?.trip };
   const invitations = summary(invitationKeys);
+  const unreadConversationIds = new Set(
+    mailbox.loadStatus === 'ready'
+      ? mailbox.conversations
+          .filter((conversation) => unreadCount(mailbox, conversation.id) > 0)
+          .map((conversation) => conversation.id)
+      : [],
+  );
+  const unreadMessages = mailbox.messages
+    .filter(
+      (message) =>
+        unreadConversationIds.has(message.conversationId) &&
+        message.sender === 'other' &&
+        !message.read &&
+        message.status === 'sent',
+    )
+    .sort(
+      (a, b) =>
+        (Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0) ||
+        a.id.localeCompare(b.id),
+    );
+  const messages = {
+    keys: unreadMessages.map((message) => `message:${message.id}`),
+    count: unreadMessages.length,
+    // Chat read state is authoritative, independently of notification clicks.
+    unread: unreadMessages.length > 0,
+    conversation: mailbox.conversations.find(
+      (conversation) => conversation.id === unreadMessages[0]?.conversationId,
+    ),
+    conversationCount: unreadConversationIds.size,
+  };
   return {
     suggestions,
     invitations,
-    unreadCount: Number(suggestions.unread) + Number(invitations.unread),
+    messages,
+    unreadCount:
+      Number(suggestions.unread) +
+      Number(invitations.unread) +
+      Number(messages.unread),
   };
 }
 
 export function notificationQuantity(
   count: number,
-  kind: 'proposals' | 'invitations',
+  kind: 'proposals' | 'invitations' | 'messages',
 ): string {
   // Hermes may not provide Intl.PluralRules. Counts are non-negative integers.
   const lastDigit = count % 10;
@@ -111,10 +146,16 @@ export function notificationQuantity(
           few: 'propozycje',
           many: 'propozycji',
         }
-      : {
-          one: 'zaproszenie',
-          few: 'zaproszenia',
-          many: 'zaproszeń',
-        };
+      : kind === 'invitations'
+        ? {
+            one: 'zaproszenie',
+            few: 'zaproszenia',
+            many: 'zaproszeń',
+          }
+        : {
+            one: 'wiadomość',
+            few: 'wiadomości',
+            many: 'wiadomości',
+          };
   return `${count} ${words[plural]}`;
 }

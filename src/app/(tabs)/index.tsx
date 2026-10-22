@@ -3,6 +3,7 @@ import { useState } from 'react';
 import {
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
@@ -11,6 +12,7 @@ import { SafeAreaView } from 'react-native-screens/experimental';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/ui/primitives';
 import { ScenicFooter } from '@/components/ui/scenic-footer';
+import { getScenicHeaderLayout } from '@/components/ui/scenic-header';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useProfile } from '@/features/profile/profile-context';
@@ -43,17 +45,27 @@ export default function HomeScreen() {
   );
   const [demoOpen, setDemoOpen] = useState(false);
   const [canvasHeight, setCanvasHeight] = useState(height);
-  const [mainHeight, setMainHeight] = useState(0);
-  const viewportKey = `${width}:${height}:${fontScale}`;
-  const [fittedLayout, setFittedLayout] = useState({ viewportKey: '', level: 0 });
-  const fitLevel =
-    fittedLayout.viewportKey === viewportKey ? fittedLayout.level : 0;
-  const forceMinimal = fitLevel > 0;
+  const [contentHeight, setContentHeight] = useState(0);
+  const { height: scenicHeaderHeight } = getScenicHeaderLayout(width);
+  const webTopInset = Platform.OS === 'web' ? insets.top : 0;
+  const preferredFooterHeight = Math.min(
+    width / 3,
+    180,
+    Math.max(68, canvasHeight * 0.19),
+  );
+  // Keep CTA sizing independent of any space recovered from the decorations.
+  const mainHeight = Math.max(
+    0,
+    canvasHeight -
+      Spacing.three -
+      webTopInset -
+      scenicHeaderHeight -
+      Spacing.three -
+      preferredFooterHeight,
+  );
   const landscape = width >= 600 && canvasHeight < 500;
   const density =
-    forceMinimal ||
-    (mainHeight > 0 &&
-      (mainHeight < 420 || (fontScale > 1.2 && mainHeight < 640)))
+    mainHeight < 420 || (fontScale > 1.2 && mainHeight < 640)
       ? 'minimal'
       : mainHeight > 0 && mainHeight < 580
         ? 'compact'
@@ -72,10 +84,24 @@ export default function HomeScreen() {
   const showIllustrations =
     !landscape && !(actionDensity === 'minimal' && fontScale > 1.2);
   const showDescriptions = !shortScreen;
-  const showIntroduction =
-    !landscape && fitLevel < 2 && !(mainHeight > 0 && mainHeight < 230);
-  const compactListing = forceMinimal || (mainHeight > 0 && mainHeight < 600);
-  const footerHeight = Math.min(width / 3, 180, Math.max(68, canvasHeight * 0.19));
+  const compactListing = mainHeight < 600;
+  const compactChrome = mainHeight < 320 || fontScale > 1.2 || landscape;
+  const topPadding = (compactChrome ? 8 : Spacing.three) + webTopInset;
+  const mainPadding = compactChrome ? 4 : 8;
+  const headerHeight = compactChrome ? 64 : scenicHeaderHeight;
+  const headerGap = compactChrome ? 8 : Spacing.three;
+  const footerHeight = Math.min(
+    preferredFooterHeight,
+    Math.max(
+      64,
+      canvasHeight -
+        topPadding -
+        headerHeight -
+        headerGap -
+        contentHeight -
+        mainPadding * 2,
+    ),
+  );
   const discover = () => {
     setFilters({ ...INITIAL_FILTERS });
     router.navigate('/explore');
@@ -103,7 +129,7 @@ export default function HomeScreen() {
       >
         Znajdź towarzystwo na kolejną przygodę.
       </AppText>
-      {!hasProfile ? (
+      {!hasProfile && !compactChrome ? (
         <AppText variant="label" color="textSecondary">
           Uzupełnij profil ekipy →
         </AppText>
@@ -122,46 +148,36 @@ export default function HomeScreen() {
           style={[
             styles.canvas,
             {
-              paddingTop:
-                Spacing.three + (Platform.OS === 'web' ? insets.top : 0),
+              paddingTop: topPadding,
             },
           ]}
         >
           <HomeHeader
             onOpenDemo={() => setDemoOpen(true)}
+            dense={compactChrome}
             onCompleteProfile={
-              !showIntroduction && !hasProfile ? completeProfile : undefined
+              compactChrome && !hasProfile ? completeProfile : undefined
             }
           />
-          <View
-            onLayout={(event) => setMainHeight(event.nativeEvent.layout.height)}
-            style={[
-              styles.main,
+          <ScrollView
+            testID="home-main"
+            style={styles.main}
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[
+              styles.mainContent,
               {
                 paddingLeft: Math.max(Spacing.four, insets.left),
                 paddingRight: Math.max(Spacing.four, insets.right),
+                paddingVertical: mainPadding,
               },
             ]}
           >
             <View
               testID="home-actions"
-              onLayout={(event) => {
-                if (
-                  mainHeight > 0 &&
-                  event.nativeEvent.layout.height > mainHeight - 16
-                ) {
-                  setFittedLayout((current) => {
-                    const level =
-                      current.viewportKey === viewportKey
-                        ? Math.min(2, current.level + 1)
-                        : 1;
-                    return current.viewportKey === viewportKey &&
-                      current.level === level
-                      ? current
-                      : { viewportKey, level };
-                  });
-                }
-              }}
+              onLayout={(event) =>
+                setContentHeight(event.nativeEvent.layout.height)
+              }
               style={[
                 styles.content,
                 {
@@ -172,24 +188,29 @@ export default function HomeScreen() {
                 },
               ]}
             >
-              {showIntroduction ? (
-                <View style={styles.introduction}>
-                  {hasProfile ? introduction : (
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel="Uzupełnij profil"
-                      onPress={completeProfile}
-                      style={{ gap: 8, minHeight: 48, justifyContent: 'center' }}
-                    >
-                      {introduction}
-                    </Pressable>
-                  )}
-                </View>
-              ) : null}
+              <View
+                style={[
+                  styles.introduction,
+                  landscape ? { width: 148 } : undefined,
+                ]}
+              >
+                {hasProfile || compactChrome ? (
+                  introduction
+                ) : (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Uzupełnij profil"
+                    onPress={completeProfile}
+                    style={{ gap: 8, minHeight: 48, justifyContent: 'center' }}
+                  >
+                    {introduction}
+                  </Pressable>
+                )}
+              </View>
               <View
                 style={{
                   gap: minimal ? 8 : 12,
-                  marginVertical: !landscape && fitLevel < 2 ? 8 : 0,
+                  marginVertical: !landscape ? 8 : 0,
                   ...(landscape ? { flexDirection: 'row' } : {}),
                   ...(landscape ? { flex: 2 } : {}),
                 }}
@@ -219,7 +240,10 @@ export default function HomeScreen() {
               {latestListing ? (
                 <View
                   testID="home-latest-section"
-                  style={{ gap: minimal ? 4 : 6, ...(landscape ? { flex: 1 } : {}) }}
+                  style={{
+                    gap: minimal ? 4 : 6,
+                    ...(landscape ? { flex: 1 } : {}),
+                  }}
                 >
                   {mainHeight === 0 || mainHeight >= 120 ? (
                     <AppText variant="label" accessibilityRole="header">
@@ -231,7 +255,9 @@ export default function HomeScreen() {
                     compact={compactListing}
                     onPress={() =>
                       router.push({
-                        pathname: latestListing.own ? '/trips/[id]' : '/trip/[id]',
+                        pathname: latestListing.own
+                          ? '/trips/[id]'
+                          : '/trip/[id]',
                         params: { id: latestListing.trip.id },
                       })
                     }
@@ -239,7 +265,7 @@ export default function HomeScreen() {
                 </View>
               ) : null}
             </View>
-          </View>
+          </ScrollView>
           <View
             style={{
               height: footerHeight,
@@ -252,7 +278,9 @@ export default function HomeScreen() {
           </View>
         </View>
       </SafeAreaView>
-      {demoOpen ? <HomeDemoControls onClose={() => setDemoOpen(false)} /> : null}
+      {demoOpen ? (
+        <HomeDemoControls onClose={() => setDemoOpen(false)} />
+      ) : null}
     </>
   );
 }
@@ -260,12 +288,11 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, minHeight: 0 },
   canvas: { flex: 1, minHeight: 0 },
-  main: {
-    flex: 1,
-    minHeight: 0,
+  main: { flex: 1, minHeight: 0 },
+  mainContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 8,
   },
   content: { width: '100%' },
   introduction: { gap: 4 },

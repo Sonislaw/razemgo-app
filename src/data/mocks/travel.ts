@@ -125,6 +125,7 @@ export const DEMO_TRIPS: TripPlan[] = [
       region: 'Pomorze',
       locationId: 'pl-locality:4259',
     },
+    campgroundName: 'Pod Wydmami',
     startDate: '2027-05-22',
     endDate: '2027-05-25',
     description:
@@ -144,6 +145,7 @@ export const DEMO_TRIPS: TripPlan[] = [
       region: 'Mazury',
       locationId: 'pl-locality:21411',
     },
+    campgroundName: 'Mazurska Przystań',
     startDate: '2027-06-04',
     endDate: '2027-06-07',
     description:

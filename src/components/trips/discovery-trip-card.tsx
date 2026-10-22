@@ -31,6 +31,8 @@ export function DiscoveryTripCard({
   const ages = facts.matchingAgeBands.length
     ? facts.matchingAgeBands
     : facts.ageBands;
+  const campgroundName =
+    trip.mode === 'planned' ? trip.campgroundName?.trim() : undefined;
   return (
     <CompactTripCard>
       <View style={styles.topRow}>
@@ -55,10 +57,17 @@ export function DiscoveryTripCard({
       <TripCardHeading title={getTripHeadline(trip)} landscape={trip.landscape} />
       <View style={layout.row}>
         <TripPlanningIcon kind={trip.mode} size={22} framed={false} />
-        <AppText variant="label" color="textSecondary" style={styles.flex}>
-          {getTripLocation(trip)}
-          {trip.mode === 'flexible' ? ' · cel do ustalenia' : ''}
-        </AppText>
+        <View style={[styles.flex, styles.location]}>
+          <AppText variant="label" color="textSecondary">
+            {getTripLocation(trip)}
+            {trip.mode === 'flexible' ? ' · cel do ustalenia' : ''}
+          </AppText>
+          {campgroundName ? (
+            <AppText variant="caption" color="textSecondary">
+              Kemping: {campgroundName}
+            </AppText>
+          ) : null}
+        </View>
       </View>
       <View style={layout.row}>
         <TripPlanningIcon kind="dates" size={22} framed={false} />
@@ -102,6 +111,7 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   flex: { flex: 1 },
+  location: { gap: Spacing.one },
   shrink: { flexShrink: 1 },
   bold: { fontWeight: '700' },
   score: {

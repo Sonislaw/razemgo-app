@@ -5,6 +5,7 @@ import { AppText, layout } from '@/components/ui/primitives';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { HomeNotifications } from '@/features/notifications/home-notifications';
 import {
   getScenicHeaderLayout,
   ScenicHeaderBackground,
@@ -107,6 +108,7 @@ export function HomeHeader({
               </View>
             </Pressable>
           ) : null}
+          <HomeNotifications key={width} />
         </View>
       </View>
     </View>

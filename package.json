@@ -48,6 +48,7 @@
     "test:trips": "node --test scripts/trips.test.mjs",
     "test:locations": "node --test scripts/locations.test.mjs",
     "test:home": "node --test scripts/home.test.mjs",
+    "test:notifications": "node --test scripts/notifications.test.mjs",
     "test:animals": "node --test scripts/animals.test.mjs"
   },
   "private": true

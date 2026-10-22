@@ -13,8 +13,6 @@ import {
 import { Icon } from '@/components/ui/icon';
 import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import { IS_DEMO_MODE } from '@/constants/app';
-import { Radius } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { useProfile } from '@/features/profile/profile-context';
 import { formatGroupSize } from '@/features/profile/profile-data';
 import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
@@ -22,9 +20,9 @@ import { ProfileSectionCard } from '@/features/profile/profile-ui';
 import type { ProfileSection } from '@/types/profile';
 import { AnimalBadge } from '@/features/animals/animal-portrait';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
+import { ProfileAvatar } from '@/features/profile/profile-avatar';
 
 export default function ProfileScreen() {
-  const theme = useTheme();
   const { profile, hasProfile } = useProfile();
   const { group, matching } = profile;
   const edit = (section?: ProfileSection) =>
@@ -67,9 +65,11 @@ export default function ProfileScreen() {
       <View style={styles.content}>
         <Card style={styles.identity}>
           <View style={layout.row}>
-            <View style={[styles.avatar, { backgroundColor: theme.hero }]}>
-              <Icon name="people" size={34} />
-            </View>
+            <ProfileAvatar
+              avatarId={group.avatarId}
+              size={64}
+              testID="profile-identity-avatar"
+            />
             <View style={styles.identityText}>
               <AppText variant="heading" style={styles.name}>
                 {group.name}
@@ -195,13 +195,6 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   content: { gap: 12 },
   identity: { padding: 14, gap: 14 },
-  avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: Radius.card,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   identityText: { flex: 1, gap: 4 },
   name: { fontSize: 18, lineHeight: 24 },
   demo: { gap: 8, paddingTop: 4 },

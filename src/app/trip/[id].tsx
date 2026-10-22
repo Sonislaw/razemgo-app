@@ -31,6 +31,7 @@ import { getPreferredChildAges } from '@/features/profile/profile-data';
 import { TripContactAction } from '@/features/messaging/trip-contact-action';
 import { AnimalInformation } from '@/features/animals/animal-ui';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
+import { GroupAvatar } from '@/features/profile/group-avatar';
 
 export function generateStaticParams() {
   return DEMO_PROPOSALS.map(({ trip }) => ({ id: trip.id }));
@@ -139,7 +140,17 @@ export default function TripDetailsScreen() {
         </AppText>
       </Card>
       <Card>
-        <SectionTitle title={group.name} />
+        <View style={layout.row}>
+          <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={56} />
+          <View style={[styles.flex, { gap: 4 }]}>
+            <AppText variant="caption" color="textSecondary">
+              Organizator wyjazdu
+            </AppText>
+            <AppText variant="heading" accessibilityRole="header">
+              {group.name}
+            </AppText>
+          </View>
+        </View>
         <AppText>
           {group.adultCount} {group.adultCount === 1 ? 'dorosły' : 'dorosłych'}
           {group.childAgeBands.length

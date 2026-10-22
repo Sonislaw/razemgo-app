@@ -48,6 +48,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
   {
     id: 'demo-1',
     name: 'Rodzina A',
+    avatarId: 'camp-bear',
     kind: 'family',
     adultCount: 2,
     childCount: 2,
@@ -59,6 +60,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
   {
     id: 'demo-2',
     name: 'Rodzina B',
+    avatarId: 'paddle-beaver',
     kind: 'family',
     adultCount: 2,
     childCount: 2,
@@ -70,6 +72,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
   {
     id: 'demo-3',
     name: 'Para C',
+    avatarId: 'road-wolf',
     kind: 'couple',
     adultCount: 2,
     childCount: 0,
@@ -81,6 +84,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
   {
     id: 'demo-4',
     name: 'Rodzina D',
+    avatarId: 'meadow-hedgehog',
     kind: 'family',
     adultCount: 1,
     childCount: 2,
@@ -92,6 +96,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
   {
     id: 'demo-5',
     name: 'Grupa E',
+    avatarId: 'campfire-squirrel',
     kind: 'friends',
     adultCount: 3,
     childCount: 0,
@@ -103,6 +108,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
   {
     id: 'demo-6',
     name: 'Rodzina F',
+    avatarId: 'summit-chamois',
     kind: 'family',
     adultCount: 2,
     childCount: 2,

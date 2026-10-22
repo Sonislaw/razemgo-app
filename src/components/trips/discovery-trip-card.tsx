@@ -15,6 +15,7 @@ import { CompactTripCard } from './compact-trip-card';
 import { TripCardHeading } from './trip-card-heading';
 import { TripPlanningIcon } from './trip-planning-icon';
 import { TripAnimalTag } from '@/features/animals/animal-ui';
+import { GroupAvatar } from '@/features/profile/group-avatar';
 
 interface DiscoveryTripCardProps extends TripProposal {
   facts: Pick<MatchFacts, 'ageBands' | 'matchingAgeBands'>;
@@ -75,23 +76,28 @@ export function DiscoveryTripCard({
           {formatTripDates(trip)}
         </AppText>
       </View>
-      <View style={styles.facts}>
-        <View style={[styles.fact, { backgroundColor: theme.muted }]}>
-          <Icon name="people" size={15} />
-          <AppText variant="caption" style={styles.shrink}>
-            {ages.length
-              ? 'Dzieci ' + ages.join(', ') + ' lat'
-              : group.childCount
-                ? 'Wiek dzieci niepodany'
-                : 'Bez dzieci'}
-          </AppText>
+      {ages.length > 0 || group.childCount > 0 ? (
+        <View style={styles.facts}>
+          <View style={[styles.fact, { backgroundColor: theme.muted }]}>
+            <Icon name="people" size={15} />
+            <AppText variant="caption" style={styles.shrink}>
+              {ages.length
+                ? 'Dzieci ' + ages.join(', ') + ' lat'
+                : 'Wiek dzieci niepodany'}
+            </AppText>
+          </View>
         </View>
+      ) : null}
+      {trip.animals.animals.length > 0 ? (
+        <TripAnimalTag animals={trip.animals} />
+      ) : null}
+      <View style={layout.row}>
+        <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={32} />
+        <AppText variant="caption" color="textSecondary" style={styles.flex}>
+          {group.name} · {group.adultCount}{' '}
+          {group.adultCount === 1 ? 'dorosły' : 'dorosłych'}
+        </AppText>
       </View>
-      <TripAnimalTag animals={trip.animals} />
-      <AppText variant="caption" color="textSecondary">
-        {group.name} · {group.adultCount}{' '}
-        {group.adultCount === 1 ? 'dorosły' : 'dorosłych'}
-      </AppText>
       <Button
         label="Zobacz wyjazd"
         icon="arrow"

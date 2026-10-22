@@ -28,6 +28,7 @@ import { ProfileSubpageHeader } from '@/features/profile/profile-ui';
 import type { ProfileSection } from '@/types/profile';
 import { useTheme } from '@/hooks/use-theme';
 import { GroupAnimalFields } from '@/features/animals/animal-fields';
+import { ProfileAvatarPicker } from '@/features/profile/profile-avatar-picker';
 
 const titles: Record<ProfileSection, string> = {
   crew: 'Moja ekipa',
@@ -77,6 +78,15 @@ export default function EditProfileScreen() {
       {show('crew') ? (
         <Card>
           <SectionTitle title="Moja ekipa" />
+          <ProfileAvatarPicker
+            value={draft.group.avatarId}
+            onChange={(avatarId) =>
+              setDraft((current) => ({
+                ...current,
+                group: { ...current.group, avatarId },
+              }))
+            }
+          />
           <ProfileTextField
             label="Nazwa ekipy"
             required

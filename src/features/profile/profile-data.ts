@@ -1,6 +1,10 @@
 import type { TravelerProfile } from '../../types/profile';
 import type { ChildAgeBand } from '../../types/travel';
 import {
+  DEFAULT_PROFILE_AVATAR_ID,
+  getProfileAvatar,
+} from './profile-avatar-data.ts';
+import {
   cloneAnimals,
   emptyAnimals,
   validateAnimals,
@@ -11,6 +15,7 @@ export function createEmptyProfile(): TravelerProfile {
     group: {
       id: 'demo-us',
       name: '',
+      avatarId: DEFAULT_PROFILE_AVATAR_ID,
       kind: 'family',
       adultCount: 2,
       childCount: 0,
@@ -38,6 +43,7 @@ export function cloneProfile(profile: TravelerProfile): TravelerProfile {
     group: {
       id: profile.group.id,
       name: profile.group.name,
+      avatarId: getProfileAvatar(profile.group.avatarId).id,
       kind: profile.group.kind,
       adultCount: profile.group.adultCount,
       childCount: profile.group.childCount,

@@ -9,6 +9,10 @@ import {
   formatGroupSize,
   getPreferredChildAges,
 } from '../src/features/profile/profile-data.ts';
+import {
+  DEFAULT_PROFILE_AVATAR_ID,
+  PROFILE_AVATARS,
+} from '../src/features/profile/profile-avatar-data.ts';
 
 const example = {
   group: MY_GROUP,
@@ -18,6 +22,30 @@ const example = {
     description: 'Spokojne wyjazdy.',
   },
 };
+
+test('avatar selection survives profile save and later edits without changing the original profile', () => {
+  for (const avatar of PROFILE_AVATARS) {
+    const draft = cloneProfile(example);
+    draft.group.avatarId = avatar.id;
+    const saved = normalizeProfile(draft);
+    assert.equal(saved.group.avatarId, avatar.id);
+    assert.deepEqual(validateProfile(saved), []);
+    const laterDraft = cloneProfile(saved);
+    laterDraft.group.avatarId = avatar.id === 'trail-fox' ? 'camp-bear' : 'trail-fox';
+    assert.equal(saved.group.avatarId, avatar.id);
+  }
+  assert.equal(example.group.avatarId, undefined);
+});
+
+test('new profiles and older or unknown avatar values have a usable default without mutating input', () => {
+  assert.equal(createEmptyProfile().group.avatarId, DEFAULT_PROFILE_AVATAR_ID);
+  for (const avatarId of [undefined, null, '', 'removed-avatar', '../other-image.png']) {
+    const legacy = { ...example, group: { ...example.group, avatarId } };
+    assert.equal(cloneProfile(legacy).group.avatarId, DEFAULT_PROFILE_AVATAR_ID);
+    assert.equal(normalizeProfile(legacy).group.avatarId, DEFAULT_PROFILE_AVATAR_ID);
+    assert.equal(legacy.group.avatarId, avatarId);
+  }
+});
 
 test('editing a draft does not mutate the current profile or mock arrays', () => {
   const before = JSON.stringify(example);

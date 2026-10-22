@@ -11,6 +11,7 @@ import {
   sharedNights,
 } from '@/features/discovery/filter-trips';
 import type { DateRange, TravelGroup, TripPlan } from '@/types/travel';
+import { GroupAvatar } from '@/features/profile/group-avatar';
 
 export interface TripCardProps {
   trip: TripPlan;
@@ -78,9 +79,7 @@ export function TripCard({
           </View>
         ) : null}
         <View style={[styles.group, { borderTopColor: theme.border }]}>
-          <View style={[styles.avatar, { backgroundColor: theme.muted }]}>
-            <Icon name="people" size={22} color={theme.positive} />
-          </View>
+          <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={40} />
           <View style={styles.flex}>
             <AppText variant="label">{group.name}</AppText>
             <AppText variant="caption" color="textSecondary">
@@ -108,13 +107,6 @@ const styles = StyleSheet.create({
     gap: 12,
     borderTopWidth: 1,
     paddingTop: 12,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: Radius.small,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   reason: {
     flexDirection: 'row',

@@ -38,6 +38,7 @@ import { GroupAvatar } from '@/features/messaging/messaging-ui';
 import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import { AnimalInformation } from '@/features/animals/animal-ui';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
+import { useProfile } from '@/features/profile/profile-context';
 
 export function generateStaticParams() {
   return DEMO_OWN_TRIPS.map((trip) => ({ id: trip.id }));
@@ -46,6 +47,7 @@ export function generateStaticParams() {
 export default function OwnTripDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { state } = useOwnTrips();
+  const { profile } = useProfile();
   const { state: messaging, dispatch: dispatchMessaging } = useMessaging();
   const { setFilters } = useDiscovery();
   const theme = useTheme();
@@ -136,6 +138,17 @@ export default function OwnTripDetailsScreen() {
               <AppText style={{ flex: 1 }}>{ownTripDates(trip)}</AppText>
             </View>
           </View>
+          <Card>
+            <View style={layout.row}>
+              <GroupAvatar groupId={trip.groupId} size={56} />
+              <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
+                <AppText variant="caption" color="textSecondary">
+                  Organizator wyjazdu
+                </AppText>
+                <AppText variant="heading">{profile.group.name}</AppText>
+              </View>
+            </View>
+          </Card>
           <Card style={{ gap: 12 }}>
             <AppText variant="heading" accessibilityRole="header">
               O wyjeździe

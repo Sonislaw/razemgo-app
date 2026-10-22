@@ -4,31 +4,7 @@ import { AppText } from '@/components/ui/primitives';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
 
-export function GroupAvatar({
-  groupId,
-  size = 48,
-}: {
-  groupId: string;
-  size?: number;
-}) {
-  const theme = useTheme();
-  const index = Number(groupId.replace('demo-', '')) || 1;
-  const backgrounds = [theme.hero, theme.muted, theme.positiveBackground];
-  return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2.6,
-        backgroundColor: backgrounds[(index - 1) % 3],
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Icon name="people" size={size * 0.48} />
-    </View>
-  );
-}
+export { GroupAvatar } from '@/features/profile/group-avatar';
 
 export function CountBadge({ count }: { count: number }) {
   const theme = useTheme();

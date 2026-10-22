@@ -1,0 +1,69 @@
+import { Image, type ImageProps } from 'expo-image';
+import { StyleSheet, View } from 'react-native';
+import { useTheme } from '@/hooks/use-theme';
+import type { ProfileAvatarId } from '@/types/avatar';
+import { getProfileAvatar } from './profile-avatar-data';
+
+const AVATAR_IMAGES = {
+  'trail-fox': require('@/assets/images/avatars/trail-fox.png'),
+  'camp-bear': require('@/assets/images/avatars/camp-bear.png'),
+  'star-owl': require('@/assets/images/avatars/star-owl.png'),
+  'paddle-beaver': require('@/assets/images/avatars/paddle-beaver.png'),
+  'summit-chamois': require('@/assets/images/avatars/summit-chamois.png'),
+  'meadow-hedgehog': require('@/assets/images/avatars/meadow-hedgehog.png'),
+  'road-wolf': require('@/assets/images/avatars/road-wolf.png'),
+  'cycling-hare': require('@/assets/images/avatars/cycling-hare.png'),
+  'campfire-squirrel': require('@/assets/images/avatars/campfire-squirrel.png'),
+  'happy-dog': require('@/assets/images/avatars/happy-dog.png'),
+} satisfies Record<ProfileAvatarId, ImageProps['source']>;
+
+export function ProfileAvatar({
+  avatarId,
+  size = 64,
+  decorative = false,
+  testID,
+}: {
+  avatarId?: ProfileAvatarId;
+  size?: number;
+  decorative?: boolean;
+  testID?: string;
+}) {
+  const theme = useTheme();
+  const avatar = getProfileAvatar(avatarId);
+  return (
+    <View
+      testID={testID}
+      accessible={!decorative}
+      accessibilityRole={decorative ? undefined : 'image'}
+      accessibilityLabel={decorative ? undefined : 'Awatar: ' + avatar.name}
+      accessibilityElementsHidden={decorative}
+      importantForAccessibility={decorative ? 'no-hide-descendants' : 'auto'}
+      style={[
+        styles.frame,
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: theme.hero,
+        },
+      ]}
+    >
+      <Image
+        source={AVATAR_IMAGES[avatar.id]}
+        contentFit="contain"
+        style={{ width: size * 0.84, height: size * 0.84 }}
+        accessible={false}
+        alt=""
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  frame: {
+    flexShrink: 0,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

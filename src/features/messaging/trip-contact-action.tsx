@@ -2,7 +2,7 @@ import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { TextInput, View } from 'react-native';
-import { AppText, Button } from '@/components/ui/primitives';
+import { AppText, Button, layout } from '@/components/ui/primitives';
 import { Fonts, Typography } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { TripProposal } from '@/types/travel';
@@ -12,6 +12,7 @@ import { MessagingSheet } from './messaging-ui';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import { isSearchingTrip, todayDate } from '@/features/trips/own-trips-state';
+import { GroupAvatar } from '@/features/profile/group-avatar';
 
 export function TripContactAction({ proposal }: { proposal: TripProposal }) {
   const { state, dispatch } = useMessaging();
@@ -87,7 +88,12 @@ export function TripContactAction({ proposal }: { proposal: TripProposal }) {
           title="Zaproś do kontaktu"
           onClose={() => setComposing(false)}
         >
-          <AppText variant="label">{group.name}</AppText>
+          <View style={layout.row}>
+            <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={40} />
+            <AppText variant="label" style={{ flex: 1 }}>
+              {group.name}
+            </AppText>
+          </View>
           <AppText variant="caption" color="primaryStrong">
             {getTripHeadline(trip)}
           </AppText>

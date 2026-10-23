@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Button } from '@/components/ui/primitives';
+import { BrandHeader } from '@/components/ui/brand-header';
 import { AuthField, AuthNotice, AuthScreen } from '@/features/auth/auth-ui';
 import { useAuth, getAuthRedirectUrl } from '@/features/auth/auth-context';
 import {
@@ -56,6 +57,7 @@ export default function SignUpScreen() {
   };
   return (
     <AuthScreen
+      header={<BrandHeader />}
       title="Dołącz do RazemGo"
       description="Załóż konto osoby dorosłej. W kolejnym kroku utworzysz profil swojej ekipy."
     >

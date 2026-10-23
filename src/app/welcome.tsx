@@ -1,11 +1,10 @@
 import { router } from 'expo-router';
-import { Image } from 'expo-image';
 import { View } from 'react-native';
+import { BrandHeader } from '@/components/ui/brand-header';
 import {
   AppText,
   Button,
   DemoBadge,
-  HeaderRow,
   Screen,
   layout,
 } from '@/components/ui/primitives';
@@ -15,18 +14,7 @@ import { useTheme } from '@/hooks/use-theme';
 export default function WelcomeScreen() {
   const theme = useTheme();
   return (
-    <Screen>
-      <HeaderRow style={{ paddingTop: 8 }}>
-        <Image
-          source={require('@/assets/images/zgrana-symbol.svg')}
-          style={{ width: 40, height: 40 }}
-          contentFit="contain"
-          accessible={false}
-        />
-        <AppText variant="heading" color="brand">
-          RazemGo
-        </AppText>
-      </HeaderRow>
+    <Screen header={<BrandHeader />}>
       <View
         style={{
           borderRadius: 28,

@@ -12,16 +12,23 @@ import { useTheme } from '@/hooks/use-theme';
 export function AuthScreen({
   title,
   description,
+  header,
   children,
 }: {
   title: string;
   description?: string;
+  header?: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <Screen>
-      <PageHeader title={title} />
+    <Screen header={header}>
+      {!header ? <PageHeader title={title} /> : null}
       <Card>
+        {header ? (
+          <AppText variant="heading" accessibilityRole="header">
+            {title}
+          </AppText>
+        ) : null}
         {description ? (
           <AppText color="textSecondary">{description}</AppText>
         ) : null}

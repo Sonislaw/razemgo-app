@@ -1,6 +1,6 @@
 import { Pressable, useWindowDimensions, View } from 'react-native';
 import { AppText } from '@/components/ui/primitives';
-import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
+import { BrandHeader } from '@/components/ui/brand-header';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { useTheme } from '@/hooks/use-theme';
 import { HomeNotifications } from '@/features/notifications/home-notifications';
@@ -10,9 +10,7 @@ export function HomeHeader({ onOpenDemo }: { onOpenDemo: () => void }) {
   const { width } = useWindowDimensions();
 
   return (
-    <IllustratedPageHeader
-      title="RazemGO"
-      description={'Znajdź towarzystwo\nna kolejną przygodę.'}
+    <BrandHeader
       actions={
         <>
           {IS_DEMO_MODE ? (

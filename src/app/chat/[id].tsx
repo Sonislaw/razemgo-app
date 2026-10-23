@@ -10,6 +10,7 @@ import {
   TextInput,
   useWindowDimensions,
   View,
+  type FlatListInstance,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -65,7 +66,7 @@ export default function ChatScreen() {
   const [safetyOpen, setSafetyOpen] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);
   const [reported, setReported] = useState(false);
-  const list = useRef<FlatList<ChatMessage>>(null);
+  const list = useRef<FlatListInstance>(null);
   const conversation = state.conversations.find(
     (item) => item.id === id && isConversationAccepted(state, item),
   );
@@ -200,7 +201,7 @@ export default function ChatScreen() {
             </AppText>
           </View>
         ) : null}
-        <FlatList
+        <FlatList<ChatMessage>
           ref={list}
           style={{ flex: 1, minHeight: 0 }}
           data={messages}

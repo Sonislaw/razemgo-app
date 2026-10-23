@@ -11,6 +11,7 @@ import {
   layout,
 } from '@/components/ui/primitives';
 import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
+import { TripMapCard } from '@/components/trips/trip-map-card';
 import { Landscape } from '@/components/trips/landscape';
 import { DEMO_OWN_TRIPS } from '@/data/mocks/owned-trips';
 import { DEMO_GROUPS, DEMO_PROPOSALS } from '@/data/mocks/travel';
@@ -133,11 +134,15 @@ export default function OwnTripDetailsScreen() {
             {trip.mode === 'planned' && trip.campgroundName ? (
               <AppText>Kemping: {trip.campgroundName}</AppText>
             ) : null}
+            {trip.mode === 'planned' && trip.campgroundAddress ? (
+              <AppText>{trip.campgroundAddress}</AppText>
+            ) : null}
             <View style={layout.row}>
               <TripPlanningIcon kind="dates" size={24} framed={false} />
               <AppText style={{ flex: 1 }}>{ownTripDates(trip)}</AppText>
             </View>
           </View>
+          <TripMapCard trip={trip} />
           <Card>
             <View style={layout.row}>
               <GroupAvatar groupId={trip.groupId} size={56} />

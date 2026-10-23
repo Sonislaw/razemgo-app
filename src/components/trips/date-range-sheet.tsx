@@ -6,6 +6,7 @@ import {
   StyleSheet,
   useWindowDimensions,
   View,
+  type FlatListInstance,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SheetModal, SheetSurface } from '@/components/ui/sheet-modal';
@@ -51,7 +52,7 @@ export function DateRangeSheet({
   const today = todayDate();
   const insets = useSafeAreaInsets();
   const { fontScale } = useWindowDimensions();
-  const list = useRef<FlatList<string>>(null);
+  const list = useRef<FlatListInstance>(null);
   const [range, setRange] = useState<DateRange>(() => ({
     ...(initialRange ?? EMPTY_CALENDAR_RANGE),
   }));

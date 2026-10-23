@@ -5,6 +5,7 @@ import {
   TabSlot,
   type TabTriggerSlotProps,
 } from 'expo-router/ui';
+import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,13 +19,20 @@ import { notificationCount } from '@/features/messaging/messaging-state';
 import { CountBadge } from '@/features/messaging/messaging-ui';
 import { TabBarGradient } from '@/components/ui/tab-bar-gradient';
 
+// Router's slot ref still uses the legacy View type. Use Pressable's instance ref.
+type TabButtonProps = Omit<TabTriggerSlotProps, 'ref'> &
+  Pick<ComponentProps<typeof Pressable>, 'ref'> & {
+    icon: TabIconName;
+    count?: number;
+  };
+
 function TabButton({
   children,
   isFocused,
   icon,
   count = 0,
   ...props
-}: TabTriggerSlotProps & { icon: TabIconName; count?: number }) {
+}: TabButtonProps) {
   const theme = useTheme();
   return (
     <Pressable

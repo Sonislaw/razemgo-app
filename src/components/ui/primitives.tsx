@@ -131,6 +131,20 @@ export function DemoBadge() {
     </View>
   );
 }
+// Use inside Screen's padded column for media that reaches both window edges.
+export function ScreenFullWidth({ children }: { children: ReactNode }) {
+  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const leftPadding = Math.max(Spacing.four, insets.left);
+  const rightPadding = Math.max(Spacing.four, insets.right);
+  const paddedWidth = width - leftPadding - rightPadding;
+  const columnOffset = Math.max(0, (paddedWidth - MaxContentWidth) / 2);
+  return (
+    <View style={{ width, marginLeft: -(leftPadding + columnOffset) }}>
+      {children}
+    </View>
+  );
+}
 export interface PageHeaderProps {
   title: string;
   actions?: ReactNode;

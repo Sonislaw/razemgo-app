@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/primitives';
 import { Landscape } from '@/components/trips/landscape';
 import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
+import { TripMapCard } from '@/components/trips/trip-map-card';
 import { DEMO_PROPOSALS } from '@/data/mocks/travel';
 import { DEMO_COMPATIBILITY_SCORES } from '@/data/mocks/compatibility';
 import {
@@ -97,11 +98,15 @@ export default function TripDetailsScreen() {
         {trip.mode === 'planned' && trip.campgroundName ? (
           <AppText>Kemping: {trip.campgroundName}</AppText>
         ) : null}
+        {trip.mode === 'planned' && trip.campgroundAddress ? (
+          <AppText>{trip.campgroundAddress}</AppText>
+        ) : null}
         <View style={layout.row}>
           <TripPlanningIcon kind="dates" size={24} framed={false} />
           <AppText style={styles.flex}>{formatTripDates(trip)}</AppText>
         </View>
       </View>
+      <TripMapCard trip={trip} />
       <Card>
         <SectionTitle title="Pomysł na wspólny czas" />
         <AppText color="textSecondary">{trip.description}</AppText>

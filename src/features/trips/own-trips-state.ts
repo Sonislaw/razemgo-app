@@ -112,6 +112,7 @@ export function toTripForm(trip: OwnedTrip): TripForm {
     endDate: trip.endDate,
     locationId: tripLocationIdForPlace(place),
     campgroundName: trip.mode === 'planned' ? (trip.campgroundName ?? '') : '',
+    campgroundAddress: trip.mode === 'planned' ? (trip.campgroundAddress ?? '') : '',
     travelModes: trip.travelModes.slice(0, 1),
     interests: [...trip.interests],
     description: trip.description,
@@ -129,6 +130,7 @@ export function newTripForm(profile: TravelerProfile): TripForm {
     endDate: '',
     locationId: '',
     campgroundName: '',
+    campgroundAddress: '',
     travelModes: profile.group.travelModes.slice(0, 1),
     interests: [],
     description: '',
@@ -143,15 +145,17 @@ export function changeTripLocation(
   form: TripForm,
   locationId: string,
 ): TripForm {
+  const keepCampground =
+    form.mode === 'planned' &&
+    locationId === form.locationId &&
+    isConcreteTripLocation(findTripLocation(locationId));
   return {
     ...form,
     locationId,
-    campgroundName:
-      form.mode === 'planned' &&
-      locationId === form.locationId &&
-      isConcreteTripLocation(findTripLocation(locationId))
-        ? form.campgroundName
-        : '',
+    campgroundName: keepCampground ? form.campgroundName : '',
+    ...(form.campgroundAddress !== undefined
+      ? { campgroundAddress: keepCampground ? form.campgroundAddress : '' }
+      : {}),
   };
 }
 export function changeTripMode(form: TripForm, mode: TripMode): TripForm {
@@ -191,6 +195,12 @@ export function validateTripForm(form: TripForm, step?: 1 | 2 | 3): string[] {
       form.campgroundName.trim().length > 120
     )
       errors.push('Skróć nazwę kempingu do 120 znaków.');
+    if (
+      form.mode === 'planned' &&
+      isConcreteTripLocation(location) &&
+      (form.campgroundAddress?.trim().length ?? 0) > 200
+    )
+      errors.push('Skróć adres kempingu do 200 znaków.');
     if (tripDescriptionLength(form.description) < MIN_TRIP_DESCRIPTION_LENGTH)
       errors.push(
         `Opis wyjazdu musi mieć co najmniej ${MIN_TRIP_DESCRIPTION_LENGTH} znaków. Rozwiń opis swoich planów; zbędne spacje nie zwiększają długości.`,
@@ -212,6 +222,10 @@ export function tripFromForm(
     form.mode === 'planned' && isConcreteTripLocation(location)
       ? form.campgroundName.trim()
       : '';
+  const campgroundAddress =
+    form.mode === 'planned' && isConcreteTripLocation(location)
+      ? form.campgroundAddress?.trim()
+      : '';
   const base = {
     id,
     groupId,
@@ -220,6 +234,7 @@ export function tripFromForm(
     endDate: form.endDate,
     description: form.description.trim(),
     ...(campgroundName ? { campgroundName } : {}),
+    ...(campgroundAddress ? { campgroundAddress } : {}),
     landscape: form.landscape,
     interests: [...form.interests],
     travelModes: form.travelModes.slice(0, 1),

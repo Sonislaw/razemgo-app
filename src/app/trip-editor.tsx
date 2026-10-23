@@ -8,6 +8,7 @@ import {
   Pressable,
   ScrollView,
   View,
+  type ScrollViewInstance,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -100,7 +101,7 @@ export default function TripEditorScreen() {
   const [confirmExit, setConfirmExit] = useState(false);
   const [showDates, setShowDates] = useState(false);
   const submitting = useRef(false);
-  const formScroll = useRef<ScrollView>(null);
+  const formScroll = useRef<ScrollViewInstance>(null);
   const update = <K extends keyof TripForm>(key: K, value: TripForm[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
     setErrors([]);
@@ -422,13 +423,22 @@ export default function TripEditorScreen() {
                 />
                 {form.mode === 'planned' &&
                 isConcreteTripLocation(findTripLocation(form.locationId)) ? (
-                  <ProfileTextField
-                    label="Nazwa kempingu"
-                    value={form.campgroundName}
-                    onChangeText={(value) => update('campgroundName', value)}
-                    maxLength={120}
-                    hint="Jeśli wiesz już, gdzie się zatrzymasz."
-                  />
+                  <>
+                    <ProfileTextField
+                      label="Nazwa kempingu"
+                      value={form.campgroundName}
+                      onChangeText={(value) => update('campgroundName', value)}
+                      maxLength={120}
+                      hint="Jeśli wiesz już, gdzie się zatrzymasz."
+                    />
+                    <ProfileTextField
+                      label="Adres kempingu"
+                      value={form.campgroundAddress ?? ''}
+                      onChangeText={(value) => update('campgroundAddress', value)}
+                      maxLength={200}
+                      hint="Ulica i numer. Adres pomoże dokładniej wskazać miejsce na mapie."
+                    />
+                  </>
                 ) : null}
                 <ProfileTextField
                   label="Opis wyjazdu"
@@ -563,6 +573,9 @@ export default function TripEditorScreen() {
                     <AppText variant="label">
                       Kemping: {preview.campgroundName}
                     </AppText>
+                  ) : null}
+                  {preview.campgroundAddress ? (
+                    <AppText variant="label">{preview.campgroundAddress}</AppText>
                   ) : null}
                   <AppText variant="label">{ownTripDates(preview)}</AppText>
                   <TravelModeBadges modes={form.travelModes} />

@@ -6,7 +6,7 @@ Interfejs nie pokazuje oznaczeń wersji demonstracyjnej ani dopisków o przykła
 
 ## Uruchomienie w Expo Go
 
-Projekt zachowuje **Expo SDK 57**, React Native 0.86 i Expo Router. Do pracy zalecany jest Node.js 24 (wbudowana obsługa TypeScript jest również używana w testach).
+Projekt używa **Expo SDK 58**, React Native 0.88, React 19.3 i Expo Router. Do pracy zalecany jest Node.js 24.3 lub nowszy z linii 24 (wbudowana obsługa TypeScript jest również używana w testach).
 
 ```powershell
 cd C:\Users\dev\www\razemgo
@@ -14,7 +14,7 @@ npm ci
 npx expo start
 ```
 
-Otwórz Expo Go obsługujące SDK 57 na telefonie z Androidem i zeskanuj kod QR z terminala. Telefon i komputer powinny znajdować się w tej samej sieci. Klawisz `w` otwiera pomocniczy podgląd webowy. Klawisz `a` wymaga skonfigurowanego emulatora lub urządzenia Android.
+Otwórz Expo Go obsługujące SDK 58 na telefonie z Androidem i zeskanuj kod QR z terminala. Telefon i komputer powinny znajdować się w tej samej sieci. Klawisz `w` otwiera pomocniczy podgląd webowy. Klawisz `a` wymaga skonfigurowanego emulatora lub urządzenia Android. Po zmianie SDK uruchom `npx expo start --clear`, aby odświeżyć cache Metro. Komunikat o Expo Go dla SDK 58 i projekcie SDK 57 oznacza niezgodność głównych wersji — sama aktualizacja poprawki SDK 57 jej nie usuwa.
 
 ## Co działa
 
@@ -120,4 +120,6 @@ Przeglądarkowy podgląd o wymiarach telefonu i poprawny eksport Androida nie za
 
 ## Stan zależności
 
-Podczas wdrożenia `expo install --check` potwierdził zgodność z SDK 57. Audyt npm zgłosił 29 podatności (11 moderate, 18 high), obejmujących drzewo zależności Expo/React Native. Proponowane automatyczne naprawy zmieniają główne wersje frameworka; wymagają osobnego przeglądu kompatybilności. Nie uruchamiano `npm audit fix --force`.
+Zależności są dopasowane do SDK 58 przez Expo CLI. Przy aktualizacji należy uruchomić `npx expo install --check` i `npx expo-doctor`. Natywne zakładki korzystają ze stabilnego `expo-router/native-tabs`, a referencje komponentów z typów `*Instance` React Native 0.88.
+
+Pomocniczy podgląd webowy działa jako aplikacja kliencka (`web.output: "single"`) z synchronicznie ładowanymi ekranami (`asyncRoutes.web: false`). Omija to błąd modułów w renderowaniu serwerowym SDK 58 przy wielokrotnym otwieraniu bezpośrednich linków. Panele webowe stosują odstępy safe area przez CSS; Android i iOS nadal korzystają z natywnych obszarów bezpiecznych.

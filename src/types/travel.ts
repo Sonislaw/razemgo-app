@@ -27,6 +27,7 @@ interface TripBase extends DateRange {
   groupId: string;
   description: string;
   campgroundName?: string;
+  campgroundAddress?: string;
   interests: string[];
   landscape: LandscapeKind;
   animals: TripAnimals;

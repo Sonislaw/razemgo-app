@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import type { TextInputInstance } from 'react-native';
 import { AppText, FieldLabel, layout } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { Fonts, Radius, Typography } from '@/constants/theme';
@@ -37,7 +38,7 @@ export function TripLocationField({
   const label =
     customLabel ??
     (mode === 'planned' ? 'Miasto lub wieś' : 'Miejscowość, region lub kraj');
-  const input = useRef<TextInput>(null);
+  const input = useRef<TextInputInstance>(null);
   const [localQuery, setLocalQuery] = useState('');
   const query = controlledQuery ?? localQuery;
   const setQuery = (text: string) => {

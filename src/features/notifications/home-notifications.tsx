@@ -7,6 +7,7 @@ import {
   StyleSheet,
   useWindowDimensions,
   View,
+  type ViewInstance,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, IconButton, layout } from '@/components/ui/primitives';
@@ -114,7 +115,7 @@ export function HomeNotifications() {
     readKeys,
     todayDate(),
   );
-  const trigger = useRef<View>(null);
+  const trigger = useRef<ViewInstance>(null);
   const [anchor, setAnchor] = useState<{
     x: number;
     y: number;

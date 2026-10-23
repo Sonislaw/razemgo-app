@@ -10,7 +10,7 @@ import { MessagingProvider } from '@/features/messaging/messaging-context';
 import { OwnTripsProvider } from '@/features/trips/own-trips-context';
 import { NotificationsProvider } from '@/features/notifications/notifications-context';
 
-export const unstable_settings = { initialRouteName: '(tabs)' };
+export const unstable_settings = { anchor: '(tabs)' };
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();

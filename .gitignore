@@ -32,6 +32,8 @@ yarn-error.*
 
 # local env files
 .env*.local
+supabase/.temp/
+supabase/.branches/
 
 # typescript
 *.tsbuildinfo

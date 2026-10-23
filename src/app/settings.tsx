@@ -11,6 +11,7 @@ import {
 import { Icon, type IconName } from '@/components/ui/icon';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { ProfileSubpageHeader } from '@/features/profile/profile-ui';
+import { AccountSettings } from '@/features/auth/account-settings';
 
 function SettingsSection({
   icon,
@@ -81,18 +82,7 @@ export default function SettingsScreen() {
           status="Wkrótce"
           description="Tutaj wybierzesz powiadomienia o zaproszeniach, rozmowach i wyjazdach. W tej wersji powiadomienia nie są wysyłane."
         />
-        <SettingsSection
-          icon="profile"
-          title="Konto"
-          status="Wkrótce"
-          description="Logowanie i zarządzanie kontem będą dostępne w kolejnej wersji."
-        />
-        <SettingsSection
-          icon="lock"
-          title="Bezpieczeństwo"
-          status="Wkrótce"
-          description="Ochrona dostępu do konta będzie dostępna po dodaniu logowania."
-        />
+        <AccountSettings />
         <Button
           label="Bezpieczeństwo rozmów"
           icon="shield"

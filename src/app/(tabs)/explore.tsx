@@ -11,7 +11,7 @@ import {
 import { Icon } from '@/components/ui/icon';
 import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
-import { DEMO_PROPOSALS } from '@/data/mocks/travel';
+import { AVAILABLE_PROPOSALS } from '@/data/proposals';
 import { DEMO_COMPATIBILITY_SCORES } from '@/data/mocks/compatibility';
 import {
   filterProposals,
@@ -45,7 +45,7 @@ export default function ExploreScreen() {
   const [showSort, setShowSort] = useState(false);
   const dateRange = resolveDiscoveryRange(filters);
   const proposals = sortDiscoveryProposals(
-    filterProposals(DEMO_PROPOSALS, filters, dateRange),
+    filterProposals(AVAILABLE_PROPOSALS, filters, dateRange),
     sort,
     DEMO_COMPATIBILITY_SCORES,
   );

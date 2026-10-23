@@ -17,7 +17,7 @@ import {
 import { Landscape } from '@/components/trips/landscape';
 import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
 import { TripMapCard } from '@/components/trips/trip-map-card';
-import { DEMO_PROPOSALS } from '@/data/mocks/travel';
+import { AVAILABLE_PROPOSALS } from '@/data/proposals';
 import { DEMO_COMPATIBILITY_SCORES } from '@/data/mocks/compatibility';
 import {
   formatTripDates,
@@ -35,7 +35,7 @@ import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 import { GroupAvatar } from '@/features/profile/group-avatar';
 
 export function generateStaticParams() {
-  return DEMO_PROPOSALS.map(({ trip }) => ({ id: trip.id }));
+  return AVAILABLE_PROPOSALS.map(({ trip }) => ({ id: trip.id }));
 }
 
 export default function TripDetailsScreen() {
@@ -43,7 +43,7 @@ export default function TripDetailsScreen() {
   const { filters } = useDiscovery();
   const { profile } = useProfile();
   const theme = useTheme();
-  const proposal = DEMO_PROPOSALS.find((item) => item.trip.id === id);
+  const proposal = AVAILABLE_PROPOSALS.find((item) => item.trip.id === id);
   const back = () =>
     router.canGoBack() ? router.back() : router.replace('/explore');
   if (!proposal)

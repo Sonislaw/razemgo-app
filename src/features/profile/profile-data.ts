@@ -13,11 +13,11 @@ import {
 export function createEmptyProfile(): TravelerProfile {
   return {
     group: {
-      id: 'demo-us',
+      id: '',
       name: '',
       avatarId: DEFAULT_PROFILE_AVATAR_ID,
       kind: 'family',
-      adultCount: 2,
+      adultCount: 1,
       childCount: 0,
       childAgeBands: [],
       travelModes: [],

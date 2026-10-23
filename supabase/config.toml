@@ -1,0 +1,54 @@
+project_id = "razemgo-dev"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 17
+
+[db.migrations]
+enabled = true
+
+[db.seed]
+enabled = false
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[auth]
+enabled = true
+site_url = "http://localhost:8081"
+additional_redirect_urls = ["http://localhost:8081/auth/callback", "http://localhost:8081/auth/callback?flow=recovery", "razemgo://auth/callback", "razemgo://auth/callback?flow=recovery"]
+jwt_expiry = 3600
+enable_signup = true
+minimum_password_length = 10
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
+otp_length = 6
+otp_expiry = 3600
+
+[auth.email.template.confirmation]
+subject = "Potwierdź konto w RazemGo"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Ustaw nowe hasło w RazemGo"
+content_path = "./supabase/templates/recovery.html"
+
+# Google and SMTP credentials are configured in the hosted project's Dashboard.
+# The setup guide lists the equivalent local settings without committing secrets.
+[functions.delete-account]
+verify_jwt = false

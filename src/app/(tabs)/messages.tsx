@@ -13,7 +13,7 @@ import {
 import { Icon } from '@/components/ui/icon';
 import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import { IS_DEMO_MODE } from '@/constants/app';
-import { DEMO_PROPOSALS } from '@/data/mocks/travel';
+import { AVAILABLE_PROPOSALS } from '@/data/proposals';
 import { DemoControls } from '@/features/messaging/demo-controls';
 import { useMessaging } from '@/features/messaging/messaging-context';
 import {
@@ -40,7 +40,7 @@ import type {
 function ConversationRow({ conversation }: { conversation: Conversation }) {
   const { state } = useMessaging();
   const theme = useTheme();
-  const proposal = DEMO_PROPOSALS.find(
+  const proposal = AVAILABLE_PROPOSALS.find(
     (item) => item.trip.id === conversation.tripId,
   );
   const messages = state.messages.filter(
@@ -115,7 +115,7 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
 function InvitationCard({ invitation }: { invitation: ContactInvitation }) {
   const { state, dispatch } = useMessaging();
   const theme = useTheme();
-  const proposal = DEMO_PROPOSALS.find(
+  const proposal = AVAILABLE_PROPOSALS.find(
     (item) => item.trip.id === invitation.tripId,
   );
   if (!proposal) return null;

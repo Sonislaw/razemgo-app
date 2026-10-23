@@ -1,4 +1,22 @@
-# RazemGo — App Shell MVP
+# RazemGo
+
+## Supabase — logowanie i profil
+
+Aplikacja ma przygotowane logowanie Google i e-mail/hasło, potwierdzanie adresu, reset hasła, onboarding, zapis profilu i ustawienia konta. Wymaga konfiguracji projektu Supabase: **[instrukcja wdrożenia](supabase/README.md)** zawiera migracje, Google, SMTP, funkcję usuwania konta oraz development build Androida.
+
+Domyślnie bez logowania dostępny jest ekran powitalny. Rzeczywiste konta zaczynają bez przykładowych wyjazdów i rozmów. Następny etap backendu obejmie publikowanie planów i Odkrywaj, kolejny — zaproszenia i czat.
+
+```powershell
+npm ci
+# Skopiuj .env.example do .env.local i uzupełnij publiczne dane projektu Supabase.
+npm run start:dev
+```
+
+Testy: `npm test`, `npm run lint`, `npm run typecheck`. Testy migracji i RLS wykonują się na lokalnym PostgreSQL w PGlite bez Dockera. Pełna weryfikacja Google, wysyłki e-maili i telefonu wymaga podłączonych usług.
+
+## Dokumentacja wcześniejszego podglądu interfejsu
+
+Poniższy opis dotyczy lokalnego podglądu przykładowych funkcji. Włącza go wyłącznie w development `EXPO_PUBLIC_ENABLE_DEMO=true`; nie opisuje źródeł danych prawdziwego konta.
 
 Mobilna aplikacja do poznawania towarzyszy wspólnych wyjazdów. Pierwsza wersja interfejsu zawiera pięć zakładek: **Start, Odkrywaj, Wyjazdy, Wiadomości, Profil**.
 

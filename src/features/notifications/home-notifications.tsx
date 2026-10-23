@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, IconButton, layout } from '@/components/ui/primitives';
 import { Icon, type IconName } from '@/components/ui/icon';
-import { DEMO_PROPOSALS } from '@/data/mocks/travel';
+import { AVAILABLE_PROPOSALS } from '@/data/proposals';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { useMessaging } from '@/features/messaging/messaging-context';
 import { CountBadge } from '@/features/messaging/messaging-ui';
@@ -109,7 +109,7 @@ export function HomeNotifications() {
   const { setFilters, setSort } = useDiscovery();
   const { readKeys, markRead } = useNotifications();
   const notifications = selectHomeNotifications(
-    DEMO_PROPOSALS,
+    AVAILABLE_PROPOSALS,
     ownTrips.trips,
     mailbox,
     readKeys,
@@ -156,7 +156,7 @@ export function HomeNotifications() {
       : invitations.count
         ? `${notificationQuantity(invitations.count, 'invitations')} — sprawdź, kto chce Cię poznać.`
         : 'Nie masz oczekujących zaproszeń do kontaktu.';
-  const messageGroup = DEMO_PROPOSALS.find(
+  const messageGroup = AVAILABLE_PROPOSALS.find(
     ({ group }) => group.id === messages.conversation?.groupId,
   )?.group;
   const messageDescription =

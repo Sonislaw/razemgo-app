@@ -20,7 +20,8 @@ import {
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { ChipRow } from '@/components/ui/chip-row';
-import { CHILD_AGE_BANDS, DEMO_PROPOSALS } from '@/data/mocks/travel';
+import { CHILD_AGE_BANDS } from '@/data/mocks/travel';
+import { AVAILABLE_PROPOSALS } from '@/data/proposals';
 import {
   clearDiscoveryDates,
   filterProposals,
@@ -69,7 +70,7 @@ export function DiscoveryFiltersSheet({
   }));
   const dateRange = resolveDiscoveryRange(draft);
   const dateError = getDiscoveryDateRangeError(draft.customDateRange);
-  const resultCount = filterProposals(DEMO_PROPOSALS, draft, dateRange).length;
+  const resultCount = filterProposals(AVAILABLE_PROPOSALS, draft, dateRange).length;
   const toggleAge = (band: ChildAgeBand) =>
     setDraft((current) => ({
       ...current,

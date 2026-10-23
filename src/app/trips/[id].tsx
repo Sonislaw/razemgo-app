@@ -14,7 +14,8 @@ import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
 import { TripMapCard } from '@/components/trips/trip-map-card';
 import { Landscape } from '@/components/trips/landscape';
 import { DEMO_OWN_TRIPS } from '@/data/mocks/owned-trips';
-import { DEMO_GROUPS, DEMO_PROPOSALS } from '@/data/mocks/travel';
+import { DEMO_GROUPS } from '@/data/mocks/travel';
+import { AVAILABLE_PROPOSALS } from '@/data/proposals';
 import { useTheme } from '@/hooks/use-theme';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import {
@@ -72,7 +73,7 @@ export default function OwnTripDetailsScreen() {
   const searching = isSearchingTrip(trip, todayDate());
   const discoveryFilters = discoveryFiltersForTrip(trip);
   const proposals = searching
-    ? filterProposals(DEMO_PROPOSALS, discoveryFilters)
+    ? filterProposals(AVAILABLE_PROPOSALS, discoveryFilters)
     : [];
   const invitations = messaging.invitations.filter(
     (item) =>

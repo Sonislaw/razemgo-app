@@ -11,7 +11,7 @@ import { HomeAction } from '@/features/home/home-ui';
 import { HomeHeader } from '@/features/home/home-header';
 import { HomeLatestListing } from '@/features/home/home-latest-listing';
 import { selectLatestListing } from '@/features/home/latest-listing';
-import { DEMO_PROPOSALS } from '@/data/mocks/travel';
+import { AVAILABLE_PROPOSALS } from '@/data/proposals';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import { todayDate } from '@/features/trips/own-trips-state';
 import { useMessaging } from '@/features/messaging/messaging-context';
@@ -24,7 +24,7 @@ export default function HomeScreen() {
   const { state: messaging } = useMessaging();
   const [demoOpen, setDemoOpen] = useState(false);
   const latestListing = selectLatestListing(
-    DEMO_PROPOSALS,
+    AVAILABLE_PROPOSALS,
     ownTrips.trips,
     profile.group.id,
     todayDate(),

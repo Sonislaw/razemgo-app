@@ -1,3 +1,5 @@
+import { TRIPS_BACKEND_AVAILABLE } from '@/constants/app';
+import { BackendPendingScreen } from '@/features/auth/backend-pending-screen';
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
@@ -76,7 +78,7 @@ const toggle = <T,>(values: T[], value: T): T[] =>
   values.includes(value)
     ? values.filter((item) => item !== value)
     : [...values, value];
-export default function TripEditorScreen() {
+function TripEditorScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { state, saveTrip } = useOwnTrips();
   const { profile } = useProfile();
@@ -698,4 +700,8 @@ export default function TripEditorScreen() {
       ) : null}
     </>
   );
+}
+
+export default function TripEditorEntry() {
+  return TRIPS_BACKEND_AVAILABLE ? <TripEditorScreen /> : <BackendPendingScreen title="Nowy wyjazd" description="Publikowanie wyjazdów uruchomimy w kolejnym etapie. Twój profil jest już gotowy na nowe przygody." />;
 }

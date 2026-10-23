@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from 'react';
 import { DEMO_OWN_TRIPS } from '@/data/mocks/owned-trips';
+import { TRIPS_BACKEND_AVAILABLE, USE_DEMO_DATA } from '@/constants/app';
 import { useProfile } from '@/features/profile/profile-context';
 import type { OwnTripsState, TripForm } from '@/types/owned-trip';
 import {
@@ -30,7 +31,7 @@ const OwnTripsContext = createContext<OwnTripsContextValue | null>(null);
 export function OwnTripsProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(
     ownTripsReducer,
-    DEMO_OWN_TRIPS,
+    USE_DEMO_DATA ? DEMO_OWN_TRIPS : [],
     createOwnTripsState,
   );
   const { profile } = useProfile();
@@ -39,6 +40,7 @@ export function OwnTripsProvider({ children }: { children: ReactNode }) {
     id,
     draft = false,
   ) => {
+    if (!TRIPS_BACKEND_AVAILABLE) return { errors: ['Zapisywanie wyjazdów będzie dostępne w kolejnym etapie.'] };
     const today = todayDate();
     const existing = state.trips.find((trip) => trip.id === id);
     const errors = draft ? [] : validateTripForm(form);

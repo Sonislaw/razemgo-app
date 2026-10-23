@@ -10,12 +10,10 @@ import {
   layout,
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
-import { useProfile } from '@/features/profile/profile-context';
 import { useTheme } from '@/hooks/use-theme';
 
 export default function WelcomeScreen() {
   const theme = useTheme();
-  const { hasProfile } = useProfile();
   return (
     <Screen>
       <HeaderRow style={{ paddingTop: 8 }}>
@@ -68,24 +66,15 @@ export default function WelcomeScreen() {
       </View>
       <View style={{ gap: 8 }}>
         <Button
-          label={hasProfile ? 'Przejdź na Start' : 'Utwórz profil ekipy'}
-          icon={hasProfile ? 'arrow' : 'people'}
-          onPress={() =>
-            hasProfile
-              ? router.dismissTo('/')
-              : router.replace({
-                  pathname: '/edit-profile',
-                  params: { from: 'home' },
-                })
-          }
+          label="Dołącz do RazemGo"
+          icon="people"
+          onPress={() => router.push('/auth/sign-up')}
         />
-        {!hasProfile ? (
           <Button
-            label="Rozejrzyj się"
+            label="Mam już konto — zaloguj się"
             variant="secondary"
-            onPress={() => router.dismissTo('/')}
+            onPress={() => router.push('/auth/sign-in')}
           />
-        ) : null}
       </View>
       <DemoBadge />
     </Screen>

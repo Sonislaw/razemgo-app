@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from 'react';
 import { DEMO_MAILBOX } from '@/data/mocks/messaging';
+import { USE_DEMO_DATA } from '@/constants/app';
 import type { MessagingState } from '@/types/messaging';
 import {
   createMessagingState,
@@ -20,7 +21,7 @@ interface MessagingContextValue {
 const MessagingContext = createContext<MessagingContextValue | null>(null);
 export function MessagingProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(messagingReducer, DEMO_MAILBOX, (seed) =>
-    createMessagingState(seed),
+    createMessagingState(seed, USE_DEMO_DATA ? 'initial' : 'empty'),
   );
   return (
     <MessagingContext value={{ state, dispatch }}>{children}</MessagingContext>

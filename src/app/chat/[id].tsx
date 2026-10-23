@@ -29,7 +29,7 @@ import {
 import { IS_DEMO_MODE } from '@/constants/app';
 import { Fonts, MaxContentWidth, Typography } from '@/constants/theme';
 import { DEMO_MAILBOX } from '@/data/mocks/messaging';
-import { DEMO_PROPOSALS } from '@/data/mocks/travel';
+import { AVAILABLE_PROPOSALS } from '@/data/proposals';
 import {
   formatTripDates,
   getTripLocation,
@@ -70,7 +70,7 @@ export default function ChatScreen() {
   const conversation = state.conversations.find(
     (item) => item.id === id && isConversationAccepted(state, item),
   );
-  const proposal = DEMO_PROPOSALS.find(
+  const proposal = AVAILABLE_PROPOSALS.find(
     (item) => item.trip.id === conversation?.tripId,
   );
   const unread = unreadCount(state, id);

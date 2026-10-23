@@ -1,70 +1,53 @@
 import { router } from 'expo-router';
-import { View } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { BrandHeader } from '@/components/ui/brand-header';
-import {
-  AppText,
-  Button,
-  DemoBadge,
-  Screen,
-  layout,
-} from '@/components/ui/primitives';
-import { Icon } from '@/components/ui/icon';
-import { useTheme } from '@/hooks/use-theme';
+import { AppText, Screen } from '@/components/ui/primitives';
+import { Spacing } from '@/constants/theme';
+import { HomeAction } from '@/features/home/home-ui';
 
 export default function WelcomeScreen() {
-  const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const density = width < 360 ? 'compact' : 'regular';
+
   return (
-    <Screen header={<BrandHeader />}>
-      <View
-        style={{
-          borderRadius: 28,
-          backgroundColor: theme.hero,
-          padding: 24,
-          gap: 16,
-        }}
-      >
-        <Icon name="sun" size={30} color={theme.energy} />
-        <AppText variant="title" accessibilityRole="header">
-          Twój kierunek.{'\n'}Twoje towarzystwo.
+    <Screen
+      testID="welcome-main"
+      header={<BrandHeader />}
+      footerPlacement="fixed"
+    >
+      <View style={styles.intro}>
+        <AppText variant="heading" accessibilityRole="header">
+          Znajdź swoją ekipę w drodze.
         </AppText>
-        <AppText color="heroMuted">
-          Nad morze, pod namiot, a może gdzieś zupełnie indziej? Poznaj
-          ludzi, z którymi będzie Ci po drodze.
+        <AppText color="textSecondary" style={styles.description}>
+          Kamper, przyczepa, kampervan czy namiot — tu spotkasz ludzi z podobnymi
+          planami.
         </AppText>
       </View>
-      <View style={{ gap: 16 }}>
-        {(
-          [
-            {
-              icon: 'people',
-              text: 'Pokaż, kim jesteś i jak podróżujesz.',
-            },
-            {
-              icon: 'trips',
-              text: 'Zapisz konkretny cel albo wolny termin.',
-            },
-            { icon: 'chat', text: 'Zacznij rozmowę po akceptacji zaproszenia.' },
-          ] as const
-        ).map((item) => (
-          <View key={item.icon} style={layout.row}>
-            <Icon name={item.icon} />
-            <AppText style={{ flex: 1 }}>{item.text}</AppText>
-          </View>
-        ))}
-      </View>
-      <View style={{ gap: 8 }}>
-        <Button
+
+      <View testID="welcome-actions" style={styles.actions}>
+        <HomeAction
           label="Dołącz do RazemGo"
-          icon="people"
+          description="Załóż konto i znajdź towarzystwo na wyjazd."
+          illustration={require('@/assets/images/welcome/join-the-crew.png')}
+          density={density}
           onPress={() => router.push('/auth/sign-up')}
         />
-          <Button
-            label="Mam już konto — zaloguj się"
-            variant="secondary"
-            onPress={() => router.push('/auth/sign-in')}
-          />
+        <HomeAction
+          label="Zaloguj się"
+          description="Wróć do swojej ekipy i wspólnych planów."
+          illustration={require('@/assets/images/welcome/back-to-camp.png')}
+          density={density}
+          variant="secondary"
+          onPress={() => router.push('/auth/sign-in')}
+        />
       </View>
-      <DemoBadge />
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  intro: { gap: Spacing.two, paddingTop: Spacing.one },
+  description: { fontSize: 15, lineHeight: 22 },
+  actions: { gap: 20, paddingVertical: Spacing.two },
+});

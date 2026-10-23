@@ -73,18 +73,24 @@ export function Screen({
   header,
   testID,
   adjustKeyboardInsets = true,
+  footerPlacement = 'flow',
 }: {
   children: ReactNode;
   header?: ReactNode;
   testID?: string;
   adjustKeyboardInsets?: boolean;
+  footerPlacement?: 'flow' | 'fixed';
 }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  return (
+  const fixedFooter = footerPlacement === 'fixed';
+  const content = (
     <ScrollView
       testID={testID}
-      style={{ flex: 1, backgroundColor: theme.background }}
+      style={{
+        flex: 1,
+        backgroundColor: fixedFooter ? 'transparent' : theme.background,
+      }}
       contentInsetAdjustmentBehavior="automatic"
       automaticallyAdjustKeyboardInsets={adjustKeyboardInsets}
       keyboardShouldPersistTaps="handled"
@@ -95,6 +101,8 @@ export function Screen({
           paddingTop: header
             ? 0
             : Spacing.three + (Platform.OS === 'ios' ? 0 : insets.top),
+          paddingBottom:
+            fixedFooter && Platform.OS !== 'ios' ? insets.bottom : 0,
         },
       ]}
     >
@@ -115,8 +123,23 @@ export function Screen({
       >
         <View style={styles.screen}>{children}</View>
       </View>
-      <ScenicFooter />
+      {!fixedFooter ? <ScenicFooter /> : null}
     </ScrollView>
+  );
+
+  if (!fixedFooter) return content;
+
+  return (
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <View
+        testID="fixed-scenic-footer"
+        pointerEvents="none"
+        style={[styles.fixedFooter, { bottom: insets.bottom }]}
+      >
+        <ScenicFooter />
+      </View>
+      {content}
+    </View>
   );
 }
 export function DemoBadge() {
@@ -181,6 +204,7 @@ export interface ButtonProps {
   label: string;
   onPress?: () => void;
   icon?: IconName;
+  leading?: ReactNode;
   variant?: 'primary' | 'secondary';
   disabled?: boolean;
 }
@@ -217,6 +241,7 @@ export function Button({
   label,
   onPress,
   icon,
+  leading,
   variant = 'primary',
   disabled = false,
 }: ButtonProps) {
@@ -243,6 +268,7 @@ export function Button({
         { backgroundColor: background, opacity: pressed ? 0.78 : 1 },
       ]}
     >
+      {leading}
       <AppText
         variant="label"
         style={{ color: foreground, flexShrink: 1, textAlign: 'center' }}
@@ -379,6 +405,7 @@ export const layout = StyleSheet.create({
   section: { gap: Spacing.three },
 });
 const styles = StyleSheet.create({
+  fixedFooter: { position: 'absolute', left: 0, right: 0 },
   scroll: { flexGrow: 1, alignItems: 'center' },
   screenContent: {
     width: '100%',

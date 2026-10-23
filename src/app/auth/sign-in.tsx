@@ -2,7 +2,12 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Button } from '@/components/ui/primitives';
 import { BrandHeader } from '@/components/ui/brand-header';
-import { AuthField, AuthNotice, AuthScreen } from '@/features/auth/auth-ui';
+import {
+  AuthField,
+  AuthNotice,
+  AuthScreen,
+  GoogleSignInButton,
+} from '@/features/auth/auth-ui';
 import { useAuth } from '@/features/auth/auth-context';
 import {
   authErrorMessage,
@@ -55,9 +60,7 @@ export default function SignInScreen() {
       title="Dobrze Cię widzieć"
       description="Zaloguj się i wróć do swojej podróżniczej ekipy."
     >
-      <Button
-        label="Kontynuuj z Google"
-        variant="secondary"
+      <GoogleSignInButton
         disabled={busy}
         onPress={() => void login(true)}
       />

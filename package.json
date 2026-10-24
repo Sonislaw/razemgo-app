@@ -59,7 +59,7 @@
     "test:trip-maps": "node --test scripts/trip-maps.test.mjs",
     "test:locations": "node --test scripts/locations.test.mjs",
     "test:home": "node --test scripts/home.test.mjs",
-    "test:notifications": "node --test scripts/notifications.test.mjs scripts/push.test.mjs scripts/push-backend.test.mjs",
+    "test:notifications": "node --test scripts/notifications.test.mjs scripts/push.test.mjs scripts/push-backend.test.mjs scripts/notification-center-backend.test.mjs",
     "test:animals": "node --test scripts/animals.test.mjs",
     "start:dev": "expo start --dev-client",
     "test:auth": "node --test scripts/auth.test.mjs",

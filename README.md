@@ -14,7 +14,9 @@ Zaproszenia, rozmowy, wiadomości, odczyty, blokady i zgłoszenia zapisują się
 
 Migracja `202610240003_messaging.sql` dodaje uprawnienia i funkcje skrzynki. Nowe konta zaczynają z pustą skrzynką. Zablokowanie kontaktu wstrzymuje wysyłanie po obu stronach i ukrywa wzajemne ogłoszenia. Zgłoszenia trafiają do serwerowej tabeli do obsługi przez administratora; nie ma jeszcze panelu moderacji.
 
-Powiadomienia push o nowych wiadomościach, zaproszeniach i ich akceptacji mają rejestr urządzeń, kolejkę serwerową, worker Expo, retry i receipts. Kliknięcie otwiera właściwy widok po odtworzeniu sesji. Firebase/FCM dla testowego Androida jest skonfigurowane w EAS. **Wymagają instalacji nowego APK**; samo Reload poprzedniego buildu ich nie włączy. Konfiguracja i scenariusze telefonu: **[Push — instrukcja](supabase/PUSH.md)**. Następne etapy to trwałe centrum powiadomień, preferencje typów alertów, monitoring i pilotaż.
+Powiadomienia push o nowych wiadomościach, zaproszeniach i ich akceptacji mają rejestr urządzeń, kolejkę serwerową, worker Expo, retry i receipts. Kliknięcie otwiera właściwy widok po odtworzeniu sesji. Firebase/FCM dla testowego Androida jest skonfigurowane w EAS. Push wymagają APK z obsługą `expo-notifications`; instalacja modułu natywnego i zmiana ikony wymagają nowego buildu. Konfiguracja i scenariusze telefonu: **[Push — instrukcja](supabase/PUSH.md)**.
+
+Dzwonek na Start prowadzi do trwałej historii powiadomień, z filtrem nieodczytanych, stronicowaniem i oznaczaniem odczytu na wszystkich urządzeniach. Wiadomości i zaproszenia pozostają w historii także bez zgody na push. Nowe propozycje do własnych publicznych wyjazdów są wyliczane przy pobraniu historii, wyłącznie w aplikacji. W **Profil → Ustawienia** można osobno włączyć push wiadomości i zaproszeń dla całego konta; osobny przełącznik urządzenia nadal decyduje o danym telefonie. Migracja `202610240005_notification_center.sql` nie wymaga nowego APK ani nowych sekretów. Następne etapy to monitoring, obsługa moderacji i pilotaż.
 
 ```powershell
 npm ci

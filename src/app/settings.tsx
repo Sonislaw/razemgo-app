@@ -13,6 +13,7 @@ import { IS_DEMO_MODE } from '@/constants/app';
 import { ProfileSubpageHeader } from '@/features/profile/profile-ui';
 import { AccountSettings } from '@/features/auth/account-settings';
 import { PushPermissionCard } from '@/features/notifications/push-permission-card';
+import { NotificationPreferencesCard } from '@/features/notifications/notification-ui';
 
 function SettingsSection({
   icon,
@@ -78,6 +79,7 @@ export default function SettingsScreen() {
           description="Zarządzanie widocznością profilu i planów. Wiek dzieci pokazujemy w przybliżonych przedziałach."
         />
         <PushPermissionCard />
+        <NotificationPreferencesCard />
         <AccountSettings />
         <Button
           label="Bezpieczeństwo rozmów"

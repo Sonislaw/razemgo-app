@@ -22,6 +22,8 @@ import {
 } from '@/features/trips/own-trips-state';
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { useTheme } from '@/hooks/use-theme';
+import { USE_DEMO_DATA } from '@/constants/app';
+import { NotificationBell } from './notification-bell';
 import { useNotifications } from './notifications-context';
 import {
   notificationQuantity,
@@ -100,6 +102,10 @@ function NotificationRow({
 }
 
 export function HomeNotifications() {
+  return USE_DEMO_DATA ? <DemoHomeNotifications /> : <NotificationBell />;
+}
+
+function DemoHomeNotifications() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();

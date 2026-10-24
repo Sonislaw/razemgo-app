@@ -9,6 +9,8 @@ import { useMessaging } from '@/features/messaging/messaging-context';
 import { notificationCount } from '@/features/messaging/messaging-state';
 import { parsePushTarget, pushDestination, pushNavigationReady, type PushTarget } from './push-data';
 import { clearDeviceNotifications, loadPushModule, pushCapability, pushOptedOut, registerPushDevice, setPushOptedOut, unregisterPushDevice } from './push-platform';
+import { useNotifications } from './notifications-context';
+import type { NotificationPreferences } from './notification-types';
 
 type PushStatus = 'checking' | 'enabled' | 'off' | 'permission' | 'denied' | 'needs-build' | 'unsupported' | 'error';
 interface PushState {
@@ -19,6 +21,7 @@ interface PushState {
   disable: () => Promise<void>;
   consume: (id: string) => void;
   bindGroup: (id: string | null) => void;
+  bindPreferences: (preferences: NotificationPreferences | null) => void;
 }
 const Context=createContext<PushState | null>(null);
 export function PushProvider({children}: {children: ReactNode}) {
@@ -32,6 +35,7 @@ export function PushProvider({children}: {children: ReactNode}) {
   const running=useRef(false);
   const queued=useRef<{userId: string; ask: boolean} | null>(null);
   const group=useRef<string | null>(null);
+  const preferences=useRef<NotificationPreferences | null>(null);
   const user=useRef(session?.user.id);
   const handled=useRef(new Set<string>());
   const path=usePathname();
@@ -39,6 +43,7 @@ export function PushProvider({children}: {children: ReactNode}) {
   useEffect(() => { currentPath.current=path; },[path]);
   useEffect(() => { user.current=session?.user.id; if(!session) group.current=null; },[session]);
   const bindGroup=useCallback((id: string | null) => { group.current=id; },[]);
+  const bindPreferences=useCallback((value: NotificationPreferences | null) => { preferences.current=value; },[]);
   const consume=useCallback((id: string) => { handled.current.add(id); setPending(value => value?.eventId===id ? null : value); },[]);
   useEffect(() => {
     if(USE_DEMO_DATA) return;
@@ -54,6 +59,7 @@ export function PushProvider({children}: {children: ReactNode}) {
       notifications.setNotificationHandler({handleNotification: async notification => {
         const target=parsePushTarget(notification.request.content.data);
         const allowed=!!target && target.recipientGroupId===group.current &&
+          (target.kind==='message' ? preferences.current?.push_messages!==false : preferences.current?.push_invitations!==false) &&
           !(target.conversationId && currentPath.current==='/chat/'+target.conversationId);
         return {shouldShowBanner:allowed,shouldShowList:allowed,shouldPlaySound:allowed,shouldSetBadge:false};
       }});
@@ -107,7 +113,7 @@ export function PushProvider({children}: {children: ReactNode}) {
     catch { setError('Nie udało się wyłączyć powiadomień. Sprawdź połączenie i spróbuj ponownie.'); }
     finally { running.current=false; setBusy(false); }
   };
-  return <Context value={{status,busy,error,pending,receivedVersion,tokenVersion,synchronize,disable,consume,bindGroup}}>{children}</Context>;
+  return <Context value={{status,busy,error,pending,receivedVersion,tokenVersion,synchronize,disable,consume,bindGroup,bindPreferences}}>{children}</Context>;
 }
 export function usePush() { const context=useContext(Context); if(!context) throw new Error('PushProvider is required'); return context; }
 
@@ -117,21 +123,23 @@ export function PushAccountBridge({ready}: {ready: boolean}) {
   const {session}=useAuth();
   const {profile}=useProfile();
   const {refresh,dispatch,state}=useMessaging();
+  const {refresh:refreshNotifications,read:readNotifications,preferences,status:notificationStatus}=useNotifications();
   const push=usePush();
   const navigation=useRootNavigationState();
   const pathname=usePathname();
   const handled=useRef<string | null>(null);
   const userId=session?.user.id;
   const groupId=profile.group.id;
-  const {synchronize,bindGroup,receivedVersion,tokenVersion,pending,consume}=push;
+  const {synchronize,bindGroup,bindPreferences,receivedVersion,tokenVersion,pending,consume}=push;
   useEffect(() => { bindGroup(ready ? groupId : null); return () => bindGroup(null); },[ready,groupId,bindGroup]);
+  useEffect(() => { bindPreferences(ready && notificationStatus==='ready' ? preferences : null); return () => bindPreferences(null); },[ready,notificationStatus,preferences,bindPreferences]);
   useEffect(() => {
     if(!ready || !userId) return;
     void synchronize(userId);
     const foreground=AppState.addEventListener('change',value => { if(value==='active') void synchronize(userId); });
     return () => foreground.remove();
   },[ready,userId,synchronize,tokenVersion]);
-  useEffect(() => { if(ready && receivedVersion) void refresh(); },[ready,receivedVersion,refresh]);
+  useEffect(() => { if(ready && receivedVersion) { void refresh(); void refreshNotifications(); } },[ready,receivedVersion,refresh,refreshNotifications]);
   const count=notificationCount(state);
   useEffect(() => { if(ready) void loadPushModule().then(module => module?.setBadgeCountAsync(count)).catch(() => undefined); },[ready,count]);
   useEffect(() => {
@@ -140,9 +148,10 @@ export function PushAccountBridge({ready}: {ready: boolean}) {
     const destination=pushDestination(pending,groupId);
     consume(pending.eventId);
     if(!destination) return;
+    void readNotifications([pending.eventId]);
     void refresh();
     if(pending.kind==='invitation_received') dispatch({type:'view',view:'invitations',direction:'received'});
     router.navigate(destination);
-  },[ready,navigation?.key,pathname,pending,groupId,consume,refresh,dispatch]);
+  },[ready,navigation?.key,pathname,pending,groupId,consume,refresh,dispatch,readNotifications]);
   return null;
 }

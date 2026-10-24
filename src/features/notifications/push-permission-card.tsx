@@ -12,7 +12,7 @@ export function PushPermissionCard({compact=false}: {compact?: boolean}) {
   if(compact && ['enabled','checking','needs-build','unsupported'].includes(push.status)) return null;
   const descriptions={
     checking:'Sprawdzamy powiadomienia na tym urządzeniu.',
-    enabled:'Dowiesz się o nowej wiadomości, zaproszeniu i jego akceptacji, również gdy aplikacja jest zamknięta.',
+    enabled:'Ten telefon może odbierać powiadomienia, również gdy aplikacja jest zamknięta. Rodzaje powiadomień wybierzesz w ustawieniach poniżej.',
     off:'Powiadomienia są wyłączone na tym urządzeniu. Wiadomości i zaproszenia nadal znajdziesz w aplikacji.',
     permission:'Włącz powiadomienia, aby nie przegapić wiadomości ani zaproszenia do wspólnego wyjazdu.',
     denied:'Powiadomienia są zablokowane w ustawieniach telefonu. Możesz tam ponownie je włączyć.',

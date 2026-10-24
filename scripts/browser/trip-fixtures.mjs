@@ -14,7 +14,8 @@ function profile(id){
     preferences:{group_id:groupId(id),group_kinds:['family'],child_age_bands:['4–6'],description:''},
   };
 }
-function state(){return {trips:new Map(),next:301,failSave:false,failLoad:false,failPublic:false, invitations:[], conversations:[], messages:[], reads:new Map(), blocks:new Set(), reports:[], failMailbox:false,failSend:false,failInvitation:false, failHistory:false};}
+function state(){return {trips:new Map(),next:301,failSave:false,failLoad:false,failPublic:false, invitations:[], conversations:[], messages:[], reads:new Map(), blocks:new Set(), reports:[], failMailbox:false,failSend:false,failInvitation:false, failHistory:false,
+  notifications:[],notificationPreferences:new Map(),failNotifications:false,failNotificationSave:false};}
 async function backend(context,store){
   await context.route('http://127.0.0.1:54321/**',async route=>{
     const request=route.request(),url=new URL(request.url());
@@ -29,6 +30,26 @@ async function backend(context,store){
     if(url.pathname.endsWith('/logout'))return respond({});
     if(url.pathname==='/rest/v1/travel_groups')return respond([profile(id).group]);
     if(url.pathname==='/rest/v1/group_preferences')return respond(profile(id).preferences);
+    if(url.pathname==='/rest/v1/rpc/get_my_notifications'){
+      if(store.failNotifications)return respond({message:'Offline'},503);
+      const all=store.notifications.filter(n=>n.recipient_group_id===groupId(id));
+      const entries=all.filter(n=>(!body.only_unread||!n.read_at)&&(!body.before_at||n.created_at<body.before_at||n.created_at===body.before_at&&n.id<body.before_id))
+        .sort((a,b)=>b.created_at.localeCompare(a.created_at)||b.id.localeCompare(a.id));
+      return respond({items:entries.slice(0,body.page_size??30),has_more:entries.length>(body.page_size??30),unread_count:all.filter(n=>!n.read_at).length,
+        preferences:store.notificationPreferences.get(groupId(id))??{push_messages:true,push_invitations:true,updated_at:null},fetched_at:new Date().toISOString()});
+    }
+    if(url.pathname==='/rest/v1/rpc/mark_my_notifications_read'){
+      if(store.failNotificationSave)return respond({message:'Offline'},503);
+      let changed=0;
+      for(const n of store.notifications)if(n.recipient_group_id===groupId(id)&&!n.read_at&&(body.notification_ids?body.notification_ids.includes(n.id):n.created_at<=body.read_through)){n.read_at=new Date().toISOString();changed++;}
+      return respond(changed);
+    }
+    if(url.pathname==='/rest/v1/rpc/save_my_notification_preference'){
+      if(store.failNotificationSave)return respond({message:'Offline'},503);
+      const previous=store.notificationPreferences.get(groupId(id))??{push_messages:true,push_invitations:true,updated_at:null};
+      const saved={...previous,[body.preference_key==='messages'?'push_messages':'push_invitations']:body.enabled,updated_at:new Date().toISOString()};
+      store.notificationPreferences.set(groupId(id),saved);return respond(saved);
+    }
     if(url.pathname.startsWith('/rest/v1/rpc/')&&[
       'get_my_mailbox','send_contact_invitation','respond_contact_invitation','send_chat_message',
       'mark_conversation_read','get_conversation_messages','set_group_block','report_conversation',
@@ -144,7 +165,9 @@ async function messagingEndpoint(name,id,body,store,respond){
     if(!owned())return respond({code:'42501'},403);
     const m=store.messages.find(m=>m.id===body.through_message_id&&m.conversation_id===body.conversation_id);
     if(!m)return respond({code:'P0002'},404);
-    const value=Math.max(store.reads.get(body.conversation_id+me)??0,m.sequence);store.reads.set(body.conversation_id+me,value);return respond(value);
+    const value=Math.max(store.reads.get(body.conversation_id+me)??0,m.sequence);store.reads.set(body.conversation_id+me,value);
+    for(const n of store.notifications)if(n.recipient_group_id===me&&n.conversation_id===body.conversation_id&&!n.read_at)n.read_at=now();
+    return respond(value);
   }
   if(name==='set_group_block'){if(body.blocked)store.blocks.add(me);else store.blocks.delete(me);return respond(null);}
   if(name==='report_conversation'){

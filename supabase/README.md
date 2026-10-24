@@ -67,7 +67,7 @@ Do buildów EAS dodaj publiczne zmienne Supabase do środowiska EAS używanego p
 
 Rzeczywiste konta zapisują profil i wyjazdy w Supabase. Nowe konto zaczyna bez własnych wyjazdów i rozmów. Odkrywaj pokazuje publiczne, aktualne plany innych użytkowników. Pięć przykładów na ekranie powitalnym nie jest dodawanych do danych konta.
 
-Oddzielny podgląd istniejącego UI można uruchomić lokalnie z `EXPO_PUBLIC_ENABLE_DEMO=true` w `.env.local`. Wymaga restartu Metro, nie korzysta z prawdziwego konta i nigdy nie włącza się w buildzie release. Przy testach backendu ustaw `false`. Zaproszenia i czat są już podłączone do Supabase; kolejne etapy to push, monitoring i pilotaż.
+Oddzielny podgląd istniejącego UI można uruchomić lokalnie z `EXPO_PUBLIC_ENABLE_DEMO=true` w `.env.local`. Wymaga restartu Metro, nie korzysta z prawdziwego konta i nigdy nie włącza się w buildzie release. Przy testach backendu ustaw `false`. Zaproszenia, czat, push i historia powiadomień są podłączone do Supabase; kolejne etapy to monitoring, obsługa moderacji i pilotaż.
 
 ## 7. Kontrole
 
@@ -102,7 +102,7 @@ Kreator zachowuje jeden losowy klucz utworzenia planu. Funkcja zapisu oraz unika
 
 Wynik zgodności liczymy lokalnie z dostępnych kryteriów: daty (waga 30), miejsce (20), klimat (10), zainteresowania (20), preferowany wiek dzieci (15), rodzaj ekipy (10), preferencje drugiej strony dotyczące ekipy (10) i wieku (10), transport (5), zwierzęta (5). Brak kryterium pomija jego wagę. Wynik jest normalizowany do 0–100; zwierzęta nie wykluczają propozycji. Dla kilku własnych planów wybierany jest jeden najlepiej pasujący. Wybranie konkretnego planu ma pierwszeństwo.
 
-Filtry i sortowanie pracują na pobranych publicznych rekordach. Pobieranie jest stronicowane po 500 rekordów. Aktualizacja ogłoszeń następuje przy wejściu na ekran i wznowieniu aplikacji. Skrzynka ma osobną subskrypcję Realtime opisaną poniżej; push pozostaje kolejnym etapem.
+Filtry i sortowanie pracują na pobranych publicznych rekordach. Pobieranie jest stronicowane po 500 rekordów. Aktualizacja ogłoszeń następuje przy wejściu na ekran i wznowieniu aplikacji. Skrzynka ma osobną subskrypcję Realtime opisaną poniżej; push oraz centrum powiadomień opisano w sekcjach 10–11.
 
 `npm test` obejmuje też `trips-backend.test.mjs` (PostgreSQL/PGlite: dwa konta, anon, RLS, projekcja, transakcyjność, cykl życia i cascade) oraz `trip-data.test.mjs` (adaptery i ranking). `npm run test:web` sprawdza tworzenie wyjazdu, błąd zapisu, restart, drugie urządzenie, publiczną listę drugiego konta, prywatne duplikaty, statusy, usuwanie i ponawianie pobierania. Webowe API jest kontrolowane w testach, bez zapisów do rzeczywistych kont.
 
@@ -118,7 +118,7 @@ Operacje zapisu odbywają się wyłącznie przez RPC. Aktor jest ustalany z `aut
 - `respond_contact_invitation` pozwala odbiorcy zaakceptować lub odrzucić, a nadawcy wycofać zaproszenie. Akceptacja atomowo tworzy jedną rozmowę, odczyty obu stron i pierwszą wiadomość z treści zaproszenia. Ponowne wywołanie nie tworzy kolejnej rozmowy.
 - `send_chat_message` nadaje nadawcę i czas na serwerze. Wiadomość ma do 2000 znaków. Klucz ponowienia pozostaje ten sam przy retry, również po utracie odpowiedzi po zapisie. Interfejs pokazuje wysyłanie, błąd z ponowieniem, wysłanie i odczyt.
 - `get_my_mailbox` zwraca podsumowanie: kontakty, zaproszenia, ostatnie wiadomości, dokładne liczniki nieprzeczytanych i odczyty. Historia jest pobierana przez `get_conversation_messages` po 50 rekordów z kursorem sekwencji; przycisk wczytuje starsze. Metadane kontaktu ograniczono do nazwy, avatara i liczby dorosłych. Dane dzieci i preferencje profilu nie są automatycznie dołączane do czatu.
-- `mark_conversation_read` przesuwa odczyt do konkretnej istniejącej wiadomości w danej rozmowie. Nie oznacza późniejszych wiadomości jako odczytanych i nie cofa istniejącego odczytu. Liczniki dolnej zakładki i dzwonka korzystają z danych serwera, niezależnie od liczby pobranych stron historii.
+- `mark_conversation_read` przesuwa odczyt do konkretnej istniejącej wiadomości w danej rozmowie. Nie oznacza późniejszych wiadomości jako odczytanych i nie cofa istniejącego odczytu. Licznik dolnej zakładki korzysta ze skrzynki, niezależnie od liczby pobranych stron rozmowy. Dzwonek pokazuje nieodczytane wpisy centrum powiadomień, również propozycje wyjazdów.
 - `set_group_block` zatrzymuje nowe zaproszenia i wysyłanie po obu stronach. Każdy usuwa wyłącznie swoją blokadę; blokada drugiej strony nadal działa. Oczekujące zaproszenia zostają zamknięte, historia zaakceptowanej rozmowy pozostaje dostępna. Zablokowane ekipy nie widzą wzajemnych ogłoszeń w `list_public_trips`.
 - `report_conversation` zapisuje powód i serwerową kopię ostatnich 20 wiadomości jako materiał dla administratora. Raporty i ich treść nie są udostępnione bezpośrednio przez API. Autor widzi potwierdzenie i własną listę zgłoszeń. Nie ma automatycznej decyzji ani panelu moderacji; administrator obsługuje tabelę `account_reports` w Supabase. Materiał zgłoszenia pozostaje po usunięciu konta z wyzerowanymi kluczami obcymi. Przed pilotażem trzeba ustalić retencję i procedurę obsługi.
 
@@ -132,4 +132,27 @@ Opcjonalnie `node scripts/check-messaging-live.mjs` wykonuje rzeczywisty test Au
 
 ## 10. Push
 
-Migracja `202610240004_push_notifications.sql` i funkcja `dispatch-push` obsługują alerty o wiadomościach, otrzymaniu zaproszenia i akceptacji. Zdarzenia są dodawane w bazie, więc wysyłka działa bez uruchomionej aplikacji. Klucze serwerowe i tokeny urządzeń nie są publiczne. Szczegóły wdrożenia workera, Vault/cron, Firebase/FCM, nowego buildu i kontroli: **[PUSH.md](PUSH.md)**. Ustawienia rozdzielające typy powiadomień i pełne centrum powiadomień pozostają następnym etapem.
+Migracja `202610240004_push_notifications.sql` i funkcja `dispatch-push` obsługują alerty o wiadomościach, otrzymaniu zaproszenia i akceptacji. Zdarzenia są dodawane w bazie, więc wysyłka działa bez uruchomionej aplikacji. Klucze serwerowe i tokeny urządzeń nie są publiczne. Szczegóły wdrożenia workera, Vault/cron, Firebase/FCM, nowego buildu i kontroli: **[PUSH.md](PUSH.md)**.
+
+## 11. Centrum powiadomień i preferencje
+
+Migracja `202610240005_notification_center.sql` dodaje `notifications`, `notification_preferences` i prywatne funkcje `notifications_private`. Schemat prywatny nie jest udostępniany w API. RLS pozwala odczytać wyłącznie własne dane, ukrywa wpisy zablokowanych kontaktów, a zapisy przechodzą przez RPC z właścicielem wynikającym z sesji. Historia nie zawiera treści wiadomości ani danych dzieci.
+
+- `get_my_notifications` zwraca stronę historii, dokładny licznik nieodczytanych, ustawienia konta i czas pobrania. Stabilny kursor `(created_at,id)` pozwala pobierać starsze wpisy. Interfejs udostępnia wszystkie/nieodczytane, retry i stany niedostępnych treści.
+- `mark_my_notifications_read` oznacza wskazane własne wpisy lub wszystkie do czasu ostatniego pobrania. Nowsze wpisy pozostają nieodczytane. Odczyt powiadomienia nie zmienia odczytu czatu; odczyt czatu potwierdza odpowiadające mu wpisy historii. Rozwiązanie zaproszenia również potwierdza jego powiadomienie.
+- `save_my_notification_preference` zapisuje pojedyncze ustawienie `messages` albo `invitations`, bez nadpisywania drugiego pola przez równoczesny zapis z innego telefonu. Preferencje dotyczą całego konta. Wyłączenie zatrzymuje oczekujące dostawy kategorii; ponowne włączenie nie odtwarza dawnych alertów. Już przekazanych żądań dostawcy nie da się cofnąć.
+- Nowe zaproszenia, akceptacje i wiadomości tworzą historię atomowo, także bez urządzenia i z wyłączonym push. Usuwanie starych zadań kolejki push nie kasuje historii. Blokada kontaktu ukrywa historię obu stron i wygasza stan nieodczytanych; usunięcie konta usuwa jego wpisy kaskadowo.
+- Propozycje są dopisywane przy pobraniu pierwszej strony, także po powrocie aplikacji na pierwszy plan. Korzystają z dat, regionu, rodzaju ekipy i przedziałów wieku tak jak wyszukiwanie z własnego wyjazdu. Jedna para własny/cudzy wyjazd daje jeden wpis. Na raz odświeżenie dopisuje do 100 nowych par. To propozycje w aplikacji; nie uruchamiają push przy zamkniętej aplikacji.
+
+Odczyty i preferencje używają istniejącego licznika `mailbox_updates`, bez publikowania treści przez Realtime. Powrót na pierwszy plan, odświeżanie co 20 sekund i ręczne ponowienie uzupełniają subskrypcję. Zmiana konta usuwa stan klienta. Zapis jest potwierdzany odpowiedzią bazy.
+
+W istniejącym środowisku z działającym push wystarczy kolejno:
+
+```powershell
+npx supabase@latest db push --linked
+npx supabase@latest db query --linked --file scripts/check-notification-center-remote.sql
+```
+
+Nie trzeba ponownie wdrażać workera, rotować sekretów ani przebudowywać APK. Po wdrożeniu odśwież aplikację w Metro. Migracja przenosi dostępne niedawne zdarzenia kolejki oraz oczekujące zaproszenia i nieodczytane wiadomości do historii bez wysyłania historycznych push.
+
+`npm test` sprawdza migrację w PostgreSQL/PGlite: izolację kont, odczyty, preferencje obu kategorii, kolejkę, propozycje, paginację, blokady i cascade. `npm run test:web` sprawdza historię i ustawienia w dwóch sesjach przeglądarki, ponowienia i niezależność od odczytu czatu. Zdalny skrypt SQL kończy się `ROLLBACK`, nie zostawia kont i nie wysyła push. Testów tych nie należy utożsamiać z testem dwóch fizycznych telefonów; scenariusze są w [PUSH.md](PUSH.md).

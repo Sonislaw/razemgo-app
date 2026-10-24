@@ -88,6 +88,7 @@ function RootNavigator() {
         <Stack.Screen name="trip/[id]" />
         <Stack.Screen name="edit-profile" />
         <Stack.Screen name="settings" />
+        <Stack.Screen name="notifications" />
         <Stack.Screen name="chat/[id]" />
         <Stack.Screen name="messaging-safety" />
         <Stack.Screen name="trips/[id]" />

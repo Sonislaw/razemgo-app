@@ -62,6 +62,7 @@ export function MessageSegments<T extends string>({
             option.label + (option.count ? ', ' + option.count : '')
           }
           accessibilityState={{ selected: value === option.value }}
+          aria-selected={value === option.value}
           onPress={() => onChange(option.value)}
           style={({ pressed }) => ({
             flex: 1,

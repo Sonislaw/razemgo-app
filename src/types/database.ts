@@ -5,6 +5,7 @@ import type {
 } from '../features/profile/profile-mapper';
 import type { TripRow, PublicTripRow, tripToPayload } from '../features/trips/trip-mapper';
 import type { MailboxRow, MessageRow } from '../features/messaging/messaging-mapper';
+import type { NotificationsPage, NotificationPreferences } from '../features/notifications/notification-types';
 
 // Keep in sync with supabase/migrations. Replace using Supabase type generation after linking.
 export interface Database {
@@ -31,6 +32,9 @@ export interface Database {
     };
     Views: Record<never, never>;
     Functions: {
+      get_my_notifications: { Args: { before_at?: string | null; before_id?: string | null; page_size?: number; only_unread?: boolean }; Returns: NotificationsPage };
+      mark_my_notifications_read: { Args: { notification_ids?: string[] | null; read_through?: string | null }; Returns: number };
+      save_my_notification_preference: { Args: { preference_key: string; enabled: boolean }; Returns: NotificationPreferences };
       register_my_push_device: { Args: { installation_id: string; installation_key: string; push_token: string; device_platform: string; expo_project_id: string }; Returns: string };
       unregister_my_push_device: { Args: { installation_id: string; installation_key: string }; Returns: undefined };
       get_my_mailbox: { Args: Record<never, never>; Returns: MailboxRow };

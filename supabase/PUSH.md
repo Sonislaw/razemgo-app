@@ -40,13 +40,13 @@ Migracja **`202610240004_push_notifications.sql`** tworzy rejestr urządzeń ora
 
 Instalacja ma losowy identyfikator i klucz w SecureStore; baza przechowuje hash klucza. Rejestracja wiąże telefon z ekipą wynikającą z `auth.uid()` i aktualną sesją Auth. Identyfikatora nadawcy/odbiorcy nie można podmienić przez API. Tokenów nie można odczytać przez publiczne API. Wylogowanie wyrejestrowuje instalację; usunięcie sesji lub konta usuwa jej token i dostawy kaskadowo. Zmiana konta usuwa stare oczekujące dostawy danego telefonu.
 
-Wyłączenie w ustawieniach dotyczy tego urządzenia. Zgoda systemowa nie jest automatycznie odwoływana; zapisana lokalnie decyzja blokuje ponowną rejestrację do ręcznego włączenia. Nie dodano jeszcze osobnych preferencji dla poszczególnych typów powiadomień.
+Wyłączenie w sekcji „Powiadomienia na telefonie” dotyczy tego urządzenia. Zgoda systemowa nie jest automatycznie odwoływana; zapisana lokalnie decyzja blokuje ponowną rejestrację do ręcznego włączenia. Poniżej są osobne ustawienia kategorii „Wiadomości” i „Zaproszenia”, zapisywane w Supabase dla wszystkich urządzeń konta. Wyłączenie kategorii pozostawia historię powiadomień w aplikacji dostępną.
 
 Worker **`dispatch-push`**:
 
 - Jest chroniony osobnym kluczem serwerowym `PUSH_DISPATCH_SECRET`; klient mobilny nie zna tego klucza. RPC do odbierania i kończenia zadań są dostępne wyłącznie dla `service_role`.
 - Rezerwuje zadania blokadą i losowym kluczem próby. Równoczesne procesy nie pobierają tego samego aktywnego zadania. Niedokończona próba może zostać odzyskana po dwóch minutach.
-- Przed wysyłką sprawdza blokadę obu stron, stan zaproszenia, odczyt wiadomości, istnienie sesji i aktualne konto przypisane do telefonu. Alerty ważne są do 24 godzin. Nowa instalacja nie otrzymuje historycznych zdarzeń.
+- Przed wysyłką sprawdza blokadę obu stron, stan zaproszenia, odczyt wiadomości i powiadomienia, preferencję kategorii, istnienie sesji i aktualne konto przypisane do telefonu. Alerty ważne są do 24 godzin. Nowa instalacja nie otrzymuje historycznych zdarzeń.
 - Wysyła do Expo porcje maksymalnie 30 alertów, zapisuje ticket i po 15 minutach sprawdza receipt. Brak receipt jest ponawiany bez ponownego wysłania alertu. Przejściowe błędy mają narastający odstęp i limit ośmiu prób.
 - `DeviceNotRegistered` usuwa tylko ten token, którego dotyczyła próba; odświeżony token pozostaje. Błędne credentials nie usuwają telefonu.
 - Treści alertów są ogólne. Nie zawierają tekstu rozmowy, nazwiska, danych dzieci ani lokalizacji. Payload zawiera wyłącznie typ, wersję i identyfikatory potrzebne do bezpiecznej nawigacji.
@@ -77,6 +77,7 @@ npm run test:web
 npx deno check supabase/functions/dispatch-push/index.ts
 npx supabase@latest db query --linked --file scripts/check-push-remote.sql
 node scripts/check-push-dispatch.mjs
+npx supabase@latest db query --linked --file scripts/check-notification-center-remote.sql
 ```
 
 Testy logiki i bazy sprawdzają trzy zdarzenia, uprawnienia, sesje, zmianę konta, retry, blokady, odczyty przed wysyłką, aktualizację tokena, receipts i dozwolone trasy. Test zdalny działa wewnątrz transakcji zakończonej `ROLLBACK`; także zaplanowane w niej wywołania `pg_net` są cofane, więc nie wysyła próbnych push. Nie jest to test otrzymania powiadomienia na fizycznym telefonie.
@@ -90,5 +91,16 @@ Po dodaniu FCM i zainstalowaniu nowego APK:
 3. A wysyła nową wiadomość. B dostaje alert przy aplikacji w tle i zamkniętej. Sprawdź też zimny start, odtworzenie sesji i przywrócenie z tła.
 4. W otwartej rozmowie z tą ekipą nie powinno być dodatkowego bannera. Odczyt przed wysyłką i blokada powinny zatrzymać jeszcze oczekujący alert.
 5. Sprawdź odmowę zgody, włączenie w ustawieniach systemu, wyłączenie w aplikacji, drugi telefon tego samego konta i wylogowanie. Alert ze starego konta nie może otworzyć rozmowy nowego konta.
+
+### Historia i ustawienia kategorii — bez nowego APK
+
+Migracja `202610240005_notification_center.sql` rozszerza obecną konfigurację. Wdrożenie wymaga `db push --linked` i Reload aplikacji; nie wymaga przebudowania działającego APK ani ponownego uruchomienia `configure-push-dispatch.mjs`. Szczegóły modelu, RLS i RPC: [centrum powiadomień](README.md#11-centrum-powiadomień-i-preferencje).
+
+1. Na dwóch telefonach zaloguj to samo konto. Otwórz dzwonek na Start i „Zobacz wszystkie powiadomienia”. Sprawdź historię, starsze wpisy oraz filtr nieodczytanych. Odczyt na jednym telefonie powinien odświeżyć drugi; restart zachowuje odczyt.
+2. Oznacz alert nowej wiadomości jako odczytany w historii. Wiadomość w zakładce Wiadomości nadal powinna być nieprzeczytana, dopóki nie otworzysz rozmowy. Otworzenie rozmowy potwierdza także jej powiadomienia.
+3. W Profil → Ustawienia wyłącz tylko „Wiadomości”. Po zapisie drugi telefon ma pokazać ten sam wybór. Nowa wiadomość pozostaje w historii i skrzynce, ale nie tworzy push; nowe zaproszenie nadal może go tworzyć. Powtórz osobno dla kategorii „Zaproszenia”, obejmującej również akceptację.
+4. Ponownie włącz kategorię. Dawne alerty nie powinny zostać wysłane; nowy może przyjść. Alert już przekazany dostawcy przed wyłączeniem może jeszcze dotrzeć.
+5. Wróć do Start po dodaniu pasującego publicznego wyjazdu z innego konta. Historia dopisuje propozycję przy pobraniu i nie powiela jej po odświeżeniu. Propozycje w tym etapie nie wysyłają push, gdy aplikacja jest zamknięta.
+6. Sprawdź brak sieci przy pobraniu i zapisie ustawienia: dostępne jest ponowienie, a niepotwierdzony zapis nie zmienia przełącznika. Zmień konto: poprzednia historia i preferencje nie mogą być widoczne. Zablokuj kontakt i sprawdź ukrycie jego powiadomień.
 
 Na Androidzie zwykłe zamknięcie aplikacji różni się od systemowego **Wymuś zatrzymanie**; ten ostatni stan może zatrzymać odbieranie do ponownego uruchomienia ([wyjaśnienie Firebase](https://firebase.google.com/docs/cloud-messaging/flutter/receive-messages)). Test na urządzeniu musi uwzględnić ustawienia oszczędzania baterii producenta.

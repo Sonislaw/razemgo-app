@@ -14,6 +14,7 @@ import { OwnTripsProvider } from '@/features/trips/own-trips-context';
 import { NotificationsProvider } from '@/features/notifications/notifications-context';
 import { AuthProvider, useAuth } from '@/features/auth/auth-context';
 import { USE_DEMO_DATA } from '@/constants/app';
+import { PushProvider, PushAccountBridge } from '@/features/notifications/push-context';
 
 export const unstable_settings = { anchor: 'account-loading' };
 
@@ -49,7 +50,7 @@ function RootNavigator() {
       hasProfile,
     );
   return (
-    <Stack
+    <><Stack
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: palette.background },
@@ -92,7 +93,7 @@ function RootNavigator() {
         <Stack.Screen name="trips/[id]" />
         <Stack.Screen name="trip-editor" />
       </Stack.Protected>
-    </Stack>
+    </Stack><PushAccountBridge ready={ready} /></>
   );
 }
 
@@ -140,7 +141,7 @@ export default function RootLayout() {
     >
       <StatusBar style={dark ? 'light' : 'dark'} />
       <AuthProvider>
-        <AccountProviders />
+        <PushProvider><AccountProviders /></PushProvider>
       </AuthProvider>
     </ThemeProvider>
   );

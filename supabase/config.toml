@@ -52,3 +52,7 @@ content_path = "./supabase/templates/recovery.html"
 # The setup guide lists the equivalent local settings without committing secrets.
 [functions.delete-account]
 verify_jwt = false
+
+# Authenticated using a server-only key shared with the scheduler in Vault.
+[functions.dispatch-push]
+verify_jwt = false

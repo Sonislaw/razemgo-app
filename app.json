@@ -41,7 +41,8 @@
           "imageWidth": 76
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      ["expo-notifications", { "color": "#087FA4", "defaultChannel": "razemgo-contact" }]
     ],
     "experiments": {
       "typedRoutes": true,

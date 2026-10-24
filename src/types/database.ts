@@ -31,6 +31,8 @@ export interface Database {
     };
     Views: Record<never, never>;
     Functions: {
+      register_my_push_device: { Args: { installation_id: string; installation_key: string; push_token: string; device_platform: string; expo_project_id: string }; Returns: string };
+      unregister_my_push_device: { Args: { installation_id: string; installation_key: string }; Returns: undefined };
       get_my_mailbox: { Args: Record<never, never>; Returns: MailboxRow };
       send_contact_invitation: { Args: { target_trip_id: string; message_text: string; request_key: string; source_trip_id?: string | null }; Returns: string };
       respond_contact_invitation: { Args: { invitation_id: string; response: string }; Returns: string | null };

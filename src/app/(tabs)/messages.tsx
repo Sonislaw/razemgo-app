@@ -30,6 +30,7 @@ import {
   MessageSegments,
 } from '@/features/messaging/messaging-ui';
 import { useTheme } from '@/hooks/use-theme';
+import { PushPermissionCard } from '@/features/notifications/push-permission-card';
 import type {
   ContactInvitation,
   Conversation,
@@ -337,6 +338,7 @@ export default function MessagesScreen() {
             ]}
             onChange={setView}
           />
+          <PushPermissionCard compact />
           {actionError ? <AppText accessibilityRole="alert" color="textSecondary">{actionError}</AppText> : null}
           {state.loadStatus === 'ready' && error ? <DataStatus status="error" error={error} onRetry={() => { void refresh(); }} /> : null}
           {state.loadStatus === 'ready' && realtime === 'reconnecting' && !IS_DEMO_MODE ? (

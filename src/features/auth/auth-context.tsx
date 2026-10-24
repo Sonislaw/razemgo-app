@@ -18,6 +18,7 @@ import {
   resetPersistedAuth,
 } from '@/lib/supabase';
 import { USE_DEMO_DATA } from '@/constants/app';
+import { unregisterPushDevice, clearDeviceNotifications } from '@/features/notifications/push-platform';
 import {
   authErrorMessage,
   normalizeEmail,
@@ -180,6 +181,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
   const signOut = async () => {
     if (USE_DEMO_DATA) return;
+    await unregisterPushDevice().catch(() => undefined);
+    await clearDeviceNotifications().catch(() => undefined);
     const result = await getSupabase().auth.signOut({ scope: 'local' });
     const current = await getSupabase().auth.getSession();
     if (result.error && current.data.session) throw result.error;
@@ -189,6 +192,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
   const resetSession = async () => {
     try {
+      if(isSupabaseConfigured) await unregisterPushDevice().catch(() => undefined);
+      await clearDeviceNotifications().catch(() => undefined);
       await resetPersistedAuth();
       setSession(null);
       setRecovering(false);

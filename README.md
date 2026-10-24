@@ -12,7 +12,9 @@ Migracja `202610240001_trips.sql` dodaje wyjazdy, walidację i RLS. Profile i pr
 
 Zaproszenia, rozmowy, wiadomości, odczyty, blokady i zgłoszenia zapisują się w Supabase. Akceptacja zaproszenia atomowo tworzy jedną rozmowę z kontekstem wyjazdu. Historia działa na drugim urządzeniu; powtórzona wysyłka używa tego samego klucza i nie duplikuje danych. Realtime powiadamia o zmianie skrzynki, a aplikacja pobiera wyłącznie dane uprawnionego uczestnika. Przy rozłączeniu działa okresowe odświeżanie oraz ponowienie ręczne.
 
-Migracja `202610240003_messaging.sql` dodaje uprawnienia i funkcje skrzynki. Nowe konta zaczynają z pustą skrzynką. Zablokowanie kontaktu wstrzymuje wysyłanie po obu stronach i ukrywa wzajemne ogłoszenia. Zgłoszenia trafiają do serwerowej tabeli do obsługi przez administratora; nie ma jeszcze panelu moderacji. Następny etap to powiadomienia push, monitoring i pilotaż.
+Migracja `202610240003_messaging.sql` dodaje uprawnienia i funkcje skrzynki. Nowe konta zaczynają z pustą skrzynką. Zablokowanie kontaktu wstrzymuje wysyłanie po obu stronach i ukrywa wzajemne ogłoszenia. Zgłoszenia trafiają do serwerowej tabeli do obsługi przez administratora; nie ma jeszcze panelu moderacji.
+
+Powiadomienia push o nowych wiadomościach, zaproszeniach i ich akceptacji mają rejestr urządzeń, kolejkę serwerową, worker Expo, retry i receipts. Kliknięcie otwiera właściwy widok po odtworzeniu sesji. Firebase/FCM dla testowego Androida jest skonfigurowane w EAS. **Wymagają instalacji nowego APK**; samo Reload poprzedniego buildu ich nie włączy. Konfiguracja i scenariusze telefonu: **[Push — instrukcja](supabase/PUSH.md)**. Następne etapy to trwałe centrum powiadomień, preferencje typów alertów, monitoring i pilotaż.
 
 ```powershell
 npm ci

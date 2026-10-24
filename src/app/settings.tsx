@@ -12,6 +12,7 @@ import { Icon, type IconName } from '@/components/ui/icon';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { ProfileSubpageHeader } from '@/features/profile/profile-ui';
 import { AccountSettings } from '@/features/auth/account-settings';
+import { PushPermissionCard } from '@/features/notifications/push-permission-card';
 
 function SettingsSection({
   icon,
@@ -76,12 +77,7 @@ export default function SettingsScreen() {
           status="Wkrótce"
           description="Zarządzanie widocznością profilu i planów. Wiek dzieci pokazujemy w przybliżonych przedziałach."
         />
-        <SettingsSection
-          icon="bell"
-          title="Powiadomienia"
-          status="Wkrótce"
-          description="Tutaj wybierzesz powiadomienia o zaproszeniach, rozmowach i wyjazdach. W tej wersji powiadomienia nie są wysyłane."
-        />
+        <PushPermissionCard />
         <AccountSettings />
         <Button
           label="Bezpieczeństwo rozmów"

@@ -17,6 +17,10 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
+google-services.json
+firebase-service-account*.json
+*-firebase-adminsdk-*.json
+credentials.json
 
 # Metro
 .metro-health-check*

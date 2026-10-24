@@ -15,6 +15,7 @@ import {
   validateCredentials,
 } from '@/features/auth/auth-data';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
+import { monitoredOperation, reportFailure } from '@/lib/monitoring-core';
 
 export default function SignUpScreen() {
   const { signInGoogle } = useAuth();
@@ -34,11 +35,11 @@ export default function SignUpScreen() {
     try {
       if (google) setError(await signInGoogle());
       else {
-        const { data, error: cause } = await getSupabase().auth.signUp({
+        const { data, error: cause } = await monitoredOperation('auth.sign_up', () => getSupabase().auth.signUp({
           email: normalizeEmail(email),
           password,
           options: { emailRedirectTo: getAuthRedirectUrl() },
-        });
+        }));
         if (cause) setError(authErrorMessage(cause));
         else
           router.replace(
@@ -51,6 +52,7 @@ export default function SignUpScreen() {
           );
       }
     } catch (cause) {
+      if (!google) reportFailure(cause, 'auth.sign_up');
       setError(
         isSupabaseConfigured
           ? authErrorMessage(cause)

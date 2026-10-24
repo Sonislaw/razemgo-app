@@ -15,6 +15,9 @@ const child = spawn(
       EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
         'sb_publishable_razemgo_browser_test_only',
       EXPO_PUBLIC_ENABLE_DEMO: 'false',
+      EXPO_PUBLIC_SENTRY_DSN: 'https://testonly@monitoring.razemgo.invalid/1',
+      EXPO_PUBLIC_MONITORING_IN_DEV: 'true',
+      EXPO_PUBLIC_APP_ENV: 'development',
     },
   },
 );

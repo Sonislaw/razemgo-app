@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo/ui": "~58.0.22",
+    "@sentry/react-native": "~8.28.0",
     "@supabase/supabase-js": "^2.118.0",
     "expo": "~58.0.17",
     "expo-auth-session": "~58.0.14",
@@ -63,6 +64,7 @@
     "test:animals": "node --test scripts/animals.test.mjs",
     "start:dev": "expo start --dev-client",
     "test:auth": "node --test scripts/auth.test.mjs",
+    "test:monitoring": "node --test scripts/monitoring.test.mjs",
     "test:backend": "node --test scripts/backend.test.mjs",
     "test": "node --test scripts/*.test.mjs",
     "test:web": "playwright test"

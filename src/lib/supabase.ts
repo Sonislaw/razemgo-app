@@ -3,6 +3,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 import { sessionStorage } from './session-storage';
 import { installAuthCrypto } from './auth-crypto';
+import { monitorAuthRefresh } from './monitoring-core';
 
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim() ?? '';
 const key = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ?? '';
@@ -18,6 +19,7 @@ export function getSupabase() {
   if (!client) {
     installAuthCrypto();
     client = createClient<Database>(url, key, {
+      global: { fetch: monitorAuthRefresh((input,init)=>fetch(input,init)) },
       auth: {
         storageKey,
         storage: sessionStorage,

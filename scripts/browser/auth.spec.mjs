@@ -39,6 +39,7 @@ function session(id) {
   };
 }
 async function backend(context, existingState) {
+  await context.route('https://monitoring.razemgo.invalid/**',route=>route.fulfill({status:200,body:'{}',headers:{'access-control-allow-origin':'*'}}));
   const state = existingState ?? {
     profiles: new Map(),
     saveFail: false,

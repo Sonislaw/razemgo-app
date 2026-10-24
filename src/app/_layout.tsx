@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, usePathname, type ErrorBoundaryProps } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { ActivityIndicator, Appearance, Platform, View } from 'react-native';
@@ -15,6 +15,19 @@ import { NotificationsProvider } from '@/features/notifications/notifications-co
 import { AuthProvider, useAuth } from '@/features/auth/auth-context';
 import { USE_DEMO_DATA } from '@/constants/app';
 import { PushProvider, PushAccountBridge } from '@/features/notifications/push-context';
+import { AppText, Button } from '@/components/ui/primitives';
+import { initializeMonitoring, reportRenderError, setMonitoringScreen } from '@/lib/monitoring';
+
+initializeMonitoring();
+
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  useEffect(() => { reportRenderError(error); }, [error]);
+  return <View style={{ flex: 1, justifyContent: 'center', padding: 32, gap: 16, backgroundColor: '#F5FAFB' }}>
+    <AppText variant="heading">Coś poszło nie tak</AppText>
+    <AppText>Nie udało się otworzyć tego ekranu. Spróbuj ponownie.</AppText>
+    <Button label="Spróbuj ponownie" onPress={retry} />
+  </View>;
+}
 
 export const unstable_settings = { anchor: 'account-loading' };
 
@@ -117,6 +130,8 @@ function AccountProviders() {
 }
 
 export default function RootLayout() {
+  const pathname = usePathname();
+  useEffect(() => { setMonitoringScreen(pathname); }, [pathname]);
   const colorScheme = useColorScheme();
   const dark = colorScheme === 'dark';
   const palette = useTheme();

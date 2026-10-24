@@ -44,7 +44,7 @@ export async function registerPushDevice(token: string, userId: string) {
   if (!projectId) throw new Error('Missing push project');
   const result=await backendRequest(signal => getSupabase().rpc('register_my_push_device', {
     installation_id:saved.id,installation_key:saved.key,push_token:token,device_platform:Platform.OS,expo_project_id:projectId,
-  }).abortSignal(signal));
+  }).abortSignal(signal), 'push.register');
   if (result.error) throw result.error;
   return (await getSupabase().auth.getSession()).data.session?.user.id===userId;
 }
@@ -54,7 +54,7 @@ export async function unregisterPushDevice() {
   const value=JSON.parse(raw) as Installation;
   const {error}=await backendRequest(signal => getSupabase().rpc('unregister_my_push_device', {
     installation_id:value.id,installation_key:value.key,
-  }).abortSignal(signal));
+  }).abortSignal(signal), 'push.unregister');
   if (error) throw error;
 }
 export async function clearDeviceNotifications() {

@@ -15,6 +15,7 @@ import {
   validateCredentials,
 } from '@/features/auth/auth-data';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
+import { monitoredOperation, reportFailure } from '@/lib/monitoring-core';
 
 export default function SignInScreen() {
   const { signInGoogle } = useAuth();
@@ -32,10 +33,10 @@ export default function SignInScreen() {
     try {
       if (google) setError(await signInGoogle());
       else {
-        const { error: cause } = await getSupabase().auth.signInWithPassword({
+        const { error: cause } = await monitoredOperation('auth.sign_in', () => getSupabase().auth.signInWithPassword({
           email: normalizeEmail(email),
           password,
-        });
+        }));
         if (cause?.code === 'email_not_confirmed')
           router.push({
             pathname: '/auth/confirm',
@@ -45,6 +46,7 @@ export default function SignInScreen() {
         else router.replace('/account-loading');
       }
     } catch (cause) {
+      if (!google) reportFailure(cause, 'auth.sign_in');
       setError(
         isSupabaseConfigured
           ? authErrorMessage(cause)

@@ -18,6 +18,7 @@ import {
   resetPersistedAuth,
 } from '@/lib/supabase';
 import { USE_DEMO_DATA } from '@/constants/app';
+import { monitoredOperation, reportFailure } from '@/lib/monitoring-core';
 import { unregisterPushDevice, clearDeviceNotifications } from '@/features/notifications/push-platform';
 import {
   authErrorMessage,
@@ -101,13 +102,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           new URL(initialUrl).searchParams.get('flow') === 'recovery'
         )
           setRecovering(true);
-        const result = await client.auth.getSession();
+        const result = await monitoredOperation('auth.restore', () => client.auth.getSession());
         if (result.error) throw result.error;
         const revision = authRevision.current;
         if (result.data.session) {
-          const checked = await client.auth.getUser(
-            result.data.session.access_token,
-          );
+          const accessToken=result.data.session.access_token;
+          const checked = await monitoredOperation('auth.restore', () => client.auth.getUser(
+            accessToken,
+          ));
           if (!alive || revision !== authRevision.current) return;
           if (checked.error) {
             if ([401, 403, 404].includes(checked.error.status ?? 0)) {
@@ -120,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         if (alive) setSession(result.data.session);
       } catch (cause) {
+        reportFailure(cause, 'auth.restore');
         if (alive) setError(authErrorMessage(cause));
       } finally {
         if (alive) setLoading(false);
@@ -163,14 +166,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             recovery: parsed.recovery,
           };
         }
-        const result = await getSupabase().auth.exchangeCodeForSession(
-          parsed.code,
+        const code=parsed.code;
+        const result = await monitoredOperation('auth.callback', () => getSupabase().auth.exchangeCodeForSession(
+          code,
           parsed.flowId ? { flowId: parsed.flowId } : undefined,
-        );
+        ));
         if (result.error) throw result.error;
         setSession(result.data.session);
         return { error: null, recovery: parsed.recovery };
       } catch (cause) {
+        reportFailure(cause, 'auth.callback');
         setRecovering(false);
         return { error: authErrorMessage(cause), recovery: parsed.recovery };
       }
@@ -183,7 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (USE_DEMO_DATA) return;
     await unregisterPushDevice().catch(() => undefined);
     await clearDeviceNotifications().catch(() => undefined);
-    const result = await getSupabase().auth.signOut({ scope: 'local' });
+    const result = await monitoredOperation('auth.sign_out', () => getSupabase().auth.signOut({ scope: 'local' }));
     const current = await getSupabase().auth.getSession();
     if (result.error && current.data.session) throw result.error;
     setSession(null);
@@ -200,6 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setError(null);
       callbacks.current.clear();
     } catch (cause) {
+      reportFailure(cause, 'auth.reset_session');
       setError(authErrorMessage(cause));
     }
   };
@@ -213,17 +219,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return 'Logowanie Google jest dostępne w zainstalowanej aplikacji. W Expo Go skorzystaj z e-maila.';
     try {
       const redirectTo = getAuthRedirectUrl();
-      const { data, error: cause } = await getSupabase().auth.signInWithOAuth({
+      const { data, error: cause } = await monitoredOperation('auth.google', () => getSupabase().auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo,
           skipBrowserRedirect: Platform.OS !== 'web',
           scopes: 'openid email profile',
         },
-      });
+      }));
       if (cause) throw cause;
       if (Platform.OS === 'web') return null;
-      if (!data.url) return 'Nie udało się rozpocząć logowania Google.';
+      if (!data.url) { reportFailure(new Error(), 'auth.google'); return 'Nie udało się rozpocząć logowania Google.'; }
       const result = await WebBrowser.openAuthSessionAsync(
         data.url,
         redirectTo,
@@ -231,44 +237,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (result.type !== 'success') return null;
       return (await completeCallback(result.url)).error;
     } catch (cause) {
+      reportFailure(cause, 'auth.google');
       return authErrorMessage(cause);
     }
   };
   const requestPasswordReset = async (email: string) => {
     try {
-      const result = await getSupabase().auth.resetPasswordForEmail(
+      const result = await monitoredOperation('auth.reset_request', () => getSupabase().auth.resetPasswordForEmail(
         normalizeEmail(email),
         { redirectTo: getAuthRedirectUrl(true) },
-      );
+      ));
       return result.error ? authErrorMessage(result.error) : null;
     } catch (cause) {
+      reportFailure(cause, 'auth.reset_request');
       return authErrorMessage(cause);
     }
   };
   const updatePassword = async (password: string) => {
     try {
-      const { error: cause } = await getSupabase().auth.updateUser({
+      const { error: cause } = await monitoredOperation('auth.password', () => getSupabase().auth.updateUser({
         password,
-      });
+      }));
       if (cause) return authErrorMessage(cause);
       setRecovering(false);
       callbacks.current.clear();
       return null;
     } catch (cause) {
+      reportFailure(cause, 'auth.password');
       return authErrorMessage(cause);
     }
   };
   const deleteAccount = async () => {
     try {
-      const { data, error: cause } = await getSupabase().functions.invoke(
+      const { data, error: cause } = await monitoredOperation('account.delete', () => getSupabase().functions.invoke(
         'delete-account',
         { method: 'POST' },
-      );
+      ));
       if (cause || !data?.deleted)
         return 'Nie udało się usunąć konta. Sprawdź połączenie i spróbuj ponownie.';
       await signOut();
       return null;
     } catch (cause) {
+      reportFailure(cause, 'account.delete');
       return authErrorMessage(cause);
     }
   };

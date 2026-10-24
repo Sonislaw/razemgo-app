@@ -7,7 +7,7 @@ export async function fetchPublicTrips() {
   for (let page = 0; ; page++) {
     const { data, error } = await backendRequest(signal =>
       getSupabase().rpc('list_public_trips', { requested_trip_id: null })
-        .range(page * 500, page * 500 + 499).abortSignal(signal),
+        .range(page * 500, page * 500 + 499).abortSignal(signal), 'discovery.load',
     );
     if (error) throw error;
     for (const row of data ?? []) {

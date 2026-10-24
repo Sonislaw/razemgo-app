@@ -9,6 +9,7 @@ import {
 } from '@/features/auth/auth-data';
 import { getAuthRedirectUrl } from '@/features/auth/auth-context';
 import { getSupabase } from '@/lib/supabase';
+import { monitoredOperation, reportFailure } from '@/lib/monitoring-core';
 
 export default function ConfirmEmailScreen() {
   const params = useLocalSearchParams<{ email?: string }>();
@@ -36,16 +37,16 @@ export default function ConfirmEmailScreen() {
     setMessage(null);
     try {
       const result = resend
-        ? await getSupabase().auth.resend({
+        ? await monitoredOperation('auth.resend', () => getSupabase().auth.resend({
             type: 'signup',
             email: normalizeEmail(email),
             options: { emailRedirectTo: getAuthRedirectUrl() },
-          })
-        : await getSupabase().auth.verifyOtp({
+          }))
+        : await monitoredOperation('auth.confirm', () => getSupabase().auth.verifyOtp({
             type: 'signup',
             email: normalizeEmail(email),
             token: code.trim(),
-          });
+          }));
       if (result.error) setError(authErrorMessage(result.error));
       else if (resend) {
         setMessage(
@@ -54,6 +55,7 @@ export default function ConfirmEmailScreen() {
         setCooldown(60);
       } else router.replace('/account-loading');
     } catch (cause) {
+      reportFailure(cause, resend ? 'auth.resend' : 'auth.confirm');
       setError(authErrorMessage(cause));
     } finally {
       setBusy(false);

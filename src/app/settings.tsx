@@ -14,6 +14,7 @@ import { ProfileSubpageHeader } from '@/features/profile/profile-ui';
 import { AccountSettings } from '@/features/auth/account-settings';
 import { PushPermissionCard } from '@/features/notifications/push-permission-card';
 import { NotificationPreferencesCard } from '@/features/notifications/notification-ui';
+import { MonitoringTestCard } from '@/features/notifications/monitoring-test-card';
 
 function SettingsSection({
   icon,
@@ -81,6 +82,7 @@ export default function SettingsScreen() {
         <PushPermissionCard />
         <NotificationPreferencesCard />
         <AccountSettings />
+        <MonitoringTestCard />
         <Button
           label="Bezpieczeństwo rozmów"
           icon="shield"

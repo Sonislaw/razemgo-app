@@ -17,6 +17,7 @@ function profile(id){
 function state(){return {trips:new Map(),next:301,failSave:false,failLoad:false,failPublic:false, invitations:[], conversations:[], messages:[], reads:new Map(), blocks:new Set(), reports:[], failMailbox:false,failSend:false,failInvitation:false, failHistory:false,
   notifications:[],notificationPreferences:new Map(),failNotifications:false,failNotificationSave:false};}
 async function backend(context,store){
+  await context.route('https://monitoring.razemgo.invalid/**',route=>route.fulfill({status:200,body:'{}',headers:{'access-control-allow-origin':'*'}}));
   await context.route('http://127.0.0.1:54321/**',async route=>{
     const request=route.request(),url=new URL(request.url());
     const headers={'access-control-allow-origin':'http://localhost:8085','access-control-allow-headers':'*','access-control-allow-methods':'GET, POST, PUT, DELETE, OPTIONS','content-type':'application/json','x-supabase-api-version':'2024-01-01','access-control-expose-headers':'x-supabase-api-version'};

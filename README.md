@@ -26,7 +26,7 @@ npm run start:dev
 
 Testy: `npm test`, `npm run lint`, `npm run typecheck`. Testy migracji i RLS wykonują się na lokalnym PostgreSQL w PGlite bez Dockera. Pełna weryfikacja Google, wysyłki e-maili i telefonu wymaga podłączonych usług.
 
-Monitoring błędów JavaScript, logowania, operacji bazy i własnych Edge Functions jest przygotowany pod Sentry. Wysyłka jest wyłączona bez DSN, a raporty przechodzą przez ścisłą listę dozwolonych pól. Konfiguracja panelu, test diagnostyczny i zakres raportów: **[Monitoring](docs/MONITORING.md)**.
+Monitoring błędów JavaScript, logowania, operacji bazy i własnych Edge Functions jest podłączony do oddzielnych projektów Sentry aplikacji i backendu w środowisku testowym. Potwierdzono odbiór raportu z wdrożonej funkcji Supabase; powtórzenie kontroli: `node scripts/check-backend-monitoring.mjs`. Wysyłka jest wyłączona bez DSN, a raporty przechodzą przez ścisłą listę dozwolonych pól. Konfiguracja panelu, test diagnostyczny i zakres raportów: **[Monitoring](docs/MONITORING.md)**.
 
 ## Dokumentacja wcześniejszego podglądu interfejsu
 

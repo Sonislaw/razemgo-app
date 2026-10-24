@@ -29,7 +29,7 @@ Panel Sentry pokaże operację, ogólną kategorię, dozwolony kod, szablon ekra
 
 ## Funkcje Supabase
 
-Kod obu funkcji wdrożono w testowym projekcie `tueqqnbdvuazdxoqtpvk` 24.10.2026. W tym środowisku pozostaje dodanie DSN projektu backendowego do sekretów. Polecenia wdrożenia poniżej służą kolejnemu środowisku lub ponownemu wdrożeniu kodu.
+Kod obu funkcji wdrożono w testowym projekcie `tueqqnbdvuazdxoqtpvk` 24.10.2026. Skonfigurowano osobny projekt Sentry `razemgo-backend` w sekretach Edge Functions: `SENTRY_DSN`, `SENTRY_ENVIRONMENT=development` i `SENTRY_RELEASE=2026-10-24.monitoring-backend-v1`. DSN aplikacji pozostał osobną konfiguracją. Polecenia poniżej służą kolejnemu środowisku lub ponownemu wdrożeniu kodu.
 
 W **Supabase Dashboard → Edge Functions → Secrets** dodaj:
 
@@ -47,6 +47,22 @@ npx supabase@latest functions deploy dispatch-push --use-api --no-verify-jwt
 ```
 
 Autoryzacja pozostaje w funkcjach: `delete-account` sprawdza JWT przez Supabase Auth, a worker ma własny sekret. Nie uruchamiaj ponownie `configure-push-dispatch.mjs`; ta zmiana nie wymaga rotacji klucza push ani migracji bazy. Bez `SENTRY_DSN` funkcje zachowują bezpieczny log techniczny w panelu Supabase. Nie uruchamiaj usuwania konta jako testu monitoringu na prawdziwym koncie.
+
+### Test wdrożonego backendu
+
+Z zalogowanego CLI, w katalogu projektu:
+
+```powershell
+node scripts/check-backend-monitoring.mjs
+```
+
+Skrypt sprawdza zgodność podłączonego projektu z adresem Supabase aplikacji i pobiera klucz workera z Vault wyłącznie do pamięci procesu. Nie wypisuje klucza ani nie umieszcza go w aplikacji. Wywołuje `dispatch-push` z nagłówkiem `x-razemgo-diagnostic: sentry-test`: ta ścieżka wymaga klucza serwerowego, jawnego `SENTRY_ENVIRONMENT=development` i jest ograniczona do jednego raportu na minutę na uruchomiony proces funkcji. W produkcji zwraca 404. Nie odczytuje zadań push ani nie uruchamia operacji konta. Błędny nagłówek diagnostyczny nie uruchamia zwykłej wysyłki.
+
+Raport przechodzi przez ten sam filtr danych i SDK co rzeczywiste awarie. Test sprawdza kod HTTP transportu Sentry; samo opróżnienie kolejki SDK nie oznacza odbioru raportu. Odpowiedź pokazuje wyłącznie identyfikatory zdarzenia i żądania oraz status przyjęcia. Dwa wywołania bez prawidłowego klucza sprawdzają odmowę dostępu i nie tworzą zdarzeń. W Sentry wybierz projekt `razemgo-backend`, środowisko `development` i wyszukaj `monitoring.test`.
+
+Weryfikacja z wdrożonej funkcji 24.10.2026: Sentry potwierdziło odbiór HTTP 200, zdarzenie `7de091d5358144d79be9e80c2277df42`, żądanie `f5b72999-e9f0-4210-9636-3edbb941ded8`. Po teście zwykłe wywołanie workera przetworzyło pustą kolejkę, bez wysyłania powiadomień. Test obejmował transport backendu; widoczność w zalogowanym panelu Sentry potwierdza użytkownik.
+
+Ta integracja raportuje nieoczekiwane awarie Edge Functions. Ponawiane błędy dostawcy push pozostają stanami kolejki. Automatyczna kontrola zaległych zadań i zatrzymania harmonogramu to kolejny etap monitoringu.
 
 ## Dane i ograniczenia
 
@@ -77,15 +93,15 @@ npm run typecheck
 npm test
 npm run test:web
 npx deno check --node-modules-dir=none --no-lock supabase/functions/delete-account/index.ts supabase/functions/dispatch-push/index.ts
-npx deno test --node-modules-dir=none --no-lock --allow-env --allow-net --allow-sys --allow-read supabase/functions/_shared/monitoring.test.ts
+npx deno test --node-modules-dir=none --no-lock --allow-env --allow-net --allow-sys --allow-read supabase/functions/_shared/monitoring.test.ts supabase/functions/dispatch-push/handler.test.ts
 ```
 
-Testy jednostkowe sprawdzają usuwanie danych, kategorie, limity, zachowanie wyników żądań i timeout. Testy przeglądarkowe uruchamiają rzeczywisty SDK z fikcyjnym DSN, przechwytują wysłaną kopertę i sprawdzają brak danych konta oraz prywatnej treści wyjątku. Nie wysyłają raportów do prawdziwego Sentry. Odbiór w rzeczywistym panelu i działanie na telefonie trzeba potwierdzić po skonfigurowaniu konta.
+Testy jednostkowe sprawdzają usuwanie danych, kategorie, limity, zachowanie wyników żądań i timeout. Testy przeglądarkowe uruchamiają rzeczywisty SDK z fikcyjnym DSN, przechwytują wysłaną kopertę i sprawdzają brak danych konta oraz prywatnej treści wyjątku. Testy Deno sprawdzają również odmowę dostępu do diagnostyki, wyłączenie jej w produkcji, limit powtórzeń, odrzucenie raportu przez Sentry i niezależność od zwykłego dispatchera. Te testy automatyczne używają atrap transportu. Skrypt `check-backend-monitoring.mjs` wykonuje osobny test rzeczywistej funkcji i prawdziwego projektu Sentry.
 
 Kontrola Expo nadal wskazuje siedem dostępnych aktualizacji poprawek istniejących pakietów SDK 58. Pozostawiono ich dotychczasowe wersje. `npm audit` zgłasza także pięć istniejących ostrzeżeń o wysokiej wadze w drzewie zależności Expo; automatyczna sugestia obniża główną wersję Expo, więc nie zastosowano `audit fix --force` w ramach integracji monitoringu. Nie dotyczą one dodanego SDK Sentry.
 
 Weryfikacja 24.10.2026: lint i TypeScript przeszły; 225 testów Node, 17 scenariuszy Playwright oraz test transportu SDK Deno przeszły. Eksporty Androida i webu z mapami źródeł zakończyły się powodzeniem. Zdalnie sprawdzono odmowę usuwania konta bez JWT oraz autoryzację i obsługę pustej kolejki workera bez wysyłania push.
 
-Lokalny DSN aplikacji skonfigurowano 24.10.2026 w ignorowanym `.env.local`, z raportowaniem deweloperskim włączonym. Rzeczywisty test przycisku przez SDK webowy otrzymał HTTP 200 od Sentry i potwierdzenie identyfikatora `54d39240512d4b7d8d72fc9ddb59ac58` (`monitoring.test`). Użyto odizolowanej przeglądarki z fikcyjnym backendem; wysłano jeden raport techniczny, bez logowania do prawdziwego konta i bez wysyłania danych Supabase. Widoczność zdarzenia w panelu, test fizycznego telefonu oraz osobny DSN backendu pozostają do potwierdzenia/skonfigurowania.
+Lokalny DSN aplikacji skonfigurowano 24.10.2026 w ignorowanym `.env.local`, z raportowaniem deweloperskim włączonym. Rzeczywisty test przycisku przez SDK webowy otrzymał HTTP 200 od Sentry i potwierdzenie identyfikatora `54d39240512d4b7d8d72fc9ddb59ac58` (`monitoring.test`). Użyto odizolowanej przeglądarki z fikcyjnym backendem; wysłano jeden raport techniczny, bez logowania do prawdziwego konta i bez wysyłania danych Supabase. Następnie użytkownik potwierdził działanie integracji aplikacji. Osobny DSN backendu skonfigurowano i sprawdzono zdalnie zgodnie z sekcją powyżej.
 
 Źródła: [Expo — Sentry](https://docs.expo.dev/guides/using-sentry/), [Sentry — filtrowanie danych](https://docs.sentry.io/platforms/react-native/guides/expo/data-management/sensitive-data/), [Supabase — monitoring funkcji](https://supabase.com/docs/guides/functions/examples/sentry-monitoring).

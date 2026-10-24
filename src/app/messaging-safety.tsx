@@ -10,12 +10,12 @@ import {
   layout,
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
-import { DEMO_GROUPS } from '@/data/mocks/travel';
+import { DataStatus } from '@/components/ui/data-status';
 import { useMessaging } from '@/features/messaging/messaging-context';
 import { GroupAvatar } from '@/features/messaging/messaging-ui';
 
 export default function MessagingSafetyScreen() {
-  const { state, dispatch } = useMessaging();
+  const { state, setBlock, contact, busy, actionError, error, refresh } = useMessaging();
   return (
     <Screen>
       <View style={{ gap: 12 }}>
@@ -33,6 +33,8 @@ export default function MessagingSafetyScreen() {
             Bezpieczeństwo rozmów
           </AppText>
         </HeaderRow>
+        <DataStatus label="Wczytywanie kontaktów" status={error ? 'error' : state.loadStatus} error={error} onRetry={() => { void refresh(); }} />
+        {actionError ? <AppText accessibilityRole="alert" color="textSecondary">{actionError}</AppText> : null}
         <Card style={{ gap: 12 }}>
           <View style={layout.row}>
             <Icon name="shield" />
@@ -64,16 +66,17 @@ export default function MessagingSafetyScreen() {
             state.blockedGroupIds.map((id) => (
               <View key={id} style={{ gap: 8 }}>
                 <View style={layout.row}>
-                  <GroupAvatar groupId={id} size={40} />
+                  <GroupAvatar groupId={id} avatarId={contact(id)?.avatarId} size={40} />
                   <AppText variant="label" style={{ flex: 1 }}>
-                    {DEMO_GROUPS.find((group) => group.id === id)?.name ??
+                    {contact(id)?.name ??
                       'Ekipa'}
                   </AppText>
                 </View>
                 <Button
                   label="Odblokuj"
                   variant="secondary"
-                  onPress={() => dispatch({ type: 'unblock', groupId: id })}
+                  disabled={busy}
+                  onPress={() => { void setBlock(id, false); }}
                 />
               </View>
             ))
@@ -85,7 +88,7 @@ export default function MessagingSafetyScreen() {
           </AppText>
           {state.reports.map((report) => (
             <AppText key={report.id} variant="caption">
-              {DEMO_GROUPS.find((group) => group.id === report.groupId)?.name ??
+              {contact(report.groupId)?.name ??
                 'Ekipa'}{' '}
               · {report.reason}
             </AppText>

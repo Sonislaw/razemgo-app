@@ -8,6 +8,7 @@ import type {
   MessagingState,
   ReportReason,
 } from '../../types/messaging';
+import { mergeMessages, type MailboxData } from './messaging-mapper.ts';
 
 export const MAX_MESSAGE_LENGTH = 2000;
 export const MAX_INVITATION_LENGTH = 500;
@@ -69,6 +70,7 @@ export function canSendToConversation(
     state.loadStatus === 'ready' &&
     !!conversation &&
     !state.blockedGroupIds.includes(conversation.groupId) &&
+    !conversation.blocked &&
     isConversationAccepted(state, conversation)
   );
 }
@@ -82,9 +84,11 @@ export function unreadCount(
   if (
     !conversation ||
     state.blockedGroupIds.includes(conversation.groupId) ||
+    conversation.blocked ||
     !isConversationAccepted(state, conversation)
   )
     return 0;
+  if (conversation.unreadCount !== undefined) return conversation.unreadCount;
   return state.messages.filter(
     (message) =>
       message.conversationId === conversationId &&
@@ -136,6 +140,13 @@ export function getTripContact(
 }
 
 export type MessagingAction =
+  | { type: 'hydrate'; data: MailboxData }
+  | { type: 'history'; messages: ChatMessage[] }
+  | { type: 'load-status'; status: MessagingState['loadStatus'] }
+  | { type: 'outbox'; message: ChatMessage }
+  | { type: 'message-saved'; message: ChatMessage; requestKey: string }
+  | { type: 'message-failed'; requestKey: string }
+  | { type: 'read-confirmed'; conversationId: string; sequence: number }
   | { type: 'view'; view: MailboxView; direction?: InvitationDirection }
   | { type: 'reset'; state: MessagingState }
   | { type: 'ready' }
@@ -161,6 +172,24 @@ export function messagingReducer(
   action: MessagingAction,
 ): MessagingState {
   switch (action.type) {
+    case 'hydrate':
+      return { ...state, ...action.data, loadStatus: 'ready',
+        messages: mergeMessages(state.messages, action.data.messages, action.data.conversations) };
+    case 'history':
+      return { ...state, messages: mergeMessages(state.messages, action.messages, state.conversations) };
+    case 'load-status':
+      return { ...state, loadStatus: action.status };
+    case 'outbox':
+      return { ...state, messages: [...state.messages.filter(m => m.id !== action.message.id), action.message] };
+    case 'message-saved':
+      return { ...state, messages: mergeMessages(state.messages.filter(m => m.requestKey !== action.requestKey), [action.message], state.conversations) };
+    case 'message-failed':
+      return { ...state, messages: state.messages.map(m => m.requestKey === action.requestKey && m.sequence === undefined ? { ...m, status: 'failed' } : m) };
+    case 'read-confirmed': {
+      const conversations = state.conversations.map(c => c.id === action.conversationId
+        ? { ...c, selfReadSequence: Math.max(c.selfReadSequence ?? 0, action.sequence), unreadCount: undefined } : c);
+      return { ...state, conversations, messages: mergeMessages(state.messages, [], conversations) };
+    }
     case 'reset':
       return action.state;
     case 'view':

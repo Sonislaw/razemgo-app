@@ -104,7 +104,7 @@ export function HomeNotifications() {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const { state: ownTrips } = useOwnTrips();
-  const { state: mailbox, dispatch } = useMessaging();
+  const { state: mailbox, dispatch, contact } = useMessaging();
   const { setFilters, setSort, proposals: availableProposals } = useDiscovery();
   const { readKeys, markRead } = useNotifications();
   const notifications = selectHomeNotifications(
@@ -155,9 +155,7 @@ export function HomeNotifications() {
       : invitations.count
         ? `${notificationQuantity(invitations.count, 'invitations')} — sprawdź, kto chce Cię poznać.`
         : 'Nie masz oczekujących zaproszeń do kontaktu.';
-  const messageGroup = availableProposals.find(
-    ({ group }) => group.id === messages.conversation?.groupId,
-  )?.group;
+  const messageGroup = messages.conversation ? contact(messages.conversation.groupId) : undefined;
   const messageDescription =
     mailbox.loadStatus !== 'ready'
       ? 'Sprawdź rozmowy w Wiadomościach.'

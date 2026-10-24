@@ -53,7 +53,7 @@
     "typecheck": "tsc --noEmit",
     "test:discovery": "node --test scripts/discovery.test.mjs",
     "test:profile": "node --test scripts/profile.test.mjs",
-    "test:messaging": "node --test scripts/messaging.test.mjs",
+    "test:messaging": "node --test scripts/messaging.test.mjs scripts/messaging-data.test.mjs scripts/messaging-backend.test.mjs",
     "test:trips": "node --test scripts/trips.test.mjs",
     "test:trip-maps": "node --test scripts/trip-maps.test.mjs",
     "test:locations": "node --test scripts/locations.test.mjs",

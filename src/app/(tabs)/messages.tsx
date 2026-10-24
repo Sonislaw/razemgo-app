@@ -1,6 +1,6 @@
 import { getTripHeadline } from '@/features/trips/trip-headline';
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import {
   AppText,
@@ -13,7 +13,7 @@ import {
 import { Icon } from '@/components/ui/icon';
 import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import { IS_DEMO_MODE } from '@/constants/app';
-import { AVAILABLE_PROPOSALS } from '@/data/proposals';
+import { DataStatus } from '@/components/ui/data-status';
 import { DemoControls } from '@/features/messaging/demo-controls';
 import { useMessaging } from '@/features/messaging/messaging-context';
 import {
@@ -38,24 +38,23 @@ import type {
 } from '@/types/messaging';
 
 function ConversationRow({ conversation }: { conversation: Conversation }) {
-  const { state } = useMessaging();
+  const { state, contact, trip } = useMessaging();
   const theme = useTheme();
-  const proposal = AVAILABLE_PROPOSALS.find(
-    (item) => item.trip.id === conversation.tripId,
-  );
+  const group = contact(conversation.groupId);
+  const plan = trip(conversation.tripId);
   const messages = state.messages.filter(
     (item) => item.conversationId === conversation.id,
   );
   const last = messages[messages.length - 1];
   const unread = unreadCount(state, conversation.id);
-  if (!proposal) return null;
+  if (!group || !plan) return null;
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={
-        proposal.group.name +
+        group.name +
         ', ' +
-        getTripHeadline(proposal.trip) +
+        getTripHeadline(plan) +
         (unread ? ', nieprzeczytane: ' + unread : '')
       }
       onPress={() =>
@@ -69,7 +68,7 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
         },
       ]}
     >
-      <GroupAvatar groupId={conversation.groupId} />
+      <GroupAvatar groupId={conversation.groupId} avatarId={group.avatarId} />
       <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
         <View style={layout.row}>
           <AppText
@@ -77,18 +76,18 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
             numberOfLines={1}
             style={{ flex: 1, fontWeight: unread ? '700' : '600' }}
           >
-            {proposal.group.name}
+            {group.name}
           </AppText>
           {last ? (
             <AppText variant="caption" color="textSecondary">
-              {last.createdAt.slice(0, 10) === '2027-05-18'
+              {last.createdAt.slice(0, 10) === new Date().toISOString().slice(0, 10)
                 ? formatMessageTime(last.createdAt)
                 : formatMessageDate(last.createdAt).replace(' 2027', '')}
             </AppText>
           ) : null}
         </View>
         <AppText variant="caption" color="primaryStrong" numberOfLines={1}>
-          {getTripHeadline(proposal.trip)}
+          {getTripHeadline(plan)}
         </AppText>
         <View style={layout.row}>
           <AppText
@@ -101,7 +100,7 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
               ? (last.status === 'failed'
                   ? 'Niewysłana: '
                   : last.sender === 'self'
-                    ? 'Wy: '
+                    ? 'Ty: '
                     : '') + last.text
               : 'Napisz pierwsze „cześć”!'}
           </AppText>
@@ -113,12 +112,11 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
 }
 
 function InvitationCard({ invitation }: { invitation: ContactInvitation }) {
-  const { state, dispatch } = useMessaging();
+  const { state, respond, contact, trip, busy } = useMessaging();
   const theme = useTheme();
-  const proposal = AVAILABLE_PROPOSALS.find(
-    (item) => item.trip.id === invitation.tripId,
-  );
-  if (!proposal) return null;
+  const group = contact(invitation.groupId);
+  const plan = trip(invitation.tripId);
+  if (!group || !plan) return null;
   const incoming = invitation.direction === 'received';
   const pending = invitation.status === 'pending';
   const labels = {
@@ -159,24 +157,23 @@ function InvitationCard({ invitation }: { invitation: ContactInvitation }) {
         </View>
       </View>
       <View style={layout.row}>
-        <GroupAvatar groupId={invitation.groupId} />
+        <GroupAvatar groupId={invitation.groupId} avatarId={group.avatarId} />
         <View style={{ flex: 1, gap: 2 }}>
           <AppText variant="label" style={{ fontSize: 16 }}>
-            {proposal.group.name}
+            {group.name}
           </AppText>
           <AppText variant="caption" color="textSecondary">
-            {proposal.group.adultCount}{' '}
-            {proposal.group.adultCount === 1 ? 'dorosły' : 'dorosłych'} ·
-            kontakt między dorosłymi
+            {group.adultCount}{' '}
+            {group.adultCount === 1 ? 'dorosły' : 'dorosłych'}
           </AppText>
         </View>
       </View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={'Zobacz wyjazd: ' + getTripHeadline(proposal.trip)}
+        accessibilityLabel={'Zobacz wyjazd: ' + getTripHeadline(plan)}
         onPress={() =>
           router.push({
-            pathname: '/trip/[id]',
+            pathname: incoming ? '/trips/[id]' : '/trip/[id]',
             params: { id: invitation.tripId },
           })
         }
@@ -192,7 +189,7 @@ function InvitationCard({ invitation }: { invitation: ContactInvitation }) {
       >
         <Icon name="trips" size={18} />
         <AppText variant="caption" color="primaryStrong" style={{ flex: 1 }}>
-          {getTripHeadline(proposal.trip)}
+          {getTripHeadline(plan)}
         </AppText>
         <Icon name="chevron" size={16} />
       </Pressable>
@@ -204,18 +201,20 @@ function InvitationCard({ invitation }: { invitation: ContactInvitation }) {
           <View style={{ flex: 1, minWidth: 100 }}>
             <Button
               label="Odrzuć"
+              disabled={busy}
               variant="secondary"
               onPress={() =>
-                dispatch({ type: 'decline', invitationId: invitation.id })
+                void respond(invitation.id, 'declined')
               }
             />
           </View>
           <View style={{ flex: 1, minWidth: 100 }}>
             <Button
               label="Akceptuj"
+              disabled={busy}
               icon="check"
               onPress={() =>
-                dispatch({ type: 'accept', invitationId: invitation.id })
+                void respond(invitation.id, 'accepted')
               }
             />
           </View>
@@ -227,9 +226,10 @@ function InvitationCard({ invitation }: { invitation: ContactInvitation }) {
           </AppText>
           <Button
             label="Wycofaj zaproszenie"
+            disabled={busy}
             variant="secondary"
             onPress={() =>
-              dispatch({ type: 'withdraw', invitationId: invitation.id })
+              void respond(invitation.id, 'withdrawn')
             }
           />
         </View>
@@ -257,7 +257,8 @@ function InvitationCard({ invitation }: { invitation: ContactInvitation }) {
 }
 
 export default function MessagesScreen() {
-  const { state, dispatch } = useMessaging();
+  const { state, dispatch, refresh, error, actionError, realtime } = useMessaging();
+  useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
   const theme = useTheme();
   const [demoOpen, setDemoOpen] = useState(false);
   const pending = pendingReceivedCount(state);
@@ -292,6 +293,7 @@ export default function MessagesScreen() {
             description={'Rozmowy i zaproszenia\nw jednym miejscu.'}
             actions={
               <>
+                <IconButton label="Odśwież skrzynkę" icon="refresh" onPress={() => { void refresh(); }} />
                 {IS_DEMO_MODE ? (
                   <Pressable
                     accessibilityRole="button"
@@ -335,6 +337,11 @@ export default function MessagesScreen() {
             ]}
             onChange={setView}
           />
+          {actionError ? <AppText accessibilityRole="alert" color="textSecondary">{actionError}</AppText> : null}
+          {state.loadStatus === 'ready' && error ? <DataStatus status="error" error={error} onRetry={() => { void refresh(); }} /> : null}
+          {state.loadStatus === 'ready' && realtime === 'reconnecting' && !IS_DEMO_MODE ? (
+            <AppText variant="caption" color="textSecondary">Ponawiamy połączenie na żywo. Skrzynka odświeża się również okresowo.</AppText>
+          ) : null}
           {state.loadStatus === 'loading' ? (
             <MailboxEmpty
               icon="refresh"
@@ -348,7 +355,7 @@ export default function MessagesScreen() {
               <Button
                 label="Odśwież skrzynkę"
                 variant="secondary"
-                onPress={() => dispatch({ type: 'ready' })}
+                onPress={() => { void refresh(); }}
               />
             </MailboxEmpty>
           ) : state.loadStatus === 'error' ? (
@@ -360,7 +367,7 @@ export default function MessagesScreen() {
               <Button
                 label="Spróbuj ponownie"
                 icon="refresh"
-                onPress={() => dispatch({ type: 'ready' })}
+                onPress={() => { void refresh(); }}
               />
             </MailboxEmpty>
           ) : state.view === 'conversations' ? (

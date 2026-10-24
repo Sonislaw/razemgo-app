@@ -15,7 +15,6 @@ import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
 import { TripMapCard } from '@/components/trips/trip-map-card';
 import { Landscape } from '@/components/trips/landscape';
 import { DEMO_OWN_TRIPS } from '@/data/mocks/owned-trips';
-import { DEMO_GROUPS } from '@/data/mocks/travel';
 import { useTheme } from '@/hooks/use-theme';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import {
@@ -50,7 +49,7 @@ export default function OwnTripDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { state, status: loadStatus, error: loadError, refresh, hasLoaded } = useOwnTrips();
   const { profile } = useProfile();
-  const { state: messaging, dispatch: dispatchMessaging } = useMessaging();
+  const { state: messaging, dispatch: dispatchMessaging, contact } = useMessaging();
   const { setFilters, proposals: availableProposals } = useDiscovery();
   const theme = useTheme();
   const [menu, setMenu] = useState(false);
@@ -275,11 +274,9 @@ export default function OwnTripDetailsScreen() {
               acceptedGroups.map((conversation) => (
                 <View key={conversation.id} style={{ gap: 8 }}>
                   <View style={layout.row}>
-                    <GroupAvatar groupId={conversation.groupId} size={40} />
+                    <GroupAvatar groupId={conversation.groupId} avatarId={contact(conversation.groupId)?.avatarId} size={40} />
                     <AppText variant="label" style={{ flex: 1 }}>
-                      {DEMO_GROUPS.find(
-                        (group) => group.id === conversation.groupId,
-                      )?.name ?? 'Ekipa'}
+                      {contact(conversation.groupId)?.name ?? 'Ekipa'}
                     </AppText>
                   </View>
                   <Button

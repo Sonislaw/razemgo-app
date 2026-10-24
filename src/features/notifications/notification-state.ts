@@ -105,12 +105,12 @@ export function selectHomeNotifications(
     );
   const messages = {
     keys: unreadMessages.map((message) => `message:${message.id}`),
-    count: unreadMessages.length,
+    count: mailbox.loadStatus === 'ready' ? mailbox.conversations.reduce((total,c) => total + unreadCount(mailbox,c.id),0) : 0,
     // Chat read state is authoritative, independently of notification clicks.
-    unread: unreadMessages.length > 0,
+    unread: unreadConversationIds.size > 0,
     conversation: mailbox.conversations.find(
       (conversation) => conversation.id === unreadMessages[0]?.conversationId,
-    ),
+    ) ?? mailbox.conversations.find(conversation => unreadConversationIds.has(conversation.id)),
     conversationCount: unreadConversationIds.size,
   };
   return {

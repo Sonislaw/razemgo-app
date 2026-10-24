@@ -5,6 +5,7 @@ import { AppText, Button, Chip, layout } from '@/components/ui/primitives';
 import type { Conversation, ReportReason } from '@/types/messaging';
 import { useMessaging } from './messaging-context';
 import { MessagingSheet } from './messaging-ui';
+import { createRequestKey } from '@/lib/request-key';
 
 export function ConversationSafety({
   conversation,
@@ -15,14 +16,15 @@ export function ConversationSafety({
   onClose: () => void;
   onReport: () => void;
 }) {
-  const { state, dispatch } = useMessaging();
+  const { state, setBlock, report, busy, actionError } = useMessaging();
+  const [requestKey] = useState(createRequestKey);
   const [reporting, setReporting] = useState(false);
   const [reason, setReason] = useState<ReportReason>('Spam');
   const blocked = state.blockedGroupIds.includes(conversation.groupId);
   return (
     <MessagingSheet
       title={reporting ? 'Zgłoś konto' : 'Bezpieczna rozmowa'}
-      onClose={onClose}
+      onClose={() => { if (!busy) onClose(); }}
     >
       {reporting ? (
         <>
@@ -47,14 +49,12 @@ export function ConversationSafety({
           <Button
             label="Zapisz zgłoszenie"
             icon="flag"
-            onPress={() => {
-              dispatch({
-                type: 'report',
-                conversationId: conversation.id,
-                reason,
-              });
-              onReport();
-              onClose();
+            disabled={busy}
+            onPress={async () => {
+              if (await report(conversation.id, reason, requestKey)) {
+                onReport();
+                onClose();
+              }
             }}
           />
           <Button
@@ -73,12 +73,9 @@ export function ConversationSafety({
             label={blocked ? 'Odblokuj ekipę' : 'Zablokuj ekipę'}
             icon="block"
             variant="secondary"
-            onPress={() => {
-              dispatch({
-                type: blocked ? 'unblock' : 'block',
-                groupId: conversation.groupId,
-              });
-              onClose();
+            disabled={busy}
+            onPress={async () => {
+              if (await setBlock(conversation.groupId, !blocked)) onClose();
             }}
           />
           <AppText variant="caption" color="textSecondary">
@@ -102,6 +99,7 @@ export function ConversationSafety({
           />
         </>
       )}
+      {actionError ? <AppText accessibilityRole="alert" color="textSecondary">{actionError}</AppText> : null}
     </MessagingSheet>
   );
 }

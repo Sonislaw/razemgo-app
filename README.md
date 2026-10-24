@@ -1,6 +1,6 @@
 # RazemGo
 
-## Supabase — konta, profile i wyjazdy
+## Supabase — konta, profile, wyjazdy i rozmowy
 
 Aplikacja ma przygotowane logowanie Google i e-mail/hasło, potwierdzanie adresu, reset hasła, onboarding, zapis profilu i ustawienia konta. Wymaga konfiguracji projektu Supabase: **[instrukcja wdrożenia](supabase/README.md)** zawiera migracje, Google, SMTP, funkcję usuwania konta oraz development build Androida.
 
@@ -10,7 +10,9 @@ Odkrywaj i Start pobierają publiczne, aktualne ogłoszenia innych ekip. Filtry 
 
 Migracja `202610240001_trips.sql` dodaje wyjazdy, walidację i RLS. Profile i preferencje pozostają prywatne; osobna funkcja udostępnia tylko jawne pola organizatora powiązane z publicznym ogłoszeniem. Szkice, prywatne, wstrzymane, zakończone i anulowane plany nie trafiają do Odkrywaj. Listy odświeżają się przy wejściu na ekran i powrocie aplikacji na pierwszy plan; błąd daje możliwość ponowienia.
 
-Następny etap obejmuje zaproszenia i czat, potem powiadomienia push i pilotaż. Przy prawdziwym koncie przycisk zaproszenia pozostaje niedostępny do czasu podłączenia tej funkcji.
+Zaproszenia, rozmowy, wiadomości, odczyty, blokady i zgłoszenia zapisują się w Supabase. Akceptacja zaproszenia atomowo tworzy jedną rozmowę z kontekstem wyjazdu. Historia działa na drugim urządzeniu; powtórzona wysyłka używa tego samego klucza i nie duplikuje danych. Realtime powiadamia o zmianie skrzynki, a aplikacja pobiera wyłącznie dane uprawnionego uczestnika. Przy rozłączeniu działa okresowe odświeżanie oraz ponowienie ręczne.
+
+Migracja `202610240003_messaging.sql` dodaje uprawnienia i funkcje skrzynki. Nowe konta zaczynają z pustą skrzynką. Zablokowanie kontaktu wstrzymuje wysyłanie po obu stronach i ukrywa wzajemne ogłoszenia. Zgłoszenia trafiają do serwerowej tabeli do obsługi przez administratora; nie ma jeszcze panelu moderacji. Następny etap to powiadomienia push, monitoring i pilotaż.
 
 ```powershell
 npm ci

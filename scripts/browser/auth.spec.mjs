@@ -124,6 +124,7 @@ async function backend(context, existingState) {
       return respond(user(id));
     }
     if (url.pathname === '/rest/v1/trip_plans' || url.pathname === '/rest/v1/rpc/list_public_trips') return respond([]);
+    if (url.pathname === '/rest/v1/rpc/get_my_mailbox') return respond({invitations:[],conversations:[],contacts:[],blocked_group_ids:[],reports:[]});
     if (url.pathname === '/rest/v1/travel_groups') {
       if (state.loadFail)
         return respond({ message: 'Temporarily unavailable' }, 503);

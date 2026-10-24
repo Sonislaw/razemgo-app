@@ -1,8 +1,10 @@
 import { getTripHeadline } from '@/features/trips/trip-headline';
+import { DataStatus } from '@/components/ui/data-status';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import {
   FlatList,
+  AppState,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -29,7 +31,7 @@ import {
 import { IS_DEMO_MODE } from '@/constants/app';
 import { Fonts, MaxContentWidth, Typography } from '@/constants/theme';
 import { DEMO_MAILBOX } from '@/data/mocks/messaging';
-import { AVAILABLE_PROPOSALS } from '@/data/proposals';
+import { useProfile } from '@/features/profile/profile-context';
 import {
   formatTripDates,
   getTripLocation,
@@ -57,7 +59,9 @@ export function generateStaticParams() {
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { state, dispatch } = useMessaging();
+  const { state, contact, trip: contactTrip, send: sendMessage, setBlock, markRead, loadHistory,
+    refresh, histories, hasLoaded, error, actionError, busy } = useMessaging();
+  const { profile } = useProfile();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -67,20 +71,33 @@ export default function ChatScreen() {
   const [demoOpen, setDemoOpen] = useState(false);
   const [reported, setReported] = useState(false);
   const list = useRef<FlatListInstance>(null);
+  const atBottom = useRef(true);
+  const focused = useRef(false);
   const conversation = state.conversations.find(
     (item) => item.id === id && isConversationAccepted(state, item),
   );
-  const proposal = AVAILABLE_PROPOSALS.find(
-    (item) => item.trip.id === conversation?.tripId,
-  );
+  const group = conversation ? contact(conversation.groupId) : undefined;
+  const plan = conversation ? contactTrip(conversation.tripId) : undefined;
+  const history = histories[id];
+  const messages = state.messages.filter(item => item.conversationId === id);
+  const latest = messages.filter(item => item.sequence !== undefined || IS_DEMO_MODE).at(-1);
   const unread = unreadCount(state, id);
   useFocusEffect(
     useCallback(() => {
-      if (unread) dispatch({ type: 'read', conversationId: id });
-    }, [dispatch, id, unread]),
+      focused.current = true;
+      void refresh();
+      void loadHistory(id);
+      return () => { focused.current = false; };
+    }, [id, refresh, loadHistory]),
+  );
+  useFocusEffect(
+    useCallback(() => {
+      if (unread && latest && atBottom.current && (history?.loaded || IS_DEMO_MODE) && AppState.currentState === 'active') void markRead(id, latest.id);
+    }, [id, unread, latest, history?.loaded, markRead]),
   );
   const back = () => router.dismissTo('/messages');
-  if (!conversation || !proposal)
+  if (!hasLoaded) return <Screen><DataStatus status={state.loadStatus} error={error} onRetry={() => { void refresh(); }} /><Button label="Wróć do Wiadomości" variant="secondary" onPress={back} /></Screen>;
+  if (!conversation || !group || !plan)
     return (
       <Screen>
         <MailboxEmpty
@@ -91,16 +108,18 @@ export default function ChatScreen() {
         </MailboxEmpty>
       </Screen>
     );
-  const blocked = state.blockedGroupIds.includes(conversation.groupId);
-  const canSend = canSendToConversation(state, id);
-  const messages = state.messages.filter((item) => item.conversationId === id);
+  const ownBlock = state.blockedGroupIds.includes(conversation.groupId);
+  const blocked = ownBlock || conversation.blocked;
+  const canSend = canSendToConversation(state, id) && !busy;
   const send = () => {
     if (!canSend || !draft.trim()) return;
-    dispatch({ type: 'send', conversationId: id, text: draft });
+    void sendMessage(id, draft);
+    atBottom.current = true;
     setDraft('');
   };
   return (
     <KeyboardAvoidingView
+      testID="chat-screen"
       style={[styles.root, { backgroundColor: theme.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
@@ -127,17 +146,17 @@ export default function ChatScreen() {
         >
           <ScenicHeaderBackground style={{ top: 0 }} />
           <IconButton label="Wróć do Wiadomości" icon="back" onPress={back} />
-          <GroupAvatar groupId={conversation.groupId} size={40} />
+          <GroupAvatar groupId={conversation.groupId} avatarId={group.avatarId} size={40} />
           <View style={{ flex: 1, minWidth: 0 }}>
             <AppText
               accessibilityRole="header"
               variant="label"
               numberOfLines={1}
             >
-              {proposal.group.name}
+              {group.name}
             </AppText>
             <AppText variant="caption" color="textSecondary" numberOfLines={1}>
-              {getTripHeadline(proposal.trip)}
+              {getTripHeadline(plan)}
             </AppText>
           </View>
           <IconButton
@@ -149,12 +168,12 @@ export default function ChatScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={
-            'Wspólny wyjazd: ' + getTripHeadline(proposal.trip)
+            'Wspólny wyjazd: ' + getTripHeadline(plan)
           }
           onPress={() =>
             router.push({
-              pathname: '/trip/[id]',
-              params: { id: proposal.trip.id },
+              pathname: plan.groupId === profile.group.id ? '/trips/[id]' : '/trip/[id]',
+              params: { id: plan.id },
             })
           }
           style={[styles.pinned, { backgroundColor: theme.hero }]}
@@ -166,10 +185,10 @@ export default function ChatScreen() {
               style={{ fontWeight: '700' }}
               numberOfLines={1}
             >
-              {getTripLocation(proposal.trip)}
+              {getTripLocation(plan)}
             </AppText>
             <AppText variant="caption">
-              {formatTripDates(proposal.trip)}
+              {formatTripDates(plan)}
             </AppText>
           </View>
           <Icon name="chevron" size={18} />
@@ -201,6 +220,8 @@ export default function ChatScreen() {
             </AppText>
           </View>
         ) : null}
+        {error ? <DataStatus status="error" error={error} onRetry={() => { void refresh(); void loadHistory(id); }} /> : null}
+        {actionError ? <AppText accessibilityRole="alert" variant="caption" color="textSecondary" style={{ padding: 8 }}>{actionError}</AppText> : null}
         <FlatList<ChatMessage>
           ref={list}
           style={{ flex: 1, minHeight: 0 }}
@@ -215,8 +236,23 @@ export default function ChatScreen() {
             marginHorizontal: -16,
             marginBottom: -16,
           }}
+          ListHeaderComponent={
+            <View style={{ gap: 8 }}>
+              {history?.loading ? <AppText variant="caption" color="textSecondary">Wczytywanie wiadomości…</AppText> : null}
+              {history?.error ? <DataStatus status="error" error={history.error} onRetry={() => { void loadHistory(id); }} /> : null}
+              {history?.hasMore ? <Button label="Wczytaj starsze wiadomości" variant="secondary" disabled={history.loading}
+                onPress={() => { atBottom.current = false; void loadHistory(id, true); }} /> : null}
+            </View>
+          }
+          onScroll={event => {
+            const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+            atBottom.current = contentSize.height - contentOffset.y - layoutMeasurement.height < 100;
+            if (atBottom.current && focused.current && unread && latest && (history?.loaded || IS_DEMO_MODE) && AppState.currentState === 'active') void markRead(id, latest.id);
+          }}
+          scrollEventThrottle={100}
+          maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
           onContentSizeChange={() =>
-            list.current?.scrollToEnd({ animated: false })
+            atBottom.current && list.current?.scrollToEnd({ animated: false })
           }
           onLayout={() => list.current?.scrollToEnd({ animated: false })}
           ListEmptyComponent={
@@ -273,9 +309,11 @@ export default function ChatScreen() {
                   >
                     {formatMessageTime(item.createdAt)}
                     {self
-                      ? item.status === 'failed'
+                      ? item.status === 'sending'
+                        ? ' · Wysyłanie…'
+                        : item.status === 'failed'
                         ? ' · Nie wysłano'
-                        : ' · Wysłano'
+                        : item.read ? ' · Odczytano' : ' · Wysłano'
                       : ''}
                   </AppText>
                 </View>
@@ -292,7 +330,7 @@ export default function ChatScreen() {
                       variant="secondary"
                       disabled={!canSend || state.simulateSendError}
                       onPress={() =>
-                        dispatch({ type: 'retry', messageId: item.id })
+                        void sendMessage(id, item.text, item.requestKey ?? item.id)
                       }
                     />
                   </View>
@@ -311,14 +349,14 @@ export default function ChatScreen() {
         >
           {blocked ? (
             <View style={{ padding: 12, gap: 8 }}>
-              <AppText variant="label">Ekipa jest zablokowana</AppText>
-              <Button
+              <AppText variant="label">{ownBlock ? 'Ekipa jest zablokowana' : 'Kontakt z tą ekipą jest niedostępny'}</AppText>
+              {ownBlock ? <Button
                 label="Odblokuj ekipę"
                 variant="secondary"
                 onPress={() =>
-                  dispatch({ type: 'unblock', groupId: conversation.groupId })
+                  void setBlock(conversation.groupId, false)
                 }
-              />
+              /> : null}
             </View>
           ) : (
             <>

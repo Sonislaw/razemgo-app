@@ -1,6 +1,5 @@
 import { TRIPS_BACKEND_AVAILABLE } from '@/constants/app';
 import { BackendPendingScreen } from '@/features/auth/backend-pending-screen';
-import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
@@ -37,10 +36,7 @@ import {
   GROUP_KIND_OPTIONS,
   INTEREST_OPTIONS,
 } from '@/features/profile/profile-options';
-import {
-  TravelModeBadges,
-  TravelModePicker,
-} from '@/features/profile/travel-mode-ui';
+import { TravelModePicker } from '@/features/profile/travel-mode-ui';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import {
   getTripStatus,
@@ -65,7 +61,7 @@ import {
 } from '@/features/trips/trip-ui';
 import type { TripForm } from '@/types/owned-trip';
 import { TripAnimalFields } from '@/features/animals/animal-fields';
-import { AnimalInformation } from '@/features/animals/animal-ui';
+import { TripListingCard } from '@/components/trips/trip-listing-card';
 import { TripLocationField } from '@/features/trips/trip-location-field';
 import { TripLandscapePicker } from '@/features/trips/trip-landscape-picker';
 import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
@@ -560,49 +556,38 @@ function TripEditorScreen() {
                           : 'Opublikowany plan będzie otwarty na zaproszenia.'}
                   </AppText>
                 </View>
-                <Card style={{ gap: 8, backgroundColor: theme.hero }}>
+                <View style={{ gap: 8 }}>
                   <AppText variant="caption" color="textSecondary">
                     PODGLĄD PLANU
                   </AppText>
-                  <TripStatusBadge status={previewStatus} />
-                  <AppText variant="heading">
-                    {getTripHeadline(preview)}
-                  </AppText>
-                  <AppText variant="label">
-                    {modeLabel} · {ownTripPlace(preview)}
-                  </AppText>
-                  {preview.campgroundName ? (
-                    <AppText variant="label">
-                      Kemping: {preview.campgroundName}
-                    </AppText>
-                  ) : null}
-                  {preview.campgroundAddress ? (
-                    <AppText variant="label">{preview.campgroundAddress}</AppText>
-                  ) : null}
-                  <AppText variant="label">{ownTripDates(preview)}</AppText>
-                  <TravelModeBadges modes={form.travelModes} />
-                  <AnimalInformation animals={form.animals} />
-                  {form.description ? (
-                    <AppText style={{ fontSize: 14, lineHeight: 21 }}>
-                      {form.description}
-                    </AppText>
-                  ) : null}
-                  {form.interests.length ? (
-                    <AppText variant="caption">
-                      {form.interests.join(' · ')}
-                    </AppText>
-                  ) : null}
-                  <AppText variant="caption">
-                    {GROUP_KIND_OPTIONS.filter((item) =>
-                      form.groupKinds.includes(item.value),
-                    )
-                      .map((item) => item.label)
-                      .join(', ') || 'Dowolne towarzystwo'}
-                    {form.childAgeBands.length
-                      ? ' · dzieci ' + form.childAgeBands.join(', ') + ' lat'
-                      : ''}
-                  </AppText>
-                </Card>
+                  <TripListingCard
+                    testID="trip-editor-preview"
+                    trip={preview}
+                    group={profile.group}
+                    travelModes={form.travelModes}
+                    locationLabel={ownTripPlace(preview)}
+                    datesLabel={ownTripDates(preview)}
+                    rightBadge={<TripStatusBadge status={previewStatus} />}
+                    footer={
+                      <AppText variant="caption" color="textSecondary">
+                        {form.visibility === 'private' ? 'Prywatny plan' : 'Dla społeczności'}
+                        {' · '}
+                        {GROUP_KIND_OPTIONS.filter((item) => form.groupKinds.includes(item.value))
+                          .map((item) => item.label).join(', ') || 'Dowolne towarzystwo'}
+                        {form.childAgeBands.length
+                          ? ' · preferowany wiek dzieci ' + form.childAgeBands.join(', ') + ' lat'
+                          : ''}
+                      </AppText>
+                    }
+                  >
+                    {preview.mode === 'planned' && preview.campgroundAddress ? (
+                      <AppText variant="caption" color="textSecondary">{preview.campgroundAddress}</AppText>
+                    ) : null}
+                    {form.description ? (
+                      <AppText style={{ fontSize: 14, lineHeight: 21 }}>{form.description}</AppText>
+                    ) : null}
+                  </TripListingCard>
+                </View>
               </>
             )}
             <TripDemoNote />

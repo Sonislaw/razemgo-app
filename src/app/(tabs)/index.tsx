@@ -12,6 +12,7 @@ import { HomeHeader } from '@/features/home/home-header';
 import { HomeLatestListing } from '@/features/home/home-latest-listing';
 import { selectLatestListing } from '@/features/home/latest-listing';
 import { AVAILABLE_PROPOSALS } from '@/data/proposals';
+import { DEMO_COMPATIBILITY_SCORES } from '@/data/mocks/compatibility';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import { todayDate } from '@/features/trips/own-trips-state';
 import { useMessaging } from '@/features/messaging/messaging-context';
@@ -30,6 +31,12 @@ export default function HomeScreen() {
     todayDate(),
     messaging.blockedGroupIds,
   );
+  const latestOwnTrip = latestListing?.own
+    ? ownTrips.trips.find(trip => trip.id === latestListing.trip.id)
+    : undefined;
+  const latestGroup = latestListing?.own
+    ? profile.group
+    : AVAILABLE_PROPOSALS.find(item => item.trip.id === latestListing?.trip.id)?.group;
   const discover = () => {
     setFilters({ ...INITIAL_FILTERS });
     router.navigate('/explore');
@@ -75,7 +82,9 @@ export default function HomeScreen() {
             </AppText>
             <HomeLatestListing
               trip={latestListing.trip}
-              compact={false}
+              group={latestGroup}
+              travelModes={latestOwnTrip?.travelModes}
+              score={latestListing.own ? undefined : DEMO_COMPATIBILITY_SCORES[latestListing.trip.id]}
               onPress={() =>
                 router.push({
                   pathname: latestListing.own ? '/trips/[id]' : '/trip/[id]',

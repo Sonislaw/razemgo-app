@@ -1,17 +1,6 @@
-import { getTripHeadline } from '@/features/trips/trip-headline';
-import { StyleSheet, View } from 'react-native';
-import { AppText, Chip, layout } from '@/components/ui/primitives';
-import { Icon } from '@/components/ui/icon';
-import { Landscape } from './landscape';
-import { Radius, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
-import {
-  formatTripDates,
-  getTripLocation,
-  sharedNights,
-} from '@/features/discovery/filter-trips';
+import { AppText } from '@/components/ui/primitives';
 import type { DateRange, TravelGroup, TripPlan } from '@/types/travel';
-import { GroupAvatar } from '@/features/profile/group-avatar';
+import { TripListingCard } from './trip-listing-card';
 
 export interface TripCardProps {
   trip: TripPlan;
@@ -19,100 +8,11 @@ export interface TripCardProps {
   compact?: boolean;
   dateRange?: DateRange;
 }
-export function TripCard({
-  trip,
-  group,
-  compact = false,
-  dateRange,
-}: TripCardProps) {
-  const theme = useTheme();
-  const nights = dateRange ? sharedNights(trip, dateRange) : 0;
+
+export function TripCard({ trip, group, compact = false }: TripCardProps) {
   return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-      ]}
-    >
-      {!compact ? <Landscape kind={trip.landscape} /> : null}
-      <View style={styles.body}>
-        <View style={layout.wrap}>
-          <AppText variant="caption" color="primaryStrong">
-            {trip.mode === 'planned' ? 'MAM PLAN' : 'SZUKAM POMYSŁU'}
-          </AppText>
-        </View>
-        <AppText variant="heading" accessibilityRole="header">
-          {getTripHeadline(trip)}
-        </AppText>
-        <View style={layout.row}>
-          <Icon name="pin" size={17} />
-          <AppText variant="label" color="textSecondary" style={styles.flex}>
-            {getTripLocation(trip)}
-            {trip.mode === 'flexible' ? ' · cel do ustalenia' : ''}
-          </AppText>
-        </View>
-        <View style={layout.row}>
-          <Icon name="calendar" size={17} />
-          <AppText variant="label" color="textSecondary" style={styles.flex}>
-            {formatTripDates(trip)}
-          </AppText>
-        </View>
-        {!compact ? (
-          <AppText color="textSecondary">{trip.description}</AppText>
-        ) : null}
-        <View style={layout.wrap}>
-          {trip.interests.map((interest) => (
-            <Chip key={interest} label={interest} />
-          ))}
-        </View>
-        {nights > 0 ? (
-          <View
-            style={[
-              styles.reason,
-              { backgroundColor: theme.positiveBackground },
-            ]}
-          >
-            <Icon name="check" size={17} color={theme.positive} />
-            <AppText variant="label" color="positive" style={styles.flex}>
-              Wspólne noce w wybranym terminie: {nights}
-            </AppText>
-          </View>
-        ) : null}
-        <View style={[styles.group, { borderTopColor: theme.border }]}>
-          <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={40} />
-          <View style={styles.flex}>
-            <AppText variant="label">{group.name}</AppText>
-            <AppText variant="caption" color="textSecondary">
-              {group.adultCount}{' '}
-              {group.adultCount === 1 ? 'dorosły' : 'dorosłych'}
-              {group.childAgeBands.length
-                ? ' · dzieci: ' + group.childAgeBands.join(', ') + ' lat'
-                : group.childCount
-                  ? ' · wiek dzieci niepodany'
-                  : ' · bez dzieci'}
-            </AppText>
-          </View>
-        </View>
-      </View>
-    </View>
+    <TripListingCard trip={trip} group={group}>
+      {!compact ? <AppText color="textSecondary">{trip.description}</AppText> : null}
+    </TripListingCard>
   );
 }
-const styles = StyleSheet.create({
-  card: { borderWidth: 1, borderRadius: Radius.card, overflow: 'hidden' },
-  body: { padding: Spacing.three, gap: 12 },
-  flex: { flex: 1 },
-  group: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    borderTopWidth: 1,
-    paddingTop: 12,
-  },
-  reason: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    padding: 12,
-    borderRadius: Radius.small,
-  },
-});

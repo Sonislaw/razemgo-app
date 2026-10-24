@@ -19,9 +19,11 @@ const labels: Record<LandscapeKind, string> = {
 export function LandscapePhoto({
   kind,
   style,
+  contentPosition,
 }: {
   kind: LandscapeKind;
   style?: ImageProps['style'];
+  contentPosition?: ImageProps['contentPosition'];
 }) {
   return (
     <Image
@@ -29,7 +31,8 @@ export function LandscapePhoto({
       style={[{ backgroundColor: Landscapes[kind].sky, flexShrink: 0 }, style]}
       contentFit="cover"
       contentPosition={
-        kind === 'mountain' ? { top: '20%', left: '50%' } : 'center'
+        contentPosition ??
+        (kind === 'mountain' ? { top: '20%', left: '50%' } : 'center')
       }
       recyclingKey={kind}
       accessible

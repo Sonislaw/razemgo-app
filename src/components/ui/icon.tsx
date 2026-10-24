@@ -68,6 +68,8 @@ export const SYMBOLS = {
   mountain: { ios: 'mountain.2', android: 'landscape', web: 'landscape' },
   tent: { ios: 'tent', android: 'camping', web: 'camping' },
   water: { ios: 'water.waves', android: 'water', web: 'water' },
+  bike: { ios: 'bicycle', android: 'directions_bike', web: 'directions_bike' },
+  campfire: { ios: 'flame', android: 'local_fire_department', web: 'local_fire_department' },
 } as const;
 export type IconName = keyof typeof SYMBOLS | 'campfire-chat';
 export interface IconProps {

@@ -4,6 +4,7 @@ import { BrandHeader } from '@/components/ui/brand-header';
 import { AppText, Screen } from '@/components/ui/primitives';
 import { Spacing } from '@/constants/theme';
 import { HomeAction } from '@/features/home/home-ui';
+import { WelcomeFeaturedListing } from '@/features/welcome/welcome-featured-listing';
 
 export default function WelcomeScreen() {
   const { width } = useWindowDimensions();
@@ -51,6 +52,7 @@ export default function WelcomeScreen() {
           onPress={() => router.push('/auth/sign-in')}
         />
       </View>
+      <WelcomeFeaturedListing />
     </Screen>
   );
 }

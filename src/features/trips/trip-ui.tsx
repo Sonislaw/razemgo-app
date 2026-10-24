@@ -1,5 +1,5 @@
 import { getTripHeadline } from '@/features/trips/trip-headline';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { router } from 'expo-router';
 import {
   AppText,
@@ -8,15 +8,11 @@ import {
   IconButton,
   layout,
 } from '@/components/ui/primitives';
-import { Icon } from '@/components/ui/icon';
-import { TripCardHeading } from '@/components/trips/trip-card-heading';
-import { CompactTripCard } from '@/components/trips/compact-trip-card';
-import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
+import { TripListingAction, TripListingCard } from '@/components/trips/trip-listing-card';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { useTheme } from '@/hooks/use-theme';
 import type { OwnedTrip, TripStatus } from '@/types/owned-trip';
 import { formatTripDates } from '@/features/discovery/filter-trips';
-import { TripAnimalTag } from '@/features/animals/animal-ui';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import {
   discoveryFiltersForTrip,
@@ -47,7 +43,7 @@ export function TripStatusBadge({ status }: { status: TripStatus }) {
     <View
       style={{
         alignSelf: 'flex-start',
-        borderRadius: 12,
+        borderRadius: 999,
         paddingHorizontal: 10,
         paddingVertical: 4,
         backgroundColor:
@@ -95,92 +91,47 @@ export function TripDemoNote() {
     </AppText>
   ) : null;
 }
-export function OwnTripCard({
-  trip,
-  onMenu,
-}: {
+export function OwnTripCard({ trip, onMenu }: {
   trip: OwnedTrip;
   onMenu: () => void;
 }) {
-  const theme = useTheme();
   const { setFilters } = useDiscovery();
   const searching = isSearchingTrip(trip, todayDate());
   return (
-    <CompactTripCard style={{ gap: 4 }}>
-      <View style={[layout.row, { justifyContent: 'space-between' }]}>
-        <TripStatusBadge status={getTripStatus(trip, todayDate())} />
-        <IconButton
-          label={'Opcje wyjazdu: ' + getTripHeadline(trip)}
-          icon="more"
-          onPress={onMenu}
-        />
-      </View>
-      <TripCardHeading title={getTripHeadline(trip)} landscape={trip.landscape} />
-      <View style={layout.row}>
-        <TripPlanningIcon kind={trip.mode} size={22} framed={false} />
-        <AppText
-          variant="label"
-          color="textSecondary"
-          style={{ flex: 1, minWidth: 0 }}
-          numberOfLines={2}
-        >
-          {ownTripPlace(trip)}
-        </AppText>
-      </View>
-      <View style={layout.row}>
-        <TripPlanningIcon kind="dates" size={22} framed={false} />
-        <AppText variant="caption" color="textSecondary" style={{ flex: 1 }}>
-          {ownTripDates(trip)}
-        </AppText>
-      </View>
-      <View style={{ paddingTop: 8 }}>
-        <TripAnimalTag animals={trip.animals} />
-      </View>
-      <View
-        style={[
-          layout.row,
-          {
-            flexWrap: 'wrap',
-            justifyContent: 'space-between',
-            borderTopWidth: 1,
-            borderTopColor: theme.border,
-            marginTop: 8,
-          },
-        ]}
-      >
-        <AppText
-          variant="caption"
-          color="textSecondary"
-          style={{ flex: 1, minWidth: 90 }}
-        >
-          {trip.mode === 'planned' ? 'Mam plan' : 'Szukam pomysłu'}
-          {trip.visibility === 'private' ? ' · prywatny' : ''}
-        </AppText>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={'Szczegóły wyjazdu: ' + getTripHeadline(trip)}
-          onPress={() =>
-            router.push({ pathname: '/trips/[id]', params: { id: trip.id } })
-          }
-          style={[layout.row, { minHeight: 48, paddingHorizontal: 8 }]}
-        >
-          <AppText variant="label" color="primaryStrong">
-            Szczegóły
-          </AppText>
-          <Icon name="arrow" size={18} />
-        </Pressable>
-      </View>
-      <View style={{ paddingTop: 4 }}>
-        <Button
-          label="Znajdź towarzystwo"
-          icon="people"
-          disabled={!searching}
-          onPress={() => {
-            setFilters(discoveryFiltersForTrip(trip));
-            router.navigate('/explore');
-          }}
-        />
-      </View>
-    </CompactTripCard>
+    <TripListingCard
+      testID={'own-trip-' + trip.id}
+      trip={trip}
+      locationLabel={ownTripPlace(trip)}
+      datesLabel={ownTripDates(trip)}
+      rightBadge={<TripStatusBadge status={getTripStatus(trip, todayDate())} />}
+      footer={
+        <View style={{ gap: 8 }}>
+          <View style={[layout.row, { justifyContent: 'space-between' }]}>
+            <IconButton
+              label={'Opcje wyjazdu: ' + getTripHeadline(trip)}
+              icon="more"
+              onPress={onMenu}
+            />
+            {trip.visibility === 'private' ? (
+              <AppText variant="caption" color="textSecondary" style={{ flex: 1 }}>Prywatny plan</AppText>
+            ) : null}
+            <TripListingAction
+              label="Szczegóły"
+              accessibilityLabel={'Szczegóły wyjazdu: ' + getTripHeadline(trip)}
+              onPress={() => router.push({ pathname: '/trips/[id]', params: { id: trip.id } })}
+            />
+          </View>
+          <Button
+            label="Znajdź towarzystwo"
+            icon="people"
+            disabled={!searching}
+            onPress={() => {
+              setFilters(discoveryFiltersForTrip(trip));
+              router.navigate('/explore');
+            }}
+          />
+        </View>
+      }
+    />
   );
 }

@@ -8,9 +8,11 @@ export function HomeAction({
   label,
   description,
   illustration,
+  illustrationSize,
   onPress,
   variant = 'primary',
   density = 'regular',
+  orientation = 'horizontal',
   showIllustration = true,
   showDescription = true,
   style,
@@ -18,9 +20,11 @@ export function HomeAction({
   label: string;
   description: string;
   illustration: ImageProps['source'];
+  illustrationSize?: number;
   onPress: () => void;
   variant?: 'primary' | 'secondary';
   density?: 'regular' | 'compact' | 'minimal';
+  orientation?: 'horizontal' | 'vertical';
   showIllustration?: boolean;
   showDescription?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -29,7 +33,30 @@ export function HomeAction({
   const primary = variant === 'primary';
   const minimal = density === 'minimal';
   const compact = density !== 'regular';
-  const artworkSize = minimal ? (showDescription ? 56 : 40) : compact ? 88 : 112;
+  const vertical = orientation === 'vertical';
+  const artworkSize =
+    illustrationSize ?? (minimal ? (showDescription ? 56 : 40) : compact ? 88 : 112);
+  const artwork = showIllustration ? (
+    <Image
+      source={illustration}
+      style={{
+        width: artworkSize,
+        height: artworkSize,
+        flexShrink: 0,
+        marginTop: vertical ? -(compact ? 24 : 28) : 0,
+        transform: [
+          { translateX: vertical ? 0 : minimal ? 4 : 8 },
+          { translateY: vertical ? 0 : minimal ? -2 : -4 },
+          { scale: 1.35 },
+        ],
+      }}
+      contentFit="contain"
+      pointerEvents="none"
+      accessible={false}
+      alt=""
+    />
+  ) : null;
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -39,6 +66,7 @@ export function HomeAction({
       style={({ pressed }) => [
         layout.row,
         {
+          flexDirection: vertical ? 'column' : 'row',
           minHeight: minimal ? (showDescription ? 76 : 56) : compact ? 108 : 144,
           padding: minimal ? 8 : compact ? 12 : 16,
           gap: compact ? 8 : 12,
@@ -52,13 +80,22 @@ export function HomeAction({
         style,
       ]}
     >
-      <View style={{ flex: 1, minWidth: 0, gap: compact ? 4 : 8 }}>
+      {vertical ? artwork : null}
+      <View
+        style={{
+          flex: vertical ? 0 : 1,
+          alignSelf: vertical ? 'stretch' : undefined,
+          minWidth: 0,
+          gap: compact ? 4 : 8,
+        }}
+      >
         <AppText
           variant="heading"
           color="primaryStrong"
           style={{
             fontSize: minimal ? 16 : 20,
             lineHeight: minimal ? 22 : 26,
+            textAlign: vertical ? 'center' : undefined,
           }}
         >
           {label}
@@ -69,31 +106,14 @@ export function HomeAction({
             style={{
               fontSize: minimal ? 12 : compact ? 13 : 14,
               lineHeight: minimal ? 16 : compact ? 18 : 20,
+              textAlign: vertical ? 'center' : undefined,
             }}
           >
             {description}
           </AppText>
         ) : null}
       </View>
-      {showIllustration ? (
-        <Image
-          source={illustration}
-          style={{
-            width: artworkSize,
-            height: artworkSize,
-            flexShrink: 0,
-            transform: [
-              { translateX: minimal ? 4 : 8 },
-              { translateY: minimal ? -2 : -4 },
-              { scale: 1.35 },
-            ],
-          }}
-          contentFit="contain"
-          pointerEvents="none"
-          accessible={false}
-          alt=""
-        />
-      ) : null}
+      {!vertical ? artwork : null}
       <View
         style={{
           width: minimal ? 24 : 28,
@@ -103,7 +123,12 @@ export function HomeAction({
           justifyContent: 'center',
           backgroundColor: theme.iconBackground,
           ...(showIllustration
-            ? { position: 'absolute', right: 8, bottom: 8 }
+            ? {
+                position: 'absolute',
+                right: 8,
+                top: vertical ? 8 : undefined,
+                bottom: vertical ? undefined : 8,
+              }
             : { flexShrink: 0 }),
         }}
       >

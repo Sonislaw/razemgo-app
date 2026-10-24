@@ -8,6 +8,7 @@ import { HomeAction } from '@/features/home/home-ui';
 export default function WelcomeScreen() {
   const { width } = useWindowDimensions();
   const density = width < 360 ? 'compact' : 'regular';
+  const illustrationSize = width < 360 ? 80 : 96;
 
   return (
     <Screen
@@ -27,17 +28,25 @@ export default function WelcomeScreen() {
 
       <View testID="welcome-actions" style={styles.actions}>
         <HomeAction
-          label="Dołącz do RazemGo"
+          label="Nowe konto"
           description="Załóż konto i znajdź towarzystwo na wyjazd."
           illustration={require('@/assets/images/welcome/join-the-crew.png')}
+          illustrationSize={illustrationSize}
           density={density}
+          orientation="vertical"
+          showDescription={false}
+          style={styles.action}
           onPress={() => router.push('/auth/sign-up')}
         />
         <HomeAction
           label="Zaloguj się"
           description="Wróć do swojej ekipy i wspólnych planów."
           illustration={require('@/assets/images/welcome/back-to-camp.png')}
+          illustrationSize={illustrationSize}
           density={density}
+          orientation="vertical"
+          showDescription={false}
+          style={styles.action}
           variant="secondary"
           onPress={() => router.push('/auth/sign-in')}
         />
@@ -49,5 +58,6 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   intro: { gap: Spacing.two, paddingTop: Spacing.one },
   description: { fontSize: 15, lineHeight: 22 },
-  actions: { gap: 20, paddingVertical: Spacing.two },
+  actions: { flexDirection: 'row', gap: 12, paddingVertical: Spacing.two },
+  action: { flex: 1, minWidth: 0 },
 });

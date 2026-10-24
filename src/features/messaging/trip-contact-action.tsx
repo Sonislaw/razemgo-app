@@ -13,6 +13,7 @@ import { useDiscovery } from '@/features/discovery/discovery-context';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import { isSearchingTrip, todayDate } from '@/features/trips/own-trips-state';
 import { GroupAvatar } from '@/features/profile/group-avatar';
+import { MESSAGING_BACKEND_AVAILABLE } from '@/constants/app';
 
 export function TripContactAction({ proposal }: { proposal: TripProposal }) {
   const { state, dispatch } = useMessaging();
@@ -34,6 +35,14 @@ export function TripContactAction({ proposal }: { proposal: TripProposal }) {
     dispatch({ type: 'view', view: 'invitations', direction });
     router.dismissTo('/messages');
   };
+  if (!MESSAGING_BACKEND_AVAILABLE) return (
+    <View style={{ gap: 8 }}>
+      <Button label="Zaproś do kontaktu" icon="campfire-chat" disabled />
+      <AppText variant="caption" color="textSecondary">
+        Zaproszenia i rozmowy uruchomimy w kolejnym etapie.
+      </AppText>
+    </View>
+  );
   return (
     <View style={{ gap: 8 }}>
       {contact.kind === 'blocked' ? (

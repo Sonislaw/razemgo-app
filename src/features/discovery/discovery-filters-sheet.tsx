@@ -1,3 +1,4 @@
+import { useDiscovery } from './discovery-context';
 import { useState } from 'react';
 import {
   Keyboard,
@@ -21,7 +22,6 @@ import {
 import { Icon } from '@/components/ui/icon';
 import { ChipRow } from '@/components/ui/chip-row';
 import { CHILD_AGE_BANDS } from '@/data/mocks/travel';
-import { AVAILABLE_PROPOSALS } from '@/data/proposals';
 import {
   clearDiscoveryDates,
   filterProposals,
@@ -55,6 +55,7 @@ export function DiscoveryFiltersSheet({
   onApply,
   onClose,
 }: DiscoveryFiltersSheetProps) {
+  const { proposals: availableProposals } = useDiscovery();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const [showDateRange, setShowDateRange] = useState(false);
@@ -70,7 +71,7 @@ export function DiscoveryFiltersSheet({
   }));
   const dateRange = resolveDiscoveryRange(draft);
   const dateError = getDiscoveryDateRangeError(draft.customDateRange);
-  const resultCount = filterProposals(AVAILABLE_PROPOSALS, draft, dateRange).length;
+  const resultCount = filterProposals(availableProposals, draft, dateRange).length;
   const toggleAge = (band: ChildAgeBand) =>
     setDraft((current) => ({
       ...current,

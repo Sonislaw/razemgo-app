@@ -1,5 +1,6 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { DataStatus } from '@/components/ui/data-status';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { AppText, Button, Screen } from '@/components/ui/primitives';
 import { Spacing } from '@/constants/theme';
@@ -11,8 +12,6 @@ import { HomeAction } from '@/features/home/home-ui';
 import { HomeHeader } from '@/features/home/home-header';
 import { HomeLatestListing } from '@/features/home/home-latest-listing';
 import { selectLatestListing } from '@/features/home/latest-listing';
-import { AVAILABLE_PROPOSALS } from '@/data/proposals';
-import { DEMO_COMPATIBILITY_SCORES } from '@/data/mocks/compatibility';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import { todayDate } from '@/features/trips/own-trips-state';
 import { useMessaging } from '@/features/messaging/messaging-context';
@@ -20,12 +19,13 @@ import { useMessaging } from '@/features/messaging/messaging-context';
 export default function HomeScreen() {
   const { width } = useWindowDimensions();
   const { hasProfile, profile } = useProfile();
-  const { setFilters } = useDiscovery();
+  const { setFilters, proposals: availableProposals, compatibility, status, error, refresh } = useDiscovery();
+  useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
   const { state: ownTrips } = useOwnTrips();
   const { state: messaging } = useMessaging();
   const [demoOpen, setDemoOpen] = useState(false);
   const latestListing = selectLatestListing(
-    AVAILABLE_PROPOSALS,
+    availableProposals,
     ownTrips.trips,
     profile.group.id,
     todayDate(),
@@ -36,7 +36,7 @@ export default function HomeScreen() {
     : undefined;
   const latestGroup = latestListing?.own
     ? profile.group
-    : AVAILABLE_PROPOSALS.find(item => item.trip.id === latestListing?.trip.id)?.group;
+    : availableProposals.find(item => item.trip.id === latestListing?.trip.id)?.group;
   const discover = () => {
     setFilters({ ...INITIAL_FILTERS });
     router.navigate('/explore');
@@ -75,6 +75,7 @@ export default function HomeScreen() {
             onPress={() => router.push('/trip-editor')}
           />
         </View>
+        <DataStatus status={status} error={error} onRetry={() => { void refresh(); }} label="Wczytywanie ogłoszeń" />
         {latestListing ? (
           <View testID="home-latest-section" style={styles.latest}>
             <AppText variant="label" accessibilityRole="header">
@@ -83,8 +84,8 @@ export default function HomeScreen() {
             <HomeLatestListing
               trip={latestListing.trip}
               group={latestGroup}
-              travelModes={latestOwnTrip?.travelModes}
-              score={latestListing.own ? undefined : DEMO_COMPATIBILITY_SCORES[latestListing.trip.id]}
+              travelModes={latestOwnTrip?.travelModes ?? latestListing.trip.travelModes}
+              score={latestListing.own ? undefined : compatibility[latestListing.trip.id]?.score}
               onPress={() =>
                 router.push({
                   pathname: latestListing.own ? '/trips/[id]' : '/trip/[id]',

@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { DataStatus } from '@/components/ui/data-status';
+import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import {
   AppText,
@@ -11,8 +13,6 @@ import {
 import { Icon } from '@/components/ui/icon';
 import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
-import { AVAILABLE_PROPOSALS } from '@/data/proposals';
-import { DEMO_COMPATIBILITY_SCORES } from '@/data/mocks/compatibility';
 import {
   filterProposals,
   INITIAL_FILTERS,
@@ -34,7 +34,8 @@ import { LANDSCAPE_OPTIONS } from '@/constants/landscape-options';
 
 export default function ExploreScreen() {
   const theme = useTheme();
-  const { filters, setFilters, sort, setSort } = useDiscovery();
+  const { filters, setFilters, sort, setSort, proposals: availableProposals, compatibility, status, error, refresh } = useDiscovery();
+  useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
   const { profile } = useProfile();
   const { state: ownTrips } = useOwnTrips();
   const sourceTrip = ownTrips.trips.find(
@@ -45,9 +46,9 @@ export default function ExploreScreen() {
   const [showSort, setShowSort] = useState(false);
   const dateRange = resolveDiscoveryRange(filters);
   const proposals = sortDiscoveryProposals(
-    filterProposals(AVAILABLE_PROPOSALS, filters, dateRange),
+    filterProposals(availableProposals, filters, dateRange),
     sort,
-    DEMO_COMPATIBILITY_SCORES,
+    Object.fromEntries(Object.entries(compatibility).map(([id, match]) => [id, match.score])),
   );
   const activeCount =
     Number(filters.tripModes.length === 1) +
@@ -102,6 +103,7 @@ export default function ExploreScreen() {
         />
       }
     >
+      <DataStatus status={status} error={error} onRetry={() => { void refresh(); }} label="Wczytywanie ogłoszeń" />
       <View style={styles.controls}>
         {filters.sourceTripId ? (
           <View style={layout.row}>
@@ -150,6 +152,7 @@ export default function ExploreScreen() {
           {activeCount ? (
             <IconButton label="Wyczyść filtry" icon="close" onPress={reset} />
           ) : null}
+          <IconButton label="Odśwież ogłoszenia" icon="refresh" onPress={() => { void refresh(); }} />
         </View>
       </View>
       <View style={styles.results}>
@@ -201,10 +204,10 @@ export default function ExploreScreen() {
                   preferredAges.includes(band),
                 ),
               }}
-              demoScore={DEMO_COMPATIBILITY_SCORES[proposal.trip.id]}
+              score={compatibility[proposal.trip.id]?.score}
             />
           ))
-        ) : (
+        ) : status === 'ready' ? (
           <EmptyState
             title="Jeszcze się mijamy"
             description="Żaden plan nie pasuje do tych filtrów. Zmień klimat wyjazdu lub pozostałe kryteria."
@@ -212,7 +215,7 @@ export default function ExploreScreen() {
               <Button label="Pokaż wszystkie propozycje" onPress={reset} />
             }
           />
-        )}
+        ) : null}
       </View>
       {showFilters ? (
         <DiscoveryFiltersSheet

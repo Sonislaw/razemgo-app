@@ -22,6 +22,8 @@ export interface DateRange {
   endDate: string;
 }
 interface TripBase extends DateRange {
+  travelModes?: string[];
+  matching?: { groupKinds: TravelGroup['kind'][]; childAgeBands: ChildAgeBand[] };
   id: string;
   publishedAt?: string;
   groupId: string;

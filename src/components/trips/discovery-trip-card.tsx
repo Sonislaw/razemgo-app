@@ -5,17 +5,18 @@ import { TripListingAction, TripListingCard } from './trip-listing-card';
 
 interface DiscoveryTripCardProps extends TripProposal {
   facts: Pick<MatchFacts, 'ageBands' | 'matchingAgeBands'>;
-  demoScore?: number;
+  score?: number;
 }
 
-export function DiscoveryTripCard({ trip, group, facts, demoScore }: DiscoveryTripCardProps) {
+export function DiscoveryTripCard({ trip, group, facts, score }: DiscoveryTripCardProps) {
   return (
     <TripListingCard
       testID={'discovery-trip-' + trip.id}
       trip={trip}
       group={group}
+      travelModes={trip.travelModes}
       ageBands={facts.matchingAgeBands.length ? facts.matchingAgeBands : facts.ageBands}
-      score={demoScore}
+      score={score}
       footer={
         <TripListingAction
           label="Zobacz wyjazd"

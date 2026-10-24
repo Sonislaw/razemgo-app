@@ -12,7 +12,6 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, IconButton, layout } from '@/components/ui/primitives';
 import { Icon, type IconName } from '@/components/ui/icon';
-import { AVAILABLE_PROPOSALS } from '@/data/proposals';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { useMessaging } from '@/features/messaging/messaging-context';
 import { CountBadge } from '@/features/messaging/messaging-ui';
@@ -106,10 +105,10 @@ export function HomeNotifications() {
   const { width, height } = useWindowDimensions();
   const { state: ownTrips } = useOwnTrips();
   const { state: mailbox, dispatch } = useMessaging();
-  const { setFilters, setSort } = useDiscovery();
+  const { setFilters, setSort, proposals: availableProposals } = useDiscovery();
   const { readKeys, markRead } = useNotifications();
   const notifications = selectHomeNotifications(
-    AVAILABLE_PROPOSALS,
+    availableProposals,
     ownTrips.trips,
     mailbox,
     readKeys,
@@ -156,7 +155,7 @@ export function HomeNotifications() {
       : invitations.count
         ? `${notificationQuantity(invitations.count, 'invitations')} — sprawdź, kto chce Cię poznać.`
         : 'Nie masz oczekujących zaproszeń do kontaktu.';
-  const messageGroup = AVAILABLE_PROPOSALS.find(
+  const messageGroup = availableProposals.find(
     ({ group }) => group.id === messages.conversation?.groupId,
   )?.group;
   const messageDescription =

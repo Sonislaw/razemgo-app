@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { AppText, Button } from '@/components/ui/primitives';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import type { OwnedTrip } from '@/types/owned-trip';
-import { useOwnTrips } from './own-trips-context';
+import { useOwnTrips, type TripMutation } from './own-trips-context';
 import { getTripStatus, todayDate } from './own-trips-state';
 
 export function TripActions({
@@ -16,13 +16,21 @@ export function TripActions({
   onClose: () => void;
   onDeleted?: () => void;
 }) {
-  const { state, dispatch } = useOwnTrips();
+  const { mutateTrip, isSaving } = useOwnTrips();
+  const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<
     'cancel' | 'delete' | 'publish' | 'complete' | null
   >(null);
   const today = todayDate();
   const status = getTripStatus(trip, today);
   const active = status === 'published' || status === 'paused';
+  const perform = async (action: TripMutation, after?: (id?: string) => void) => {
+    const result = await mutateTrip(action);
+    setError(result.errors.join(' ') || null);
+    if (result.errors.length) return;
+    onClose();
+    after?.(result.id);
+  };
   return (
     <BottomSheet
       title={
@@ -36,9 +44,11 @@ export function TripActions({
                 ? 'Wznowić poszukiwania?'
                 : 'Zarządzaj wyjazdem'
       }
-      onClose={onClose}
+      onClose={() => { if (!isSaving) onClose(); }}
     >
       <AppText variant="label">{getTripHeadline(trip)}</AppText>
+      {error ? <AppText accessibilityRole="alert">{error}</AppText> : null}
+      {isSaving ? <AppText variant="caption" accessibilityLiveRegion="polite">Zapisywanie zmiany…</AppText> : null}
       {confirm ? (
         <>
           <AppText color="textSecondary">
@@ -51,6 +61,7 @@ export function TripActions({
                   : 'Plan będzie widoczny dla społeczności i otwarty na nowe zaproszenia.'}
           </AppText>
           <Button
+            disabled={isSaving}
             label={
               confirm === 'delete'
                 ? 'Usuń wyjazd'
@@ -62,11 +73,9 @@ export function TripActions({
             }
             onPress={() => {
               if (confirm === 'delete') {
-                dispatch({ type: 'delete', id: trip.id });
-                onClose();
-                onDeleted?.();
+                void perform({ type: 'delete', id: trip.id }, onDeleted);
               } else {
-                dispatch({
+                void perform({
                   type: 'status',
                   id: trip.id,
                   status:
@@ -78,11 +87,11 @@ export function TripActions({
                   today,
                   publishedAt: new Date().toISOString(),
                 });
-                onClose();
               }
             }}
           />
           <Button
+            disabled={isSaving}
             label="Wróć bez zmian"
             variant="secondary"
             onPress={() => setConfirm(null)}
@@ -91,6 +100,7 @@ export function TripActions({
       ) : (
         <>
           <Button
+            disabled={isSaving}
             label={status === 'draft' ? 'Dokończ szkic' : 'Edytuj wyjazd'}
             icon="edit"
             variant="secondary"
@@ -104,21 +114,22 @@ export function TripActions({
           />
           {status === 'published' ? (
             <Button
+              disabled={isSaving}
               label="Wstrzymaj poszukiwania"
               icon="pause"
               variant="secondary"
               onPress={() => {
-                dispatch({
+                void perform({
                   type: 'status',
                   id: trip.id,
                   status: 'paused',
                   today,
                 });
-                onClose();
               }}
             />
           ) : status === 'paused' ? (
             <Button
+              disabled={isSaving}
               label="Wznów poszukiwania"
               icon="people"
               variant="secondary"
@@ -126,18 +137,19 @@ export function TripActions({
             />
           ) : null}
           <Button
+            disabled={isSaving}
             label="Duplikuj jako szkic"
             icon="copy"
             variant="secondary"
             onPress={() => {
-              const id = `local-trip-${state.nextSequence}`;
-              dispatch({ type: 'duplicate', id: trip.id });
-              onClose();
-              router.push({ pathname: '/trip-editor', params: { id } });
+              void perform({ type: 'duplicate', id: trip.id }, id => {
+                if (id) router.push({ pathname: '/trip-editor', params: { id } });
+              });
             }}
           />
           {active ? (
             <Button
+              disabled={isSaving}
               label="Oznacz jako zakończony"
               icon="check"
               variant="secondary"
@@ -146,6 +158,7 @@ export function TripActions({
           ) : null}
           {active ? (
             <Button
+              disabled={isSaving}
               label="Anuluj wyjazd"
               icon="close"
               variant="secondary"
@@ -153,6 +166,7 @@ export function TripActions({
             />
           ) : null}
           <Button
+            disabled={isSaving}
             label="Usuń wyjazd"
             icon="trash"
             variant="secondary"

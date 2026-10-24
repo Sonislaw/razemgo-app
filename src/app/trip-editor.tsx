@@ -1,5 +1,5 @@
-import { TRIPS_BACKEND_AVAILABLE } from '@/constants/app';
-import { BackendPendingScreen } from '@/features/auth/backend-pending-screen';
+import { DataStatus } from '@/components/ui/data-status';
+import { createRequestKey } from '@/lib/request-key';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
@@ -99,6 +99,8 @@ function TripEditorScreen() {
   const [confirmExit, setConfirmExit] = useState(false);
   const [showDates, setShowDates] = useState(false);
   const submitting = useRef(false);
+  const [saving, setSaving] = useState(false);
+  const [requestKey] = useState(createRequestKey);
   const formScroll = useRef<ScrollViewInstance>(null);
   const update = <K extends keyof TripForm>(key: K, value: TripForm[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -142,9 +144,13 @@ function TripEditorScreen() {
     profile.group.id,
     previewStatus,
   );
-  const save = (draft: boolean) => {
+  const save = async (draft: boolean) => {
     if (submitting.current) return;
-    const result = saveTrip(form, id, draft);
+    submitting.current = true;
+    setSaving(true);
+    const result = await saveTrip(form, id, draft, requestKey);
+    submitting.current = false;
+    setSaving(false);
     setErrors(result.errors);
     if (result.errors.length) {
       formScroll.current?.scrollTo({ y: 0, animated: true });
@@ -621,6 +627,7 @@ function TripEditorScreen() {
               <View style={{ flex: 1, minWidth: 100 }}>
                 <Button
                   label="Zapisz szkic"
+                  disabled={saving}
                   icon="edit"
                   variant="secondary"
                   onPress={() => save(true)}
@@ -638,6 +645,7 @@ function TripEditorScreen() {
                         ? 'Zapisz plan prywatny'
                         : 'Opublikuj wyjazd'
                 }
+                disabled={saving}
                 icon={step < 3 ? 'arrow' : 'check'}
                 onPress={() => (step < 3 ? next() : save(false))}
               />
@@ -688,5 +696,7 @@ function TripEditorScreen() {
 }
 
 export default function TripEditorEntry() {
-  return TRIPS_BACKEND_AVAILABLE ? <TripEditorScreen /> : <BackendPendingScreen title="Nowy wyjazd" description="Publikowanie wyjazdów uruchomimy w kolejnym etapie. Twój profil jest już gotowy na nowe przygody." />;
+  const { status, error, refresh, hasLoaded } = useOwnTrips();
+  if (!hasLoaded) return <Screen><AppText variant="heading">Nowy wyjazd</AppText><DataStatus status={status} error={error} onRetry={() => { void refresh(); }} /></Screen>;
+  return <TripEditorScreen />;
 }

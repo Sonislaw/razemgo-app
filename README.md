@@ -1,10 +1,16 @@
 # RazemGo
 
-## Supabase — logowanie i profil
+## Supabase — konta, profile i wyjazdy
 
 Aplikacja ma przygotowane logowanie Google i e-mail/hasło, potwierdzanie adresu, reset hasła, onboarding, zapis profilu i ustawienia konta. Wymaga konfiguracji projektu Supabase: **[instrukcja wdrożenia](supabase/README.md)** zawiera migracje, Google, SMTP, funkcję usuwania konta oraz development build Androida.
 
-Domyślnie bez logowania dostępny jest ekran powitalny. Rzeczywiste konta zaczynają bez przykładowych wyjazdów i rozmów. Następny etap backendu obejmie publikowanie planów i Odkrywaj, kolejny — zaproszenia i czat.
+Domyślnie bez logowania dostępny jest ekran powitalny z pięcioma losowanymi przykładami. Prawdziwe konta zapisują profil oraz własne wyjazdy w Supabase. Kreator obsługuje szkic, publikację i edycję; menu pozwala wstrzymać lub wznowić poszukiwania, zakończyć, anulować, duplikować i usunąć plan. Zmiana zostaje potwierdzona po odpowiedzi serwera.
+
+Odkrywaj i Start pobierają publiczne, aktualne ogłoszenia innych ekip. Filtry oraz sortowanie działają lokalnie na pobranych rekordach. Zgodność jest liczona z planów i preferencji; stałe przykładowe procenty pozostają jedynie na ekranie powitalnym. Kafelki mają wspólny komponent `TripListingCard`.
+
+Migracja `202610240001_trips.sql` dodaje wyjazdy, walidację i RLS. Profile i preferencje pozostają prywatne; osobna funkcja udostępnia tylko jawne pola organizatora powiązane z publicznym ogłoszeniem. Szkice, prywatne, wstrzymane, zakończone i anulowane plany nie trafiają do Odkrywaj. Listy odświeżają się przy wejściu na ekran i powrocie aplikacji na pierwszy plan; błąd daje możliwość ponowienia.
+
+Następny etap obejmuje zaproszenia i czat, potem powiadomienia push i pilotaż. Przy prawdziwym koncie przycisk zaproszenia pozostaje niedostępny do czasu podłączenia tej funkcji.
 
 ```powershell
 npm ci

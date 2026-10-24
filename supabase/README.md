@@ -1,4 +1,4 @@
-# Supabase — logowanie i profil
+# Supabase — konta, profile i wyjazdy
 
 Kod aplikacji i migracja są gotowe do podłączenia. Bez konfiguracji aplikacja pokazuje ekran powitalny; nie przełącza się automatycznie na dane przykładowe.
 
@@ -65,9 +65,9 @@ Do buildów EAS dodaj publiczne zmienne Supabase do środowiska EAS używanego p
 
 ## 6. Dane przykładowe i kolejne etapy
 
-Rzeczywiste konta mają tylko własny profil zapisany w Supabase. Wyjazdy, Odkrywaj i rozmowy zaczynają od pustych danych. Kreator wyjazdów pokazuje informację o kolejnym etapie, bez pozornego zapisywania planu.
+Rzeczywiste konta zapisują profil i wyjazdy w Supabase. Nowe konto zaczyna bez własnych wyjazdów i rozmów. Odkrywaj pokazuje publiczne, aktualne plany innych użytkowników. Pięć przykładów na ekranie powitalnym nie jest dodawanych do danych konta.
 
-Oddzielny podgląd istniejącego UI można uruchomić lokalnie z `EXPO_PUBLIC_ENABLE_DEMO=true` w `.env.local`. Wymaga restartu Metro, nie korzysta z prawdziwego konta i nigdy nie włącza się w buildzie release. Przy testach backendu ustaw `false`. Następne etapy: wyjazdy i wyszukiwanie → zaproszenia i czat → powiadomienia i pilotaż.
+Oddzielny podgląd istniejącego UI można uruchomić lokalnie z `EXPO_PUBLIC_ENABLE_DEMO=true` w `.env.local`. Wymaga restartu Metro, nie korzysta z prawdziwego konta i nigdy nie włącza się w buildzie release. Przy testach backendu ustaw `false`. Następne etapy: zaproszenia i czat → powiadomienia i pilotaż.
 
 ## 7. Kontrole
 
@@ -87,3 +87,23 @@ npx expo export --platform web --output-dir .expo/supabase-web
 Przepływy webowe sprawdza `npm run test:web`. Przed pierwszym uruchomieniem zainstaluj przeglądarkę poleceniem `npx playwright install chromium`. Alternatywnie ustaw `PLAYWRIGHT_CHANNEL=chrome`, aby użyć zainstalowanego Chrome. Test uruchamia osobny Metro na porcie 8085, wymusza fikcyjne parametry backendu tylko w procesie testowym i przechwytuje odpowiedzi API. Obejmuje logowanie, potwierdzenie, onboarding, zapis i odtworzenie profilu, zmianę konta, błędy API, callback Google, reset hasła i potwierdzenie usunięcia. Nie łączy się z rzeczywistym Google ani Supabase.
 
 Po podłączeniu usług sprawdź na dwóch kontach: rejestrację i mail, potwierdzenie linkiem/kodem, Google, połączenie Google z kontem e-mail, restart aplikacji, ten sam profil na drugim urządzeniu, edycję i błędy sieci, reset hasła, wylogowanie i usunięcie konta. Osobno odnotuj wyniki w development buildzie Androida i w przeglądarce.
+
+## 8. Wyjazdy i Odkrywaj
+
+Migracja `202610240001_trips.sql` tworzy `trip_plans`, walidacje i polityki RLS oraz funkcje `save_my_trip`, `change_my_trip_status`, `duplicate_my_trip`, `delete_my_trip`, `list_public_trips`. Zastosuj ją przez `npx supabase@latest db push --linked`. Nie przenosi ona danych demonstracyjnych.
+
+Migracja `202610240002_trip_permissions.sql` odbiera także jawne domyślne granty Supabase dla roli `anon`. Wymagane są obie migracje. Samego `REVOKE ... FROM PUBLIC` nie traktujemy jako odebrania uprawnień nadanych bezpośrednio roli.
+
+Własne rekordy są dostępne tylko właścicielowi ekipy. Odkrywaj korzysta z jawnej projekcji publicznych, opublikowanych i niezakończonych planów innych ekip. Funkcja nie zwraca identyfikatora konta, e-maila ani prywatnych preferencji profilu. Wylogowany lub usunięty użytkownik nie może jej używać. Usunięcie konta usuwa wyjazdy kaskadowo.
+
+Daty są dokładne w obu trybach. Tolerancja istnieje tylko w filtrach. Publikacja wymaga wybranej lokalizacji, jednego sposobu podróżowania, poprawnych dat oraz opisu 20–1000 znaków; „Mam plan” wymaga miejscowości lub wsi. Szkic może być niepełny. Baza wymusza te reguły również przy bezpośrednich żądaniach API.
+
+Kreator zachowuje jeden losowy klucz utworzenia planu. Funkcja zapisu oraz unikalny indeks właściciela i klucza sprawiają, że ponowienie po utracie odpowiedzi serwera nie tworzy drugiego ogłoszenia. Właściwy identyfikator wyjazdu nadal nadaje baza.
+
+Wynik zgodności liczymy lokalnie z dostępnych kryteriów: daty (waga 30), miejsce (20), klimat (10), zainteresowania (20), preferowany wiek dzieci (15), rodzaj ekipy (10), preferencje drugiej strony dotyczące ekipy (10) i wieku (10), transport (5), zwierzęta (5). Brak kryterium pomija jego wagę. Wynik jest normalizowany do 0–100; zwierzęta nie wykluczają propozycji. Dla kilku własnych planów wybierany jest jeden najlepiej pasujący. Wybranie konkretnego planu ma pierwszeństwo.
+
+Filtry i sortowanie pracują na pobranych publicznych rekordach. Pobieranie jest stronicowane po 500 rekordów. Aktualizacja następuje przy wejściu na ekran i wznowieniu aplikacji; nie jest to jeszcze Supabase Realtime ani push. Rozmowy i zaproszenia pozostają kolejnym etapem.
+
+`npm test` obejmuje też `trips-backend.test.mjs` (PostgreSQL/PGlite: dwa konta, anon, RLS, projekcja, transakcyjność, cykl życia i cascade) oraz `trip-data.test.mjs` (adaptery i ranking). `npm run test:web` sprawdza tworzenie wyjazdu, błąd zapisu, restart, drugie urządzenie, publiczną listę drugiego konta, prywatne duplikaty, statusy, usuwanie i ponawianie pobierania. Webowe API jest kontrolowane w testach, bez zapisów do rzeczywistych kont.
+
+Zdalną kontrolę migracji można wykonać przez `npx supabase@latest db query --linked --file scripts/check-trips-remote.sql`. Skrypt zakłada dwie tymczasowe tożsamości wewnątrz transakcji, sprawdza uprawnienia i kończy się `ROLLBACK`. Nie wysyła e-maili ani nie pozostawia kont lub ogłoszeń.

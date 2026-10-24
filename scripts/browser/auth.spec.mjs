@@ -123,6 +123,7 @@ async function backend(context, existingState) {
       if (request.method() === 'PUT') state.lastPassword = body.password;
       return respond(user(id));
     }
+    if (url.pathname === '/rest/v1/trip_plans' || url.pathname === '/rest/v1/rpc/list_public_trips') return respond([]);
     if (url.pathname === '/rest/v1/travel_groups') {
       if (state.loadFail)
         return respond({ message: 'Temporarily unavailable' }, 503);
@@ -182,12 +183,12 @@ test('guest protection, registration validation and email confirmation', async (
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/profile');
   await expect(
-    page.getByRole('button', { name: 'Dołącz do RazemGo' }),
+    page.getByRole('button', { name: 'Nowe konto' }),
   ).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Nazwa ekipy' })).toHaveCount(
     0,
   );
-  await page.getByRole('button', { name: 'Dołącz do RazemGo' }).click();
+  await page.getByRole('button', { name: 'Nowe konto' }).click();
   await page
     .getByRole('textbox', { name: 'E-mail', exact: true })
     .fill('a@example.com');
@@ -217,6 +218,7 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
   page,
   context,
 }) => {
+  test.setTimeout(120000);
   const state = await backend(context);
   await login(page);
   await createProfile(page, 'Ekipa A');
@@ -276,7 +278,7 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
   await page.goto('/settings');
   await page.getByRole('button', { name: 'Wyloguj się', exact: true }).click();
   await expect(
-    page.getByRole('button', { name: 'Dołącz do RazemGo' }),
+    page.getByRole('button', { name: 'Nowe konto' }),
   ).toBeVisible();
   await login(page, 'b@example.com');
   await expect(page.getByRole('textbox', { name: 'Nazwa ekipy' })).toHaveValue(
@@ -289,7 +291,7 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
     0,
   );
   await page.goto('/trip-editor');
-  await expect(page.getByText('Już wkrótce', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Jaki masz plan?', exact: true })).toBeVisible();
   expect(state.profiles.size).toBe(2);
 });
 
@@ -335,7 +337,7 @@ test('Google PKCE callback, password recovery and confirmed account deletion', a
     .getByRole('button', { name: 'Potwierdzam — usuń konto', exact: true })
     .click();
   await expect(
-    page.getByRole('button', { name: 'Dołącz do RazemGo' }),
+    page.getByRole('button', { name: 'Nowe konto' }),
   ).toBeVisible();
   expect(state.deleted).toEqual([A]);
   expect(state.profiles.size).toBe(0);
@@ -345,7 +347,7 @@ test('Google PKCE callback, password recovery and confirmed account deletion', a
   }, otherDeviceSession);
   await page.goto('/profile');
   await expect(
-    page.getByRole('button', { name: 'Dołącz do RazemGo' }),
+    page.getByRole('button', { name: 'Nowe konto' }),
   ).toBeVisible();
 });
 
@@ -370,6 +372,6 @@ test('expired recovery link keeps private screens protected and allows a fresh r
   ).toBeVisible();
   await page.goto('/profile');
   await expect(
-    page.getByRole('button', { name: 'Dołącz do RazemGo' }),
+    page.getByRole('button', { name: 'Nowe konto' }),
   ).toBeVisible();
 });

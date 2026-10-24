@@ -1,6 +1,7 @@
+import { DataStatus } from '@/components/ui/data-status';
 import { getTripHeadline } from '@/features/trips/trip-headline';
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import {
   AppText,
@@ -25,11 +26,12 @@ import { OwnTripFiltersSheet } from '@/features/trips/own-trip-filters';
 import type { OwnTripFilters } from '@/types/owned-trip';
 
 export default function TripsScreen() {
-  const { state } = useOwnTrips();
+  const { state, refresh } = useOwnTrips();
+  useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
   return <TripsContent key={state.revision} />;
 }
 function TripsContent() {
-  const { state } = useOwnTrips();
+  const { state, status, error, refresh } = useOwnTrips();
   const theme = useTheme();
   const [archived, setArchived] = useState(() => {
     const saved = state.trips.find((trip) => trip.id === state.lastSavedId);
@@ -89,6 +91,7 @@ function TripsContent() {
         }
       >
         <View style={{ gap: 12 }}>
+          <DataStatus status={status} error={error} onRetry={() => { void refresh(); }} />
           {notice ? (
             <View
               accessibilityLiveRegion="polite"
@@ -183,6 +186,7 @@ function TripsContent() {
               label="Filtruj moje wyjazdy"
               onPress={() => setFilterOpen(true)}
             />
+            <IconButton label="Odśwież wyjazdy" icon="refresh" onPress={() => { void refresh(); }} />
           </View>
           {filtered ? (
             <View style={layout.row}>
@@ -214,7 +218,7 @@ function TripsContent() {
               onMenu={() => setSelectedId(trip.id)}
             />
           ))}
-          {!trips.length ? (
+          {!trips.length && status === 'ready' ? (
             <View
               style={{ gap: 12, paddingVertical: 24, alignItems: 'center' }}
             >

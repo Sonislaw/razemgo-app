@@ -322,6 +322,9 @@ export function selectOwnTrips(
     });
 }
 export type OwnTripsAction =
+  | { type: 'hydrate'; trips: OwnedTrip[] }
+  | { type: 'persisted'; trip: OwnedTrip }
+  | { type: 'removed'; id: string }
   | {
       type: 'save';
       form: TripForm;
@@ -347,6 +350,18 @@ export function ownTripsReducer(
   action: OwnTripsAction,
 ): OwnTripsState {
   if (action.type === 'reset') return action.state;
+  if (action.type === 'hydrate') return { ...state, trips: action.trips };
+  if (action.type === 'persisted') return {
+    ...state,
+    trips: state.trips.some(trip => trip.id === action.trip.id)
+      ? state.trips.map(trip => trip.id === action.trip.id ? action.trip : trip)
+      : [...state.trips, action.trip],
+    revision: state.revision + 1,
+    lastSavedId: action.trip.id,
+  };
+  if (action.type === 'removed') return {
+    ...state, trips: state.trips.filter(trip => trip.id !== action.id), revision: state.revision + 1,
+  };
   if (action.type === 'save') {
     const existing = action.id
       ? state.trips.find((trip) => trip.id === action.id)

@@ -1,3 +1,4 @@
+import { DataStatus } from '@/components/ui/data-status';
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -15,7 +16,6 @@ import { TripMapCard } from '@/components/trips/trip-map-card';
 import { Landscape } from '@/components/trips/landscape';
 import { DEMO_OWN_TRIPS } from '@/data/mocks/owned-trips';
 import { DEMO_GROUPS } from '@/data/mocks/travel';
-import { AVAILABLE_PROPOSALS } from '@/data/proposals';
 import { useTheme } from '@/hooks/use-theme';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import {
@@ -48,14 +48,17 @@ export function generateStaticParams() {
 
 export default function OwnTripDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { state } = useOwnTrips();
+  const { state, status: loadStatus, error: loadError, refresh, hasLoaded } = useOwnTrips();
   const { profile } = useProfile();
   const { state: messaging, dispatch: dispatchMessaging } = useMessaging();
-  const { setFilters } = useDiscovery();
+  const { setFilters, proposals: availableProposals } = useDiscovery();
   const theme = useTheme();
   const [menu, setMenu] = useState(false);
   const trip = state.trips.find((item) => item.id === id);
   const back = () => router.dismissTo('/trips');
+  if (!hasLoaded) return (
+    <Screen><TripPageHeader title="Twój wyjazd" onBack={back} /><DataStatus status={loadStatus} error={loadError} onRetry={() => { void refresh(); }} /></Screen>
+  );
   if (!trip)
     return (
       <Screen>
@@ -73,7 +76,7 @@ export default function OwnTripDetailsScreen() {
   const searching = isSearchingTrip(trip, todayDate());
   const discoveryFilters = discoveryFiltersForTrip(trip);
   const proposals = searching
-    ? filterProposals(AVAILABLE_PROPOSALS, discoveryFilters)
+    ? filterProposals(availableProposals, discoveryFilters)
     : [];
   const invitations = messaging.invitations.filter(
     (item) =>
@@ -110,6 +113,7 @@ export default function OwnTripDetailsScreen() {
             onBack={back}
             onMenu={() => setMenu(true)}
           />
+          <DataStatus status={loadStatus} error={loadError} onRetry={() => { void refresh(); }} />
           <View style={{ borderRadius: 20, overflow: 'hidden' }}>
             <Landscape kind={trip.landscape} />
           </View>

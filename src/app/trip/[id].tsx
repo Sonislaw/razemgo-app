@@ -1,5 +1,7 @@
+import { useCallback } from 'react';
+import { DataStatus } from '@/components/ui/data-status';
 import { getTripHeadline } from '@/features/trips/trip-headline';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import {
   AppText,
@@ -18,7 +20,6 @@ import { Landscape } from '@/components/trips/landscape';
 import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
 import { TripMapCard } from '@/components/trips/trip-map-card';
 import { AVAILABLE_PROPOSALS } from '@/data/proposals';
-import { DEMO_COMPATIBILITY_SCORES } from '@/data/mocks/compatibility';
 import {
   formatTripDates,
   getMatchFacts,
@@ -40,12 +41,16 @@ export function generateStaticParams() {
 
 export default function TripDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { filters } = useDiscovery();
+  const { filters, proposals: availableProposals, compatibility, status, error, refresh, hasLoaded } = useDiscovery();
+  useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
   const { profile } = useProfile();
   const theme = useTheme();
-  const proposal = AVAILABLE_PROPOSALS.find((item) => item.trip.id === id);
+  const proposal = availableProposals.find((item) => item.trip.id === id);
   const back = () =>
     router.canGoBack() ? router.back() : router.replace('/explore');
+  if (!hasLoaded || (!proposal && status !== 'ready')) return (
+    <Screen><DataStatus status={status} error={error} onRetry={() => { void refresh(); }} label="Wczytywanie wyjazdu" /></Screen>
+  );
   if (!proposal)
     return (
       <Screen>
@@ -69,7 +74,7 @@ export default function TripDetailsScreen() {
     undefined,
     getPreferredChildAges(profile, filters.childAgeBands),
   );
-  const score = DEMO_COMPATIBILITY_SCORES[trip.id];
+  const score = compatibility[trip.id]?.score;
   return (
     <Screen>
       <HeaderRow>
@@ -79,6 +84,7 @@ export default function TripDetailsScreen() {
         </AppText>
         <DemoBadge />
       </HeaderRow>
+      <DataStatus status={status} error={error} onRetry={() => { void refresh(); }} label="Odświeżanie wyjazdu" />
       <View style={styles.illustration}>
         <Landscape kind={trip.landscape} />
       </View>
@@ -127,6 +133,10 @@ export default function TripDetailsScreen() {
         <AppText variant="heading" accessibilityRole="header" color="positive">
           {score !== undefined ? score + '% zgodności' : 'Co Cię łączy z tą ekipą?'}
         </AppText>
+        <AppText variant="caption" color="textSecondary">Wynik uwzględnia dostępne dane planów i preferencji.</AppText>
+        <View style={layout.wrap}>
+          {compatibility[trip.id]?.reasons.map(reason => <Chip key={reason} label={reason} />)}
+        </View>
         <AppText variant="label">
           {facts.matchingAgeBands.length
             ? 'Podobny wiek dzieci: ' +
@@ -162,7 +172,7 @@ export default function TripDetailsScreen() {
             ? ' · dzieci: ' + group.childAgeBands.join(', ') + ' lat'
             : ' · bez dzieci'}
         </AppText>
-        <TravelModeBadges modes={group.travelModes} />
+        <TravelModeBadges modes={trip.travelModes ?? group.travelModes} />
       </Card>
       <TripContactAction proposal={proposal} />
     </Screen>

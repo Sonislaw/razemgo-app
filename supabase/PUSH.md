@@ -4,9 +4,9 @@ Pierwszy etap obejmuje trzy alerty: otrzymane zaproszenie, akceptację zaproszen
 
 ## Android: konfiguracja Firebase
 
-Stan środowiska testowego na 24.10.2026: projekt Firebase `razemgo-cfbe2` odpowiada pakietowi `pl.razemgo.app.dev`. Plik aplikacji jest zapisany w EAS jako sekret typu file `GOOGLE_SERVICES_JSON` w środowisku `development`; klucz konta serwisowego jest przypisany do FCM V1 w Credentials. Uwierzytelnienie Google i żądanie FCM z `validate_only: true` zwróciły HTTP 200, bez dostarczenia wiadomości. Test odbioru na fizycznym telefonie pozostaje do wykonania po instalacji nowego APK. Kroki poniżej służą odtworzeniu konfiguracji lub przygotowaniu kolejnego środowiska.
+Stan środowiska testowego na 24.10.2026: projekt Firebase `razemgo-cfbe2` odpowiada pakietowi `pl.razemgo.app.dev`. Plik aplikacji jest zapisany w EAS jako sekret typu file `GOOGLE_SERVICES_JSON` w środowisku `development`; klucz konta serwisowego jest przypisany do FCM V1 w Credentials. Uwierzytelnienie Google i żądanie FCM z `validate_only: true` zwróciły HTTP 200, bez dostarczenia wiadomości. Użytkownik potwierdził odbiór push na dwóch fizycznych telefonach. Kroki poniżej służą odtworzeniu konfiguracji lub przygotowaniu kolejnego środowiska.
 
-[Development build z obsługą push](https://expo.dev/accounts/sonislaw/projects/razemgo/builds/583ffabc-3a2b-4c4c-b73d-4b69fccc9248) zakończył się statusem `FINISHED` 24.10.2026. Instaluj APK z tego buildu lub nowszego, a następnie połącz aplikację z Metro.
+[Development build z obsługą push i ikoną RazemGo](https://expo.dev/accounts/sonislaw/projects/razemgo/builds/f4b645de-1a9c-4317-9d55-54df42c60b01) zakończył się statusem `FINISHED` 24.10.2026. Instaluj APK z tego buildu lub nowszego, a następnie połącz aplikację z Metro.
 
 Push wymagają nowego development buildu. W poprzednim APK aplikacja nadal działa, a ustawienia pokazują potrzebę aktualizacji. Expo Go i web nie rejestrują tokenów w tej implementacji.
 
@@ -27,6 +27,12 @@ npx expo start --dev-client
 Instrukcje źródłowe: [konfiguracja FCM V1](https://docs.expo.dev/push-notifications/fcm-credentials/), [Expo Notifications dla SDK 58](https://docs.expo.dev/versions/v58.0.0/sdk/notifications/). Nie należy mylić pliku aplikacji `google-services.json` z prywatnym kluczem konta serwisowego FCM. Google OAuth do logowania jest odrębną konfiguracją.
 
 Kod i biblioteka są przygotowane także na iOS; uruchomienie push na iOS wymaga osobno bundle identifier, konfiguracji Apple/APNs i właściwego buildu. Ten etap jest wdrażany i sprawdzany przede wszystkim dla Androida.
+
+### Ikona Androida
+
+Plugin `expo-notifications` wskazuje `assets/icons/notifications/notification-icon.png`: biały znak RazemGo na przezroczystym tle, 96 × 96 px, z marginesem. Android wykorzystuje maskę alfa; pełnokolorowa ikona z nieprzezroczystym tłem dałaby prostokąt. Turkusowy kolor `#087FA4` pozostaje w konfiguracji pluginu. Zasób jest używany zarówno przez Firebase w tle, jak i Expo Notifications na pierwszym planie.
+
+Ikonę można odtworzyć z istniejącego `zgrana-symbol.svg` poleceniem `npm exec --yes --package=sharp -- node scripts/render-notification-icon.cjs`. Zmiana tej konfiguracji wymaga nowego APK; Reload nie aktualizuje zasobów natywnych. Po instalacji usuń wcześniejsze powiadomienia i sprawdź ikonę przy nowym push, także na pasku stanu oraz w jasnym i ciemnym panelu powiadomień.
 
 ## Serwer Supabase
 

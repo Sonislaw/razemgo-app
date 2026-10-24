@@ -42,7 +42,14 @@
         }
       ],
       "expo-secure-store",
-      ["expo-notifications", { "color": "#087FA4", "defaultChannel": "razemgo-contact" }]
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icons/notifications/notification-icon.png",
+          "color": "#087FA4",
+          "defaultChannel": "razemgo-contact"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

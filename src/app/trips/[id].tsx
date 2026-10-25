@@ -152,7 +152,6 @@ export default function OwnTripDetailsScreen() {
             </View>
           </View>
           <TripMapCard trip={trip} />
-          <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} />
           <Card>
             <View style={layout.row}>
               <GroupAvatar groupId={trip.groupId} size={56} />
@@ -172,6 +171,7 @@ export default function OwnTripDetailsScreen() {
               {trip.description ||
                 'Jeszcze bez opisu. Możesz uzupełnić go w edycji.'}
             </AppText>
+            <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} compact />
             {trip.travelModes.length ? (
               <TravelModeBadges modes={trip.travelModes} />
             ) : (

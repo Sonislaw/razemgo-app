@@ -102,6 +102,8 @@ function RootNavigator() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="trip/[id]" />
         <Stack.Screen name="edit-profile" />
+        <Stack.Screen name="group-visibility" />
+        <Stack.Screen name="crew/[id]" />
         <Stack.Screen name="settings" />
         <Stack.Screen name="notifications" />
         <Stack.Screen name="chat/[id]" />

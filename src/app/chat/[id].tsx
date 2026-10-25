@@ -97,7 +97,7 @@ export default function ChatScreen() {
   );
   const back = () => router.dismissTo('/messages');
   if (!hasLoaded) return <Screen><DataStatus status={state.loadStatus} error={error} onRetry={() => { void refresh(); }} /><Button label="Wróć do Wiadomości" variant="secondary" onPress={back} /></Screen>;
-  if (!conversation || !group || !plan)
+  if (!conversation || !group)
     return (
       <Screen>
         <MailboxEmpty
@@ -147,7 +147,8 @@ export default function ChatScreen() {
           <ScenicHeaderBackground style={{ top: 0 }} />
           <IconButton label="Wróć do Wiadomości" icon="back" onPress={back} />
           <GroupAvatar groupId={conversation.groupId} avatarId={group.avatarId} size={40} />
-          <View style={{ flex: 1, minWidth: 0 }}>
+          <Pressable accessibilityRole="button" accessibilityLabel={'Zobacz profil: ' + group.name}
+            onPress={() => router.push({ pathname: '/crew/[id]', params: { id: group.id } })} style={{ flex: 1, minWidth: 0, minHeight: 48, justifyContent: 'center' }}>
             <AppText
               accessibilityRole="header"
               variant="label"
@@ -156,16 +157,16 @@ export default function ChatScreen() {
               {group.name}
             </AppText>
             <AppText variant="caption" color="textSecondary" numberOfLines={1}>
-              {getTripHeadline(plan)}
+              {plan ? getTripHeadline(plan) : 'Kontakt z profilu'}
             </AppText>
-          </View>
+          </Pressable>
           <IconButton
             label="Opcje bezpieczeństwa rozmowy"
             icon="more"
             onPress={() => setSafetyOpen(true)}
           />
         </View>
-        <Pressable
+        {plan ? <Pressable
           accessibilityRole="button"
           accessibilityLabel={
             'Wspólny wyjazd: ' + getTripHeadline(plan)
@@ -192,7 +193,7 @@ export default function ChatScreen() {
             </AppText>
           </View>
           <Icon name="chevron" size={18} />
-        </Pressable>
+        </Pressable> : null}
         {IS_DEMO_MODE ? (
           <Pressable
             accessibilityRole="button"

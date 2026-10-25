@@ -118,9 +118,9 @@ export function notificationCount(state: MessagingState): number {
 export function getTripContact(
   state: MessagingState,
   groupId: string,
-  tripId: string,
+  tripId: string | null,
 ) {
-  if (state.blockedGroupIds.includes(groupId))
+  if (state.blockedGroupIds.includes(groupId) || state.conversations.some(c => c.groupId === groupId && c.blocked))
     return { kind: 'blocked' } as const;
   const conversation = state.conversations.find(
     (item) =>
@@ -135,6 +135,17 @@ export function getTripContact(
       item.tripId === tripId &&
       item.status === 'pending',
   );
+  if (invitation) return { kind: invitation.direction, invitation } as const;
+  return { kind: 'available' } as const;
+}
+
+// A profile contact reuses an existing relationship, including one begun on a trip.
+export function getGroupContact(state: MessagingState, groupId: string) {
+  if (state.blockedGroupIds.includes(groupId) || state.conversations.some(c => c.groupId === groupId && c.blocked))
+    return { kind: 'blocked' } as const;
+  const conversation = state.conversations.find(c => c.groupId === groupId && isConversationAccepted(state, c));
+  if (conversation) return { kind: 'conversation', conversation } as const;
+  const invitation = state.invitations.find(i => i.groupId === groupId && i.status === 'pending');
   if (invitation) return { kind: invitation.direction, invitation } as const;
   return { kind: 'available' } as const;
 }
@@ -156,7 +167,7 @@ export type MessagingAction =
   | {
       type: 'invite';
       groupId: string;
-      tripId: string;
+      tripId: string | null;
       text: string;
       ownTripId?: string;
     }
@@ -235,6 +246,7 @@ export function messagingReducer(
                 invitationId: invitation.id,
                 groupId: invitation.groupId,
                 tripId: invitation.tripId,
+                context: invitation.context ?? 'trip',
               },
             ],
         messages: existing
@@ -285,7 +297,7 @@ export function messagingReducer(
         state.loadStatus !== 'ready' ||
         !text ||
         text.length > MAX_INVITATION_LENGTH ||
-        getTripContact(state, action.groupId, action.tripId).kind !==
+        (action.tripId === null ? getGroupContact(state, action.groupId) : getTripContact(state, action.groupId, action.tripId)).kind !==
           'available'
       )
         return state;
@@ -299,6 +311,7 @@ export function messagingReducer(
             id: 'local-inv-' + state.nextSequence,
             groupId: action.groupId,
             tripId: action.tripId,
+            context: action.tripId === null ? 'profile' : 'trip',
             ownTripId: action.ownTripId,
             direction: 'sent',
             status: 'pending',

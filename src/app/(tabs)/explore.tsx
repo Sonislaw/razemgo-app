@@ -31,8 +31,10 @@ import { useOwnTrips } from '@/features/trips/own-trips-context';
 import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { LANDSCAPE_OPTIONS } from '@/constants/landscape-options';
+import { GroupsDiscovery } from '@/features/groups/groups-discovery';
 
 export default function ExploreScreen() {
+  const [view, setView] = useState<'trips' | 'groups'>('trips');
   const theme = useTheme();
   const { filters, setFilters, sort, setSort, proposals: availableProposals, compatibility, status, error, refresh } = useDiscovery();
   useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
@@ -103,6 +105,16 @@ export default function ExploreScreen() {
         />
       }
     >
+      <View style={layout.row} accessibilityRole="tablist" accessibilityLabel="Odkrywaj">
+        {([{ value: 'trips', label: 'Wyjazdy' }, { value: 'groups', label: 'Ekipy' }] as const).map(item => (
+          <Pressable key={item.value} accessibilityRole="tab" accessibilityState={{ selected: view === item.value }}
+            onPress={() => setView(item.value)} style={{ flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center',
+              borderRadius: 16, backgroundColor: view === item.value ? theme.muted : 'transparent' }}>
+            <AppText variant="label" color={view === item.value ? 'primaryStrong' : 'textSecondary'}>{item.label}</AppText>
+          </Pressable>
+        ))}
+      </View>
+      {view === 'groups' ? <GroupsDiscovery /> : <>
       <DataStatus status={status} error={error} onRetry={() => { void refresh(); }} label="Wczytywanie ogłoszeń" />
       <View style={styles.controls}>
         {filters.sourceTripId ? (
@@ -237,6 +249,7 @@ export default function ExploreScreen() {
           }}
         />
       ) : null}
+      </>}
     </Screen>
   );
 }

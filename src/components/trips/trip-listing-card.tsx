@@ -36,6 +36,7 @@ interface TripListingCardProps {
   locationLabel?: string;
   datesLabel?: string;
   onPress?: () => void;
+  onPressGroup?: () => void;
   accessibilityLabel?: string;
   accessibilityHint?: string;
   testID?: string;
@@ -55,6 +56,7 @@ export function TripListingCard({
   locationLabel,
   datesLabel,
   onPress,
+  onPressGroup,
   accessibilityLabel,
   accessibilityHint,
   testID,
@@ -151,7 +153,8 @@ export function TripListingCard({
         ) : null}
         {children}
         {group ? (
-          <View style={[styles.crew, { borderColor: theme.border }]}>
+          <Pressable accessibilityRole={onPressGroup ? 'button' : undefined} accessibilityLabel={onPressGroup ? 'Zobacz profil: ' + group.name : undefined}
+            disabled={!onPressGroup} onPress={onPressGroup} style={[styles.crew, { borderColor: theme.border }]}>
             <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={44} decorative />
             <View style={styles.flex}>
               <AppText variant="label">{group.name}</AppText>
@@ -161,8 +164,8 @@ export function TripListingCard({
               </AppText>
             </View>
             {travelModes.length ? <TravelModeBadges modes={travelModes} /> : null}
-            {onPress ? <Icon name="chevron" size={18} color={theme.textSecondary} /> : null}
-          </View>
+            {onPress || onPressGroup ? <Icon name="chevron" size={18} color={theme.textSecondary} /> : null}
+          </Pressable>
         ) : null}
         {footer ? (
           <View style={[

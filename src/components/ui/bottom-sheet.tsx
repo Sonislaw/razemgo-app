@@ -80,7 +80,7 @@ export function BottomSheet({
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
             style={{ flexShrink: 1 }}
-            contentContainerStyle={{ padding: 16, gap: 12 }}
+            contentContainerStyle={{ padding: 16, paddingBottom: 24 + Math.max(insets.bottom, 16), gap: 12 }}
           >
             {children}
           </ScrollView>

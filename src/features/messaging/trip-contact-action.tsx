@@ -5,9 +5,9 @@ import { TextInput, View } from 'react-native';
 import { AppText, Button, layout } from '@/components/ui/primitives';
 import { Fonts, Typography } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import type { TripProposal } from '@/types/travel';
+import type { TravelGroup, TripProposal } from '@/types/travel';
 import { useMessaging } from './messaging-context';
-import { getTripContact, MAX_INVITATION_LENGTH } from './messaging-state';
+import { getGroupContact, getTripContact, MAX_INVITATION_LENGTH } from './messaging-state';
 import { MessagingSheet } from './messaging-ui';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
@@ -17,22 +17,28 @@ import { createRequestKey } from '@/lib/request-key';
 import { DataStatus } from '@/components/ui/data-status';
 
 export function TripContactAction({ proposal }: { proposal: TripProposal }) {
-  const { state, dispatch, invite, busy, actionError, error, refresh } = useMessaging();
+  return <ContactAction group={proposal.group} proposal={proposal} />;
+}
+export function GroupContactAction({ group }: { group: TravelGroup }) {
+  return <ContactAction group={group} />;
+}
+function ContactAction({ group, proposal }: { group: TravelGroup; proposal?: TripProposal }) {
+  const { state, dispatch, invite, inviteProfile, busy, actionError, error, refresh } = useMessaging();
   const { filters } = useDiscovery();
   const { state: ownTrips } = useOwnTrips();
   const ownTrip = ownTrips.trips.find(
-    (item) => item.id === filters.sourceTripId,
+    (item) => Boolean(proposal) && item.id === filters.sourceTripId,
   );
   const unavailableSource = Boolean(
-    filters.sourceTripId &&
+    proposal && filters.sourceTripId &&
     (!ownTrip || !isSearchingTrip(ownTrip, todayDate())),
   );
   const theme = useTheme();
   const [composing, setComposing] = useState(false);
   const [text, setText] = useState('');
   const [requestKey] = useState(createRequestKey);
-  const { trip, group } = proposal;
-  const contact = getTripContact(state, group.id, trip.id);
+  const trip = proposal?.trip;
+  const contact = trip ? getTripContact(state, group.id, trip.id) : getGroupContact(state, group.id);
   const openInvitations = (direction: 'received' | 'sent') => {
     dispatch({ type: 'view', view: 'invitations', direction });
     router.dismissTo('/messages');
@@ -98,9 +104,9 @@ export function TripContactAction({ proposal }: { proposal: TripProposal }) {
               {group.name}
             </AppText>
           </View>
-          <AppText variant="caption" color="primaryStrong">
+          {trip ? <AppText variant="caption" color="primaryStrong">
             {getTripHeadline(trip)}
-          </AppText>
+          </AppText> : <AppText variant="caption" color="primaryStrong">Kontakt z profilu · bez przypisanego wyjazdu</AppText>}
           {ownTrip ? (
             <AppText variant="caption" color="textSecondary">
               Twój wyjazd: {getTripHeadline(ownTrip)}
@@ -150,7 +156,7 @@ export function TripContactAction({ proposal }: { proposal: TripProposal }) {
               (contact.kind !== 'available' && contact.kind !== 'sent')
             }
             onPress={async () => {
-              if (await invite(trip.id, text, requestKey, ownTrip?.id)) {
+              if (await (trip ? invite(trip.id, text, requestKey, ownTrip?.id) : inviteProfile(group.id, text, requestKey))) {
                 setComposing(false);
                 setText('');
                 router.dismissTo('/messages');

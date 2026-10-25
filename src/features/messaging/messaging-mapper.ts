@@ -10,7 +10,7 @@ export type TripSnapshot = {
 };
 export type InvitationRow = {
   id: string; sender_group_id: string; recipient_group_id: string; trip_id: string | null;
-  source_trip_id: string | null; trip_reference: string; trip_snapshot: TripSnapshot;
+  source_trip_id: string | null; trip_reference: string | null; trip_snapshot: TripSnapshot | null; context_kind?: 'trip' | 'profile';
   source_trip_snapshot: TripSnapshot | null; text: string; status: ContactInvitation['status']; created_at: string;
 };
 export type MessageRow = {
@@ -49,13 +49,14 @@ export function messageFromRow(row: MessageRow, groupId: string, conversation?: 
 export function mailboxFromRow(row: MailboxRow, groupId: string): MailboxData {
   const invitations: ContactInvitation[] = row.invitations.map(i => ({
     id: i.id, groupId: i.sender_group_id === groupId ? i.recipient_group_id : i.sender_group_id,
-    tripId: i.trip_reference, ownTripId: i.recipient_group_id === groupId ? i.trip_reference : i.source_trip_snapshot?.id,
+    tripId: i.trip_reference, context: i.context_kind ?? 'trip', ownTripId: i.recipient_group_id === groupId ? i.trip_reference ?? undefined : i.source_trip_snapshot?.id,
     direction: i.sender_group_id === groupId ? 'sent' : 'received', status: i.status, text: i.text, createdAt: i.created_at,
   }));
   const conversations: Conversation[] = row.conversations.map(c => ({
     id: c.id, invitationId: c.invitation_id,
     groupId: c.sender_group_id === groupId ? c.recipient_group_id : c.sender_group_id,
-    tripId: invitations.find(i => i.id === c.invitation_id)?.tripId ?? '',
+    tripId: invitations.find(i => i.id === c.invitation_id)?.tripId ?? null,
+    context: invitations.find(i => i.id === c.invitation_id)?.context ?? 'trip',
     blocked: c.blocked, unreadCount: Number(c.unread_count), updatedAt: c.updated_at,
     selfReadSequence: Number(c.self_read_sequence), otherReadSequence: Number(c.other_read_sequence),
   }));

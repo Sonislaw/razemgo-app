@@ -8,6 +8,7 @@ export const OPERATIONS = [
   'moderation.list','moderation.detail','moderation.action','trips.report',
   'profile.load', 'profile.preferences', 'profile.save', 'trips.load', 'trips.save', 'trips.status', 'trips.duplicate', 'trips.delete',
   'discovery.load', 'mailbox.load', 'invitations.send', 'invitations.respond', 'messages.send', 'messages.load', 'messages.read',
+  'groups.search', 'groups.detail', 'groups.visibility', 'groups.save_visibility', 'groups.report',
   'contacts.block', 'contacts.report', 'notifications.load', 'notifications.read', 'notifications.preferences', 'push.register', 'push.unregister',
   'server.delete_account', 'server.dispatch_push', 'server.push_health',
 ] as const;
@@ -50,11 +51,11 @@ export function classifyFailure(error: unknown, operation: MonitoringOperation, 
   return { category: status && status >= 500 ? 'server' : 'unexpected', code: KNOWN_CODES.has(code) ? code : status ? 'HTTP_' + status : 'UNEXPECTED', status };
 }
 const ROUTES = new Set(['/', '/welcome','/auth/sign-in','/auth/sign-up','/auth/confirm','/auth/forgot-password','/auth/reset-password','/auth/callback',
-  '/onboarding','/account-loading','/explore','/trips','/messages','/profile','/edit-profile','/settings','/notifications','/messaging-safety','/trip-editor','/admin']);
+  '/onboarding','/account-loading','/explore','/trips','/messages','/profile','/edit-profile','/group-visibility','/settings','/notifications','/messaging-safety','/trip-editor','/admin']);
 export function monitoringRoute(path: string): string {
   const route = path.split(/[?#]/,1)[0];
   if (ROUTES.has(route)) return route;
-  if (/^\/(chat|trip|trips)\/[^/]+$/.test(route)) return '/' + route.split('/')[1] + '/[id]';
+  if (/^\/(chat|trip|trips|crew)\/[^/]+$/.test(route)) return '/' + route.split('/')[1] + '/[id]';
   return 'unknown';
 }
 export function createReportLimiter(now: () => number = Date.now) {

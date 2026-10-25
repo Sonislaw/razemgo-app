@@ -70,7 +70,7 @@ export default function AdminScreen() {
   const detailBody=<View style={{gap:18,flex:1,minWidth:0}}>
     {detailLoading ? <Card><ActivityIndicator accessibilityLabel="Wczytywanie zgłoszenia" /></Card> : detailError ? <Card><AppText accessibilityRole="alert">{detailError}</AppText><Button label="Ponów pobieranie szczegółów" onPress={()=>selected && void open(selected)} /></Card> : detail ? <>
       <Card style={styles.detailCard}>
-        <View style={styles.row}><Icon name={detail.report.target_kind==='trip' ? 'trips' : 'chat'} size={24} /><AppText variant="caption" color="textSecondary" style={{flex:1}}>ZGŁOSZENIE {detail.report.target_kind==='trip' ? 'WYJAZDU' : 'ROZMOWY'}</AppText><Badge status={detail.report.status} /></View>
+        <View style={styles.row}><Icon name={detail.report.target_kind==='profile' ? 'people' : detail.report.target_kind==='trip' ? 'trips' : 'chat'} size={24} /><AppText variant="caption" color="textSecondary" style={{flex:1}}>ZGŁOSZENIE {detail.report.target_kind==='profile' ? 'PROFILU' : detail.report.target_kind==='trip' ? 'WYJAZDU' : 'ROZMOWY'}</AppText><Badge status={detail.report.status} /></View>
         <AppText variant="title" accessibilityRole="header" style={{fontSize:26,lineHeight:33}}>{detail.report.reported_name}</AppText>
         <AppText variant="heading">{detail.report.reason}</AppText>
         <AppText variant="caption" color="textSecondary">Zgłasza: {detail.report.reporter_name} · {date(detail.report.created_at)}</AppText>
@@ -88,7 +88,10 @@ export default function AdminScreen() {
         {detail.evidence.messages?.slice().reverse().map(message=><View key={message.id} style={[styles.evidence,{backgroundColor:theme.background}]}>
           <AppText variant="caption" color="textSecondary">{message.sender_group_id===detail.report.reported_group_id ? detail.report.reported_name : detail.report.reporter_name} · {date(message.created_at)}</AppText>
           <AppText selectable>{message.text}</AppText></View>)}
-        {!detail.evidence.trip && !detail.evidence.messages?.length ? <AppText color="textSecondary">Brak zachowanej treści.</AppText> : null}
+        {detail.evidence.profile ? <View style={[styles.evidence,{backgroundColor:theme.background}]}>
+          <AppText variant="label">{detail.evidence.profile.name}</AppText><AppText selectable>{detail.evidence.profile.about || 'Brak opisu ekipy.'}</AppText>
+        </View> : null}
+        {!detail.evidence.trip && !detail.evidence.profile && !detail.evidence.messages?.length ? <AppText color="textSecondary">Brak zachowanej treści.</AppText> : null}
       </Card>
       <Card style={styles.detailCard}>
         <AppText variant="heading" accessibilityRole="header">Działania moderatora</AppText>
@@ -132,7 +135,7 @@ export default function AdminScreen() {
             {page.items.map(item=><Pressable key={item.id} accessibilityRole="button" accessibilityLabel={item.reported_name+', '+item.reason} onPress={()=>void open(item.id)} style={[styles.reportRow,{backgroundColor:theme.backgroundElement,borderColor:selected===item.id ? theme.primary : theme.border}]}>
               <View style={styles.row}><Badge status={item.status} /><View style={{flex:1}} /><AppText variant="caption" color="textSecondary">{date(item.created_at)}</AppText></View>
               <AppText variant="heading" numberOfLines={1}>{item.reported_name}</AppText><AppText>{item.reason}</AppText>
-              <View style={styles.row}><Icon name={item.target_kind==='trip' ? 'trips' : 'chat'} size={16} /><AppText variant="caption" color="textSecondary">{item.target_kind==='trip' ? 'Ogłoszenie' : 'Rozmowa'} · zgłasza {item.reporter_name}</AppText></View>
+              <View style={styles.row}><Icon name={item.target_kind==='profile' ? 'people' : item.target_kind==='trip' ? 'trips' : 'chat'} size={16} /><AppText variant="caption" color="textSecondary">{item.target_kind==='profile' ? 'Profil' : item.target_kind==='trip' ? 'Ogłoszenie' : 'Rozmowa'} · zgłasza {item.reporter_name}</AppText></View>
             </Pressable>)}
             {page.has_more ? <Button label={loading ? 'Wczytywanie…' : 'Pokaż kolejne zgłoszenia'} disabled={loading} variant="secondary" onPress={()=>void load(page.items.at(-1))} /> : null}
           </View> : null}

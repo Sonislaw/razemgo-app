@@ -5,6 +5,7 @@ import {
 import { AppState } from 'react-native';
 import { DEMO_MAILBOX } from '@/data/mocks/messaging';
 import { DEMO_PROPOSALS } from '@/data/mocks/travel';
+import { DEMO_PUBLIC_GROUPS } from '@/features/groups/group-demo';
 import { USE_DEMO_DATA } from '@/constants/app';
 import { useAuth } from '@/features/auth/auth-context';
 import { useProfile } from '@/features/profile/profile-context';
@@ -30,13 +31,14 @@ interface MessagingContextValue {
   refresh: () => Promise<void>;
   loadHistory: (id: string, older?: boolean) => Promise<void>;
   invite: (tripId: string, text: string, key: string, sourceId?: string) => Promise<boolean>;
+  inviteProfile: (groupId: string, text: string, key: string) => Promise<boolean>;
   respond: (id: string, response: 'accepted' | 'declined' | 'withdrawn') => Promise<string | null | false>;
   send: (id: string, text: string, requestKey?: string) => Promise<void>;
   markRead: (id: string, throughId: string) => Promise<void>;
   setBlock: (groupId: string, blocked: boolean) => Promise<boolean>;
   report: (id: string, reason: ReportReason, key: string) => Promise<boolean>;
   contact: (id: string) => MessagingContact | undefined;
-  trip: (id: string) => TripPlan | undefined;
+  trip: (id: string | null) => TripPlan | undefined;
 }
 const MessagingContext = createContext<MessagingContextValue | null>(null);
 export function MessagingProvider({ children }: { children: ReactNode }) {
@@ -171,6 +173,12 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
     if (result.ok && response === 'accepted') reduce({ type: 'view', view: 'conversations' });
     return result.ok ? result.value : false;
   };
+  const inviteProfile = async (id: string, text: string, key: string) => {
+    if (USE_DEMO_DATA) { dispatch({ type: 'invite', groupId: id, tripId: null, text }); return true; }
+    const result = await perform('invite:' + key, () => repository.inviteProfile(id, text, key));
+    if (result.ok) reduce({ type: 'view', view: 'invitations', direction: 'sent' });
+    return result.ok;
+  };
   const send = async (id: string, text: string, requestKey?: string) => {
     if (USE_DEMO_DATA) { dispatch(requestKey ? { type: 'retry', messageId: requestKey } : { type: 'send', conversationId: id, text }); return; }
     const key = requestKey ?? createRequestKey();
@@ -206,9 +214,9 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
     if (USE_DEMO_DATA) { dispatch({ type: 'report', conversationId: id, reason }); return true; }
     return (await perform('report:' + key, () => repository.persistReport(id, reason, key))).ok;
   };
-  const contact = (id: string) => state.contacts?.[id] ?? (USE_DEMO_DATA ? DEMO_PROPOSALS.find(p => p.group.id === id)?.group : undefined);
-  const trip = (id: string) => state.trips?.[id] ?? (USE_DEMO_DATA ? DEMO_PROPOSALS.find(p => p.trip.id === id)?.trip : undefined);
-  return <MessagingContext value={{ state, dispatch, hasLoaded, error, actionError, busy, realtime, histories, refresh, loadHistory, invite, respond, send, markRead, setBlock, report, contact, trip }}>{children}</MessagingContext>;
+  const contact = (id: string) => state.contacts?.[id] ?? (USE_DEMO_DATA ? DEMO_PUBLIC_GROUPS.find(p => p.group.id === id)?.group : undefined);
+  const trip = (id: string | null) => id ? state.trips?.[id] ?? (USE_DEMO_DATA ? DEMO_PROPOSALS.find(p => p.trip.id === id)?.trip : undefined) : undefined;
+  return <MessagingContext value={{ state, dispatch, hasLoaded, error, actionError, busy, realtime, histories, refresh, loadHistory, invite, inviteProfile, respond, send, markRead, setBlock, report, contact, trip }}>{children}</MessagingContext>;
 }
 export function useMessaging() {
   const value = useContext(MessagingContext);

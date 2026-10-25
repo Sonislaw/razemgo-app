@@ -108,6 +108,9 @@ export default function ProfileScreen() {
             </AppText>
           ) : null}
         </ProfileSectionCard>
+        <ProfileSectionCard title="Profil publiczny" icon="people" onPress={() => router.push('/group-visibility')}>
+          <AppText variant="caption" color="textSecondary">Przedstaw ekipę i zdecyduj, czy inni podróżnicy mogą znaleźć ją w wyszukiwarce.</AppText>
+        </ProfileSectionCard>
         <ProfileSectionCard
           title="Zwierzęta w mojej ekipie"
           icon="paw"

@@ -19,7 +19,8 @@ export type ReportReason =
 export interface ContactInvitation {
   id: string;
   groupId: string;
-  tripId: string;
+  tripId: string | null;
+  context?: 'trip' | 'profile';
   ownTripId?: string;
   direction: InvitationDirection;
   status: InvitationStatus;
@@ -30,7 +31,8 @@ export interface Conversation {
   id: string;
   invitationId: string;
   groupId: string;
-  tripId: string;
+  tripId: string | null;
+  context?: 'trip' | 'profile';
   unreadCount?: number;
   blocked?: boolean;
   updatedAt?: string;

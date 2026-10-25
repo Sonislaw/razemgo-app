@@ -174,6 +174,7 @@ export default function TripDetailsScreen() {
             : ' · bez dzieci'}
         </AppText>
         <TravelModeBadges modes={trip.travelModes ?? group.travelModes} />
+        <Button label="Zobacz profil ekipy" variant="secondary" onPress={() => router.push({ pathname: '/crew/[id]', params: { id: group.id } })} />
       </Card>
       <TripContactAction proposal={proposal} />
       <TripReportAction key={trip.id} tripId={trip.id} />

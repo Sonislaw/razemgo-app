@@ -21,6 +21,13 @@ export async function respondInvitation(id: string, response: 'accepted' | 'decl
   if (error) throw error;
   return data;
 }
+export async function inviteProfile(groupId: string, text: string, requestKey: string) {
+  const { data, error } = await backendRequest(signal => getSupabase().rpc('send_profile_invitation', {
+    target_group_id: groupId, message_text: text.trim(), request_key: requestKey,
+  }).abortSignal(signal), 'invitations.send');
+  if (error) throw error;
+  return data;
+}
 export async function sendMessage(id: string, text: string, requestKey: string) {
   const { data, error } = await backendRequest(signal => getSupabase().rpc('send_chat_message', { conversation_id: id, message_text: text.trim(), request_key: requestKey }).abortSignal(signal), 'messages.send');
   if (error) throw error;

@@ -48,14 +48,14 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
   );
   const last = messages[messages.length - 1];
   const unread = unreadCount(state, conversation.id);
-  if (!group || !plan) return null;
+  if (!group) return null;
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={
         group.name +
         ', ' +
-        getTripHeadline(plan) +
+        (plan ? getTripHeadline(plan) : 'Kontakt z profilu') +
         (unread ? ', nieprzeczytane: ' + unread : '')
       }
       onPress={() =>
@@ -88,7 +88,7 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
           ) : null}
         </View>
         <AppText variant="caption" color="primaryStrong" numberOfLines={1}>
-          {getTripHeadline(plan)}
+          {plan ? getTripHeadline(plan) : 'Kontakt z profilu'}
         </AppText>
         <View style={layout.row}>
           <AppText
@@ -117,7 +117,7 @@ function InvitationCard({ invitation }: { invitation: ContactInvitation }) {
   const theme = useTheme();
   const group = contact(invitation.groupId);
   const plan = trip(invitation.tripId);
-  if (!group || !plan) return null;
+  if (!group) return null;
   const incoming = invitation.direction === 'received';
   const pending = invitation.status === 'pending';
   const labels = {
@@ -171,11 +171,11 @@ function InvitationCard({ invitation }: { invitation: ContactInvitation }) {
       </View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={'Zobacz wyjazd: ' + getTripHeadline(plan)}
+        accessibilityLabel={plan ? 'Zobacz wyjazd: ' + getTripHeadline(plan) : 'Zobacz profil: ' + group.name}
         onPress={() =>
           router.push({
-            pathname: incoming ? '/trips/[id]' : '/trip/[id]',
-            params: { id: invitation.tripId },
+            pathname: plan ? incoming ? '/trips/[id]' : '/trip/[id]' : '/crew/[id]',
+            params: { id: plan ? plan.id : group.id },
           })
         }
         style={[
@@ -188,9 +188,9 @@ function InvitationCard({ invitation }: { invitation: ContactInvitation }) {
           },
         ]}
       >
-        <Icon name="trips" size={18} />
+        <Icon name={plan ? 'trips' : 'people'} size={18} />
         <AppText variant="caption" color="primaryStrong" style={{ flex: 1 }}>
-          {getTripHeadline(plan)}
+          {plan ? getTripHeadline(plan) : 'Kontakt z profilu · zobacz ekipę'}
         </AppText>
         <Icon name="chevron" size={16} />
       </Pressable>

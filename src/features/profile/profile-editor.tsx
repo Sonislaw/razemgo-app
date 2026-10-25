@@ -102,6 +102,7 @@ export default function ProfileEditor({
       {show('crew') ? (
         <Card>
           <SectionTitle title="Moja ekipa" />
+          {!onboarding ? <Button label="Opis publiczny i widoczność" variant="secondary" onPress={() => router.push('/group-visibility')} /> : null}
           <ProfileAvatarPicker
             value={draft.group.avatarId}
             onChange={(avatarId) =>

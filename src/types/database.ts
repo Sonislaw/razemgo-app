@@ -7,6 +7,7 @@ import type { TripRow, PublicTripRow, tripToPayload } from '../features/trips/tr
 import type { MailboxRow, MessageRow } from '../features/messaging/messaging-mapper';
 import type { NotificationsPage, NotificationPreferences } from '../features/notifications/notification-types';
 import type { AccountAccess,ReportsPage,ReportDetail } from '../features/moderation/moderation-types';
+import type { GroupCursor, GroupVisibility, PublicGroupRow, groupFiltersPayload } from '../features/groups/group-data';
 
 // Keep in sync with supabase/migrations. Replace using Supabase type generation after linking.
 export interface Database {
@@ -33,6 +34,13 @@ export interface Database {
     };
     Views: Record<never, never>;
     Functions: {
+      get_my_group_visibility: { Args: Record<never, never>; Returns: GroupVisibility };
+      save_my_group_visibility: { Args: { is_discoverable: boolean; about_text: string }; Returns: GroupVisibility };
+      list_public_groups: { Args: { filters?: ReturnType<typeof groupFiltersPayload>; after_name?: string | null; after_id?: string | null };
+        Returns: { items: PublicGroupRow[]; has_more: boolean; cursor: GroupCursor | null } };
+      get_public_group: { Args: { target_group_id: string }; Returns: (PublicGroupRow & { trips: PublicTripRow[] }) | null };
+      send_profile_invitation: { Args: { target_group_id: string; message_text: string; request_key: string }; Returns: string };
+      report_profile: { Args: { target_group_id: string; report_reason: string; request_key: string }; Returns: string };
       get_my_account_access: {Args:Record<never,never>;Returns:AccountAccess};
       report_trip: {Args:{target_trip_id:string;report_reason:string;request_key:string};Returns:string};
       admin_list_reports: {Args:{status_filter?:string;search_text?:string;before_at?:string|null;before_id?:string|null};Returns:ReportsPage};

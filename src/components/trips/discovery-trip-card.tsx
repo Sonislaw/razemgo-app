@@ -14,6 +14,7 @@ export function DiscoveryTripCard({ trip, group, facts, score }: DiscoveryTripCa
       testID={'discovery-trip-' + trip.id}
       trip={trip}
       group={group}
+      onPressGroup={() => router.push({ pathname: '/crew/[id]', params: { id: group.id } })}
       travelModes={trip.travelModes}
       ageBands={facts.matchingAgeBands.length ? facts.matchingAgeBands : facts.ageBands}
       score={score}

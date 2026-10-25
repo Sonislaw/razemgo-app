@@ -7,6 +7,14 @@ export type PushJob = {
 type Result = 'ticket' | 'sent' | 'retry' | 'invalid' | 'failed';
 type RpcClient = { rpc: (name: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }> };
 type ExpoResult = { status?: string; id?: string; details?: { error?: string } };
+const PROVIDER_CODES=new Set(['DeviceNotRegistered','InvalidCredentials','MismatchSenderId','MessageTooBig','MessageRateExceeded',
+  'ExpoUnauthorized','ExpoForbidden','ExpoInvalidRequest','ExpoRateLimited','ExpoUnavailable','ExpoInvalidResponse','ProviderError','ReceiptPending']);
+function safeProviderCode(code:unknown):string {
+  return typeof code==='string' && PROVIDER_CODES.has(code) ? code : 'ProviderError';
+}
+function requestFailureCode(error:unknown):string {
+  return error && typeof error==='object' && 'pushCode' in error ? safeProviderCode(error.pushCode) : 'ExpoUnavailable';
+}
 const COPY = {
   invitation_received: { title: 'Nowe zaproszenie', body: 'Ktoś chce poznać Twoją ekipę. Sprawdź zaproszenie w RazemGo.' },
   invitation_accepted: { title: 'Zaproszenie zaakceptowane', body: 'Możesz już rozpocząć rozmowę i zaplanować wspólny wyjazd.' },
@@ -49,29 +57,41 @@ export async function dispatchPush(client: RpcClient, fetcher: typeof fetch = fe
     const response = await fetcher('https://exp.host/--/api/v2/push/' + path, {
       method: 'POST', headers, body: JSON.stringify(body), signal: AbortSignal.timeout(20000),
     });
-    if (!response.ok) throw new Error('Expo request failed');
+    if (!response.ok) {
+      const pushCode=response.status===401 ? 'ExpoUnauthorized' : response.status===403 ? 'ExpoForbidden'
+        : response.status===429 ? 'ExpoRateLimited' : response.status>=500 ? 'ExpoUnavailable' : 'ExpoInvalidRequest';
+      throw Object.assign(new Error('Expo request failed'),{pushCode});
+    }
     return await response.json();
   };
   const sending = jobs.filter(j => !j.ticket_id);
   if (sending.length) {
     let result: { data?: ExpoResult | ExpoResult[] } | null = null;
-    try { result = await post('send', sending.map(pushMessage)); } catch { /* Network retry, with a stable collapse ID. */ }
+    let failureCode='ExpoInvalidResponse';
+    try { result = await post('send', sending.map(pushMessage)); } catch (error) { failureCode=requestFailureCode(error); }
     const tickets = result?.data ? (Array.isArray(result.data) ? result.data : [result.data]) : [];
     for (let i=0;i<sending.length;i++) {
       const ticket = tickets[i];
       if (ticket?.status === 'ok' && typeof ticket.id === 'string' && ticket.id.length > 0 && ticket.id.length < 200)
         await finish(sending[i], 'ticket', ticket.id);
-      else await finish(sending[i], errorResult(ticket?.details?.error), undefined, ticket?.details?.error ?? 'ExpoUnavailable');
+      else {
+        const code=ticket?.details?.error===undefined ? failureCode : safeProviderCode(ticket.details.error);
+        await finish(sending[i],errorResult(code),undefined,code);
+      }
     }
   }
   const checking = jobs.filter(j => j.ticket_id);
   if (checking.length) {
     let receipts: Record<string,ExpoResult> = {};
-    try { receipts = (await post('getReceipts', { ids: checking.map(j => j.ticket_id) })).data ?? {}; } catch { /* Retry receipts without re-sending. */ }
+    let failureCode='ReceiptPending';
+    try { receipts = (await post('getReceipts', { ids: checking.map(j => j.ticket_id) })).data ?? {}; } catch (error) { failureCode=requestFailureCode(error); }
     for (const job of checking) {
       const receipt = receipts[job.ticket_id!];
       if (receipt?.status === 'ok') await finish(job, 'sent');
-      else await finish(job, errorResult(receipt?.details?.error), undefined, receipt?.details?.error ?? 'ReceiptPending');
+      else {
+        const code=receipt?.details?.error===undefined ? failureCode : safeProviderCode(receipt.details.error);
+        await finish(job,errorResult(code),undefined,code);
+      }
     }
   }
   return stats;

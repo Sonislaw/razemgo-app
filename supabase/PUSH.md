@@ -69,6 +69,8 @@ Dokumentacja: [wysyłanie i receipts Expo](https://docs.expo.dev/push-notificati
 
 ## Kontrole i test telefonu
 
+Osobna funkcja `monitor-push` co 5 minut sprawdza zaległości, ponowienia, błędy konfiguracji i harmonogram dispatchera. Zewnętrzny heartbeat Sentry Crons wykrywa zatrzymanie samego monitora. Szczegóły i konfiguracja reguł alertów: [Kontrola działania push](../docs/PUSH_HEALTH.md). Ręczna kontrola `node scripts/check-push-health.mjs` nie wysyła powiadomień na telefony.
+
 ```powershell
 npm run test:notifications
 npm run lint

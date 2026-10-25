@@ -65,6 +65,8 @@
     "start:dev": "expo start --dev-client",
     "test:auth": "node --test scripts/auth.test.mjs",
     "test:monitoring": "node --test scripts/monitoring.test.mjs",
+    "test:push-health": "node --test scripts/push-health.test.mjs scripts/push-health-backend.test.mjs",
+    "test:moderation": "node --test scripts/moderation-backend.test.mjs",
     "test:backend": "node --test scripts/backend.test.mjs",
     "test": "node --test scripts/*.test.mjs",
     "test:web": "playwright test"

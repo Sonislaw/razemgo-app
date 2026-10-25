@@ -62,7 +62,7 @@ Raport przechodzi przez ten sam filtr danych i SDK co rzeczywiste awarie. Test s
 
 Weryfikacja z wdrożonej funkcji 24.10.2026: Sentry potwierdziło odbiór HTTP 200, zdarzenie `7de091d5358144d79be9e80c2277df42`, żądanie `f5b72999-e9f0-4210-9636-3edbb941ded8`. Po teście zwykłe wywołanie workera przetworzyło pustą kolejkę, bez wysyłania powiadomień. Test obejmował transport backendu; widoczność w zalogowanym panelu Sentry potwierdza użytkownik.
 
-Ta integracja raportuje nieoczekiwane awarie Edge Functions. Ponawiane błędy dostawcy push pozostają stanami kolejki. Automatyczna kontrola zaległych zadań i zatrzymania harmonogramu to kolejny etap monitoringu.
+Ta integracja raportuje nieoczekiwane awarie Edge Functions. Ponawiane błędy dostawcy push są również sprawdzane przez osobną kontrolę co 5 minut. Incydenty kolejki i konfiguracji trafiają do Sentry jako `server.push_health`, a zewnętrzny heartbeat pilnuje uruchomień monitora: [Kontrola push](PUSH_HEALTH.md).
 
 ## Dane i ograniczenia
 

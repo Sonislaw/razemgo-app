@@ -28,6 +28,10 @@ Testy: `npm test`, `npm run lint`, `npm run typecheck`. Testy migracji i RLS wyk
 
 Monitoring błędów JavaScript, logowania, operacji bazy i własnych Edge Functions jest podłączony do oddzielnych projektów Sentry aplikacji i backendu w środowisku testowym. Potwierdzono odbiór raportu z wdrożonej funkcji Supabase; powtórzenie kontroli: `node scripts/check-backend-monitoring.mjs`. Wysyłka jest wyłączona bez DSN, a raporty przechodzą przez ścisłą listę dozwolonych pól. Konfiguracja panelu, test diagnostyczny i zakres raportów: **[Monitoring](docs/MONITORING.md)**.
 
+Niezależna funkcja `monitor-push` kontroluje kolejkę i harmonogram co 5 minut. Błędy konfiguracji, zaległości i nadmierne ponowienia tworzą incydenty w Sentry z trwałym limitem powtórzeń. Sentry Crons pilnuje także zatrzymania samej kontroli. Stan: `node scripts/check-push-health.mjs`. Progi, reguły e-mail i wdrożenie: **[Kontrola push](docs/PUSH_HEALTH.md)**.
+
+Panel administracyjny jest dostępny pod `/admin` oraz w **Profil → Ustawienia** dla kont z rolą administratora. Obsługuje zgłoszenia rozmów i wyjazdów, statusy, podgląd zachowanych treści, ukrywanie ogłoszeń, blokowanie/odblokowanie kont i historię uzasadnionych decyzji. Dostęp i skutki moderacji egzekwuje baza, również dla istniejących sesji. Wejście lokalne: [localhost:8081/admin](http://localhost:8081/admin). Uprawnienia, wdrożenie i granice dostępu: **[Moderacja](docs/MODERATION.md)**.
+
 ## Dokumentacja wcześniejszego podglądu interfejsu
 
 Poniższy opis dotyczy lokalnego podglądu przykładowych funkcji. Włącza go wyłącznie w development `EXPO_PUBLIC_ENABLE_DEMO=true`; nie opisuje źródeł danych prawdziwego konta.

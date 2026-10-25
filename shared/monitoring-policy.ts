@@ -1,19 +1,22 @@
 // Shared by the app and Edge Functions. Never forward arbitrary error objects.
+export const PUSH_HEALTH_CODES = ['PUSH_QUEUE_STALLED','PUSH_CREDENTIALS','PUSH_RETRIES','PUSH_DELIVERY_FAILURES','PUSH_SCHEDULE_INVALID','PUSH_DISPATCH_STOPPED'] as const;
+export type PushHealthCode = typeof PUSH_HEALTH_CODES[number];
 export const OPERATIONS = [
   'app.unhandled', 'app.render', 'monitoring.test',
   'auth.restore', 'auth.google', 'auth.callback', 'auth.sign_in', 'auth.sign_up',
-  'auth.confirm', 'auth.resend', 'auth.reset_request', 'auth.password', 'auth.sign_out', 'auth.reset_session', 'account.delete',
+  'auth.confirm', 'auth.resend', 'auth.reset_request', 'auth.password', 'auth.sign_out', 'auth.reset_session', 'account.delete', 'account.access',
+  'moderation.list','moderation.detail','moderation.action','trips.report',
   'profile.load', 'profile.preferences', 'profile.save', 'trips.load', 'trips.save', 'trips.status', 'trips.duplicate', 'trips.delete',
   'discovery.load', 'mailbox.load', 'invitations.send', 'invitations.respond', 'messages.send', 'messages.load', 'messages.read',
   'contacts.block', 'contacts.report', 'notifications.load', 'notifications.read', 'notifications.preferences', 'push.register', 'push.unregister',
-  'server.delete_account', 'server.dispatch_push',
+  'server.delete_account', 'server.dispatch_push', 'server.push_health',
 ] as const;
 export type MonitoringOperation = typeof OPERATIONS[number];
 export type Failure = { category: 'network' | 'timeout' | 'permission' | 'server' | 'unexpected'; code: string; status?: number };
 const EXPECTED_AUTH = new Set(['invalid_credentials','email_not_confirmed','user_already_exists','email_exists','weak_password',
   'same_password','otp_expired','otp_disabled','bad_code_verifier','flow_state_expired','flow_state_not_found','validation_failed',
   'over_email_send_rate_limit','over_request_rate_limit','access_denied','user_banned','session_not_found','refresh_token_not_found','refresh_token_already_used']);
-const KNOWN_CODES = new Set(['42501','22023','P0002','23505','23503','23514','54000','57014','53300','53400','08000','08006','PGRST000','PGRST001','PGRST002','PGRST003','PGRST116','PGRST202','PGRST204','unexpected_failure','request_timeout','provider_disabled','bad_oauth_state','bad_oauth_callback','oauth_provider_not_supported','oauth_callback_error']);
+const KNOWN_CODES = new Set<string>([...PUSH_HEALTH_CODES,'42501','22023','P0002','23505','23503','23514','54000','57014','53300','53400','08000','08006','PGRST000','PGRST001','PGRST002','PGRST003','PGRST116','PGRST202','PGRST204','unexpected_failure','request_timeout','provider_disabled','bad_oauth_state','bad_oauth_callback','oauth_provider_not_supported','oauth_callback_error']);
 const record = (value: unknown): Record<string, unknown> => value && typeof value === 'object' ? value as Record<string, unknown> : {};
 export function classifyFailure(error: unknown, operation: MonitoringOperation, timedOut = false, httpStatus?: number): Failure | null {
   const value = record(error);
@@ -34,7 +37,7 @@ export function classifyFailure(error: unknown, operation: MonitoringOperation, 
   return { category: status && status >= 500 ? 'server' : 'unexpected', code: KNOWN_CODES.has(code) ? code : status ? 'HTTP_' + status : 'UNEXPECTED', status };
 }
 const ROUTES = new Set(['/', '/welcome','/auth/sign-in','/auth/sign-up','/auth/confirm','/auth/forgot-password','/auth/reset-password','/auth/callback',
-  '/onboarding','/account-loading','/explore','/trips','/messages','/profile','/edit-profile','/settings','/notifications','/messaging-safety','/trip-editor']);
+  '/onboarding','/account-loading','/explore','/trips','/messages','/profile','/edit-profile','/settings','/notifications','/messaging-safety','/trip-editor','/admin']);
 export function monitoringRoute(path: string): string {
   const route = path.split(/[?#]/,1)[0];
   if (ROUTES.has(route)) return route;

@@ -115,6 +115,7 @@ async function backend(context, existingState) {
       });
     }
     if (url.pathname.endsWith('/logout')) return respond({});
+    if (url.pathname === '/rest/v1/rpc/get_my_account_access') return respond({is_admin:false,suspended:false,hidden_trip_ids:[]});
     if (url.pathname.endsWith('/user')) {
       if (state.deleted.includes(id))
         return respond(

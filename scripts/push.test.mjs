@@ -60,3 +60,25 @@ test('a failed outcome write aborts the run so leases can recover instead of cla
   const {client}=fixture([job()]);const rpc=client.rpc;client.rpc=async(name,args)=>name==='finish_push_delivery'?{error:new Error('Database unavailable')} : rpc(name,args);
   await assert.rejects(dispatchPush(client,async()=>Response.json({data:[{status:'ok',id:'ticket'}]})),/persist delivery/);
 });
+
+test('provider authentication failures retain a safe code, retry, and never remove devices',async()=>{
+  for (const [status,code] of [[401,'ExpoUnauthorized'],[403,'ExpoForbidden'],[429,'ExpoRateLimited'],[503,'ExpoUnavailable']]) {
+    const {client,outcomes}=fixture([job()]);
+    await dispatchPush(client,async()=>new Response('private provider body',{status}));
+    assert.equal(outcomes[0].result,'retry');assert.equal(outcomes[0].failure_code,code);
+    assert.equal(JSON.stringify(outcomes).includes('private'),false);
+  }
+});
+test('receipt network failures are distinguishable from a normal pending receipt',async()=>{
+  const {client,outcomes}=fixture([job({ticket_id:'ticket'})]);
+  await dispatchPush(client,async()=>{throw new TypeError('private network error');});
+  assert.equal(outcomes[0].failure_code,'ExpoUnavailable');
+  const pending=fixture([job({ticket_id:'ticket'})]);
+  await dispatchPush(pending.client,async()=>Response.json({data:{}}));
+  assert.equal(pending.outcomes[0].failure_code,'ReceiptPending');
+});
+test('unexpected provider codes cannot copy arbitrary content into delivery diagnostics',async()=>{
+  const {client,outcomes}=fixture([job()]);
+  await dispatchPush(client,async()=>Response.json({data:[{status:'error',details:{error:'private-token@example.com'}}]}));
+  assert.equal(outcomes[0].failure_code,'ProviderError');
+});

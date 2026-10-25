@@ -34,6 +34,7 @@ import { TripContactAction } from '@/features/messaging/trip-contact-action';
 import { AnimalInformation } from '@/features/animals/animal-ui';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 import { GroupAvatar } from '@/features/profile/group-avatar';
+import { TripReportAction } from '@/features/moderation/trip-report-action';
 
 export function generateStaticParams() {
   return AVAILABLE_PROPOSALS.map(({ trip }) => ({ id: trip.id }));
@@ -175,6 +176,7 @@ export default function TripDetailsScreen() {
         <TravelModeBadges modes={trip.travelModes ?? group.travelModes} />
       </Card>
       <TripContactAction proposal={proposal} />
+      <TripReportAction key={trip.id} tripId={trip.id} />
     </Screen>
   );
 }

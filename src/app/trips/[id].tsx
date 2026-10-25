@@ -40,12 +40,14 @@ import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import { AnimalInformation } from '@/features/animals/animal-ui';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 import { useProfile } from '@/features/profile/profile-context';
+import { useAccountAccess } from '@/features/moderation/account-access-context';
 
 export function generateStaticParams() {
   return DEMO_OWN_TRIPS.map((trip) => ({ id: trip.id }));
 }
 
 export default function OwnTripDetailsScreen() {
+  const { hidden_trip_ids } = useAccountAccess();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { state, status: loadStatus, error: loadError, refresh, hasLoaded } = useOwnTrips();
   const { profile } = useProfile();
@@ -72,7 +74,8 @@ export default function OwnTripDetailsScreen() {
       </Screen>
     );
   const status = getTripStatus(trip, todayDate());
-  const searching = isSearchingTrip(trip, todayDate());
+  const hidden = hidden_trip_ids.includes(trip.id);
+  const searching = !hidden && isSearchingTrip(trip, todayDate());
   const discoveryFilters = discoveryFiltersForTrip(trip);
   const proposals = searching
     ? filterProposals(availableProposals, discoveryFilters)
@@ -113,6 +116,7 @@ export default function OwnTripDetailsScreen() {
             onMenu={() => setMenu(true)}
           />
           <DataStatus status={loadStatus} error={loadError} onRetry={() => { void refresh(); }} />
+          {hidden ? <Card><AppText variant="heading">Ogłoszenie ukryte przez moderację</AppText><AppText color="textSecondary">Plan pozostaje na Twojej liście. Edycja nie przywróci widoczności w Odkrywaj — wymaga to decyzji moderatora.</AppText></Card> : null}
           <View style={{ borderRadius: 20, overflow: 'hidden' }}>
             <Landscape kind={trip.landscape} />
           </View>

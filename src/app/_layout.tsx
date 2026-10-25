@@ -17,6 +17,7 @@ import { USE_DEMO_DATA } from '@/constants/app';
 import { PushProvider, PushAccountBridge } from '@/features/notifications/push-context';
 import { AppText, Button } from '@/components/ui/primitives';
 import { initializeMonitoring, reportRenderError, setMonitoringScreen } from '@/lib/monitoring';
+import {AccountAccessProvider,AccountAccessGate} from '@/features/moderation/account-access-context';
 
 initializeMonitoring();
 
@@ -97,6 +98,7 @@ function RootNavigator() {
         <Stack.Screen name="onboarding" />
       </Stack.Protected>
       <Stack.Protected guard={ready}>
+        <Stack.Screen name="admin" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="trip/[id]" />
         <Stack.Screen name="edit-profile" />
@@ -157,7 +159,7 @@ export default function RootLayout() {
     >
       <StatusBar style={dark ? 'light' : 'dark'} />
       <AuthProvider>
-        <PushProvider><AccountProviders /></PushProvider>
+        <AccountAccessProvider><AccountAccessGate><PushProvider><AccountProviders /></PushProvider></AccountAccessGate></AccountAccessProvider>
       </AuthProvider>
     </ThemeProvider>
   );

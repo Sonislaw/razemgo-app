@@ -15,6 +15,7 @@ import { AccountSettings } from '@/features/auth/account-settings';
 import { PushPermissionCard } from '@/features/notifications/push-permission-card';
 import { NotificationPreferencesCard } from '@/features/notifications/notification-ui';
 import { MonitoringTestCard } from '@/features/notifications/monitoring-test-card';
+import {useAccountAccess} from '@/features/moderation/account-access-context';
 
 function SettingsSection({
   icon,
@@ -56,6 +57,7 @@ function SettingsSection({
 }
 
 export default function SettingsScreen() {
+  const {is_admin}=useAccountAccess();
   const { from } = useLocalSearchParams<{ from?: string }>();
   const fromHome = from === 'home';
   const back = () => router.dismissTo(fromHome ? '/' : '/profile');
@@ -82,6 +84,7 @@ export default function SettingsScreen() {
         <PushPermissionCard />
         <NotificationPreferencesCard />
         <AccountSettings />
+        {is_admin ? <Button label="Panel administracyjny" icon="shield" variant="secondary" onPress={()=>router.push('/admin')} /> : null}
         <MonitoringTestCard />
         <Button
           label="Bezpieczeństwo rozmów"

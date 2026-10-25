@@ -6,6 +6,7 @@ import type {
 import type { TripRow, PublicTripRow, tripToPayload } from '../features/trips/trip-mapper';
 import type { MailboxRow, MessageRow } from '../features/messaging/messaging-mapper';
 import type { NotificationsPage, NotificationPreferences } from '../features/notifications/notification-types';
+import type { AccountAccess,ReportsPage,ReportDetail } from '../features/moderation/moderation-types';
 
 // Keep in sync with supabase/migrations. Replace using Supabase type generation after linking.
 export interface Database {
@@ -32,6 +33,11 @@ export interface Database {
     };
     Views: Record<never, never>;
     Functions: {
+      get_my_account_access: {Args:Record<never,never>;Returns:AccountAccess};
+      report_trip: {Args:{target_trip_id:string;report_reason:string;request_key:string};Returns:string};
+      admin_list_reports: {Args:{status_filter?:string;search_text?:string;before_at?:string|null;before_id?:string|null};Returns:ReportsPage};
+      admin_report_detail: {Args:{report_id:string};Returns:ReportDetail};
+      admin_apply_action: {Args:{report_id:string;moderation_action:string;action_note:string;request_key:string;expected_updated_at:string};Returns:ReportDetail};
       get_my_notifications: { Args: { before_at?: string | null; before_id?: string | null; page_size?: number; only_unread?: boolean }; Returns: NotificationsPage };
       mark_my_notifications_read: { Args: { notification_ids?: string[] | null; read_through?: string | null }; Returns: number };
       save_my_notification_preference: { Args: { preference_key: string; enabled: boolean }; Returns: NotificationPreferences };

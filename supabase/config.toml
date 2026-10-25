@@ -56,3 +56,6 @@ verify_jwt = false
 # Authenticated using a server-only key shared with the scheduler in Vault.
 [functions.dispatch-push]
 verify_jwt = false
+
+[functions.monitor-push]
+verify_jwt = false

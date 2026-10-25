@@ -14,6 +14,7 @@ import { useTheme } from '@/hooks/use-theme';
 import type { OwnedTrip, TripStatus } from '@/types/owned-trip';
 import { formatTripDates } from '@/features/discovery/filter-trips';
 import { useDiscovery } from '@/features/discovery/discovery-context';
+import { useAccountAccess } from '@/features/moderation/account-access-context';
 import {
   discoveryFiltersForTrip,
   getTripStatus,
@@ -96,7 +97,9 @@ export function OwnTripCard({ trip, onMenu }: {
   onMenu: () => void;
 }) {
   const { setFilters } = useDiscovery();
-  const searching = isSearchingTrip(trip, todayDate());
+  const { hidden_trip_ids } = useAccountAccess();
+  const hidden = hidden_trip_ids.includes(trip.id);
+  const searching = !hidden && isSearchingTrip(trip, todayDate());
   return (
     <TripListingCard
       testID={'own-trip-' + trip.id}
@@ -106,6 +109,7 @@ export function OwnTripCard({ trip, onMenu }: {
       rightBadge={<TripStatusBadge status={getTripStatus(trip, todayDate())} />}
       footer={
         <View style={{ gap: 8 }}>
+          {hidden ? <AppText variant="caption" color="textSecondary">Ogłoszenie ukryte przez moderację. Zmiana treści nie przywróci jego widoczności.</AppText> : null}
           <View style={[layout.row, { justifyContent: 'space-between' }]}>
             <IconButton
               label={'Opcje wyjazdu: ' + getTripHeadline(trip)}

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { AppText, layout } from '@/components/ui/primitives';
+import { CompatibilityBadge } from '@/components/ui/compatibility-badge';
 import { tripAnimalSummary } from '@/features/animals/animal-data';
 import { AnimalPortrait } from '@/features/animals/animal-portrait';
 import { formatTripDates, getTripLocation } from '@/features/discovery/filter-trips';
@@ -85,14 +86,7 @@ export function TripListingCard({
           {rightBadge || score !== undefined ? (
             <View style={styles.rightBadge}>
               {rightBadge ?? (
-                <View
-                  testID={compatibilityTestID}
-                  style={[styles.badge, { backgroundColor: theme.positiveBackground }]}
-                >
-                  <AppText variant="caption" color="positive" style={styles.bold}>
-                    {score}% zgodności
-                  </AppText>
-                </View>
+                score !== undefined ? <CompatibilityBadge score={score} compact testID={compatibilityTestID} /> : null
               )}
             </View>
           ) : null}
@@ -232,7 +226,6 @@ const styles = StyleSheet.create({
   content: { padding: 8, paddingBottom: 0, gap: 10 },
   flex: { flex: 1, minWidth: 0 },
   shrink: { flexShrink: 1 },
-  bold: { fontWeight: '700' },
   headline: { fontSize: 19, lineHeight: 25 },
   metadata: { gap: 4 },
   metadataRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },

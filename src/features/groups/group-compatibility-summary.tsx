@@ -1,5 +1,6 @@
 import { View } from 'react-native';
 import { AppText } from '@/components/ui/primitives';
+import { CompatibilityBadge } from '@/components/ui/compatibility-badge';
 import { useTheme } from '@/hooks/use-theme';
 import type { GroupCompatibility } from './group-compatibility';
 
@@ -10,12 +11,13 @@ export function GroupCompatibilitySummary({ match, testID, detailed = false }: {
   if (!match) return null;
   const scored = match.score !== null;
   return <View style={{ gap: 6 }} testID={testID}>
+    {scored ? <CompatibilityBadge score={match.score!} label="zgodności profili" tone={match.score! >= 70 ? 'positive' : 'neutral'} /> : (
     <View style={{ alignSelf: 'flex-start', maxWidth: '100%', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 7,
-      backgroundColor: scored && match.score! >= 70 ? theme.positiveBackground : theme.muted }}>
-      <AppText variant="label" color={scored && match.score! >= 70 ? 'positive' : 'primaryStrong'}>
-        {scored ? match.score + '% zgodności profili' : 'Za mało danych do oceny'}
+      backgroundColor: theme.muted }}>
+      <AppText variant="label" color="primaryStrong">
+        Za mało danych do oceny
       </AppText>
-    </View>
+    </View>)}
     {scored && match.reasons.length ? <AppText variant="caption" color="textSecondary">{match.reasons.slice(0, detailed ? 5 : 3).join(' · ')}</AppText> : null}
     {!scored || match.limitedData ? <AppText variant="caption" color="textSecondary">
       {scored ? 'Ograniczone dane — wynik opiera się na części kryteriów.' : 'Do porównania potrzeba więcej danych o zainteresowaniach i preferencjach ekip.'}

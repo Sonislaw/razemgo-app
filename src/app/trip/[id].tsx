@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { DataStatus } from '@/components/ui/data-status';
+import { CompatibilityBadge } from '@/components/ui/compatibility-badge';
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
@@ -131,9 +132,9 @@ export default function TripDetailsScreen() {
           backgroundColor: theme.positiveBackground,
         }}
       >
-        <AppText variant="heading" accessibilityRole="header" color="positive">
-          {score !== undefined ? score + '% zgodności' : 'Co Cię łączy z tą ekipą?'}
-        </AppText>
+        {score !== undefined ? <CompatibilityBadge score={score} /> : (
+          <AppText variant="heading" accessibilityRole="header" color="positive">Co Cię łączy z tą ekipą?</AppText>
+        )}
         <AppText variant="caption" color="textSecondary">Wynik uwzględnia dostępne dane planów i preferencji.</AppText>
         <View style={layout.wrap}>
           {compatibility[trip.id]?.reasons.map(reason => <Chip key={reason} label={reason} />)}

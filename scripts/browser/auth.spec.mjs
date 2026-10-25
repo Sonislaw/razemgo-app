@@ -193,6 +193,7 @@ test('guest protection, registration validation and email confirmation', async (
   await expect(page.getByRole('textbox', { name: 'Nazwa ekipy' })).toHaveCount(
     0,
   );
+  await page.getByTestId('welcome-featured-listing').screenshot({ path: '.expo/compatibility-welcome.png' });
   await page.getByRole('button', { name: 'Nowe konto' }).click();
   await page
     .getByRole('textbox', { name: 'E-mail', exact: true })

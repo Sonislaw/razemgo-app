@@ -210,6 +210,7 @@ test('profile scores, explanations, sort selection and incomplete data are clear
   await page.goto('/explore'); await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
   const card = page.getByTestId('public-group-' + groupId(B));
   await expect(card).toContainText('100% zgodności profili'); await expect(card).toContainText('Pasujący wiek dzieci');
+  await page.getByLabel('100% zgodności profili', { exact: true }).screenshot({ path: '.expo/compatibility-100.png' });
   await page.screenshot({ path: '.expo/groups-discovery-controls-small.png', fullPage: true });
   expect(store.lastGroupSort).toBe('compatibility');
   await page.getByRole('button', { name: 'Sortowanie ekip: Najwyższa zgodność', exact: true }).click();
@@ -220,11 +221,16 @@ test('profile scores, explanations, sort selection and incomplete data are clear
   await expect(page.getByTestId('profile-group-compatibility')).toContainText('preferencje obu ekip');
   store.groupMatch = { score: 0, reasons: [], limited_data: false, evaluated_weight: 100 };
   await page.reload(); await expect(page.getByTestId('profile-group-compatibility')).toContainText('0% zgodności profili');
+  await page.getByLabel('0% zgodności profili', { exact: true }).screenshot({ path: '.expo/compatibility-0.png' });
   store.groupMatch = { score: null, reasons: ['Podobny sposób podróżowania'], limited_data: true, evaluated_weight: 10 };
   await page.reload(); await expect(page.getByTestId('profile-group-compatibility')).toContainText('Za mało danych do oceny');
   await expect(page.getByTestId('profile-group-compatibility').getByText(/% zgodności profili/)).toHaveCount(0);
   store.groupMatch = { score: 85, reasons: ['Rowery'], limited_data: true, evaluated_weight: 70 };
   await page.reload(); await expect(page.getByTestId('profile-group-compatibility')).toContainText('85% zgodności profili');
   await expect(page.getByTestId('profile-group-compatibility')).toContainText('Ograniczone dane');
+  store.groupMatch = { score: 41, reasons: ['Rowery'], limited_data: false, evaluated_weight: 100 };
+  await page.reload(); await expect(page.getByTestId('profile-group-compatibility')).toContainText('41% zgodności profili');
+  await page.getByLabel('41% zgodności profili', { exact: true }).screenshot({ path: '.expo/compatibility-41.png' });
+  await page.screenshot({ path: '.expo/compatibility-profile-small.png', fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });

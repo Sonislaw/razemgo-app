@@ -45,6 +45,9 @@ test('real API flow: create, failed save, reload, second device, discovery, life
     const card=b.getByTestId('discovery-trip-'+trip.id);
     await expect(card).toContainText('Ekipa A');await expect(card).toContainText('Kemping Testowy');
     await expect(card).toContainText(/\d+% zgodności/);
+    await b.setViewportSize({width:320,height:800});
+    await card.screenshot({path:'.expo/compatibility-trip-small.png'});
+    await b.setViewportSize({width:390,height:844});
     await b.getByRole('button',{name:'Otwórz filtry',exact:true}).click();
     await expect(b.getByRole('dialog',{name:'Filtry wyjazdów',exact:true})).toBeVisible();
     await b.getByRole('button',{name:'Wybierz zakres dat',exact:true}).click();

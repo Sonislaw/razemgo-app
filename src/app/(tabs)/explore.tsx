@@ -11,6 +11,7 @@ import {
   layout,
 } from '@/components/ui/primitives';
 import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
+import { Icon } from '@/components/ui/icon';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
 import {
   filterProposals,
@@ -109,14 +110,23 @@ export default function ExploreScreen() {
       }
     >
       <FavoritesNotice />
-      <View style={layout.row} accessibilityRole="tablist" accessibilityLabel="Odkrywaj">
-        {([{ value: 'trips', label: 'Wyjazdy' }, { value: 'groups', label: 'Ekipy' }] as const).map(item => (
-          <Pressable key={item.value} accessibilityRole="tab" accessibilityState={{ selected: view === item.value }}
-            onPress={() => setView(item.value)} style={{ flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center',
-              borderRadius: 16, backgroundColor: view === item.value ? theme.muted : 'transparent' }}>
-            <AppText variant="label" color={view === item.value ? 'primaryStrong' : 'textSecondary'}>{item.label}</AppText>
-          </Pressable>
-        ))}
+      <View style={styles.viewSwitch}
+        accessibilityRole="tablist" accessibilityLabel="Odkrywaj">
+        <View pointerEvents="none" style={[styles.viewOutline, { borderColor: theme.border }]} />
+        {([{ value: 'trips', label: 'Wyjazdy', icon: 'tent' }, { value: 'groups', label: 'Ekipy', icon: 'people' }] as const).map(item => {
+          const selected = view === item.value;
+          return (
+            <Pressable key={item.value} accessibilityRole="tab" accessibilityLabel={item.label} accessibilityState={{ selected }}
+              hitSlop={{ top: 2, bottom: 2 }}
+              onPress={() => setView(item.value)} style={({ pressed }) => [styles.viewTab, {
+                backgroundColor: selected ? theme.primaryStrong : 'transparent',
+                opacity: pressed ? 0.8 : 1,
+              }]}>
+              <Icon name={item.icon} size={20} color={selected ? theme.onPrimary : theme.primaryStrong} />
+              <AppText variant="label" color={selected ? 'onPrimary' : 'primaryStrong'} style={styles.viewLabel}>{item.label}</AppText>
+            </Pressable>
+          );
+        })}
       </View>
       {view === 'groups' ? <GroupsDiscovery /> : <>
       {filters.favoritesOnly && favorites.status === 'loading' ? <DataStatus status="loading" error={null} onRetry={() => void favorites.refresh()} label="Wczytywanie ulubionych" /> : null}
@@ -198,6 +208,17 @@ export default function ExploreScreen() {
   );
 }
 const styles = StyleSheet.create({
+  viewSwitch: {
+    flexDirection: 'row', padding: 3, width: '100%', maxWidth: 280, alignSelf: 'center',
+  },
+  viewOutline: {
+    position: 'absolute', top: 3, right: 3, bottom: 3, left: 3, borderRadius: 999, borderWidth: 1,
+  },
+  viewTab: {
+    flex: 1, minWidth: 0, minHeight: 40, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 6, paddingHorizontal: 10, paddingVertical: 8, borderRadius: 999,
+  },
+  viewLabel: { flexShrink: 1, fontSize: 14, lineHeight: 20, fontWeight: '600' },
   controls: { gap: 12 },
   results: { gap: 12 },
 });

@@ -15,7 +15,7 @@ function profile(id){
   };
 }
 function state(){return {trips:new Map(),next:301,failSave:false,failLoad:false,failPublic:false, invitations:[], conversations:[], messages:[], reads:new Map(), blocks:new Set(), reports:[], failMailbox:false,failSend:false,failInvitation:false, failHistory:false,
-  notifications:[],notificationPreferences:new Map(),failNotifications:false,failNotificationSave:false};}
+  notifications:[],notificationPreferences:new Map(),failNotifications:false,failNotificationSave:false,presence:new Map()};}
 async function backend(context,store){
   await context.route('https://monitoring.razemgo.invalid/**',route=>route.fulfill({status:200,body:'{}',headers:{'access-control-allow-origin':'*'}}));
   await context.route('http://127.0.0.1:54321/**',async route=>{
@@ -31,6 +31,12 @@ async function backend(context,store){
     if(url.pathname.endsWith('/logout'))return respond({});
     if(url.pathname==='/rest/v1/rpc/get_my_account_access')return respond({is_admin:store.admin===true&&id===A,suspended:store.suspended===id,hidden_trip_ids:[]});
     if(url.pathname==='/rest/v1/rpc/get_my_group_visibility')return respond({discoverable:true,about:''});
+    if(url.pathname==='/rest/v1/rpc/set_my_presence'){
+      const key=id+':'+body.connection_id, previous=store.presence.get(key);
+      store.presence.set(key,{groupId:groupId(id),online:previous?.online===false?false:body.is_online});
+      return respond(null);
+    }
+    if(url.pathname==='/rest/v1/rpc/get_online_groups')return respond([...new Set([...store.presence.values()].filter(p=>p.online&&body.group_ids.includes(p.groupId)).map(p=>p.groupId))]);
     if(url.pathname==='/rest/v1/travel_groups')return respond([profile(id).group]);
     if(url.pathname==='/rest/v1/group_preferences')return respond(profile(id).preferences);
     if(url.pathname==='/rest/v1/rpc/get_my_notifications'){

@@ -22,11 +22,13 @@ export function ProfileAvatar({
   size = 64,
   decorative = false,
   testID,
+  online,
 }: {
   avatarId?: ProfileAvatarId;
   size?: number;
   decorative?: boolean;
   testID?: string;
+  online?: boolean;
 }) {
   const theme = useTheme();
   const avatar = getProfileAvatar(avatarId);
@@ -35,31 +37,43 @@ export function ProfileAvatar({
       testID={testID}
       accessible={!decorative}
       accessibilityRole={decorative ? undefined : 'image'}
-      accessibilityLabel={decorative ? undefined : 'Awatar: ' + avatar.name}
+      accessibilityLabel={decorative ? undefined : 'Awatar: ' + avatar.name + (online === undefined ? '' : online ? '. Online' : '. Offline')}
       accessibilityElementsHidden={decorative}
       importantForAccessibility={decorative ? 'no-hide-descendants' : 'auto'}
       style={[
-        styles.frame,
+        styles.container,
         {
           width: size,
           height: size,
           borderRadius: size / 2,
-          backgroundColor: theme.hero,
         },
       ]}
     >
-      <Image
-        source={AVATAR_IMAGES[avatar.id]}
-        contentFit="contain"
-        style={{ width: size * 0.84, height: size * 0.84 }}
+      <View style={[styles.frame, { width: size, height: size, borderRadius: size / 2, backgroundColor: theme.hero }]}>
+        <Image
+          source={AVATAR_IMAGES[avatar.id]}
+          contentFit="contain"
+          style={{ width: size * 0.84, height: size * 0.84 }}
+          accessible={false}
+          alt=""
+        />
+      </View>
+      {online !== undefined && <View
+        testID={testID ? testID + (online ? '-online' : '-offline') : undefined}
         accessible={false}
-        alt=""
-      />
+        style={[styles.online, {
+          width: Math.max(12, Math.min(24, size * 0.25)),
+          height: Math.max(12, Math.min(24, size * 0.25)),
+          backgroundColor: online ? theme.community : '#9CA3AF',
+        }]}
+      />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: { flexShrink: 0 },
+  online: { position: 'absolute', right: 0, bottom: 0, borderRadius: 99, borderWidth: 2, borderColor: '#FFFFFF' },
   frame: {
     flexShrink: 0,
     overflow: 'hidden',

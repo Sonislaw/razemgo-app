@@ -2,6 +2,7 @@ import { DEMO_GROUPS } from '@/data/mocks/travel';
 import type { ProfileAvatarId } from '@/types/avatar';
 import { useProfile } from './profile-context';
 import { ProfileAvatar } from './profile-avatar';
+import { useGroupOnline } from '@/features/presence/presence-context';
 
 export function GroupAvatar({
   groupId,
@@ -17,6 +18,7 @@ export function GroupAvatar({
   testID?: string;
 }) {
   const { profile } = useProfile();
+  const online = useGroupOnline(groupId);
   const ownGroup = groupId === profile.group.id;
   const group = ownGroup
     ? profile.group
@@ -26,6 +28,7 @@ export function GroupAvatar({
     <ProfileAvatar
       avatarId={ownGroup ? group?.avatarId : (avatarId ?? group?.avatarId)}
       size={size}
+      online={online}
       decorative={decorative}
       testID={testID ?? 'group-avatar-' + groupId}
     />

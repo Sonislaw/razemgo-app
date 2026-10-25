@@ -34,6 +34,8 @@ export interface Database {
     };
     Views: Record<never, never>;
     Functions: {
+      set_my_presence: { Args: { connection_id: string; is_online: boolean }; Returns: undefined };
+      get_online_groups: { Args: { group_ids: string[] }; Returns: string[] };
       get_my_group_visibility: { Args: Record<never, never>; Returns: GroupVisibility };
       save_my_group_visibility: { Args: { is_discoverable: boolean; about_text: string }; Returns: GroupVisibility };
       list_public_groups: { Args: { filters?: ReturnType<typeof groupFiltersPayload>; after_name?: string | null; after_id?: string | null };

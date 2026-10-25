@@ -28,6 +28,7 @@ async function groupBackend(context, store) {
       const f = body.filters;
       const match = (store.publicProfiles.get(other)?.discoverable ?? true) && (!f.name || otherCrew.name.toLowerCase().includes(f.name.toLowerCase()))
         && (!f.group_kinds.length || f.group_kinds.includes(otherCrew.kind)) && !f.has_trips
+        && (!f.online_only || [...store.presence.values()].some(p => p.groupId === other && p.online))
         && (!f.travel_modes.length || f.travel_modes.includes(otherCrew.travel_mode));
       if (name === 'count_public_groups') {
         (store.countRequests ??= []).push(f.name);
@@ -65,6 +66,75 @@ async function groupBackend(context, store) {
     }
   });
 }
+
+test('online avatar dots follow another account, backgrounding, reconnection and logout', async ({ page, context, browser }) => {
+  const store = state(); await groupBackend(context, store);
+  const second = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  try {
+    await groupBackend(second, store);
+    const b = await second.newPage(); await login(b, 'b@example.com');
+    await b.getByRole('tab', { name: 'Profil', exact: true }).click();
+    await expect(b.getByTestId('profile-identity-avatar-online')).toBeVisible();
+    await login(page); await page.goto('/explore');
+    await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
+    const dot = page.getByTestId('group-avatar-' + groupId(B) + '-online');
+    const offlineDot = page.getByTestId('group-avatar-' + groupId(B) + '-offline');
+    await expect(dot).toBeVisible();
+    await page.screenshot({ path: '.expo/presence-directory.png', fullPage: true });
+    const visibility = async value => b.evaluate(value => {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, value });
+      document.dispatchEvent(new Event('visibilitychange'));
+    }, value);
+    await visibility('hidden');
+    await expect.poll(() => [...store.presence.values()].filter(p => p.groupId === groupId(B) && p.online).length).toBe(0);
+    await page.clock.install(); await page.clock.fastForward(15_000);
+    await expect(dot).toHaveCount(0);
+    await expect(offlineDot).toBeVisible();
+    await expect(offlineDot).toHaveCSS('background-color', 'rgb(156, 163, 175)');
+    await visibility('visible');
+    await expect(b.getByTestId('profile-identity-avatar-online')).toBeVisible();
+    await page.clock.fastForward(15_000); await expect(dot).toBeVisible();
+    await expect(offlineDot).toHaveCount(0);
+    await page.getByTestId('public-group-' + groupId(B)).click();
+    await expect(page.getByLabel(/Awatar:.*Online/)).toBeVisible();
+    await b.getByRole('button', { name: 'Ustawienia aplikacji', exact: true }).click();
+    await b.getByRole('button', { name: 'Wyloguj się', exact: true }).click();
+    await expect(b).toHaveURL('http://localhost:8085/welcome');
+    await page.clock.fastForward(15_000); await expect(dot).toHaveCount(0);
+    await expect(page.getByTestId('group-profile-card').getByTestId('group-avatar-' + groupId(B) + '-offline')).toBeVisible();
+    await expect(page.getByTestId('group-profile-card').getByText('Ekipa B', { exact: true })).toBeVisible();
+  } finally { await second.close().catch(() => undefined); }
+});
+
+test('online-only crew filter counts all matches, updates results and resets to unfiltered', async ({ page, context }) => {
+  const store = state(); await groupBackend(context, store); await login(page);
+  await page.getByRole('tab', { name: 'Odkrywaj', exact: true }).click();
+  await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
+  const card = page.getByTestId('public-group-' + groupId(B));
+  await expect(card).toBeVisible(); expect(store.lastGroupFilters.online_only).toBe(false);
+  await page.getByRole('button', { name: 'Filtry ekip', exact: true }).click();
+  const onlineSwitch = page.getByRole('switch', { name: 'Tylko online', exact: true });
+  await expect(onlineSwitch).not.toBeChecked(); await onlineSwitch.click();
+  await expect(page.getByRole('button', { name: 'Pokaż wyniki · 0', exact: true })).toBeVisible();
+  await page.screenshot({ path: '.expo/online-group-filter.png', fullPage: true });
+  await page.getByRole('button', { name: 'Pokaż wyniki · 0', exact: true }).click();
+  await expect(card).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Jeszcze nie ma tu ekip', exact: true })).toBeVisible();
+  await page.clock.install();
+  store.presence.set('other-session', { groupId: groupId(B), online: true });
+  await page.clock.fastForward(15_000);
+  await expect(card).toBeVisible(); expect(store.lastGroupFilters.online_only).toBe(true);
+  await page.getByRole('button', { name: 'Filtry ekip', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Pokaż wyniki · 1', exact: true })).toBeVisible();
+  store.presence.get('other-session').online = false;
+  await page.clock.fastForward(15_000);
+  await expect(page.getByRole('button', { name: 'Pokaż wyniki · 0', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Wyczyść', exact: true }).click();
+  await expect(onlineSwitch).not.toBeChecked();
+  await expect(page.getByRole('button', { name: 'Pokaż wyniki · 1', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Pokaż wyniki · 1', exact: true }).click();
+  await expect(card).toBeVisible(); expect(store.lastGroupFilters.online_only).toBe(false);
+});
 
 test('directory → profile without trips → invitation retry → accepted chat on two accounts', async ({ page, context, browser }) => {
   test.setTimeout(150000);

@@ -66,6 +66,8 @@ async function backend(context, existingState) {
     if (request.method() === 'OPTIONS')
       return route.fulfill({ status: 204, headers });
     const body = request.postDataJSON() ?? {};
+    if (url.pathname === '/rest/v1/rpc/set_my_presence') return respond(null);
+    if (url.pathname === '/rest/v1/rpc/get_online_groups') return respond([]);
     let id = A;
     try {
       id = JSON.parse(

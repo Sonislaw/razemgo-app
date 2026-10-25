@@ -7,6 +7,7 @@ import { tripAnimalSummary } from '@/features/animals/animal-data';
 import { AnimalPortrait } from '@/features/animals/animal-portrait';
 import { formatTripDates, getTripLocation } from '@/features/discovery/filter-trips';
 import { GroupAvatar } from '@/features/profile/group-avatar';
+import { useGroupOnline } from '@/features/presence/presence-context';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { useTheme } from '@/hooks/use-theme';
@@ -67,6 +68,7 @@ export function TripListingCard({
   const theme = useTheme();
   const { fontScale } = useWindowDimensions();
   const travelMode = travelModes[0];
+  const online = useGroupOnline(group?.id);
   const content = (
     <>
       <View style={styles.hero}>
@@ -147,7 +149,7 @@ export function TripListingCard({
         ) : null}
         {children}
         {group ? (
-          <Pressable accessibilityRole={onPressGroup ? 'button' : undefined} accessibilityLabel={onPressGroup ? 'Zobacz profil: ' + group.name : undefined}
+          <Pressable accessibilityRole={onPressGroup ? 'button' : undefined} accessibilityLabel={onPressGroup ? 'Zobacz profil: ' + group.name + (online ? '. Online' : '') : undefined}
             disabled={!onPressGroup} onPress={onPressGroup} style={[styles.crew, { borderColor: theme.border }]}>
             <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={44} decorative />
             <View style={styles.flex}>
@@ -179,7 +181,7 @@ export function TripListingCard({
       testID={testID}
       nativeID={nativeID}
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
+      accessibilityLabel={accessibilityLabel ? accessibilityLabel + (online ? '. Ekipa online' : '') : undefined}
       accessibilityHint={accessibilityHint}
       onPress={onPress}
       style={({ pressed }) => [...cardStyle, { opacity: pressed ? 0.7 : 1 }]}

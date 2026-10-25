@@ -18,6 +18,7 @@ import { PushProvider, PushAccountBridge } from '@/features/notifications/push-c
 import { AppText, Button } from '@/components/ui/primitives';
 import { initializeMonitoring, reportRenderError, setMonitoringScreen } from '@/lib/monitoring';
 import {AccountAccessProvider,AccountAccessGate} from '@/features/moderation/account-access-context';
+import { PresenceProvider } from '@/features/presence/presence-context';
 
 initializeMonitoring();
 
@@ -120,15 +121,17 @@ function AccountProviders() {
   // Remount all account-scoped state when identity changes, including pending requests.
   return (
     <ProfileProvider key={session?.user.id ?? 'guest'}>
-      <OwnTripsProvider>
-        <DiscoveryProvider>
-          <MessagingProvider>
-            <NotificationsProvider>
-              <RootNavigator />
-            </NotificationsProvider>
-          </MessagingProvider>
-        </DiscoveryProvider>
-      </OwnTripsProvider>
+      <PresenceProvider>
+        <OwnTripsProvider>
+          <DiscoveryProvider>
+            <MessagingProvider>
+              <NotificationsProvider>
+                <RootNavigator />
+              </NotificationsProvider>
+            </MessagingProvider>
+          </DiscoveryProvider>
+        </OwnTripsProvider>
+      </PresenceProvider>
     </ProfileProvider>
   );
 }

@@ -15,16 +15,16 @@ test('profile ranking: server parity, bilateral private preferences, global pagi
     await db.exec(`create role anon; create role authenticated; create role service_role bypassrls; create schema auth;
       create table auth.users(id uuid primary key); create table auth.sessions(id uuid primary key,user_id uuid references auth.users on delete cascade,not_after timestamptz);
       create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
-      create function auth.jwt() returns jsonb language sql stable as $$select '{}'::jsonb$$;
+      create function auth.jwt() returns jsonb language sql stable as $$select jsonb_build_object('session_id',nullif(current_setting('request.jwt.claim.session_id',true),''))$$;
       grant usage on schema auth,public to anon,authenticated,service_role; grant execute on function auth.uid(),auth.jwt() to anon,authenticated,service_role;
       alter default privileges in schema public grant all on tables to anon,authenticated;
       alter default privileges in schema public grant execute on functions to anon,authenticated;`);
     const dir = new URL('../supabase/migrations/',import.meta.url);
     for (const file of (await readdir(dir)).filter(f=>f.endsWith('.sql')).sort()) await db.exec(await readFile(new URL(file,dir),'utf8'));
-    const as = async index => { await db.exec('reset role; set role authenticated'); await db.query("select set_config('request.jwt.claim.sub',$1,false)",[users[index]]); };
+    const as = async index => { await db.exec('reset role; set role authenticated'); await db.query("select set_config('request.jwt.claim.sub',$1,false),set_config('request.jwt.claim.session_id',$1,false)",[users[index]]); };
     const rpc = async (name,args=[]) => (await db.query(`select public.${name}(${args.map((_,i)=>'$'+(i+1)).join(',')}) as value`,args)).rows[0].value;
     const save = async(index,payload) => { await as(index); const saved=await rpc('save_my_profile',[payload]); profiles[index]=saved; return saved; };
-    const create = async payload => { const index=users.length; users.push(randomUUID()); await db.exec('reset role'); await db.query('insert into auth.users values($1)',[users[index]]); await save(index,payload); return index; };
+    const create = async payload => { const index=users.length; users.push(randomUUID()); await db.exec('reset role'); await db.query('insert into auth.users values($1)',[users[index]]); await db.query('insert into auth.sessions(id,user_id) values($1,$1)',[users[index]]); await save(index,payload); return index; };
     const detail = index => rpc('get_public_group',[profiles[index].group.id]);
     const list = (filters={},sort='compatibility',cursor=null) => rpc('list_ranked_public_groups',[filters,sort,cursor]);
     const count = (filters={}) => rpc('count_public_groups',[filters]);
@@ -83,6 +83,25 @@ test('profile ranking: server parity, bilateral private preferences, global pagi
       const next=await list({},'alphabetical',alpha.cursor); assert.equal(new Set([...alpha.items,...next.items].map(g=>g.crew.id)).size,users.length-1);
       const filtered=await list({name:'Zeta',group_kinds:['family'],animal_kinds:['dog']}); assert.equal(filtered.items.length,1);
       assert.equal(await count({name:'Zeta',group_kinds:['family'],animal_kinds:['dog']}),1);
+    });
+    await t.test('online filtering runs before pagination and both sort modes agree with the full online count', async () => {
+      await as(25); await rpc('set_my_presence', [randomUUID(), true]);
+      await as(0);
+      for (const sort of ['compatibility', 'alphabetical']) {
+        const only = await list({ online_only: true }, sort);
+        assert.deepEqual(only.items.map(item => item.crew.id), [profiles[25].group.id]);
+      }
+      assert.equal(await count({ online_only: true }), 1);
+      for (let i = 0; i < users.length; i++) { await as(i); await rpc('set_my_presence', [randomUUID(), true]); }
+      await as(0);
+      for (const sort of ['compatibility', 'alphabetical']) {
+        let page = await list({ online_only: true }, sort); assert.equal(page.items.length, 20); assert.equal(page.has_more, true);
+        const ids = page.items.map(item => item.crew.id);
+        while (page.has_more) { page = await list({ online_only: true }, sort, page.cursor); ids.push(...page.items.map(item => item.crew.id)); }
+        assert.equal(new Set(ids).size, users.length - 1);
+        assert.equal(await count({ online_only: true }), ids.length);
+        assert.equal(ids.includes(profiles[0].group.id), false);
+      }
     });
     await t.test('live counts match all filtered pages and reject invalid filters',async()=>{
       await as(0);

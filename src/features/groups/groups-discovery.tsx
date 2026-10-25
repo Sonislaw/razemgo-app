@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import { View } from 'react-native';
+import { AppState, Platform, View } from 'react-native';
 import { Button, EmptyState } from '@/components/ui/primitives';
 import { SortOptionsSheet } from '@/components/ui/sort-options-sheet';
 import { DiscoveryFilterBar, DiscoveryResultsHeader } from '@/features/discovery/discovery-controls';
@@ -15,6 +15,8 @@ import { GroupFiltersSheet } from './group-filters-sheet';
 import { fetchPublicGroups } from './group-repository';
 import { filterPublicGroups, sortPublicGroups, groupDirectoryError, INITIAL_GROUP_FILTERS, type GroupPage, type GroupSort } from './group-data';
 import { DEMO_PUBLIC_GROUPS, withDemoGroupCompatibility } from './group-demo';
+import { isPresenceActive } from '@/features/presence/presence-context';
+import { PRESENCE_POLL_MS } from '@/features/presence/presence-controller';
 
 const SORT_OPTIONS: { value: GroupSort; label: string }[] = [
   { value: 'compatibility', label: 'Najwyższa zgodność' },
@@ -33,21 +35,41 @@ export function GroupsDiscovery() {
   const generation = useRef(0);
   const alive = useRef(true);
   const loadingMore = useRef(false);
+  const currentPage = useRef(page);
+  const failedRequest = useRef<'load' | 'more'>('load');
+  useEffect(() => { currentPage.current = page; }, [page]);
   const { state: mailbox } = useMessaging();
   const blocked = mailbox.blockedGroupIds;
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
-  const load = useCallback(async () => {
+  const load = useCallback(async (quiet = false) => {
+    if (quiet && loadingMore.current) return;
     const version = ++generation.current;
-    loadingMore.current = false;
-    setStatus('loading'); setError(null); setPage({ items: [], hasMore: false, cursor: null });
+    loadingMore.current = true;
+    const desiredCount = quiet ? Math.max(20, currentPage.current.items.length) : 20;
+    if (!quiet) { setStatus('loading'); setError(null); setPage({ items: [], hasMore: false, cursor: null }); }
     try {
-      const result = USE_DEMO_DATA
+      let result: GroupPage = USE_DEMO_DATA
         ? { items: sortPublicGroups(filterPublicGroups(DEMO_PUBLIC_GROUPS.map(item => withDemoGroupCompatibility(item, profile)), filters), sort), hasMore: false, cursor: null }
         : await fetchPublicGroups(filters, undefined, sort);
-      if (alive.current && version === generation.current) { setPage(result); setStatus('ready'); }
-    } catch (e) { if (alive.current && version === generation.current) { setError(groupDirectoryError(e)); setStatus('error'); } }
+      while (!USE_DEMO_DATA && result.hasMore && result.cursor && result.items.length < desiredCount && alive.current && version === generation.current) {
+        const next = await fetchPublicGroups(filters, result.cursor, sort);
+        result = { ...next, items: [...result.items, ...next.items] };
+      }
+      if (alive.current && version === generation.current) { setPage(result); setStatus('ready'); setError(null); }
+    } catch (e) { if (alive.current && version === generation.current) { failedRequest.current = 'load'; setError(groupDirectoryError(e)); setStatus('error'); } }
+    finally { if (version === generation.current) loadingMore.current = false; }
   }, [filters, sort, profile]);
-  useFocusEffect(useCallback(() => { void load(); return () => { generation.current++; }; }, [load]));
+  useFocusEffect(useCallback(() => {
+    void load();
+    const refreshOnline = () => { if (filters.onlineOnly && isPresenceActive()) void load(true); };
+    const timer = filters.onlineOnly ? setInterval(refreshOnline, PRESENCE_POLL_MS) : undefined;
+    const foreground = filters.onlineOnly ? AppState.addEventListener('change', refreshOnline) : null;
+    if (filters.onlineOnly && Platform.OS === 'web') document.addEventListener('visibilitychange', refreshOnline);
+    return () => {
+      generation.current++; clearInterval(timer); foreground?.remove();
+      if (filters.onlineOnly && Platform.OS === 'web') document.removeEventListener('visibilitychange', refreshOnline);
+    };
+  }, [load, filters.onlineOnly]));
   const more = async () => {
     if (!page.hasMore || !page.cursor || loadingMore.current) return;
     loadingMore.current = true;
@@ -58,13 +80,13 @@ export function GroupsDiscovery() {
       if (alive.current && version === generation.current) {
         setPage(prev => ({ ...next, items: [...new Map([...prev.items, ...next.items].map(x => [x.group.id, x])).values()] })); setStatus('ready');
       }
-    } catch (e) { if (alive.current && version === generation.current) { setError(groupDirectoryError(e)); setStatus('error'); } }
+    } catch (e) { if (alive.current && version === generation.current) { failedRequest.current = 'more'; setError(groupDirectoryError(e)); setStatus('error'); } }
     finally { if (version === generation.current) loadingMore.current = false; }
   };
   const items = page.items.filter(x => !blocked.includes(x.group.id));
   const activeCount = Number(Boolean(filters.name.trim())) + Number(Boolean(filters.groupKinds.length))
     + Number(Boolean(filters.childAgeBands.length)) + Number(Boolean(filters.travelModes.length))
-    + Number(Boolean(filters.interests.length)) + Number(Boolean(filters.animalKinds.length)) + Number(filters.hasTrips);
+    + Number(Boolean(filters.interests.length)) + Number(Boolean(filters.animalKinds.length)) + Number(filters.hasTrips) + Number(filters.onlineOnly);
   const summary = [
     filters.name.trim() ? 'Nazwa: ' + filters.name.trim() : '',
     GROUP_KIND_OPTIONS.filter(option => filters.groupKinds.includes(option.value)).map(option => option.label).join(', '),
@@ -73,6 +95,7 @@ export function GroupsDiscovery() {
     filters.interests.join(', '),
     filters.animalKinds.length ? 'Zwierzęta: ' + ANIMAL_OPTIONS.filter(option => filters.animalKinds.includes(option.kind)).map(option => option.label).join(', ') : '',
     filters.hasTrips ? 'Z aktywnymi ogłoszeniami' : '',
+    filters.onlineOnly ? 'Tylko online' : '',
   ].filter(Boolean).join(' · ');
   const reset = () => setFilters({ ...INITIAL_GROUP_FILTERS });
   return <View style={{ gap: 16 }}>
@@ -84,7 +107,7 @@ export function GroupsDiscovery() {
       sortAccessibilityLabel={'Sortowanie ekip: ' + (sort === 'compatibility' ? 'Najwyższa zgodność' : 'Alfabetycznie')}
       onSort={() => setShowSort(true)} />
     {items.map(item => <GroupCard key={item.group.id} item={item} />)}
-    <DataStatus status={status} error={error} label="Wczytywanie ekip" onRetry={() => { void (page.items.length ? more() : load()); }} />
+    <DataStatus status={status} error={error} label="Wczytywanie ekip" onRetry={() => { void (failedRequest.current === 'more' ? more() : load()); }} />
     {status === 'ready' && !items.length ? <EmptyState title="Jeszcze nie ma tu ekip" description="Zmień filtry albo wróć później. W wyszukiwarce pojawiają się widoczne profile ekip."
       action={<Button label="Pokaż wszystkie ekipy" onPress={reset} />} /> : null}
     {page.hasMore && status !== 'loading' ? <Button label="Pokaż więcej ekip" variant="secondary" onPress={() => void more()} /> : null}

@@ -18,6 +18,10 @@ test('group filters start unfiltered, support Polish names and match categories 
   assert.deepEqual(filterPublicGroups(all, { ...INITIAL_GROUP_FILTERS, groupKinds: ['family'], hasTrips: true }), []);
   assert.deepEqual(filterPublicGroups(all, { ...INITIAL_GROUP_FILTERS, interests: ['Kajaki'] }), []);
   assert.deepEqual(groupFiltersPayload(INITIAL_GROUP_FILTERS).group_kinds, []);
+  assert.equal(groupFiltersPayload(INITIAL_GROUP_FILTERS).online_only, false);
+  assert.deepEqual(filterPublicGroups(all, { ...INITIAL_GROUP_FILTERS, onlineOnly: true }), []);
+  assert.deepEqual(filterPublicGroups(all, { ...INITIAL_GROUP_FILTERS, onlineOnly: true }, new Set(['couple'])), [couple]);
+  assert.deepEqual(filterPublicGroups(all, { ...INITIAL_GROUP_FILTERS, onlineOnly: true, groupKinds: ['family'] }, new Set(['couple'])), []);
 });
 
 function matchingProfile() {

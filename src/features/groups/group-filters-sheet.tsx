@@ -12,6 +12,8 @@ import { fetchPublicGroupCount } from './group-repository';
 import { DEMO_PUBLIC_GROUPS } from './group-demo';
 import { USE_DEMO_DATA } from '@/constants/app';
 import { useMessaging } from '@/features/messaging/messaging-context';
+import { isPresenceActive } from '@/features/presence/presence-context';
+import { PRESENCE_POLL_MS } from '@/features/presence/presence-controller';
 
 export function GroupFiltersSheet({ filters, onApply, onClose }: {
   filters: GroupFilters; onApply: (value: GroupFilters) => void; onClose: () => void;
@@ -36,6 +38,11 @@ export function GroupFiltersSheet({ filters, onApply, onClose }: {
     }, 250);
     return () => { current = false; clearTimeout(timer); };
   }, [draft, countKey, countAttempt]);
+  useEffect(() => {
+    if (USE_DEMO_DATA || !draft.onlineOnly) return;
+    const timer = setInterval(() => { if (isPresenceActive()) setCountAttempt(attempt => attempt + 1); }, PRESENCE_POLL_MS);
+    return () => clearInterval(timer);
+  }, [draft.onlineOnly]);
   const resultCount = USE_DEMO_DATA
     ? filterPublicGroups(DEMO_PUBLIC_GROUPS.filter(item => !mailbox.blockedGroupIds.includes(item.group.id)), draft).length
     : countResult.key === countKey && countResult.status === 'ready' ? countResult.count : null;
@@ -55,6 +62,8 @@ export function GroupFiltersSheet({ filters, onApply, onClose }: {
         onPress={() => { Keyboard.dismiss(); onApply({ ...draft, name: draft.name.trim() }); }} />
     </>}>
     <ProfileTextField label="Szukaj po nazwie ekipy" value={draft.name} onChangeText={name => setDraft(prev => ({ ...prev, name }))} maxLength={80} />
+    <View style={layout.row}><AppText style={{ flex: 1 }}>Tylko online</AppText>
+      <Switch accessibilityLabel="Tylko online" value={draft.onlineOnly} onValueChange={onlineOnly => setDraft(prev => ({ ...prev, onlineOnly }))} /></View>
     <AppText variant="caption" color="textSecondary">Możesz wybrać kilka opcji. Brak wyboru oznacza dowolną ekipę.</AppText>
     <View style={layout.stack}>
     <FieldLabel>Rodzaj ekipy</FieldLabel>

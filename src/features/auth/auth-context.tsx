@@ -20,6 +20,7 @@ import {
 import { USE_DEMO_DATA } from '@/constants/app';
 import { monitoredOperation, reportFailure } from '@/lib/monitoring-core';
 import { unregisterPushDevice, clearDeviceNotifications } from '@/features/notifications/push-platform';
+import { stopCurrentPresence, resumeCurrentPresence } from '@/features/presence/presence-controller';
 import {
   authErrorMessage,
   authRedirectUrl,
@@ -187,17 +188,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
   const signOut = async () => {
     if (USE_DEMO_DATA) return;
-    await unregisterPushDevice().catch(() => undefined);
-    await clearDeviceNotifications().catch(() => undefined);
-    const result = await monitoredOperation('auth.sign_out', () => getSupabase().auth.signOut({ scope: 'local' }));
-    const current = await getSupabase().auth.getSession();
-    if (result.error && current.data.session) throw result.error;
-    setSession(null);
-    setRecovering(false);
-    callbacks.current.clear();
+    try {
+      await stopCurrentPresence();
+      await unregisterPushDevice().catch(() => undefined);
+      await clearDeviceNotifications().catch(() => undefined);
+      const result = await monitoredOperation('auth.sign_out', () => getSupabase().auth.signOut({ scope: 'local' }));
+      const current = await getSupabase().auth.getSession();
+      if (result.error && current.data.session) throw result.error;
+      setSession(null);
+      setRecovering(false);
+      callbacks.current.clear();
+    } catch (cause) {
+      resumeCurrentPresence();
+      throw cause;
+    }
   };
   const resetSession = async () => {
     try {
+      await stopCurrentPresence();
       if(isSupabaseConfigured) await unregisterPushDevice().catch(() => undefined);
       await clearDeviceNotifications().catch(() => undefined);
       await resetPersistedAuth();
@@ -206,6 +214,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setError(null);
       callbacks.current.clear();
     } catch (cause) {
+      resumeCurrentPresence();
       reportFailure(cause, 'auth.reset_session');
       setError(authErrorMessage(cause));
     }

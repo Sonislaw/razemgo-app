@@ -6,11 +6,13 @@ import { useTheme } from '@/hooks/use-theme';
 import type { PublicGroup } from './group-data';
 import { GroupCompatibilitySummary } from './group-compatibility-summary';
 import { GroupCardContent, groupCardStyles } from './group-profile-card';
+import { useGroupOnline } from '@/features/presence/presence-context';
 
 export function GroupCard({ item }: { item: PublicGroup }) {
   const theme = useTheme();
   const { group, about, activeTripCount } = item;
-  return <Pressable accessibilityRole="button" accessibilityLabel={'Zobacz profil: ' + group.name}
+  const online = useGroupOnline(group.id);
+  return <Pressable accessibilityRole="button" accessibilityLabel={'Zobacz profil: ' + group.name + (online ? '. Online' : '')}
     testID={'public-group-' + group.id}
     onPress={() => router.push({ pathname: '/crew/[id]', params: { id: group.id } })}
     style={({ pressed }) => [groupCardStyles.frame, {

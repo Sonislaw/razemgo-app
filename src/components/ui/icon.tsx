@@ -23,6 +23,7 @@ export const SYMBOLS = {
     web: 'chevron_right',
   },
   heart: { ios: 'heart', android: 'favorite_border', web: 'favorite_border' },
+  'heart-filled': { ios: 'heart.fill', android: 'favorite', web: 'favorite' },
   camper: {
     ios: 'car.side',
     android: 'airport_shuttle',
@@ -87,7 +88,10 @@ export function Icon({ name, size = 22, color }: IconProps) {
       aria-hidden
       style={{ width: size, height: size }}
     >
-      {name === 'campfire-chat' ? (
+      {name === 'heart-filled' ? (
+        <Image source={require('@/assets/icons/heart-filled.svg')} tintColor={color ?? theme.primaryStrong}
+          contentFit="contain" style={{ width: size, height: size }} accessible={false} alt="" />
+      ) : name === 'campfire-chat' ? (
         <Image
           source={
             Platform.OS === 'web'

@@ -7,26 +7,31 @@ import type { PublicGroup } from './group-data';
 import { GroupCompatibilitySummary } from './group-compatibility-summary';
 import { GroupCardContent, groupCardStyles } from './group-profile-card';
 import { useGroupOnline } from '@/features/presence/presence-context';
+import { FavoriteButton } from '@/features/favorites/favorite-button';
 
 export function GroupCard({ item }: { item: PublicGroup }) {
   const theme = useTheme();
   const { group, about, activeTripCount } = item;
   const online = useGroupOnline(group.id);
-  return <Pressable accessibilityRole="button" accessibilityLabel={'Zobacz profil: ' + group.name + (online ? '. Online' : '')}
+  const open = () => router.push({ pathname: '/crew/[id]', params: { id: group.id } });
+  return <View style={[groupCardStyles.frame, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}>
+    <Pressable accessibilityRole="button" accessibilityLabel={'Zobacz profil: ' + group.name + (online ? '. Online' : '')}
     testID={'public-group-' + group.id}
-    onPress={() => router.push({ pathname: '/crew/[id]', params: { id: group.id } })}
-    style={({ pressed }) => [groupCardStyles.frame, {
-      borderColor: theme.border, backgroundColor: theme.backgroundElement, opacity: pressed ? 0.75 : 1 }]}>
+    onPress={open} style={({ pressed }) => ({ gap: 12, opacity: pressed ? 0.75 : 1 })}>
     <GroupCardContent
       group={group}
       about={about}
       decorativeAvatar
       afterIdentity={<GroupCompatibilitySummary match={item.compatibility} testID={'group-compatibility-' + group.id} />}
     />
+    </Pressable>
     <View style={[layout.row, { borderTopWidth: 1, borderColor: theme.border, paddingTop: 10 }]}>
       <AppText variant="caption" color="textSecondary" style={{ flex: 1 }}>
         {activeTripCount ? 'Aktywne ogłoszenia: ' + activeTripCount : 'Poznaj ekipę i wspólnie wymyśl wyjazd'}</AppText>
-      <AppText variant="label" color="primaryStrong">Profil</AppText><Icon name="arrow" size={20} />
+      <FavoriteButton kind="group" targetId={group.id} />
+      <Pressable accessibilityRole="button" accessibilityLabel={'Otwórz profil: ' + group.name} onPress={open} style={[layout.row, { minHeight: 44 }]}>
+        <AppText variant="label" color="primaryStrong">Profil</AppText><Icon name="arrow" size={20} />
+      </Pressable>
     </View>
-  </Pressable>;
+  </View>;
 }

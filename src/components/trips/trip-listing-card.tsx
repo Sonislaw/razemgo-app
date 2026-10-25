@@ -44,6 +44,7 @@ interface TripListingCardProps {
   testID?: string;
   nativeID?: string;
   compatibilityTestID?: string;
+  favoriteAction?: ReactNode;
 }
 
 export function TripListingCard({
@@ -64,6 +65,7 @@ export function TripListingCard({
   testID,
   nativeID,
   compatibilityTestID,
+  favoriteAction,
 }: TripListingCardProps) {
   const theme = useTheme();
   const { fontScale } = useWindowDimensions();
@@ -75,7 +77,7 @@ export function TripListingCard({
         <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
           <LandscapePhoto
             kind={trip.landscape}
-            style={[styles.photo, { minHeight: 80 * fontScale }]}
+            style={[styles.photo, { minHeight: (favoriteAction && score !== undefined ? 104 : 80) * fontScale }]}
             contentPosition={trip.landscape === 'coast' ? { top: '35%', left: '50%' } : undefined}
           />
         </View>
@@ -85,14 +87,18 @@ export function TripListingCard({
               {trip.mode === 'planned' ? 'MAM PLAN' : 'SZUKAM POMYSŁU'}
             </AppText>
           </View>
-          {rightBadge || score !== undefined ? (
+          {rightBadge || favoriteAction ? (
             <View style={styles.rightBadge}>
-              {rightBadge ?? (
-                score !== undefined ? <CompatibilityBadge score={score} compact testID={compatibilityTestID} /> : null
-              )}
+              {rightBadge}
+              {favoriteAction ? (onPress ? <View style={styles.favoriteSpace} /> : favoriteAction) : null}
             </View>
           ) : null}
         </View>
+        {!rightBadge && score !== undefined ? (
+          <View style={styles.compatibility}>
+            <CompatibilityBadge score={score} compact testID={compatibilityTestID} />
+          </View>
+        ) : null}
       </View>
       <View style={styles.content}>
         <AppText variant="heading" accessibilityRole="header" numberOfLines={2} style={styles.headline}>
@@ -176,6 +182,16 @@ export function TripListingCard({
     styles.card,
     { backgroundColor: theme.backgroundElement, borderColor: theme.border },
   ];
+  // Keep the favorite as a sibling of the card's main button so native screen readers can reach both.
+  if (onPress && favoriteAction) return (
+    <View testID={testID} nativeID={nativeID} style={cardStyle}>
+      <Pressable accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel ? accessibilityLabel + (online ? '. Ekipa online' : '') : undefined}
+        accessibilityHint={accessibilityHint} onPress={onPress}
+        style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>{content}</Pressable>
+      <View style={styles.cardFavoriteAction}>{favoriteAction}</View>
+    </View>
+  );
   return onPress ? (
     <Pressable
       testID={testID}
@@ -223,7 +239,10 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap', gap: 6,
   },
   badge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
-  rightBadge: { marginLeft: 'auto', maxWidth: '100%' },
+  rightBadge: { marginLeft: 'auto', maxWidth: '100%', flexDirection: 'row', alignItems: 'center', gap: 6 },
+  compatibility: { position: 'absolute', bottom: 8, right: 8, maxWidth: '90%' },
+  favoriteSpace: { width: 44, height: 44 },
+  cardFavoriteAction: { position: 'absolute', top: 14, right: 14 },
   modeLabel: { fontSize: 11, letterSpacing: 0.3 },
   content: { padding: 8, paddingBottom: 0, gap: 10 },
   flex: { flex: 1, minWidth: 0 },

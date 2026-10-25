@@ -86,6 +86,7 @@ export default function HomeScreen() {
               group={latestGroup}
               travelModes={latestOwnTrip?.travelModes ?? latestListing.trip.travelModes}
               score={latestListing.own ? undefined : compatibility[latestListing.trip.id]?.score}
+              isOwn={latestListing.own}
               onPress={() =>
                 router.push({
                   pathname: latestListing.own ? '/trips/[id]' : '/trip/[id]',

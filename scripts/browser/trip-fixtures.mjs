@@ -15,7 +15,7 @@ function profile(id){
   };
 }
 function state(){return {trips:new Map(),next:301,failSave:false,failLoad:false,failPublic:false, invitations:[], conversations:[], messages:[], reads:new Map(), blocks:new Set(), reports:[], failMailbox:false,failSend:false,failInvitation:false, failHistory:false,
-  notifications:[],notificationPreferences:new Map(),failNotifications:false,failNotificationSave:false,presence:new Map()};}
+  notifications:[],notificationPreferences:new Map(),failNotifications:false,failNotificationSave:false,presence:new Map(),favoriteGroups:new Map(),favoriteTrips:new Map()};}
 async function backend(context,store){
   await context.route('https://monitoring.razemgo.invalid/**',route=>route.fulfill({status:200,body:'{}',headers:{'access-control-allow-origin':'*'}}));
   await context.route('http://127.0.0.1:54321/**',async route=>{
@@ -31,6 +31,18 @@ async function backend(context,store){
     if(url.pathname.endsWith('/logout'))return respond({});
     if(url.pathname==='/rest/v1/rpc/get_my_account_access')return respond({is_admin:store.admin===true&&id===A,suspended:store.suspended===id,hidden_trip_ids:[]});
     if(url.pathname==='/rest/v1/rpc/get_my_group_visibility')return respond({discoverable:true,about:''});
+    if(url.pathname==='/rest/v1/rpc/get_my_favorites'){
+      if(store.failFavoriteLoad)return respond({message:'Offline'},503);
+      return respond({group_ids:[...(store.favoriteGroups.get(id)??[])],trip_ids:[...(store.favoriteTrips.get(id)??[])]});
+    }
+    if(['/rest/v1/rpc/set_my_group_favorite','/rest/v1/rpc/set_my_trip_favorite'].includes(url.pathname)){
+      if(store.failFavoriteSave===true)return respond({message:'Offline'},503);
+      const groups=url.pathname.endsWith('set_my_group_favorite'), collection=groups?store.favoriteGroups:store.favoriteTrips;
+      const target=groups?body.target_group_id:body.target_trip_id;
+      const ids=collection.get(id)??new Set(); if(body.is_favorite)ids.add(target);else ids.delete(target);collection.set(id,ids);
+      if(store.failFavoriteSave==='after-commit')return respond({message:'Lost reply'},503);
+      return respond(body.is_favorite);
+    }
     if(url.pathname==='/rest/v1/rpc/set_my_presence'){
       const key=id+':'+body.connection_id, previous=store.presence.get(key);
       store.presence.set(key,{groupId:groupId(id),online:previous?.online===false?false:body.is_online});

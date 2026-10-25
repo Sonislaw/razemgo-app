@@ -34,6 +34,9 @@ export interface Database {
     };
     Views: Record<never, never>;
     Functions: {
+      get_my_favorites: { Args: Record<never, never>; Returns: { group_ids: string[]; trip_ids: string[] } };
+      set_my_group_favorite: { Args: { target_group_id: string; is_favorite: boolean }; Returns: boolean };
+      set_my_trip_favorite: { Args: { target_trip_id: string; is_favorite: boolean }; Returns: boolean };
       set_my_presence: { Args: { connection_id: string; is_online: boolean }; Returns: undefined };
       get_online_groups: { Args: { group_ids: string[] }; Returns: string[] };
       get_my_group_visibility: { Args: Record<never, never>; Returns: GroupVisibility };

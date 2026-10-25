@@ -15,6 +15,8 @@ import { USE_DEMO_DATA } from '@/constants/app';
 import { useProfile } from '@/features/profile/profile-context';
 import { GroupCompatibilitySummary } from '@/features/groups/group-compatibility-summary';
 import { GroupProfileCard } from '@/features/groups/group-profile-card';
+import { FavoriteButton, FavoritesNotice } from '@/features/favorites/favorite-button';
+import { View } from 'react-native';
 
 export default function PublicGroupScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -39,13 +41,19 @@ export default function PublicGroupScreen() {
   const back = () => router.canGoBack() ? router.back() : router.replace('/explore');
   return <Screen>
     <ProfileSubpageHeader title="Profil ekipy" backLabel="Wróć" onBack={back} />
+    <FavoritesNotice />
     <DataStatus status={status} error={error} label="Wczytywanie profilu ekipy" onRetry={() => void load()} />
     {status === 'ready' && (!data || blocked) ? <EmptyState title="Ten profil jest niedostępny"
       description="Ekipa mogła wyłączyć widoczność, usunąć konto lub ograniczyć kontakt."
       action={<Button label="Wróć do Odkrywaj" onPress={() => router.dismissTo('/explore')} />} /> : data && !blocked ? <>
       <GroupProfileCard group={data.group} about={data.about} expanded />
       {data.compatibility ? <Card><GroupCompatibilitySummary match={data.compatibility} detailed testID="profile-group-compatibility" /></Card> : null}
-      <GroupContactAction key={id} group={data.group} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <FavoriteButton kind="group" targetId={data.group.id} />
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <GroupContactAction key={id} group={data.group} />
+        </View>
+      </View>
       <SectionTitle title={'Ogłoszenia ekipy · ' + data.trips.length} />
       {data.trips.length ? data.trips.map(p => <DiscoveryTripCard key={p.trip.id} {...p} facts={{ ageBands: p.group.childAgeBands, matchingAgeBands: [] }} />)
         : <Card><AppText color="textSecondary">Ta ekipa nie ma teraz aktywnych ogłoszeń. Możesz zaprosić ją do kontaktu i wspólnie wymyślić wyjazd.</AppText></Card>}

@@ -36,6 +36,7 @@ import { AnimalInformation } from '@/features/animals/animal-ui';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 import { GroupAvatar } from '@/features/profile/group-avatar';
 import { TripReportAction } from '@/features/moderation/trip-report-action';
+import { FavoriteButton, FavoritesNotice } from '@/features/favorites/favorite-button';
 
 export function generateStaticParams() {
   return AVAILABLE_PROPOSALS.map(({ trip }) => ({ id: trip.id }));
@@ -86,9 +87,13 @@ export default function TripDetailsScreen() {
         </AppText>
         <DemoBadge />
       </HeaderRow>
+      <FavoritesNotice />
       <DataStatus status={status} error={error} onRetry={() => { void refresh(); }} label="Odświeżanie wyjazdu" />
       <View style={styles.illustration}>
         <Landscape kind={trip.landscape} />
+        <View style={styles.favoriteAction}>
+          <FavoriteButton kind="trip" targetId={trip.id} compact translucent />
+        </View>
       </View>
       <View style={layout.stack}>
         <AppText variant="caption" color="primaryStrong">
@@ -185,4 +190,5 @@ export default function TripDetailsScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   illustration: { borderRadius: Radius.card, overflow: 'hidden' },
+  favoriteAction: { position: 'absolute', top: 8, right: 8 },
 });

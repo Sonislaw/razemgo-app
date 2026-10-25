@@ -17,6 +17,7 @@ import { filterPublicGroups, sortPublicGroups, groupDirectoryError, INITIAL_GROU
 import { DEMO_PUBLIC_GROUPS, withDemoGroupCompatibility } from './group-demo';
 import { isPresenceActive } from '@/features/presence/presence-context';
 import { PRESENCE_POLL_MS } from '@/features/presence/presence-controller';
+import { useFavorites } from '@/features/favorites/favorites-context';
 
 const SORT_OPTIONS: { value: GroupSort; label: string }[] = [
   { value: 'compatibility', label: 'Najwyższa zgodność' },
@@ -29,6 +30,7 @@ export function GroupsDiscovery() {
   const [sort, setSort] = useState<GroupSort>('compatibility');
   const [showSort, setShowSort] = useState(false);
   const { profile } = useProfile();
+  const { store: favoritesStore } = useFavorites();
   const [page, setPage] = useState<GroupPage>({ items: [], hasMore: false, cursor: null });
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +51,7 @@ export function GroupsDiscovery() {
     if (!quiet) { setStatus('loading'); setError(null); setPage({ items: [], hasMore: false, cursor: null }); }
     try {
       let result: GroupPage = USE_DEMO_DATA
-        ? { items: sortPublicGroups(filterPublicGroups(DEMO_PUBLIC_GROUPS.map(item => withDemoGroupCompatibility(item, profile)), filters), sort), hasMore: false, cursor: null }
+        ? { items: sortPublicGroups(filterPublicGroups(DEMO_PUBLIC_GROUPS.map(item => withDemoGroupCompatibility(item, profile)), filters, undefined, favoritesStore?.getSnapshot().groupIds), sort), hasMore: false, cursor: null }
         : await fetchPublicGroups(filters, undefined, sort);
       while (!USE_DEMO_DATA && result.hasMore && result.cursor && result.items.length < desiredCount && alive.current && version === generation.current) {
         const next = await fetchPublicGroups(filters, result.cursor, sort);
@@ -58,18 +60,26 @@ export function GroupsDiscovery() {
       if (alive.current && version === generation.current) { setPage(result); setStatus('ready'); setError(null); }
     } catch (e) { if (alive.current && version === generation.current) { failedRequest.current = 'load'; setError(groupDirectoryError(e)); setStatus('error'); } }
     finally { if (version === generation.current) loadingMore.current = false; }
-  }, [filters, sort, profile]);
+  }, [filters, sort, profile, favoritesStore]);
   useFocusEffect(useCallback(() => {
     void load();
-    const refreshOnline = () => { if (filters.onlineOnly && isPresenceActive()) void load(true); };
-    const timer = filters.onlineOnly ? setInterval(refreshOnline, PRESENCE_POLL_MS) : undefined;
-    const foreground = filters.onlineOnly ? AppState.addEventListener('change', refreshOnline) : null;
-    if (filters.onlineOnly && Platform.OS === 'web') document.addEventListener('visibilitychange', refreshOnline);
+    const dynamic = filters.onlineOnly || filters.favoritesOnly;
+    const refreshOnline = () => { if (dynamic && isPresenceActive()) void load(true); };
+    const timer = dynamic ? setInterval(refreshOnline, PRESENCE_POLL_MS) : undefined;
+    const foreground = dynamic ? AppState.addEventListener('change', refreshOnline) : null;
+    if (dynamic && Platform.OS === 'web') document.addEventListener('visibilitychange', refreshOnline);
+    let revision = favoritesStore?.getSnapshot().revision;
+    const unsubscribe = favoritesStore?.subscribe(() => {
+      const next = favoritesStore.getSnapshot().revision;
+      if (next !== revision && filters.favoritesOnly) refreshOnline();
+      revision = next;
+    });
     return () => {
       generation.current++; clearInterval(timer); foreground?.remove();
-      if (filters.onlineOnly && Platform.OS === 'web') document.removeEventListener('visibilitychange', refreshOnline);
+      unsubscribe?.();
+      if (dynamic && Platform.OS === 'web') document.removeEventListener('visibilitychange', refreshOnline);
     };
-  }, [load, filters.onlineOnly]));
+  }, [load, filters.onlineOnly, filters.favoritesOnly, favoritesStore]));
   const more = async () => {
     if (!page.hasMore || !page.cursor || loadingMore.current) return;
     loadingMore.current = true;
@@ -86,7 +96,7 @@ export function GroupsDiscovery() {
   const items = page.items.filter(x => !blocked.includes(x.group.id));
   const activeCount = Number(Boolean(filters.name.trim())) + Number(Boolean(filters.groupKinds.length))
     + Number(Boolean(filters.childAgeBands.length)) + Number(Boolean(filters.travelModes.length))
-    + Number(Boolean(filters.interests.length)) + Number(Boolean(filters.animalKinds.length)) + Number(filters.hasTrips) + Number(filters.onlineOnly);
+    + Number(Boolean(filters.interests.length)) + Number(Boolean(filters.animalKinds.length)) + Number(filters.hasTrips) + Number(filters.onlineOnly) + Number(filters.favoritesOnly);
   const summary = [
     filters.name.trim() ? 'Nazwa: ' + filters.name.trim() : '',
     GROUP_KIND_OPTIONS.filter(option => filters.groupKinds.includes(option.value)).map(option => option.label).join(', '),
@@ -96,6 +106,7 @@ export function GroupsDiscovery() {
     filters.animalKinds.length ? 'Zwierzęta: ' + ANIMAL_OPTIONS.filter(option => filters.animalKinds.includes(option.kind)).map(option => option.label).join(', ') : '',
     filters.hasTrips ? 'Z aktywnymi ogłoszeniami' : '',
     filters.onlineOnly ? 'Tylko online' : '',
+    filters.favoritesOnly ? 'Tylko ulubione' : '',
   ].filter(Boolean).join(' · ');
   const reset = () => setFilters({ ...INITIAL_GROUP_FILTERS });
   return <View style={{ gap: 16 }}>

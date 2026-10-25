@@ -18,6 +18,7 @@ import {
 } from '../trips/trip-locations.ts';
 
 export const INITIAL_FILTERS: DiscoveryFilters = {
+  favoritesOnly: false,
   tripModes: ['planned', 'flexible'],
   dateRangeId: 'all',
   location: '',
@@ -142,6 +143,7 @@ export function filterProposals(
   proposals: TripProposal[],
   filters: DiscoveryFilters,
   dateRange?: DateRange,
+  favoriteTripIds: ReadonlySet<string> = new Set(),
 ): TripProposal[] {
   const location = normalizeLocation(filters.location);
   const selectedLocation = findTripLocation(filters.locationId);
@@ -152,6 +154,7 @@ export function filterProposals(
     return [];
   const range = dateRange ?? resolveDiscoveryRange(filters);
   const matching = proposals.filter(({ trip, group }) => {
+    if (filters.favoritesOnly && !favoriteTripIds.has(trip.id)) return false;
     if (!filters.tripModes.includes(trip.mode)) return false;
     if (
       filters.landscapeKinds?.length &&

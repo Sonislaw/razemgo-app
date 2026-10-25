@@ -5,6 +5,7 @@ import { AppText } from '@/components/ui/primitives';
 import { TripListingAction, TripListingCard } from '@/components/trips/trip-listing-card';
 import { WELCOME_LISTINGS } from '@/data/mocks/welcome-listings';
 import { getTripHeadline } from '@/features/trips/trip-headline';
+import { FavoriteIconButton } from '@/features/favorites/favorite-icon-button';
 
 export function WelcomeFeaturedListing() {
   const [index, setIndex] = useState(() => Math.floor(Math.random() * WELCOME_LISTINGS.length));
@@ -29,6 +30,8 @@ export function WelcomeFeaturedListing() {
         group={trip.group}
         score={trip.exampleCompatibility}
         compatibilityTestID="welcome-example-compatibility"
+        favoriteAction={<FavoriteIconButton compact translucent label="Dodaj wyjazd do ulubionych — załóż konto"
+          testID="welcome-favorite" onPress={() => router.push('/auth/sign-up')} />}
         accessibilityLabel={'Przykładowe ogłoszenie: ' + getTripHeadline(trip) + ', ' + trip.exampleCompatibility + '% przykładowej zgodności'}
         accessibilityHint="Załóż konto, aby poznawać podróżników z podobnymi planami."
         onPress={() => router.push('/auth/sign-up')}

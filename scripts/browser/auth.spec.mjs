@@ -68,6 +68,7 @@ async function backend(context, existingState) {
     const body = request.postDataJSON() ?? {};
     if (url.pathname === '/rest/v1/rpc/set_my_presence') return respond(null);
     if (url.pathname === '/rest/v1/rpc/get_online_groups') return respond([]);
+    if (url.pathname === '/rest/v1/rpc/get_my_favorites') return respond({ group_ids: [], trip_ids: [] });
     let id = A;
     try {
       id = JSON.parse(
@@ -185,7 +186,7 @@ test('guest protection, registration validation and email confirmation', async (
   page,
   context,
 }) => {
-  await backend(context);
+  const state = await backend(context);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/profile');
@@ -196,7 +197,9 @@ test('guest protection, registration validation and email confirmation', async (
     0,
   );
   await page.getByTestId('welcome-featured-listing').screenshot({ path: '.expo/compatibility-welcome.png' });
-  await page.getByRole('button', { name: 'Nowe konto' }).click();
+  await page.getByTestId('welcome-featured-listing').getByRole('button', { name: 'Dodaj wyjazd do ulubionych — załóż konto', exact: true }).click();
+  await expect(page).toHaveURL('http://localhost:8085/auth/sign-up');
+  expect(state.calls).not.toContain('/rest/v1/rpc/set_my_trip_favorite');
   await page
     .getByRole('textbox', { name: 'E-mail', exact: true })
     .fill('a@example.com');

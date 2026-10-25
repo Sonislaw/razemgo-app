@@ -31,11 +31,14 @@ import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { LANDSCAPE_OPTIONS } from '@/constants/landscape-options';
 import { GroupsDiscovery } from '@/features/groups/groups-discovery';
+import { useFavorites } from '@/features/favorites/favorites-context';
+import { FavoritesNotice } from '@/features/favorites/favorite-button';
 
 export default function ExploreScreen() {
   const [view, setView] = useState<'trips' | 'groups'>('trips');
   const theme = useTheme();
   const { filters, setFilters, sort, setSort, proposals: availableProposals, compatibility, status, error, refresh } = useDiscovery();
+  const favorites = useFavorites();
   useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
   const { profile } = useProfile();
   const { state: ownTrips } = useOwnTrips();
@@ -47,7 +50,7 @@ export default function ExploreScreen() {
   const [showSort, setShowSort] = useState(false);
   const dateRange = resolveDiscoveryRange(filters);
   const proposals = sortDiscoveryProposals(
-    filterProposals(availableProposals, filters, dateRange),
+    filterProposals(availableProposals, filters, dateRange, favorites.tripIds),
     sort,
     Object.fromEntries(Object.entries(compatibility).map(([id, match]) => [id, match.score])),
   );
@@ -58,8 +61,9 @@ export default function ExploreScreen() {
     Number(filters.childAgeBands.length > 0) +
     Number(Boolean(filters.groupKinds?.length)) +
     Number(Boolean(filters.animalKinds?.length)) +
-    Number(Boolean(filters.landscapeKinds?.length));
+    Number(Boolean(filters.landscapeKinds?.length)) + Number(Boolean(filters.favoritesOnly));
   const summary = [
+    filters.favoritesOnly ? 'Tylko ulubione' : '',
     filters.tripModes.length === 1
       ? filters.tripModes[0] === 'planned'
         ? 'Mam plan'
@@ -104,6 +108,7 @@ export default function ExploreScreen() {
         />
       }
     >
+      <FavoritesNotice />
       <View style={layout.row} accessibilityRole="tablist" accessibilityLabel="Odkrywaj">
         {([{ value: 'trips', label: 'Wyjazdy' }, { value: 'groups', label: 'Ekipy' }] as const).map(item => (
           <Pressable key={item.value} accessibilityRole="tab" accessibilityState={{ selected: view === item.value }}
@@ -114,6 +119,7 @@ export default function ExploreScreen() {
         ))}
       </View>
       {view === 'groups' ? <GroupsDiscovery /> : <>
+      {filters.favoritesOnly && favorites.status === 'loading' ? <DataStatus status="loading" error={null} onRetry={() => void favorites.refresh()} label="Wczytywanie ulubionych" /> : null}
       <DataStatus status={status} error={error} onRetry={() => { void refresh(); }} label="Wczytywanie ogłoszeń" />
       <View style={styles.controls}>
         {filters.sourceTripId ? (
@@ -157,7 +163,7 @@ export default function ExploreScreen() {
               score={compatibility[proposal.trip.id]?.score}
             />
           ))
-        ) : status === 'ready' ? (
+        ) : status === 'ready' && (!filters.favoritesOnly || favorites.status === 'ready') ? (
           <EmptyState
             title="Jeszcze się mijamy"
             description="Żaden plan nie pasuje do tych filtrów. Zmień klimat wyjazdu lub pozostałe kryteria."

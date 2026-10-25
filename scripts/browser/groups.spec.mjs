@@ -29,6 +29,7 @@ async function groupBackend(context, store) {
       const match = (store.publicProfiles.get(other)?.discoverable ?? true) && (!f.name || otherCrew.name.toLowerCase().includes(f.name.toLowerCase()))
         && (!f.group_kinds.length || f.group_kinds.includes(otherCrew.kind)) && !f.has_trips
         && (!f.online_only || [...store.presence.values()].some(p => p.groupId === other && p.online))
+        && (!f.favorites_only || store.favoriteGroups.get(id)?.has(other))
         && (!f.travel_modes.length || f.travel_modes.includes(otherCrew.travel_mode));
       if (name === 'count_public_groups') {
         (store.countRequests ??= []).push(f.name);
@@ -134,6 +135,53 @@ test('online-only crew filter counts all matches, updates results and resets to 
   await expect(page.getByRole('button', { name: 'Pokaż wyniki · 1', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Pokaż wyniki · 1', exact: true }).click();
   await expect(card).toBeVisible(); expect(store.lastGroupFilters.online_only).toBe(false);
+});
+
+test('crew hearts save only after confirmation, retry safely, sync devices and filter favorites', async ({ page, context, browser }) => {
+  test.setTimeout(150000);
+  const store = state(); await groupBackend(context, store); await login(page);
+  await page.getByRole('tab', { name: 'Odkrywaj', exact: true }).click();
+  await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
+  const add = page.getByRole('button', { name: 'Dodaj ekipę do ulubionych', exact: true });
+  const remove = page.getByRole('button', { name: 'Usuń ekipę z ulubionych', exact: true });
+  await expect(add).toBeEnabled(); store.failFavoriteSave = 'after-commit'; await add.click();
+  await expect(page.getByRole('dialog', { name: 'Ulubione', exact: true })).toBeVisible();
+  expect(store.favoriteGroups.get(A).has(groupId(B))).toBe(true);
+  await page.clock.install(); await page.clock.fastForward(30000);
+  await expect(page.getByTestId('favorite-group-' + groupId(B))).toHaveAttribute('aria-label', 'Usuń ekipę z ulubionych');
+  store.failFavoriteSave = false; await page.getByRole('button', { name: 'Spróbuj ponownie', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Ulubione', exact: true })).toHaveCount(0);
+  expect(store.favoriteGroups.get(A).has(groupId(B))).toBe(true);
+  await expect(remove).toBeVisible(); await expect(page).toHaveURL('http://localhost:8085/explore');
+  await page.getByTestId('public-group-' + groupId(B)).click();
+  await expect(page.getByRole('button', { name: 'Usuń ekipę z ulubionych', exact: true })).toBeVisible();
+  await page.screenshot({ path: '.expo/favorite-crew-profile.png', fullPage: true });
+  await page.getByRole('button', { name: 'Wróć', exact: true }).click();
+  await page.getByRole('button', { name: 'Filtry ekip', exact: true }).click();
+  await page.getByRole('switch', { name: 'Tylko ulubione', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Pokaż wyniki · 1', exact: true })).toBeVisible();
+  await page.getByRole('switch', { name: 'Tylko online', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Pokaż wyniki · 0', exact: true })).toBeVisible();
+  await page.getByRole('switch', { name: 'Tylko online', exact: true }).click();
+  await page.getByRole('button', { name: 'Pokaż wyniki · 1', exact: true }).click();
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.screenshot({ path: '.expo/favorite-groups.png', fullPage: true });
+  expect(store.lastGroupFilters.favorites_only).toBe(true);
+  const second = await browser.newContext();
+  try {
+    await groupBackend(second, store); const other = await second.newPage(); await login(other);
+    await other.getByRole('tab', { name: 'Odkrywaj', exact: true }).click(); await other.getByRole('tab', { name: 'Ekipy', exact: true }).click();
+    await other.getByRole('button', { name: 'Usuń ekipę z ulubionych', exact: true }).click();
+    await expect(other.getByRole('button', { name: 'Dodaj ekipę do ulubionych', exact: true })).toBeVisible();
+    await page.clock.fastForward(30000);
+    await expect(page.getByTestId('public-group-' + groupId(B))).toHaveCount(0);
+    await other.getByRole('tab', { name: 'Profil', exact: true }).click();
+    await other.getByRole('button', { name: 'Ustawienia aplikacji', exact: true }).click();
+    await other.getByRole('button', { name: 'Wyloguj się', exact: true }).click();
+    await login(other, 'b@example.com');
+    await other.getByRole('tab', { name: 'Odkrywaj', exact: true }).click(); await other.getByRole('tab', { name: 'Ekipy', exact: true }).click();
+    await expect(other.getByRole('button', { name: 'Dodaj ekipę do ulubionych', exact: true })).toBeVisible();
+  } finally { await second.close(); }
 });
 
 test('directory → profile without trips → invitation retry → accepted chat on two accounts', async ({ page, context, browser }) => {

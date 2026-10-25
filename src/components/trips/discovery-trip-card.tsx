@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import type { MatchFacts } from '@/features/discovery/filter-trips';
 import type { TripProposal } from '@/types/travel';
 import { TripListingAction, TripListingCard } from './trip-listing-card';
+import { FavoriteButton } from '@/features/favorites/favorite-button';
 
 interface DiscoveryTripCardProps extends TripProposal {
   facts: Pick<MatchFacts, 'ageBands' | 'matchingAgeBands'>;
@@ -18,6 +19,7 @@ export function DiscoveryTripCard({ trip, group, facts, score }: DiscoveryTripCa
       travelModes={trip.travelModes}
       ageBands={facts.matchingAgeBands.length ? facts.matchingAgeBands : facts.ageBands}
       score={score}
+      favoriteAction={<FavoriteButton kind="trip" targetId={trip.id} compact translucent />}
       footer={
         <TripListingAction
           label="Zobacz wyjazd"

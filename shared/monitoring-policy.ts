@@ -10,6 +10,7 @@ export const OPERATIONS = [
   'discovery.load', 'mailbox.load', 'invitations.send', 'invitations.respond', 'messages.send', 'messages.load', 'messages.read',
   'groups.search', 'groups.detail', 'groups.visibility', 'groups.save_visibility', 'groups.report',
   'presence.heartbeat', 'presence.lookup',
+  'favorites.load', 'favorites.save',
   'contacts.block', 'contacts.report', 'notifications.load', 'notifications.read', 'notifications.preferences', 'push.register', 'push.unregister',
   'server.delete_account', 'server.dispatch_push', 'server.push_health',
 ] as const;

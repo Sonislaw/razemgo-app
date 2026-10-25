@@ -19,6 +19,7 @@ import { AppText, Button } from '@/components/ui/primitives';
 import { initializeMonitoring, reportRenderError, setMonitoringScreen } from '@/lib/monitoring';
 import {AccountAccessProvider,AccountAccessGate} from '@/features/moderation/account-access-context';
 import { PresenceProvider } from '@/features/presence/presence-context';
+import { FavoritesProvider } from '@/features/favorites/favorites-context';
 
 initializeMonitoring();
 
@@ -122,15 +123,17 @@ function AccountProviders() {
   return (
     <ProfileProvider key={session?.user.id ?? 'guest'}>
       <PresenceProvider>
-        <OwnTripsProvider>
-          <DiscoveryProvider>
-            <MessagingProvider>
-              <NotificationsProvider>
-                <RootNavigator />
-              </NotificationsProvider>
-            </MessagingProvider>
-          </DiscoveryProvider>
-        </OwnTripsProvider>
+        <FavoritesProvider>
+          <OwnTripsProvider>
+            <DiscoveryProvider>
+              <MessagingProvider>
+                <NotificationsProvider>
+                  <RootNavigator />
+                </NotificationsProvider>
+              </MessagingProvider>
+            </DiscoveryProvider>
+          </OwnTripsProvider>
+        </FavoritesProvider>
       </PresenceProvider>
     </ProfileProvider>
   );

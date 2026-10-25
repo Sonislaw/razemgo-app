@@ -53,6 +53,7 @@ export type TripPlan = TripBase &
       }
   );
 export interface DiscoveryFilters {
+  favoritesOnly?: boolean;
   tripModes: TripMode[];
   dateRangeId: 'all' | 'custom' | 'own-trip';
   location: string;

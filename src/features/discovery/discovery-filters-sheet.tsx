@@ -3,6 +3,7 @@ import { useState } from 'react';
 import {
   Keyboard,
   Pressable,
+  Switch,
   View,
 } from 'react-native';
 import { FilterSheet } from '@/components/ui/filter-sheet';
@@ -39,6 +40,8 @@ import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
 import { AnimalChoice } from '@/features/animals/animal-portrait';
 import { TripLocationField } from '@/features/trips/trip-location-field';
 import { TripLandscapePicker } from '@/features/trips/trip-landscape-picker';
+import { useFavorites } from '@/features/favorites/favorites-context';
+import { FavoritesNotice } from '@/features/favorites/favorite-button';
 
 interface DiscoveryFiltersSheetProps {
   initialFilters: DiscoveryFilters;
@@ -51,6 +54,7 @@ export function DiscoveryFiltersSheet({
   onClose,
 }: DiscoveryFiltersSheetProps) {
   const { proposals: availableProposals } = useDiscovery();
+  const favorites = useFavorites();
   const theme = useTheme();
   const [showDateRange, setShowDateRange] = useState(false);
   const [draft, setDraft] = useState<DiscoveryFilters>(() => ({
@@ -65,7 +69,8 @@ export function DiscoveryFiltersSheet({
   }));
   const dateRange = resolveDiscoveryRange(draft);
   const dateError = getDiscoveryDateRangeError(draft.customDateRange);
-  const resultCount = filterProposals(availableProposals, draft, dateRange).length;
+  const resultCount = draft.favoritesOnly && favorites.status !== 'ready' ? null
+    : filterProposals(availableProposals, draft, dateRange, favorites.tripIds).length;
   const toggleAge = (band: ChildAgeBand) =>
     setDraft((current) => ({
       ...current,
@@ -80,7 +85,7 @@ export function DiscoveryFiltersSheet({
       onClose={onClose}
       footer={<>
         <Button label="Wyczyść" variant="secondary" onPress={() => setDraft({ ...INITIAL_FILTERS })} />
-        <Button label={dateError ? 'Pokaż wyniki' : 'Pokaż wyniki · ' + resultCount} disabled={Boolean(dateError)} onPress={() => {
+        <Button label={dateError ? 'Pokaż wyniki' : 'Pokaż wyniki · ' + (resultCount ?? '…')} disabled={Boolean(dateError)} onPress={() => {
           if (dateError) return;
           Keyboard.dismiss();
           onApply(draft);
@@ -92,6 +97,9 @@ export function DiscoveryFiltersSheet({
           setShowDateRange(false);
         }} /> : null}
     >
+            <FavoritesNotice />
+            <View style={layout.row}><AppText style={{ flex: 1 }}>Tylko ulubione</AppText>
+              <Switch accessibilityLabel="Tylko ulubione" value={!!draft.favoritesOnly} onValueChange={favoritesOnly => setDraft(current => ({ ...current, favoritesOnly }))} /></View>
             <View style={layout.stack}>
               <FieldLabel>Typ ogłoszenia</FieldLabel>
               <AppText variant="caption" color="textSecondary">

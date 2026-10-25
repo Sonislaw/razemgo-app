@@ -8,7 +8,6 @@ import { GroupAvatar } from '@/features/profile/group-avatar';
 import { useNotifications } from './notifications-context';
 import { notificationTitle, type NotificationEntry } from './notification-types';
 import { isReactionKind, reactionOption } from '@/features/reactions/reaction-data';
-import { crewNumberText } from '@/features/profile/crew-number';
 
 export function NotificationEntryRow({ entry, onOpen, compact = false }: {
   entry: NotificationEntry; onOpen?: () => void; compact?: boolean;
@@ -38,7 +37,7 @@ export function NotificationEntryRow({ entry, onOpen, compact = false }: {
   return <Pressable
     testID={'notification-entry-' + entry.id}
     accessibilityRole="button"
-    accessibilityLabel={`${entry.read_at ? '' : 'Nieodczytane. '}${title}. ${entry.actor_name}${crewNumberText(entry.actor_crew_number) ? '. ' + crewNumberText(entry.actor_crew_number) : ''}. ${reactionLabel} ${entry.trip_label}${entry.available ? '' : '. Treść jest już niedostępna.'}`}
+    accessibilityLabel={`${entry.read_at ? '' : 'Nieodczytane. '}${title}. ${entry.actor_name}. ${reactionLabel} ${entry.trip_label}${entry.available ? '' : '. Treść jest już niedostępna.'}`}
     disabled={inbox.busy}
     onPress={() => { void open(); }}
     style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: compact ? 12 : 16,
@@ -50,7 +49,7 @@ export function NotificationEntryRow({ entry, onOpen, compact = false }: {
       <AppText variant="label" style={{ fontWeight: entry.read_at ? '400' : '700' }}>{title}</AppText>
       {reactionLabel ? <AppText variant="caption" color="primaryStrong">{reactionLabel}</AppText> : null}
       <AppText variant="caption" color="textSecondary" numberOfLines={compact ? 2 : 3}>
-        {entry.actor_name}{entry.actor_crew_number ? ' · #' + entry.actor_crew_number : ''}{entry.trip_label ? ' · ' + entry.trip_label : ''}
+        {entry.actor_name}{entry.trip_label ? ' · ' + entry.trip_label : ''}
       </AppText>
       {!entry.available ? <AppText variant="caption" color="textSecondary">Treść jest już niedostępna.</AppText> : null}
       {!compact ? <AppText variant="caption" color="textSecondary">

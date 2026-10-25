@@ -70,7 +70,7 @@ async function groupBackend(context, store) {
   });
 }
 
-test('crew numbers identify profiles and conversations and support exact live-count search', async ({ page, context }) => {
+test('crew numbers appear only on profiles and support exact live-count search', async ({ page, context }) => {
   test.setTimeout(90000);
   const store = state(), invitation = '00000000-0000-4000-8000-000000009101', chat = '00000000-0000-4000-8000-000000009102';
   store.invitations.push({ id: invitation, sender_group_id: groupId(A), recipient_group_id: groupId(B), context_kind: 'profile',
@@ -81,7 +81,9 @@ test('crew numbers identify profiles and conversations and support exact live-co
   await page.goto('/profile'); await expect(page.getByTestId('crew-number-' + groupId(A))).toHaveText('Ekipa #104827');
   await page.goto('/explore'); await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
   const card = page.getByTestId('public-group-' + groupId(B));
-  await expect(card).toContainText('Ekipa #104828');
+  await expect(card).toBeVisible();
+  await expect(card).not.toContainText('Ekipa #104828');
+  await expect(card).not.toHaveAccessibleName(/104828/);
   await page.setViewportSize({ width: 320, height: 844 });
   await card.screenshot({ path: '.expo/crew-number-card-small.png' });
   await page.getByRole('button', { name: 'Filtry ekip', exact: true }).click();
@@ -91,9 +93,11 @@ test('crew numbers identify profiles and conversations and support exact live-co
   await query.fill('104828'); await page.getByRole('button', { name: 'Pokaż wyniki · 1', exact: true }).click();
   await expect(card).toBeVisible(); await card.click(); await expect(page).toHaveURL('http://localhost:8085/crew/' + groupId(B));
   await expect(page.locator('[data-testid="crew-number-' + groupId(B) + '"]:visible')).toHaveText('Ekipa #104828');
-  await page.goto('/chat/' + chat); await expect(page.getByTestId('chat-screen')).toContainText('Ekipa #104828');
+  await page.goto('/chat/' + chat); await expect(page.getByTestId('chat-screen')).toBeVisible();
+  await expect(page.getByTestId('chat-screen')).not.toContainText('Ekipa #104828');
   await page.getByRole('button', { name: 'Opcje bezpieczeństwa rozmowy', exact: true }).click();
-  await expect(page.getByRole('dialog')).toContainText('Ekipa #104828');
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(page.getByRole('dialog')).not.toContainText('Ekipa #104828');
   await page.getByRole('dialog').screenshot({ path: '.expo/crew-number-chat-small.png' });
 });
 

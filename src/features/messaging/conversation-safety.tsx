@@ -6,7 +6,6 @@ import type { Conversation, ReportReason } from '@/types/messaging';
 import { useMessaging } from './messaging-context';
 import { MessagingSheet } from './messaging-ui';
 import { createRequestKey } from '@/lib/request-key';
-import { crewNumberText } from '@/features/profile/crew-number';
 
 export function ConversationSafety({
   conversation,
@@ -29,7 +28,6 @@ export function ConversationSafety({
       onClose={() => { if (!busy) onClose(); }}
     >
       {group ? <View style={{ gap: 4 }}><AppText variant="label">{group.name}</AppText>
-        {crewNumberText(group.crewNumber) ? <AppText variant="caption" color="textSecondary">{crewNumberText(group.crewNumber)}</AppText> : null}
       </View> : null}
       {reporting ? (
         <>

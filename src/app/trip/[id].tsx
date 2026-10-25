@@ -38,7 +38,6 @@ import { GroupAvatar } from '@/features/profile/group-avatar';
 import { TripReportAction } from '@/features/moderation/trip-report-action';
 import { FavoriteButton, FavoritesNotice } from '@/features/favorites/favorite-button';
 import { TripReactionsButton } from '@/features/reactions/trip-reactions';
-import { crewNumberText } from '@/features/profile/crew-number';
 
 export function generateStaticParams() {
   return AVAILABLE_PROPOSALS.map(({ trip }) => ({ id: trip.id }));
@@ -174,7 +173,6 @@ export default function TripDetailsScreen() {
             <AppText variant="heading" accessibilityRole="header">
               {group.name}
             </AppText>
-            {crewNumberText(group.crewNumber) ? <AppText variant="caption" color="textSecondary">{crewNumberText(group.crewNumber)}</AppText> : null}
           </View>
         </View>
         <AppText>

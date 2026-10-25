@@ -11,7 +11,6 @@ import { isPresenceActive } from '@/features/presence/presence-context';
 import { REACTIONS, reactionOption, reactionTotal, topReactions, type ReactionKind, type ReactorsPage, type TripReactor } from './reaction-data';
 import { useTripReactions } from './reactions-context';
 import { fetchTripReactors } from './reactions-repository';
-import { crewNumberText } from '@/features/profile/crew-number';
 
 export function TripReactionsButton({ tripId, ownerGroupId, compact = false }: { tripId: string; ownerGroupId: string; compact?: boolean }) {
   const theme = useTheme();
@@ -104,7 +103,6 @@ export function TripReactionsButton({ tripId, ownerGroupId, compact = false }: {
           style={[layout.row, { paddingVertical: 8 }]}>
           <GroupAvatar groupId={person.group_id} avatarId={person.avatar_id} size={44} decorative />
           <View style={{ flex: 1 }}><AppText variant="label">{person.name}</AppText>
-            {crewNumberText(person.crew_number) ? <AppText variant="caption" color="textSecondary">{crewNumberText(person.crew_number)}</AppText> : null}
             <AppText variant="caption" color="textSecondary">{reactionOption(person.kind).label}</AppText></View>
           <AppText aria-hidden style={{ fontSize: 24 }}>{reactionOption(person.kind).emoji}</AppText>
         </Pressable>)}

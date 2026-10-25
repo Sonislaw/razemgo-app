@@ -42,7 +42,6 @@ import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 import { useProfile } from '@/features/profile/profile-context';
 import { useAccountAccess } from '@/features/moderation/account-access-context';
 import { TripReactionsButton } from '@/features/reactions/trip-reactions';
-import { crewNumberText } from '@/features/profile/crew-number';
 
 export function generateStaticParams() {
   return DEMO_OWN_TRIPS.map((trip) => ({ id: trip.id }));
@@ -161,7 +160,6 @@ export default function OwnTripDetailsScreen() {
                   Organizator wyjazdu
                 </AppText>
                 <AppText variant="heading">{profile.group.name}</AppText>
-                {crewNumberText(profile.group.crewNumber) ? <AppText variant="caption" color="textSecondary">{crewNumberText(profile.group.crewNumber)}</AppText> : null}
               </View>
             </View>
           </Card>

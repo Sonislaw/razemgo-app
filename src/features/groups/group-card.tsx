@@ -8,7 +8,6 @@ import { GroupCompatibilitySummary } from './group-compatibility-summary';
 import { GroupCardContent, groupCardStyles } from './group-profile-card';
 import { useGroupOnline } from '@/features/presence/presence-context';
 import { FavoriteButton } from '@/features/favorites/favorite-button';
-import { crewNumberText } from '@/features/profile/crew-number';
 
 export function GroupCard({ item }: { item: PublicGroup }) {
   const theme = useTheme();
@@ -16,7 +15,7 @@ export function GroupCard({ item }: { item: PublicGroup }) {
   const online = useGroupOnline(group.id);
   const open = () => router.push({ pathname: '/crew/[id]', params: { id: group.id } });
   return <View style={[groupCardStyles.frame, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}>
-    <Pressable accessibilityRole="button" accessibilityLabel={'Zobacz profil: ' + group.name + (crewNumberText(group.crewNumber) ? '. ' + crewNumberText(group.crewNumber) : '') + (online ? '. Online' : '')}
+    <Pressable accessibilityRole="button" accessibilityLabel={'Zobacz profil: ' + group.name + (online ? '. Online' : '')}
     testID={'public-group-' + group.id}
     onPress={open} style={({ pressed }) => ({ gap: 12, opacity: pressed ? 0.75 : 1 })}>
     <GroupCardContent

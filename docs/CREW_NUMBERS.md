@@ -4,7 +4,7 @@ Każdy profil otrzymuje automatycznie publiczny numer, np. **Ekipa #104827**. Na
 
 ## Interfejs i wyszukiwanie
 
-Numer jest pod nazwą we wspólnym komponencie własnego i publicznego profilu oraz na kartach Ekip. Jest także przy organizatorze na kartach i w szczegółach wyjazdów, w zaproszeniach, na liście rozmów, w nagłówku rozmowy i jej opcjach bezpieczeństwa. Dane autora w powiadomieniach i na liście reakcji również niosą ten sam numer. Przykładowe profile mają jawnie przypisane fikcyjne numery w danych aplikacji; brak numeru w starszym rekordzie nie generuje zastępczego identyfikatora z UUID.
+Numer jest widoczny wyłącznie pod nazwą we własnym i publicznym profilu ekipy. Karty list, wyjazdy, zaproszenia, rozmowy, powiadomienia i reakcje nie wyświetlają numeru ani nie dodają go do etykiet dostępności. Przykładowe profile mają jawnie przypisane fikcyjne numery w danych aplikacji; brak numeru w starszym rekordzie nie generuje zastępczego identyfikatora z UUID.
 
 Filtr „Szukaj po nazwie lub numerze ekipy” korzysta z istniejącego pola `name` w payloadzie. Wpisanie `104827`, `#104827` lub `# 104827` oznacza dokładny numer. Początkowe zera są pomijane. Fragment numeru nie pasuje do dłuższego identyfikatora. Pozostałe zapytania zachowują wyszukiwanie po nazwie z normalizacją polskich znaków; nieprawidłowe zapytanie z `#` daje zero wyników.
 
@@ -22,7 +22,7 @@ Migracja rozszerza wyłącznie dozwolone projekcje publicznych profili, wyjazdó
 
 - `scripts/crew-numbers-backend.test.mjs`: rzeczywiste migracje PostgreSQL/PGlite, uzupełnienie istniejących ekip, identyczne nazwy, niezmienność numeru, uprawnienia kolumn i sekwencji, dokładne wyszukiwanie, oba sortowania, licznik, stronicowanie, ukrycie, blokady, zawieszenie, projekcje i usunięcie konta.
 - `scripts/crew-numbers.test.mjs`: formatowanie, numery z `#` i bez niego, zachowanie adapterów, brak numeru w zapisie oraz łączenie z innymi filtrami.
-- `scripts/browser/groups.spec.mjs`: numer we własnym i publicznym profilu, na karcie ekipy, w filtrach z licznikiem i w szczegółach rozmowy; widok 320 px.
+- `scripts/browser/groups.spec.mjs`: numer we własnym i publicznym profilu, brak numeru na karcie ekipy i w rozmowie oraz wyszukiwanie z licznikiem; widok 320 px.
 
 25.10.2026 migrację wdrożono wyłącznie do Supabase Dev `kswuakzcnoqgovnwejhb`. Test API Dev na trzech tymczasowych kontach o tych samych nazwach i avatarach potwierdził różne numery, niezmienność po edycji i drugim logowaniu, zgodność projekcji profilu i rozmowy oraz respektowanie ukrycia i blokad. Konta kontrolne usunięto; nie rejestrowano urządzeń ani nie wysyłano fizycznych push. Preview nie było zmieniane. W aplikacji Dev wystarcza pełne przeładowanie JavaScript, aby ponownie pobrać profil z numerem.
 

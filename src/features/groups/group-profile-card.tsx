@@ -15,6 +15,7 @@ interface GroupCardContentProps {
   decorativeAvatar?: boolean;
   afterIdentity?: ReactNode;
   expanded?: boolean;
+  showCrewNumber?: boolean;
 }
 
 export function GroupProfileCard({ group, about, avatarTestID, headerAction, expanded = false }: GroupCardContentProps & {
@@ -23,19 +24,19 @@ export function GroupProfileCard({ group, about, avatarTestID, headerAction, exp
   return (
     <Card testID="group-profile-card" style={groupCardStyles.frame}>
       {headerAction}
-      <GroupCardContent group={group} about={about} avatarTestID={avatarTestID} expanded={expanded} />
+      <GroupCardContent group={group} about={about} avatarTestID={avatarTestID} expanded={expanded} showCrewNumber />
     </Card>
   );
 }
 
-export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar = false, afterIdentity, expanded = false }: GroupCardContentProps) {
+export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar = false, afterIdentity, expanded = false, showCrewNumber = false }: GroupCardContentProps) {
   return (
     <>
       <View style={layout.row}>
         <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={64} testID={avatarTestID} decorative={decorativeAvatar} />
         <View style={{ flex: 1, gap: 4 }}>
           <AppText variant="heading" numberOfLines={2}>{group.name}</AppText>
-          {crewNumberText(group.crewNumber) ? <AppText variant="caption" color="textSecondary" testID={'crew-number-' + group.id}>
+          {showCrewNumber && crewNumberText(group.crewNumber) ? <AppText variant="caption" color="textSecondary" testID={'crew-number-' + group.id}>
             {crewNumberText(group.crewNumber)}
           </AppText> : null}
           {expanded ? <AppText variant="caption" color="textSecondary">

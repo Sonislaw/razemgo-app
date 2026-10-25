@@ -3,6 +3,8 @@ import { formatTripDates, getTripLocation } from '@/features/discovery/filter-tr
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { FavoriteButton } from '@/features/favorites/favorite-button';
 import type { TravelGroup, TripPlan } from '@/types/travel';
+import { View } from 'react-native';
+import { TripReactionsButton } from '@/features/reactions/trip-reactions';
 
 export function HomeLatestListing({ trip, group, travelModes, score, isOwn, onPress }: {
   trip: TripPlan;
@@ -23,7 +25,10 @@ export function HomeLatestListing({ trip, group, travelModes, score, isOwn, onPr
       accessibilityLabel={'Ostatnio dodane ogłoszenie: ' + getTripHeadline(trip)}
       accessibilityHint={getTripLocation(trip) + ', ' + formatTripDates(trip) + '. Otwórz szczegóły wyjazdu.'}
       onPress={onPress}
-      footer={<TripListingAction label="Zobacz wyjazd" />}
+      footer={<View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+        <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} />
+        <TripListingAction label="Zobacz wyjazd" onPress={onPress} />
+      </View>}
     />
   );
 }

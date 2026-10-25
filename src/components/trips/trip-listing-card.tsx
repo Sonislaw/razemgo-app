@@ -169,12 +169,6 @@ export function TripListingCard({
             {onPress || onPressGroup ? <Icon name="chevron" size={18} color={theme.textSecondary} /> : null}
           </Pressable>
         ) : null}
-        {footer ? (
-          <View style={[
-            styles.footer,
-            !group && { borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 8 },
-          ]}>{footer}</View>
-        ) : null}
       </View>
     </>
   );
@@ -182,27 +176,22 @@ export function TripListingCard({
     styles.card,
     { backgroundColor: theme.backgroundElement, borderColor: theme.border },
   ];
-  // Keep the favorite as a sibling of the card's main button so native screen readers can reach both.
-  if (onPress && favoriteAction) return (
+  const footerContent = footer ? <View style={[
+    styles.footer, { marginHorizontal: 8 },
+    !group && { marginTop: 10, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 8 },
+  ]}>{footer}</View> : null;
+  // Footer actions and favorite remain siblings of the main button on native and web.
+  if (onPress) return (
     <View testID={testID} nativeID={nativeID} style={cardStyle}>
       <Pressable accessibilityRole="button"
         accessibilityLabel={accessibilityLabel ? accessibilityLabel + (online ? '. Ekipa online' : '') : undefined}
         accessibilityHint={accessibilityHint} onPress={onPress}
         style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>{content}</Pressable>
-      <View style={styles.cardFavoriteAction}>{favoriteAction}</View>
+      {favoriteAction ? <View style={styles.cardFavoriteAction}>{favoriteAction}</View> : null}
+      {footerContent}
     </View>
   );
-  return onPress ? (
-    <Pressable
-      testID={testID}
-      nativeID={nativeID}
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ? accessibilityLabel + (online ? '. Ekipa online' : '') : undefined}
-      accessibilityHint={accessibilityHint}
-      onPress={onPress}
-      style={({ pressed }) => [...cardStyle, { opacity: pressed ? 0.7 : 1 }]}
-    >{content}</Pressable>
-  ) : <View testID={testID} nativeID={nativeID} style={cardStyle}>{content}</View>;
+  return <View testID={testID} nativeID={nativeID} style={cardStyle}>{content}{footerContent}</View>;
 }
 
 export function TripListingAction({ label, onPress, accessibilityLabel = label }: {

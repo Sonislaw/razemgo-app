@@ -8,6 +8,7 @@ import type { MailboxRow, MessageRow } from '../features/messaging/messaging-map
 import type { NotificationsPage, NotificationPreferences } from '../features/notifications/notification-types';
 import type { AccountAccess,ReportsPage,ReportDetail } from '../features/moderation/moderation-types';
 import type { GroupCursor, RankedGroupCursor, GroupSort, GroupVisibility, PublicGroupRow, groupFiltersPayload } from '../features/groups/group-data';
+import type { ReactionKind, ReactionSummary, ReactorsPage } from '../features/reactions/reaction-data';
 
 // Keep in sync with supabase/migrations. Replace using Supabase type generation after linking.
 export interface Database {
@@ -34,6 +35,9 @@ export interface Database {
     };
     Views: Record<never, never>;
     Functions: {
+      get_trip_reactions: { Args: { trip_ids: string[] }; Returns: ReactionSummary[] };
+      set_my_trip_reaction: { Args: { target_trip_id: string; reaction_kind: ReactionKind | null }; Returns: ReactionSummary };
+      get_my_trip_reactors: { Args: { target_trip_id: string; after_at?: string | null; after_id?: string | null }; Returns: ReactorsPage };
       get_my_favorites: { Args: Record<never, never>; Returns: { group_ids: string[]; trip_ids: string[] } };
       set_my_group_favorite: { Args: { target_group_id: string; is_favorite: boolean }; Returns: boolean };
       set_my_trip_favorite: { Args: { target_trip_id: string; is_favorite: boolean }; Returns: boolean };

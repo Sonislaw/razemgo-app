@@ -13,8 +13,8 @@ export function PushPermissionCard({compact=false}: {compact?: boolean}) {
   const descriptions={
     checking:'Sprawdzamy powiadomienia na tym urządzeniu.',
     enabled:'Ten telefon może odbierać powiadomienia, również gdy aplikacja jest zamknięta. Rodzaje powiadomień wybierzesz w ustawieniach poniżej.',
-    off:'Powiadomienia są wyłączone na tym urządzeniu. Wiadomości i zaproszenia nadal znajdziesz w aplikacji.',
-    permission:'Włącz powiadomienia, aby nie przegapić wiadomości ani zaproszenia do wspólnego wyjazdu.',
+    off:'Powiadomienia są wyłączone na tym urządzeniu. Nowe zdarzenia nadal znajdziesz w aplikacji.',
+    permission:'Włącz powiadomienia o wiadomościach, zaproszeniach, reakcjach i nowych wyjazdach ulubionych ekip.',
     denied:'Powiadomienia są zablokowane w ustawieniach telefonu. Możesz tam ponownie je włączyć.',
     'needs-build':'Aby korzystać z powiadomień na telefonie, zainstaluj najnowszą wersję aplikacji.',
     unsupported:'Powiadomienia na telefonie są dostępne w aplikacji Android i iOS.',

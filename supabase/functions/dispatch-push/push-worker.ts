@@ -1,8 +1,9 @@
-export type PushKind = 'invitation_received' | 'invitation_accepted' | 'message';
+export type PushKind = 'invitation_received' | 'invitation_accepted' | 'message' | 'favorite_trip' | 'trip_reaction';
 export type PushJob = {
   delivery_id: string; event_id: string; device_id: string; push_token: string;
   kind: PushKind; recipient_group_id: string; invitation_id: string | null;
   conversation_id: string | null; ticket_id: string | null; claim_key: string; attempts: number;
+  trip_id?: string | null;
 };
 type Result = 'ticket' | 'sent' | 'retry' | 'invalid' | 'failed';
 type RpcClient = { rpc: (name: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }> };
@@ -19,16 +20,19 @@ const COPY = {
   invitation_received: { title: 'Nowe zaproszenie', body: 'Ktoś chce poznać Twoją ekipę. Sprawdź zaproszenie w RazemGo.' },
   invitation_accepted: { title: 'Zaproszenie zaakceptowane', body: 'Możesz już rozpocząć rozmowę i zaplanować wspólny wyjazd.' },
   message: { title: 'Nowa wiadomość', body: 'Masz nową wiadomość w RazemGo.' },
+  favorite_trip: { title: 'Nowy wyjazd ulubionej ekipy', body: 'Ekipa z Twoich ulubionych opublikowała nowy wyjazd. Zobacz szczegóły w RazemGo.' },
+  trip_reaction: { title: 'Nowa reakcja na Twoje ogłoszenie', body: 'Ktoś zostawił emocję pod Twoim wyjazdem. Zobacz reakcję w RazemGo.' },
 };
 export function pushMessage(job: PushJob) {
   const key = job.kind === 'message' ? 'chat-' + job.conversation_id : job.event_id;
   return {
     to: job.push_token, ...COPY[job.kind], sound: 'default', priority: 'high', ttl: 86400,
-    channelId: 'razemgo-contact', collapseId: key, tag: key,
+    channelId: job.kind === 'favorite_trip' ? 'razemgo-favorite-trips' : job.kind === 'trip_reaction' ? 'razemgo-reactions' : 'razemgo-contact', collapseId: key, tag: key,
     ...(job.conversation_id ? { threadId: job.conversation_id } : {}),
     data: { v: 1, eventId: job.event_id, kind: job.kind, recipientGroupId: job.recipient_group_id,
       ...(job.invitation_id ? { invitationId: job.invitation_id } : {}),
-      ...(job.conversation_id ? { conversationId: job.conversation_id } : {}) },
+      ...(job.conversation_id ? { conversationId: job.conversation_id } : {}),
+      ...(job.kind === 'favorite_trip' || job.kind === 'trip_reaction' ? { tripId: job.trip_id } : {}) },
   };
 }
 function errorResult(code?: string): Result {

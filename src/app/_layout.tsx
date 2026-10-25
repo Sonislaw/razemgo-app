@@ -20,6 +20,7 @@ import { initializeMonitoring, reportRenderError, setMonitoringScreen } from '@/
 import {AccountAccessProvider,AccountAccessGate} from '@/features/moderation/account-access-context';
 import { PresenceProvider } from '@/features/presence/presence-context';
 import { FavoritesProvider } from '@/features/favorites/favorites-context';
+import { ReactionsProvider } from '@/features/reactions/reactions-context';
 
 initializeMonitoring();
 
@@ -123,7 +124,7 @@ function AccountProviders() {
   return (
     <ProfileProvider key={session?.user.id ?? 'guest'}>
       <PresenceProvider>
-        <FavoritesProvider>
+        <FavoritesProvider><ReactionsProvider>
           <OwnTripsProvider>
             <DiscoveryProvider>
               <MessagingProvider>
@@ -133,7 +134,7 @@ function AccountProviders() {
               </MessagingProvider>
             </DiscoveryProvider>
           </OwnTripsProvider>
-        </FavoritesProvider>
+        </ReactionsProvider></FavoritesProvider>
       </PresenceProvider>
     </ProfileProvider>
   );

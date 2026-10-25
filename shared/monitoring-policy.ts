@@ -11,6 +11,7 @@ export const OPERATIONS = [
   'groups.search', 'groups.detail', 'groups.visibility', 'groups.save_visibility', 'groups.report',
   'presence.heartbeat', 'presence.lookup',
   'favorites.load', 'favorites.save',
+  'reactions.load', 'reactions.save', 'reactions.people',
   'contacts.block', 'contacts.report', 'notifications.load', 'notifications.read', 'notifications.preferences', 'push.register', 'push.unregister',
   'server.delete_account', 'server.dispatch_push', 'server.push_health',
 ] as const;

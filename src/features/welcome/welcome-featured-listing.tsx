@@ -40,7 +40,7 @@ export function WelcomeFeaturedListing() {
             <AppText variant="caption" color="textSecondary" style={styles.caption}>
               Przykładowe ogłoszenie i dopasowanie
             </AppText>
-            <TripListingAction label="Dołącz" />
+            <TripListingAction label="Dołącz" onPress={() => router.push('/auth/sign-up')} />
           </View>
         }
       />

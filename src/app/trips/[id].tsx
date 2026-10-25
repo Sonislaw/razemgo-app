@@ -41,6 +41,7 @@ import { AnimalInformation } from '@/features/animals/animal-ui';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 import { useProfile } from '@/features/profile/profile-context';
 import { useAccountAccess } from '@/features/moderation/account-access-context';
+import { TripReactionsButton } from '@/features/reactions/trip-reactions';
 
 export function generateStaticParams() {
   return DEMO_OWN_TRIPS.map((trip) => ({ id: trip.id }));
@@ -151,6 +152,7 @@ export default function OwnTripDetailsScreen() {
             </View>
           </View>
           <TripMapCard trip={trip} />
+          <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} />
           <Card>
             <View style={layout.row}>
               <GroupAvatar groupId={trip.groupId} size={56} />

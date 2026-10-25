@@ -5,7 +5,7 @@ import { useAuth } from '@/features/auth/auth-context';
 import { useProfile } from '@/features/profile/profile-context';
 import { getSupabase } from '@/lib/supabase';
 import { markNotificationsRead } from './notification-state';
-import { DEFAULT_NOTIFICATION_PREFERENCES, type NotificationEntry, type NotificationPreferences, type NotificationsPage } from './notification-types';
+import { DEFAULT_NOTIFICATION_PREFERENCES, type NotificationEntry, type NotificationPreferenceKey, type NotificationPreferences, type NotificationsPage } from './notification-types';
 import * as repository from './notification-repository';
 
 interface NotificationsContextValue {
@@ -26,7 +26,7 @@ interface NotificationsContextValue {
   loadMore: () => Promise<void>;
   read: (ids: string[]) => Promise<boolean>;
   readAll: () => Promise<boolean>;
-  savePreference: (key: 'messages' | 'invitations', enabled: boolean) => Promise<boolean>;
+  savePreference: (key: NotificationPreferenceKey, enabled: boolean) => Promise<boolean>;
 }
 const Context = createContext<NotificationsContextValue | null>(null);
 
@@ -134,7 +134,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   };
   const read = (ids: string[]) => perform(() => repository.persistNotificationRead(ids));
   const readAll = () => perform(() => repository.persistNotificationRead(null, current.current?.fetched_at));
-  const savePreference = (key: 'messages' | 'invitations', enabled: boolean) => perform(async () => {
+  const savePreference = (key: NotificationPreferenceKey, enabled: boolean) => perform(async () => {
     const preferences = await repository.persistNotificationPreference(key, enabled);
     if (alive.current) setPage(previous => previous ? { ...previous, preferences } : previous);
   });

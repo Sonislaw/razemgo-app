@@ -37,6 +37,7 @@ import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 import { GroupAvatar } from '@/features/profile/group-avatar';
 import { TripReportAction } from '@/features/moderation/trip-report-action';
 import { FavoriteButton, FavoritesNotice } from '@/features/favorites/favorite-button';
+import { TripReactionsButton } from '@/features/reactions/trip-reactions';
 
 export function generateStaticParams() {
   return AVAILABLE_PROPOSALS.map(({ trip }) => ({ id: trip.id }));
@@ -120,6 +121,7 @@ export default function TripDetailsScreen() {
         </View>
       </View>
       <TripMapCard trip={trip} />
+      <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} />
       <Card>
         <SectionTitle title="Pomysł na wspólny czas" />
         <AppText color="textSecondary">{trip.description}</AppText>

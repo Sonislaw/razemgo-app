@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { parsePushTarget, pushDestination, pushNavigationReady } from '../src/features/notifications/push-data.ts';
+import { parsePushTarget, pushDestination, pushNavigationReady, pushPreferenceAllows } from '../src/features/notifications/push-data.ts';
 import { dispatchPush, pushMessage, validDispatchSecret } from '../supabase/functions/dispatch-push/push-worker.ts';
 
 const group='00000000-0000-4000-8000-000000000001',event='00000000-0000-4000-8000-000000000002',chat='00000000-0000-4000-8000-000000000003';
@@ -14,14 +14,27 @@ test('notification taps whitelist destinations and require the matching signed-i
   assert.deepEqual(pushDestination(parsePushTarget({v:1,eventId:event,kind:'invitation_received',recipientGroupId:group,invitationId:event}),group),{pathname:'/messages'});
   for(const invalid of [null,'/settings',{}, {v:1,eventId:event,kind:'message',recipientGroupId:group,conversationId:'../../settings'}, {v:1,eventId:event,kind:'unknown',recipientGroupId:group,conversationId:chat}])assert.equal(parsePushTarget(invalid),null);
 });
-test('all three payloads contain generic copy, identifiers, stable collapse/tag and no private message text',()=>{
-  for(const kind of ['invitation_received','invitation_accepted','message']){
-    const payload=pushMessage(job({kind}));assert.ok(payload.title);assert.ok(payload.body);
-    assert.equal(payload.channelId,'razemgo-contact');assert.equal(payload.data.recipientGroupId,group);
+test('all payloads contain generic copy, identifiers, stable collapse/tag and no private message text',()=>{
+  for(const kind of ['invitation_received','invitation_accepted','message','favorite_trip','trip_reaction']){
+    const payload=pushMessage(job({kind,...(['favorite_trip','trip_reaction'].includes(kind)?{trip_id:chat,invitation_id:null,conversation_id:null}:{})}));assert.ok(payload.title);assert.ok(payload.body);
+    assert.equal(payload.channelId,kind==='favorite_trip'?'razemgo-favorite-trips':kind==='trip_reaction'?'razemgo-reactions':'razemgo-contact');assert.equal(payload.data.recipientGroupId,group);
     assert.equal(payload.tag,payload.collapseId);assert.equal(payload.data.url,undefined);
     assert.equal(Object.keys(payload.data).includes('text'),false);
     assert.ok(parsePushTarget(payload.data));
   }
+});
+test('favorite trip taps use only validated trip identifiers and remain isolated across accounts',()=>{
+  const data={v:1,eventId:event,kind:'favorite_trip',recipientGroupId:group,tripId:chat,url:'/settings'};
+  const target=parsePushTarget(data);
+  assert.deepEqual(pushDestination(target,group),{pathname:'/trip/[id]',params:{id:chat}});
+  assert.equal(pushDestination(target,event),null);
+  for(const tripId of [undefined,null,'','../../settings','https://evil.example']) assert.equal(parsePushTarget({...data,tripId}),null);
+  assert.equal(pushPreferenceAllows('favorite_trip',null),true);
+  assert.equal(pushPreferenceAllows('favorite_trip',{}),true);
+  assert.equal(pushPreferenceAllows('favorite_trip',{push_favorite_trips:false}),false);
+  assert.equal(pushPreferenceAllows('favorite_trip',{push_favorite_trips:true,push_messages:false,push_invitations:false}),true);
+  assert.equal(pushPreferenceAllows('message',{push_favorite_trips:true,push_messages:false}),false);
+  assert.equal(pushPreferenceAllows('invitation_received',{push_favorite_trips:true,push_invitations:false}),false);
 });
 test('cold-start notification navigation waits for restoration, onboarding and authentication redirects',()=>{
   assert.equal(pushNavigationReady(false,'root','/'),false);
@@ -30,6 +43,18 @@ test('cold-start notification navigation waits for restoration, onboarding and a
     assert.equal(pushNavigationReady(true,'root',pathname),false);
   assert.equal(pushNavigationReady(true,'root','/'),true);
   assert.equal(pushNavigationReady(true,'root','/messages'),true);
+});
+test('reaction pushes open the owner trip, respect their own preference and contain no actor identity',()=>{
+  const data={v:1,eventId:event,kind:'trip_reaction',recipientGroupId:group,tripId:chat};
+  const target=parsePushTarget(data);
+  assert.deepEqual(pushDestination(target,group),{pathname:'/trips/[id]',params:{id:chat}});
+  assert.equal(pushDestination(target,event),null);
+  for(const tripId of [undefined,null,'../../settings','https://evil.example'])assert.equal(parsePushTarget({...data,tripId}),null);
+  assert.equal(pushPreferenceAllows('trip_reaction',null),true);
+  assert.equal(pushPreferenceAllows('trip_reaction',{push_reactions:false}),false);
+  assert.equal(pushPreferenceAllows('trip_reaction',{push_reactions:true,push_messages:false}),true);
+  const payload=pushMessage(job({kind:'trip_reaction',trip_id:chat,invitation_id:null,conversation_id:null}));
+  assert.deepEqual(Object.keys(payload.data).sort(),['eventId','kind','recipientGroupId','tripId','v']);
 });
 test('the dispatcher requires the full server-only secret',()=>{
   const secret='a'.repeat(64);assert.equal(validDispatchSecret(secret,secret),true);

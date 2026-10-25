@@ -7,7 +7,7 @@ import { useAuth } from '@/features/auth/auth-context';
 import { useProfile } from '@/features/profile/profile-context';
 import { useMessaging } from '@/features/messaging/messaging-context';
 import { notificationCount } from '@/features/messaging/messaging-state';
-import { parsePushTarget, pushDestination, pushNavigationReady, type PushTarget } from './push-data';
+import { parsePushTarget, pushDestination, pushNavigationReady, pushPreferenceAllows, type PushTarget } from './push-data';
 import { clearDeviceNotifications, loadPushModule, pushCapability, pushOptedOut, registerPushDevice, setPushOptedOut, unregisterPushDevice } from './push-platform';
 import { useNotifications } from './notifications-context';
 import type { NotificationPreferences } from './notification-types';
@@ -59,7 +59,7 @@ export function PushProvider({children}: {children: ReactNode}) {
       notifications.setNotificationHandler({handleNotification: async notification => {
         const target=parsePushTarget(notification.request.content.data);
         const allowed=!!target && target.recipientGroupId===group.current &&
-          (target.kind==='message' ? preferences.current?.push_messages!==false : preferences.current?.push_invitations!==false) &&
+          pushPreferenceAllows(target.kind,preferences.current) &&
           !(target.conversationId && currentPath.current==='/chat/'+target.conversationId);
         return {shouldShowBanner:allowed,shouldShowList:allowed,shouldPlaySound:allowed,shouldSetBadge:false};
       }});
@@ -86,6 +86,14 @@ export function PushProvider({children}: {children: ReactNode}) {
         name:'Wiadomości i zaproszenia',importance:notifications.AndroidImportance.HIGH,
         // Omit sound to keep Android's default. SDK 58 validates strings as bundled sound filenames.
         vibrationPattern:[0,200,100,200],lightColor:'#087FA4',lockscreenVisibility:notifications.AndroidNotificationVisibility.PRIVATE,
+      });
+      if(Platform.OS==='android') await notifications.setNotificationChannelAsync('razemgo-favorite-trips',{
+        name:'Wyjazdy ulubionych ekip',importance:notifications.AndroidImportance.DEFAULT,
+        lockscreenVisibility:notifications.AndroidNotificationVisibility.PRIVATE,
+      });
+      if(Platform.OS==='android') await notifications.setNotificationChannelAsync('razemgo-reactions',{
+        name:'Reakcje na ogłoszenia',importance:notifications.AndroidImportance.DEFAULT,
+        lockscreenVisibility:notifications.AndroidNotificationVisibility.PRIVATE,
       });
       let permission=await notifications.getPermissionsAsync();
       if(!permission.granted && ask && permission.canAskAgain) permission=await notifications.requestPermissionsAsync({ios:{allowAlert:true,allowBadge:true,allowSound:true}});

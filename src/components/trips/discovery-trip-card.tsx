@@ -3,6 +3,8 @@ import type { MatchFacts } from '@/features/discovery/filter-trips';
 import type { TripProposal } from '@/types/travel';
 import { TripListingAction, TripListingCard } from './trip-listing-card';
 import { FavoriteButton } from '@/features/favorites/favorite-button';
+import { View } from 'react-native';
+import { TripReactionsButton } from '@/features/reactions/trip-reactions';
 
 interface DiscoveryTripCardProps extends TripProposal {
   facts: Pick<MatchFacts, 'ageBands' | 'matchingAgeBands'>;
@@ -21,10 +23,13 @@ export function DiscoveryTripCard({ trip, group, facts, score }: DiscoveryTripCa
       score={score}
       favoriteAction={<FavoriteButton kind="trip" targetId={trip.id} compact translucent />}
       footer={
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+        <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} />
         <TripListingAction
           label="Zobacz wyjazd"
           onPress={() => router.push({ pathname: '/trip/[id]', params: { id: trip.id } })}
         />
+        </View>
       }
     />
   );

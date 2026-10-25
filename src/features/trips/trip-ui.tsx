@@ -15,6 +15,7 @@ import type { OwnedTrip, TripStatus } from '@/types/owned-trip';
 import { formatTripDates } from '@/features/discovery/filter-trips';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { useAccountAccess } from '@/features/moderation/account-access-context';
+import { TripReactionsButton } from '@/features/reactions/trip-reactions';
 import {
   discoveryFiltersForTrip,
   getTripStatus,
@@ -116,6 +117,7 @@ export function OwnTripCard({ trip, onMenu }: {
               icon="more"
               onPress={onMenu}
             />
+            <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} />
             {trip.visibility === 'private' ? (
               <AppText variant="caption" color="textSecondary" style={{ flex: 1 }}>Prywatny plan</AppText>
             ) : null}

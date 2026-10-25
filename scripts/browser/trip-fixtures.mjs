@@ -15,7 +15,7 @@ function profile(id){
   };
 }
 function state(){return {trips:new Map(),next:301,failSave:false,failLoad:false,failPublic:false, invitations:[], conversations:[], messages:[], reads:new Map(), blocks:new Set(), reports:[], failMailbox:false,failSend:false,failInvitation:false, failHistory:false,
-  notifications:[],notificationPreferences:new Map(),failNotifications:false,failNotificationSave:false,presence:new Map(),favoriteGroups:new Map(),favoriteTrips:new Map()};}
+  notifications:[],notificationPreferences:new Map(),failNotifications:false,failNotificationSave:false,presence:new Map(),favoriteGroups:new Map(),favoriteTrips:new Map(),reactions:new Map()};}
 async function backend(context,store){
   await context.route('https://monitoring.razemgo.invalid/**',route=>route.fulfill({status:200,body:'{}',headers:{'access-control-allow-origin':'*'}}));
   await context.route('http://127.0.0.1:54321/**',async route=>{
@@ -31,6 +31,42 @@ async function backend(context,store){
     if(url.pathname.endsWith('/logout'))return respond({});
     if(url.pathname==='/rest/v1/rpc/get_my_account_access')return respond({is_admin:store.admin===true&&id===A,suspended:store.suspended===id,hidden_trip_ids:[]});
     if(url.pathname==='/rest/v1/rpc/get_my_group_visibility')return respond({discoverable:true,about:''});
+    const reactionSummary=tripId=>{
+      const trip=store.trips.get(tripId), rows=[...store.reactions.values()].filter(r=>r.trip_id===tripId&&r.kind);
+      const available=!!trip&&(trip.group_id===groupId(id)||trip.status==='published'&&trip.visibility==='public');
+      const counts={};if(available)for(const row of rows)counts[row.kind]=(counts[row.kind]??0)+1;
+      return {trip_id:tripId,available,can_react:available&&trip.group_id!==groupId(id),counts,
+        mine:store.reactions.get(tripId+':'+groupId(id))?.kind??null};
+    };
+    if(url.pathname==='/rest/v1/rpc/get_trip_reactions'){
+      (store.reactionLoads??=[]).push(body.trip_ids);
+      if(store.failReactionLoad)return respond({message:'Offline'},503);
+      return respond(body.trip_ids.map(reactionSummary));
+    }
+    if(url.pathname==='/rest/v1/rpc/set_my_trip_reaction'){
+      if(store.failReactionSave===true)return respond({message:'Offline'},503);
+      const trip=store.trips.get(body.target_trip_id);
+      if(!trip||trip.group_id===groupId(id))return respond({code:'P0002'},404);
+      const key=trip.id+':'+groupId(id), previous=store.reactions.get(key);
+      const row={id:previous?.id??'00000000-0000-4000-8000-'+String(store.next++).padStart(12,'0'),trip_id:trip.id,
+        group_id:groupId(id),kind:body.reaction_kind,updated_at:new Date().toISOString()};
+      store.reactions.set(key,row);
+      let entry=store.notifications.find(n=>n.kind==='trip_reaction'&&n.source_id===row.id);
+      if(!entry&&body.reaction_kind){entry={id:'00000000-0000-4000-8000-'+String(store.next++).padStart(12,'0'),kind:'trip_reaction',source_id:row.id,
+        recipient_group_id:trip.group_id,actor_group_id:groupId(id),actor_name:profile(id).group.name,actor_avatar_id:profile(id).group.avatar_id,
+        trip_label:trip.description,proposed_trip_id:trip.id,own_trip_id:null,invitation_id:null,conversation_id:null,created_at:row.updated_at,read_at:null};store.notifications.push(entry);}
+      if(entry){entry.reaction_kind=body.reaction_kind??entry.reaction_kind;entry.reaction_active=!!body.reaction_kind;
+        entry.available=!!body.reaction_kind;if(!body.reaction_kind)entry.read_at??=row.updated_at;}
+      if(store.failReactionSave==='after-commit')return respond({message:'Lost reply'},503);
+      return respond(reactionSummary(trip.id));
+    }
+    if(url.pathname==='/rest/v1/rpc/get_my_trip_reactors'){
+      if(store.failReactorLoad)return respond({message:'Offline'},503);
+      const trip=store.trips.get(body.target_trip_id);if(trip?.group_id!==groupId(id))return respond({code:'P0002'},404);
+      const rows=[...store.reactions.values()].filter(r=>r.trip_id===trip.id&&r.kind).map(r=>({...r,...{
+        name:profile(r.group_id===groupId(A)?A:B).group.name,avatar_id:profile(r.group_id===groupId(A)?A:B).group.avatar_id,profile_available:true}}));
+      return respond({items:rows,has_more:false});
+    }
     if(url.pathname==='/rest/v1/rpc/get_my_favorites'){
       if(store.failFavoriteLoad)return respond({message:'Offline'},503);
       return respond({group_ids:[...(store.favoriteGroups.get(id)??[])],trip_ids:[...(store.favoriteTrips.get(id)??[])]});
@@ -57,7 +93,7 @@ async function backend(context,store){
       const entries=all.filter(n=>(!body.only_unread||!n.read_at)&&(!body.before_at||n.created_at<body.before_at||n.created_at===body.before_at&&n.id<body.before_id))
         .sort((a,b)=>b.created_at.localeCompare(a.created_at)||b.id.localeCompare(a.id));
       return respond({items:entries.slice(0,body.page_size??30),has_more:entries.length>(body.page_size??30),unread_count:all.filter(n=>!n.read_at).length,
-        preferences:store.notificationPreferences.get(groupId(id))??{push_messages:true,push_invitations:true,updated_at:null},fetched_at:new Date().toISOString()});
+        preferences:store.notificationPreferences.get(groupId(id))??{push_messages:true,push_invitations:true,push_favorite_trips:true,push_reactions:true,updated_at:null},fetched_at:new Date().toISOString()});
     }
     if(url.pathname==='/rest/v1/rpc/mark_my_notifications_read'){
       if(store.failNotificationSave)return respond({message:'Offline'},503);
@@ -67,8 +103,10 @@ async function backend(context,store){
     }
     if(url.pathname==='/rest/v1/rpc/save_my_notification_preference'){
       if(store.failNotificationSave)return respond({message:'Offline'},503);
-      const previous=store.notificationPreferences.get(groupId(id))??{push_messages:true,push_invitations:true,updated_at:null};
-      const saved={...previous,[body.preference_key==='messages'?'push_messages':'push_invitations']:body.enabled,updated_at:new Date().toISOString()};
+      const previous=store.notificationPreferences.get(groupId(id))??{push_messages:true,push_invitations:true,push_favorite_trips:true,push_reactions:true,updated_at:null};
+      const fields={messages:'push_messages',invitations:'push_invitations',favorite_trips:'push_favorite_trips',reactions:'push_reactions'};
+      if(!fields[body.preference_key])return respond({code:'22023'},400);
+      const saved={...previous,[fields[body.preference_key]]:body.enabled,updated_at:new Date().toISOString()};
       store.notificationPreferences.set(groupId(id),saved);return respond(saved);
     }
     if(url.pathname.startsWith('/rest/v1/rpc/')&&[

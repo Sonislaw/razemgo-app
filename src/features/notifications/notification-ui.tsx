@@ -7,6 +7,7 @@ import { useMessaging } from '@/features/messaging/messaging-context';
 import { GroupAvatar } from '@/features/profile/group-avatar';
 import { useNotifications } from './notifications-context';
 import { notificationTitle, type NotificationEntry } from './notification-types';
+import { isReactionKind, reactionOption } from '@/features/reactions/reaction-data';
 
 export function NotificationEntryRow({ entry, onOpen, compact = false }: {
   entry: NotificationEntry; onOpen?: () => void; compact?: boolean;
@@ -15,11 +16,16 @@ export function NotificationEntryRow({ entry, onOpen, compact = false }: {
   const inbox = useNotifications();
   const { dispatch } = useMessaging();
   const title = notificationTitle(entry.kind);
+  const reaction = isReactionKind(entry.reaction_kind) ? reactionOption(entry.reaction_kind) : null;
+  const reactionLabel = entry.kind === 'trip_reaction' ? entry.reaction_active === false ? 'Reakcja została cofnięta.'
+    : reaction ? `Reakcja: ${reaction.emoji} ${reaction.label}` : 'Reakcja na ogłoszenie' : '';
   const open = async () => {
     if (!entry.read_at && !(await inbox.read([entry.id]))) return;
     onOpen?.();
     if (!entry.available) return;
-    if (entry.kind === 'proposal' && entry.proposed_trip_id) {
+    if (entry.kind === 'trip_reaction' && entry.proposed_trip_id) {
+      router.push({ pathname: '/trips/[id]', params: { id: entry.proposed_trip_id } });
+    } else if ((entry.kind === 'proposal' || entry.kind === 'favorite_trip') && entry.proposed_trip_id) {
       router.push({ pathname: '/trip/[id]', params: { id: entry.proposed_trip_id } });
     } else if (entry.conversation_id) {
       router.push({ pathname: '/chat/[id]', params: { id: entry.conversation_id } });
@@ -31,7 +37,7 @@ export function NotificationEntryRow({ entry, onOpen, compact = false }: {
   return <Pressable
     testID={'notification-entry-' + entry.id}
     accessibilityRole="button"
-    accessibilityLabel={`${entry.read_at ? '' : 'Nieodczytane. '}${title}. ${entry.actor_name}. ${entry.trip_label}${entry.available ? '' : '. Treść jest już niedostępna.'}`}
+    accessibilityLabel={`${entry.read_at ? '' : 'Nieodczytane. '}${title}. ${entry.actor_name}. ${reactionLabel} ${entry.trip_label}${entry.available ? '' : '. Treść jest już niedostępna.'}`}
     disabled={inbox.busy}
     onPress={() => { void open(); }}
     style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: compact ? 12 : 16,
@@ -41,6 +47,7 @@ export function NotificationEntryRow({ entry, onOpen, compact = false }: {
     <GroupAvatar groupId={entry.actor_group_id} avatarId={entry.actor_avatar_id} size={compact ? 36 : 44} decorative />
     <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
       <AppText variant="label" style={{ fontWeight: entry.read_at ? '400' : '700' }}>{title}</AppText>
+      {reactionLabel ? <AppText variant="caption" color="primaryStrong">{reactionLabel}</AppText> : null}
       <AppText variant="caption" color="textSecondary" numberOfLines={compact ? 2 : 3}>
         {entry.actor_name}{entry.trip_label ? ' · ' + entry.trip_label : ''}
       </AppText>
@@ -78,6 +85,8 @@ export function NotificationPreferencesCard() {
       {([
         ['messages', 'Wiadomości', 'Nowa wiadomość w rozmowie.', inbox.preferences.push_messages],
         ['invitations', 'Zaproszenia', 'Nowe zaproszenie oraz akceptacja wysłanego zaproszenia.', inbox.preferences.push_invitations],
+        ['favorite_trips', 'Wyjazdy ulubionych ekip', 'Nowe ogłoszenia ekip dodanych do ulubionych.', inbox.preferences.push_favorite_trips],
+        ['reactions', 'Reakcje na ogłoszenia', 'Nowa emocja pozostawiona pod Twoim ogłoszeniem.', inbox.preferences.push_reactions],
       ] as const).map(([key, title, description, enabled]) => <View key={key} style={[layout.row, { minHeight: 56 }]}>
         <View style={{ flex: 1, gap: 4 }}>
           <AppText variant="label">{title}</AppText>

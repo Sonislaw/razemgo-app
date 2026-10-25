@@ -59,22 +59,57 @@ test('push preferences wait for the server and persist independently across acco
   const store=state();await backend(context,store);await login(page);await page.goto('/settings');
   const messages=page.getByRole('switch',{name:'Push: Wiadomości',exact:true});
   const invitations=page.getByRole('switch',{name:'Push: Zaproszenia',exact:true});
+  const favoriteTrips=page.getByRole('switch',{name:'Push: Wyjazdy ulubionych ekip',exact:true});
   await expect(messages).toBeChecked();await expect(invitations).toBeChecked();
+  await expect(favoriteTrips).toBeChecked();
   store.failNotificationSave=true;await messages.click();
   await expect(page.getByRole('alert')).toContainText('Nie udało się zapisać');await expect(messages).toBeChecked();
   store.failNotificationSave=false;await messages.click();await expect(messages).not.toBeChecked();await expect(invitations).toBeChecked();
   await invitations.click();await expect(invitations).not.toBeChecked();
   await messages.click();await expect(messages).toBeChecked();await expect(invitations).not.toBeChecked();
+  store.failNotificationSave=true;await favoriteTrips.click();
+  await expect(page.getByRole('alert')).toContainText('Nie udało się zapisać');await expect(favoriteTrips).toBeChecked();
+  store.failNotificationSave=false;await favoriteTrips.click();await expect(favoriteTrips).not.toBeChecked();
+  await favoriteTrips.click();await expect(favoriteTrips).toBeChecked();
+  await expect(messages).toBeChecked();await expect(invitations).not.toBeChecked();
   await page.reload();await expect(messages).toBeChecked();await expect(invitations).not.toBeChecked();
+  await expect(favoriteTrips).toBeChecked();
   const second=await browser.newContext({baseURL:'http://localhost:8085',viewport:{width:320,height:844}});
   try{
     await backend(second,store);const device=await second.newPage();await login(device);await device.goto('/settings');
     await expect(device.getByRole('switch',{name:'Push: Zaproszenia',exact:true})).not.toBeChecked();
+    await expect(device.getByRole('switch',{name:'Push: Wyjazdy ulubionych ekip',exact:true})).toBeChecked();
     await device.getByRole('switch',{name:'Push: Zaproszenia',exact:true}).click();
     await page.reload();await expect(invitations).toBeChecked();
     await device.getByRole('button',{name:'Wyloguj się',exact:true}).click();await login(device,'b@example.com');await device.goto('/settings');
     await expect(device.getByRole('switch',{name:'Push: Wiadomości',exact:true})).toBeChecked();
+    await expect(device.getByRole('switch',{name:'Push: Wyjazdy ulubionych ekip',exact:true})).toBeChecked();
   }finally{await second.close();}
+});
+
+test('favorite crew publication opens its trip from the bell and preserves read state without navigating unavailable entries',async({page,context})=>{
+  const store=state(),tripId='00000000-0000-4000-8000-000000009900';
+  store.trips.set(tripId,{id:tripId,group_id:groupId(B),mode:'planned',status:'published',visibility:'public',
+    start_date:'2027-05-21',end_date:'2027-05-24',location_id:'test',location_name:'Chłapowo',location_region:'Pomorskie',location_kind:'village',
+    campground_name:'Pod Wydmami',campground_address:'',travel_mode:'Kamper',description:'Nowy wyjazd ulubionej ekipy nad morze.',
+    landscape:'coast',interests:[],animal_kinds:[],matching_group_kinds:[],matching_child_age_bands:[],
+    published_at:'2026-10-24T11:00:00Z',created_at:'2026-10-24T11:00:00Z',updated_at:'2026-10-24T11:00:00Z'});
+  const entry=notification(90,{kind:'favorite_trip',invitation_id:null,proposed_trip_id:tripId,trip_label:'Nowy wyjazd ulubionej ekipy nad morze.'});
+  const unavailable=notification(91,{kind:'favorite_trip',invitation_id:null,proposed_trip_id:null,available:false});
+  store.notifications=[entry,unavailable];
+  await backend(context,store);await login(page);
+  await page.getByTestId('home-notifications-bell').click();
+  const item=page.getByTestId('notification-entry-'+entry.id);
+  await expect(item).toHaveAttribute('aria-label',/^Nieodczytane\. Nowy wyjazd ulubionej ekipy/);
+  await page.getByTestId('home-notifications-popover').screenshot({path:'.expo/favorite-trip-bell.png'});
+  await item.click();await expect(page).toHaveURL('http://localhost:8085/trip/'+tripId);
+  await expect(page.getByRole('heading',{name:'Nowy wyjazd ulubionej ekipy nad morze.',exact:true})).toBeVisible();
+  expect(entry.read_at).toBeTruthy();
+  await page.goto('/notifications');await page.reload();
+  await expect(item).not.toHaveAttribute('aria-label',/^Nieodczytane/);
+  await expect(item.getByText('Nowy wyjazd ulubionej ekipy',{exact:true})).toHaveCSS('font-weight','400');
+  await page.getByTestId('notification-entry-'+unavailable.id).click();
+  await expect(page).toHaveURL('http://localhost:8085/notifications');expect(unavailable.read_at).toBeTruthy();
 });
 
 test('loading and save failures offer retry and do not pretend an empty or read inbox',async({page,context})=>{

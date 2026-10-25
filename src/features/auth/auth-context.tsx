@@ -22,16 +22,17 @@ import { monitoredOperation, reportFailure } from '@/lib/monitoring-core';
 import { unregisterPushDevice, clearDeviceNotifications } from '@/features/notifications/push-platform';
 import {
   authErrorMessage,
+  authRedirectUrl,
   normalizeEmail,
   parseAuthCallback,
 } from './auth-data';
 
 export function getAuthRedirectUrl(recovery = false) {
-  const base =
-    Platform.OS === 'web' && typeof window !== 'undefined'
-      ? `${window.location.origin}/auth/callback`
-      : 'razemgo://auth/callback';
-  return base + (recovery ? '?flow=recovery' : '');
+  return authRedirectUrl(
+    Constants.expoConfig?.extra?.authScheme ?? 'razemgo-dev',
+    Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.origin : undefined,
+    recovery,
+  );
 }
 interface AuthState {
   session: Session | null;

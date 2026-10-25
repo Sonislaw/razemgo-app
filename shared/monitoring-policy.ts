@@ -12,6 +12,19 @@ export const OPERATIONS = [
   'server.delete_account', 'server.dispatch_push', 'server.push_health',
 ] as const;
 export type MonitoringOperation = typeof OPERATIONS[number];
+export function monitoringEnvironment(value: string | undefined): 'development' | 'preview' | 'production' {
+  return value === 'production' || value === 'preview' ? value : 'development';
+}
+// The original Preview backend already reports as "development". The isolated
+// Dev uses "dev" so its errors and heartbeats cannot mask that backend's health.
+export function serverMonitoringConfiguration(value: string | undefined) {
+  const environment = value === 'dev' ? 'dev' : monitoringEnvironment(value);
+  return {
+    environment,
+    monitorSlug: environment === 'dev' ? 'razemgo-push-health-dev' : 'razemgo-push-health',
+    diagnostics: value === 'dev' || value === 'development',
+  };
+}
 export type Failure = { category: 'network' | 'timeout' | 'permission' | 'server' | 'unexpected'; code: string; status?: number };
 const EXPECTED_AUTH = new Set(['invalid_credentials','email_not_confirmed','user_already_exists','email_exists','weak_password',
   'same_password','otp_expired','otp_disabled','bad_code_verifier','flow_state_expired','flow_state_not_found','validation_failed',

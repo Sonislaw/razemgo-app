@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "razemgo",
+    "name": "RazemGo",
     "slug": "razemgo",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -42,6 +42,7 @@
         }
       ],
       "expo-secure-store",
+      "expo-image",
       [
         "expo-notifications",
         {

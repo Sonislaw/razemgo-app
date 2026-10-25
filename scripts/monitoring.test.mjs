@@ -1,11 +1,33 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { classifyFailure,createReportLimiter,monitoringRoute,sanitizeMonitoringEvent } from '../shared/monitoring-policy.ts';
+import { classifyFailure,createReportLimiter,monitoringEnvironment,serverMonitoringConfiguration,monitoringRoute,sanitizeMonitoringEvent } from '../shared/monitoring-policy.ts';
 import { installMonitoringReporter,monitoredOperation,monitorAuthRefresh,reportFailure } from '../src/lib/monitoring-core.ts';
 import { backendRequest } from '../src/lib/backend-request.ts';
 
 const UUID='00000000-0000-4000-8000-000000000001';
 const metadata={release:'razemgo@1.0.0',environment:'development',platform:'android',osVersion:'16',installationId:UUID};
+
+test('isolated Dev has independent server errors and heartbeat identity',()=>{
+  const dev=serverMonitoringConfiguration('dev');
+  const existing=serverMonitoringConfiguration('development');
+  assert.equal(dev.environment,'dev');
+  assert.equal(dev.monitorSlug,'razemgo-push-health-dev');
+  assert.equal(dev.diagnostics,true);
+  assert.notEqual(dev.environment,existing.environment);
+  assert.notEqual(dev.monitorSlug,existing.monitorSlug);
+  assert.equal(existing.monitorSlug,'razemgo-push-health');
+  assert.equal(serverMonitoringConfiguration('preview').diagnostics,false);
+  assert.equal(serverMonitoringConfiguration('production').diagnostics,false);
+  assert.equal(serverMonitoringConfiguration('private-email@example.com').environment,'development');
+  assert.equal(serverMonitoringConfiguration('private-email@example.com').diagnostics,false);
+  assert.equal(serverMonitoringConfiguration(undefined).diagnostics,false);
+});
+
+test('preview errors have their own Sentry environment without accepting arbitrary values',()=>{
+  for(const value of ['development','preview','production'])assert.equal(monitoringEnvironment(value),value);
+  for(const value of [undefined,'private-email@example.com','staging'])assert.equal(monitoringEnvironment(value),'development');
+  assert.equal(sanitizeMonitoringEvent({}, {...metadata,environment:monitoringEnvironment('preview')}).environment,'preview');
+});
 test('ordinary auth failures, cancelled operations and expected validation do not raise alarms',()=>{
   for(const code of ['invalid_credentials','email_not_confirmed','otp_expired','weak_password','refresh_token_not_found'])assert.equal(classifyFailure({code},'auth.sign_in'),null);
   for(const code of ['22023','P0002','23505','54000'])assert.equal(classifyFailure({code},'trips.save'),null);

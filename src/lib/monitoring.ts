@@ -5,11 +5,11 @@ import { Platform } from 'react-native';
 import { USE_DEMO_DATA } from '@/constants/app';
 import { installMonitoringReporter } from './monitoring-core';
 import { createRequestKey } from './request-key';
-import { createReportLimiter, monitoringRoute, sanitizeMonitoringEvent, type ReportContext, type SafeMetadata } from '../../shared/monitoring-policy';
+import { createReportLimiter, monitoringEnvironment, monitoringRoute, sanitizeMonitoringEvent, type ReportContext, type SafeMetadata } from '../../shared/monitoring-policy';
 
 const metadata: SafeMetadata = {
   release:'razemgo@' + (Constants.expoConfig?.version ?? 'unknown'),
-  environment: process.env.EXPO_PUBLIC_APP_ENV === 'production' ? 'production' : 'development',
+  environment: monitoringEnvironment(process.env.EXPO_PUBLIC_APP_ENV),
   platform: Platform.OS === 'android' ? 'android' : Platform.OS === 'ios' ? 'ios' : 'web',
   osVersion:String(Platform.Version),
 };

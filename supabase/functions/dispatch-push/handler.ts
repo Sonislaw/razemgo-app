@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 import { dispatchPush, validDispatchSecret } from './push-worker.ts';
 import { reportServerFailure, sendServerMonitoringTest } from '../_shared/monitoring.ts';
+import { serverMonitoringConfiguration } from '../../../shared/monitoring-policy.ts';
 
 export async function handlePushRequest(request: Request) {
   const requestId=crypto.randomUUID();
@@ -11,7 +12,7 @@ export async function handlePushRequest(request: Request) {
   const diagnostic=request.headers.get('x-razemgo-diagnostic');
   if (diagnostic!==null) {
     if (diagnostic!=='sentry-test') return respond(400,{error:'Unknown diagnostic'});
-    if (Deno.env.get('SENTRY_ENVIRONMENT')!=='development') return respond(404,{error:'Not found'});
+    if (!serverMonitoringConfiguration(Deno.env.get('SENTRY_ENVIRONMENT')).diagnostics) return respond(404,{error:'Not found'});
     const result=await sendServerMonitoringTest(requestId);
     const status=result.ok ? result.accepted ? 200 : 503 : result.reason==='rate_limited' ? 429 : 503;
     return respond(status,result);

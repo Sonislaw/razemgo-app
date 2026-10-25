@@ -1,5 +1,11 @@
 export const MIN_PASSWORD_LENGTH = 10;
 
+export function authRedirectUrl(scheme: string, webOrigin?: string, recovery = false) {
+  if (!/^[a-z][a-z0-9+.-]*$/i.test(scheme)) throw new Error('Invalid application scheme.');
+  const base = webOrigin ? `${new URL(webOrigin).origin}/auth/callback` : `${scheme}://auth/callback`;
+  return base + (recovery ? '?flow=recovery' : '');
+}
+
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }

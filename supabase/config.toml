@@ -28,7 +28,7 @@ port = 54324
 [auth]
 enabled = true
 site_url = "http://localhost:8081"
-additional_redirect_urls = ["http://localhost:8081/auth/callback", "http://localhost:8081/auth/callback?flow=recovery", "razemgo://auth/callback", "razemgo://auth/callback?flow=recovery"]
+additional_redirect_urls = ["http://localhost:8081/auth/callback", "http://localhost:8081/auth/callback?flow=recovery", "razemgo-dev://auth/callback", "razemgo-dev://auth/callback?flow=recovery"]
 jwt_expiry = 3600
 enable_signup = true
 minimum_password_length = 10

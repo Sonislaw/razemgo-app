@@ -1,6 +1,10 @@
 # RazemGo
 
+Osobne aplikacje **Dev i Preview**: identyfikatory, stan konfiguracji oraz sposób wydawania zmian opisano w [Środowiska](docs/ENVIRONMENTS.md). Preview zachowuje dotychczasowy backend; `.env.local` służy wyłącznie nowemu Dev, a `.env.preview.local` kontroli Preview.
+
 ## Supabase — konta, profile, wyjazdy i rozmowy
+
+Samodzielny APK Androida dla testerów buduje profil **preview**: `npm run build:preview`. Działa bez Metro i Expo Go, korzysta z obecnej bazy testowej oraz środowiska Sentry `preview`. Konfiguracja EAS, kontrola przed buildem i scenariusz na dwóch telefonach: **[Wersja preview](docs/PREVIEW.md)**.
 
 Aplikacja ma przygotowane logowanie Google i e-mail/hasło, potwierdzanie adresu, reset hasła, onboarding, zapis profilu i ustawienia konta. Wymaga konfiguracji projektu Supabase: **[instrukcja wdrożenia](supabase/README.md)** zawiera migracje, Google, SMTP, funkcję usuwania konta oraz development build Androida.
 
@@ -12,11 +16,11 @@ Migracja `202610240001_trips.sql` dodaje wyjazdy, walidację i RLS. Profile i pr
 
 Zaproszenia, rozmowy, wiadomości, odczyty, blokady i zgłoszenia zapisują się w Supabase. Akceptacja zaproszenia atomowo tworzy jedną rozmowę z kontekstem wyjazdu. Historia działa na drugim urządzeniu; powtórzona wysyłka używa tego samego klucza i nie duplikuje danych. Realtime powiadamia o zmianie skrzynki, a aplikacja pobiera wyłącznie dane uprawnionego uczestnika. Przy rozłączeniu działa okresowe odświeżanie oraz ponowienie ręczne.
 
-Migracja `202610240003_messaging.sql` dodaje uprawnienia i funkcje skrzynki. Nowe konta zaczynają z pustą skrzynką. Zablokowanie kontaktu wstrzymuje wysyłanie po obu stronach i ukrywa wzajemne ogłoszenia. Zgłoszenia trafiają do serwerowej tabeli do obsługi przez administratora; nie ma jeszcze panelu moderacji.
+Migracja `202610240003_messaging.sql` dodaje uprawnienia i funkcje skrzynki. Nowe konta zaczynają z pustą skrzynką. Zablokowanie kontaktu wstrzymuje wysyłanie po obu stronach i ukrywa wzajemne ogłoszenia. Zgłoszenia trafiają do panelu moderacji opisanego poniżej.
 
 Powiadomienia push o nowych wiadomościach, zaproszeniach i ich akceptacji mają rejestr urządzeń, kolejkę serwerową, worker Expo, retry i receipts. Kliknięcie otwiera właściwy widok po odtworzeniu sesji. Firebase/FCM dla testowego Androida jest skonfigurowane w EAS. Push wymagają APK z obsługą `expo-notifications`; instalacja modułu natywnego i zmiana ikony wymagają nowego buildu. Konfiguracja i scenariusze telefonu: **[Push — instrukcja](supabase/PUSH.md)**.
 
-Dzwonek na Start prowadzi do trwałej historii powiadomień, z filtrem nieodczytanych, stronicowaniem i oznaczaniem odczytu na wszystkich urządzeniach. Wiadomości i zaproszenia pozostają w historii także bez zgody na push. Nowe propozycje do własnych publicznych wyjazdów są wyliczane przy pobraniu historii, wyłącznie w aplikacji. W **Profil → Ustawienia** można osobno włączyć push wiadomości i zaproszeń dla całego konta; osobny przełącznik urządzenia nadal decyduje o danym telefonie. Migracja `202610240005_notification_center.sql` nie wymaga nowego APK ani nowych sekretów. Następne etapy to monitoring, obsługa moderacji i pilotaż.
+Dzwonek na Start prowadzi do trwałej historii powiadomień, z filtrem nieodczytanych, stronicowaniem i oznaczaniem odczytu na wszystkich urządzeniach. Wiadomości i zaproszenia pozostają w historii także bez zgody na push. Nowe propozycje do własnych publicznych wyjazdów są wyliczane przy pobraniu historii, wyłącznie w aplikacji. W **Profil → Ustawienia** można osobno włączyć push wiadomości i zaproszeń dla całego konta; osobny przełącznik urządzenia nadal decyduje o danym telefonie. Migracja `202610240005_notification_center.sql` nie wymaga nowego APK ani nowych sekretów. Monitoring i moderacja są podłączone; bieżący etap to samodzielna wersja preview przed pilotażem.
 
 ```powershell
 npm ci

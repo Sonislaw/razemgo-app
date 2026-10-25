@@ -1,11 +1,12 @@
 import * as Sentry from 'npm:@sentry/deno@10.75.2';
-import { classifyFailure, createReportLimiter, sanitizeMonitoringEvent, PUSH_HEALTH_CODES, type PushHealthCode, type ReportContext } from '../../../shared/monitoring-policy.ts';
+import { classifyFailure, createReportLimiter, sanitizeMonitoringEvent, serverMonitoringConfiguration, PUSH_HEALTH_CODES, type PushHealthCode, type ReportContext } from '../../../shared/monitoring-policy.ts';
 
 const dsn=Deno.env.get('SENTRY_DSN')?.trim();
 let enabled=false;
 const allow=createReportLimiter();
+const settings=serverMonitoringConfiguration(Deno.env.get('SENTRY_ENVIRONMENT'));
 const metadata={release:'razemgo-edge@' + (Deno.env.get('SENTRY_RELEASE') ?? 'development'),
-  environment:Deno.env.get('SENTRY_ENVIRONMENT')==='production' ? 'production' : 'development', platform:'deno' as const};
+  environment:settings.environment, platform:'deno' as const};
 try {
   if (dsn) {
     Sentry.init({dsn,defaultIntegrations:false,sendDefaultPii:false,sendClientReports:false,
@@ -39,7 +40,7 @@ async function captureConfirmed(context:ReportContext) {
 
 // Only the private dispatcher endpoint can invoke this development probe.
 export async function sendServerMonitoringTest(requestId:string) {
-  if (Deno.env.get('SENTRY_ENVIRONMENT')!=='development' || !enabled)
+  if (!serverMonitoringConfiguration(Deno.env.get('SENTRY_ENVIRONMENT')).diagnostics || !enabled)
     return {ok:false as const,reason:'disabled' as const};
   if (!allow('monitoring.test')) return {ok:false as const,reason:'rate_limited' as const};
   const result=await captureConfirmed({operation:'monitoring.test',category:'unexpected',code:'UNEXPECTED',requestId});
@@ -65,7 +66,7 @@ export async function sendPushMonitorHeartbeat(success:boolean) {
   try {
     const response=await Promise.race([
       Promise.resolve(client.sendEnvelope([{},[[{type:'check_in'},{
-        check_in_id:checkInId,monitor_slug:'razemgo-push-health',status:success ? 'ok' : 'error',
+        check_in_id:checkInId,monitor_slug:settings.monitorSlug,status:success ? 'ok' : 'error',
         release:metadata.release,environment:metadata.environment,
         monitor_config:{schedule:{type:'crontab',value:'*/5 * * * *'},checkin_margin:5,max_runtime:1,
           timezone:'Etc/UTC',failure_issue_threshold:2,recovery_threshold:1},

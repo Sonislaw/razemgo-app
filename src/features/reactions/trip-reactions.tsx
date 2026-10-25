@@ -12,7 +12,7 @@ import { REACTIONS, reactionOption, reactionTotal, topReactions, type ReactionKi
 import { useTripReactions } from './reactions-context';
 import { fetchTripReactors } from './reactions-repository';
 
-export function TripReactionsButton({ tripId, ownerGroupId }: { tripId: string; ownerGroupId: string }) {
+export function TripReactionsButton({ tripId, ownerGroupId, compact = false }: { tripId: string; ownerGroupId: string; compact?: boolean }) {
   const theme = useTheme();
   const { profile } = useProfile();
   const { session } = useAuth();
@@ -55,9 +55,10 @@ export function TripReactionsButton({ tripId, ownerGroupId }: { tripId: string; 
     <Pressable testID={'trip-reactions-' + tripId} accessibilityRole="button"
       accessibilityLabel={label + (summary ? '. Liczba reakcji: ' + total : '')}
       accessibilityState={{ expanded: open, selected: !!mine, busy: busy || loading }}
+      hitSlop={compact ? { top: 12, bottom: 12, left: 0, right: 12 } : undefined}
       onPress={() => { setFailedKind(undefined); setPeople(null); setPeopleError(false); setPeopleBusy(false);
         fetching.current = false; setOpen(true); void store.refresh(); }}
-      style={({ pressed }) => ({ minHeight: 48, paddingVertical: 8,
+      style={({ pressed }) => ({ minHeight: compact ? 24 : 48, paddingVertical: compact ? 0 : 8,
         flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start',
         opacity: pressed ? 0.7 : 1 })}>
       <AppText aria-hidden style={{ fontSize: 18 }}>

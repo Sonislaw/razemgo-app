@@ -121,15 +121,15 @@ export default function TripDetailsScreen() {
         </View>
       </View>
       <TripMapCard trip={trip} />
-      <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} />
       <Card>
         <SectionTitle title="Pomysł na wspólny czas" />
         <AppText color="textSecondary">{trip.description}</AppText>
-        <View style={layout.wrap}>
+        <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} compact />
+        {trip.interests.length ? <View style={layout.wrap}>
           {trip.interests.map((interest) => (
             <Chip key={interest} label={interest} />
           ))}
-        </View>
+        </View> : null}
       </Card>
       <Card>
         <AnimalInformation animals={trip.animals} />

@@ -10,7 +10,6 @@ import {
   Screen,
   layout,
 } from '@/components/ui/primitives';
-import { Icon } from '@/components/ui/icon';
 import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
 import {
@@ -22,8 +21,8 @@ import {
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { DiscoveryFiltersSheet } from '@/features/discovery/discovery-filters-sheet';
 import { DiscoverySortSheet } from '@/features/discovery/discovery-sort-sheet';
+import { DiscoveryFilterBar, DiscoveryResultsHeader } from '@/features/discovery/discovery-controls';
 import { sortDiscoveryProposals } from '@/features/discovery/sort-proposals';
-import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useProfile } from '@/features/profile/profile-context';
 import { getPreferredChildAges } from '@/features/profile/profile-data';
@@ -135,76 +134,15 @@ export default function ExploreScreen() {
             />
           </View>
         ) : null}
-        <View style={layout.row}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Otwórz filtry"
-            accessibilityHint="Wybierz typ ogłoszenia, klimat, termin, miejsce i wiek dzieci"
-            onPress={() => setShowFilters(true)}
-            style={({ pressed }) => [
-              styles.filterBar,
-              {
-                borderColor: theme.border,
-                backgroundColor: theme.backgroundElement,
-                opacity: pressed ? 0.7 : 1,
-              },
-            ]}
-          >
-            <Icon name="filters" size={21} />
-            <View style={styles.flex}>
-              <AppText variant="label">
-                Filtry{activeCount ? ' · ' + activeCount : ''}
-              </AppText>
-              <AppText variant="caption" color="textSecondary">
-                {summary || 'Typ, termin, miejsce i klimat'}
-              </AppText>
-            </View>
-            <Icon name="arrow" size={18} />
-          </Pressable>
-          {activeCount ? (
-            <IconButton label="Wyczyść filtry" icon="close" onPress={reset} />
-          ) : null}
-          <IconButton label="Odśwież ogłoszenia" icon="refresh" onPress={() => { void refresh(); }} />
-        </View>
+        <DiscoveryFilterBar activeCount={activeCount} summary={summary} placeholder="Typ, termin, miejsce i klimat"
+          filterHint="Wybierz typ ogłoszenia, klimat, termin, miejsce i wiek dzieci" refreshLabel="Odśwież ogłoszenia"
+          onOpen={() => setShowFilters(true)} onClear={reset} onRefresh={() => void refresh()} />
       </View>
       <View style={styles.results}>
-        <View style={styles.resultsHeader}>
-          <View style={styles.flex}>
-            <AppText
-              variant="heading"
-              accessibilityRole="header"
-              accessibilityLiveRegion="polite"
-              style={styles.resultTitle}
-            >
-              Propozycje · {proposals.length}
-            </AppText>
-          </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={
-              'Sortowanie: ' +
-              (sort === 'compatibility' ? 'Najwyższa zgodność' : 'Domyślnie')
-            }
-            accessibilityHint="Zmień kolejność wyników"
-            onPress={() => setShowSort(true)}
-            style={({ pressed }) => [
-              styles.sortButton,
-              {
-                backgroundColor: theme.muted,
-                opacity: pressed ? 0.7 : 1,
-              },
-            ]}
-          >
-            <Icon name="sort" size={18} />
-            <AppText
-              variant="label"
-              color="primaryStrong"
-              style={styles.sortLabel}
-            >
-              {sort === 'compatibility' ? 'Zgodność' : 'Domyślnie'}
-            </AppText>
-          </Pressable>
-        </View>
+        <DiscoveryResultsHeader title={'Propozycje · ' + proposals.length}
+          sortLabel={sort === 'compatibility' ? 'Zgodność' : 'Domyślnie'}
+          sortAccessibilityLabel={'Sortowanie: ' + (sort === 'compatibility' ? 'Najwyższa zgodność' : 'Domyślnie')}
+          onSort={() => setShowSort(true)} />
         {proposals.length ? (
           proposals.map((proposal) => (
             <DiscoveryTripCard
@@ -255,34 +193,5 @@ export default function ExploreScreen() {
 }
 const styles = StyleSheet.create({
   controls: { gap: 12 },
-  flex: { flex: 1 },
-  filterBar: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 56,
-    padding: 12,
-    gap: Spacing.two,
-    borderWidth: 1,
-    borderRadius: Radius.small,
-  },
   results: { gap: 12 },
-  resultsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    justifyContent: 'space-between',
-  },
-  sortButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 48,
-    maxWidth: '50%',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 6,
-    borderRadius: Radius.small,
-  },
-  sortLabel: { flexShrink: 1 },
-  resultTitle: { fontSize: 18, lineHeight: 24 },
 });

@@ -30,6 +30,7 @@ async function backend(context,store){
     if(url.pathname.endsWith('/user'))return respond(user(id));
     if(url.pathname.endsWith('/logout'))return respond({});
     if(url.pathname==='/rest/v1/rpc/get_my_account_access')return respond({is_admin:store.admin===true&&id===A,suspended:store.suspended===id,hidden_trip_ids:[]});
+    if(url.pathname==='/rest/v1/rpc/get_my_group_visibility')return respond({discoverable:true,about:''});
     if(url.pathname==='/rest/v1/travel_groups')return respond([profile(id).group]);
     if(url.pathname==='/rest/v1/group_preferences')return respond(profile(id).preferences);
     if(url.pathname==='/rest/v1/rpc/get_my_notifications'){

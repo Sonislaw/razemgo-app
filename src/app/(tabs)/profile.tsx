@@ -1,4 +1,5 @@
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import {
   AppText,
@@ -12,27 +13,20 @@ import {
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
-import { IS_DEMO_MODE } from '@/constants/app';
+import { IS_DEMO_MODE, USE_DEMO_DATA } from '@/constants/app';
 import { useProfile } from '@/features/profile/profile-context';
-import { formatGroupSize } from '@/features/profile/profile-data';
-import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import { ProfileSectionCard } from '@/features/profile/profile-ui';
-import type { ProfileSection } from '@/types/profile';
-import { AnimalBadge } from '@/features/animals/animal-portrait';
-import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
-import { ProfileAvatar } from '@/features/profile/profile-avatar';
+import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
+import { GroupProfileCard } from '@/features/groups/group-profile-card';
+import { fetchGroupVisibility } from '@/features/groups/group-repository';
+import { DataStatus } from '@/components/ui/data-status';
+import type { TravelGroup } from '@/types/travel';
 
 export default function ProfileScreen() {
   const { profile, hasProfile } = useProfile();
   const { group, matching } = profile;
-  const edit = (section?: ProfileSection) =>
-    router.push({
-      pathname: '/edit-profile',
-      params: section ? { section } : {},
-    });
-  const preferredGroups = GROUP_KIND_OPTIONS.filter((option) =>
-    matching.groupKinds.includes(option.value),
-  );
+  const preferredGroups = GROUP_KIND_OPTIONS.filter(option => matching.groupKinds.includes(option.value));
+  const edit = () => router.push('/edit-profile');
   const header = (
     <IllustratedPageHeader
       title="Mój profil"
@@ -63,124 +57,30 @@ export default function ProfileScreen() {
   return (
     <Screen header={header}>
       <View style={styles.content}>
-        <Card style={styles.identity}>
-          <View style={layout.row}>
-            <ProfileAvatar
-              avatarId={group.avatarId}
-              size={64}
-              testID="profile-identity-avatar"
-            />
-            <View style={styles.identityText}>
-              <AppText variant="heading" style={styles.name}>
-                {group.name}
-              </AppText>
-              <AppText variant="label" color="textSecondary">
-                {formatGroupSize(group.adultCount, group.childCount)}
-              </AppText>
-            </View>
-          </View>
-          <Button
-            label="Edytuj profil"
-            icon="edit"
-            variant="secondary"
-            onPress={() => edit()}
-          />
-        </Card>
-        <ProfileSectionCard
-          title="Moja ekipa"
-          icon="people"
-          onPress={() => edit('crew')}
-        >
-          <AppText variant="caption" color="textSecondary">
-            {group.childCount
-              ? 'Podróżuję z dziećmi w wieku:'
-              : 'Podróżuję w dorosłym gronie.'}
-          </AppText>
-          {group.childAgeBands.length ? (
-            <View style={layout.wrap}>
-              {group.childAgeBands.map((band) => (
-                <Chip key={band} label={band + ' lat'} />
-              ))}
-            </View>
-          ) : group.childCount ? (
-            <AppText variant="label">
-              Przedziały wieku nie zostały podane.
-            </AppText>
-          ) : null}
-        </ProfileSectionCard>
-        <ProfileSectionCard title="Profil publiczny" icon="people" onPress={() => router.push('/group-visibility')}>
-          <AppText variant="caption" color="textSecondary">Przedstaw ekipę i zdecyduj, czy inni podróżnicy mogą znaleźć ją w wyszukiwarce.</AppText>
-        </ProfileSectionCard>
-        <ProfileSectionCard
-          title="Zwierzęta w mojej ekipie"
-          icon="paw"
-          onPress={() => edit('animals')}
-        >
-          {group.animals.animals.length ? (
-            <View style={layout.wrap}>
-              {group.animals.animals.map((animal) => (
-                <AnimalBadge key={animal.kind} kind={animal.kind} />
-              ))}
-            </View>
-          ) : (
-            <AppText variant="caption" color="textSecondary">
-              Bez zwierząt
-            </AppText>
-          )}
-        </ProfileSectionCard>
-        <ProfileSectionCard
-          title="Jak podróżuję"
-          icon="camper"
-          onPress={() => edit('travel')}
-        >
-          <TravelModeBadges modes={group.travelModes} />
-        </ProfileSectionCard>
-        <ProfileSectionCard
-          title="Co lubię"
-          icon="sun"
-          onPress={() => edit('interests')}
-        >
-          {group.interests.length ? (
-            <View style={layout.wrap}>
-              {group.interests.map((interest) => (
-                <Chip key={interest} label={interest} />
-              ))}
-            </View>
-          ) : (
-            <AppText variant="caption" color="textSecondary">
-              Dodaj swoje zainteresowania.
-            </AppText>
-          )}
-        </ProfileSectionCard>
+        <OwnProfileSummary key={group.id} group={group} onEdit={edit} />
         <ProfileSectionCard
           title="Kogo chcę poznać?"
           icon="heart"
-          onPress={() => edit('matching')}
+          onPress={() => router.push({ pathname: '/edit-profile', params: { section: 'matching' } })}
         >
-          {matching.description ? (
-            <AppText
-              variant="body"
-              color="textSecondary"
-              numberOfLines={3}
-              style={{ fontSize: 14, lineHeight: 20 }}
-            >
-              {matching.description}
-            </AppText>
-          ) : null}
+          {matching.description ? <AppText color="textSecondary">{matching.description}</AppText> : null}
           <View style={layout.wrap}>
-            {preferredGroups.length ? (
-              preferredGroups.map((option) => (
-                <Chip key={option.value} label={option.label} />
-              ))
-            ) : (
-              <Chip label="Wszyscy podróżnicy" />
-            )}
-            {matching.childAgeBands.length ? (
-              <Chip
-                label={'Dzieci ' + matching.childAgeBands.join(', ') + ' lat'}
-              />
-            ) : null}
+            {preferredGroups.length
+              ? preferredGroups.map(option => <Chip key={option.value} label={option.label} />)
+              : <Chip label="Wszyscy podróżnicy" />}
           </View>
+          <AppText variant="caption" color="textSecondary">
+            Preferowany wiek dzieci: {matching.childAgeBands.length ? matching.childAgeBands.join(', ') + ' lat' : 'bez preferencji'}.
+          </AppText>
+        </ProfileSectionCard>
+        <ProfileSectionCard
+          title="Profil publiczny"
+          icon="people"
+          onPress={() => router.push('/group-visibility')}
+        >
+          <AppText variant="caption" color="textSecondary">
+            Przedstaw ekipę i zdecyduj, czy inni podróżnicy mogą znaleźć ją w wyszukiwarce.
+          </AppText>
         </ProfileSectionCard>
         {IS_DEMO_MODE ? (
           <View style={styles.demo}>
@@ -195,10 +95,47 @@ export default function ProfileScreen() {
     </Screen>
   );
 }
+
+function OwnProfileSummary({ group, onEdit }: { group: TravelGroup; onEdit: () => void }) {
+  const [about, setAbout] = useState('');
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(USE_DEMO_DATA ? 'ready' : 'loading');
+  const generation = useRef(0);
+  const load = useCallback(async () => {
+    if (USE_DEMO_DATA) return;
+    const request = ++generation.current;
+    setStatus('loading');
+    try {
+      const visibility = await fetchGroupVisibility();
+      if (request === generation.current) {
+        setAbout(visibility.about);
+        setStatus('ready');
+      }
+    } catch {
+      if (request === generation.current) setStatus('error');
+    }
+  }, []);
+  useFocusEffect(useCallback(() => {
+    void load();
+    return () => { generation.current++; };
+  }, [load]));
+
+  return <>
+    <GroupProfileCard
+      group={group}
+      about={about}
+      avatarTestID="profile-identity-avatar"
+      headerAction={<Button label="Edytuj profil" icon="edit" variant="secondary" onPress={onEdit} />}
+    />
+    <DataStatus
+      status={status}
+      label="Wczytywanie opisu publicznego"
+      error="Nie udało się pobrać opisu publicznego. Sprawdź połączenie i spróbuj ponownie."
+      onRetry={() => void load()}
+    />
+  </>;
+}
+
 const styles = StyleSheet.create({
   content: { gap: 12 },
-  identity: { padding: 14, gap: 14 },
-  identityText: { flex: 1, gap: 4 },
-  name: { fontSize: 18, lineHeight: 24 },
   demo: { gap: 8, paddingTop: 4 },
 });

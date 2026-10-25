@@ -1,5 +1,13 @@
 import { DEMO_PROPOSALS } from '@/data/mocks/travel';
 import type { PublicGroupDetail } from './group-data';
+import type { TravelerProfile } from '@/types/profile';
+import { groupCompatibility } from './group-compatibility';
+
+export function withDemoGroupCompatibility(item: PublicGroupDetail, viewer: TravelerProfile): PublicGroupDetail {
+  return { ...item, compatibility: groupCompatibility(viewer, { group: item.group, matching: {
+    groupKinds: [item.group.kind], childAgeBands: item.group.childAgeBands, description: '',
+  } }) };
+}
 
 export const DEMO_PUBLIC_GROUPS: PublicGroupDetail[] = [
   ...[...new Map(DEMO_PROPOSALS.map(p => [p.group.id, p.group])).values()].map(group => ({

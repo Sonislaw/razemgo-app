@@ -45,6 +45,16 @@ test('real API flow: create, failed save, reload, second device, discovery, life
     const card=b.getByTestId('discovery-trip-'+trip.id);
     await expect(card).toContainText('Ekipa A');await expect(card).toContainText('Kemping Testowy');
     await expect(card).toContainText(/\d+% zgodności/);
+    await b.getByRole('button',{name:'Otwórz filtry',exact:true}).click();
+    await expect(b.getByRole('dialog',{name:'Filtry wyjazdów',exact:true})).toBeVisible();
+    await b.getByRole('button',{name:'Wybierz zakres dat',exact:true}).click();
+    await b.getByLabel(/^25 października 2026/).click();await b.getByLabel(/^28 października 2026/).click();
+    await b.getByRole('button',{name:'Wybierz daty',exact:true}).click();
+    await b.getByRole('button',{name:/^Pokaż wyniki/}).click();await expect(card).toBeVisible();
+    await b.getByRole('button',{name:'Sortowanie: Domyślnie',exact:true}).click();
+    await b.getByRole('radio',{name:'Najwyższa zgodność',exact:true}).click();
+    await expect(b.getByRole('button',{name:'Sortowanie: Najwyższa zgodność',exact:true})).toBeVisible();
+    await b.getByRole('button',{name:'Wyczyść filtry',exact:true}).click();
     await card.getByRole('button',{name:'Zobacz wyjazd',exact:true}).click();
     await expect(b).toHaveURL('http://localhost:8085/trip/'+trip.id);
     await expect(b.getByRole('button',{name:'Zaproś do kontaktu',exact:true})).toBeEnabled();

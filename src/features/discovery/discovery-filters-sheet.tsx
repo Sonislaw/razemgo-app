@@ -2,15 +2,10 @@ import { useDiscovery } from './discovery-context';
 import { useState } from 'react';
 import {
   Keyboard,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
-  ScrollView,
-  StyleSheet,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SheetModal, SheetSurface } from '@/components/ui/sheet-modal';
+import { FilterSheet } from '@/components/ui/filter-sheet';
 import {
   AppText,
   Button,
@@ -37,7 +32,7 @@ import { DateRangeSheet } from '@/components/trips/date-range-sheet';
 import { DateRangeField } from '@/components/trips/date-range-field';
 import { dateToleranceLabel } from '@/features/trips/date-range-calendar';
 import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
-import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
+import { Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { ChildAgeBand, DiscoveryFilters } from '@/types/travel';
 import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
@@ -57,7 +52,6 @@ export function DiscoveryFiltersSheet({
 }: DiscoveryFiltersSheetProps) {
   const { proposals: availableProposals } = useDiscovery();
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
   const [showDateRange, setShowDateRange] = useState(false);
   const [draft, setDraft] = useState<DiscoveryFilters>(() => ({
     ...initialFilters,
@@ -79,59 +73,25 @@ export function DiscoveryFiltersSheet({
         ? current.childAgeBands.filter((age) => age !== band)
         : [...current.childAgeBands, band],
     }));
-  const close = () => {
-    Keyboard.dismiss();
-    onClose();
-  };
   return (
-    <SheetModal onRequestClose={close}>
-      <KeyboardAvoidingView
-        style={styles.overlay}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <View
-          style={[StyleSheet.absoluteFill, { backgroundColor: theme.scrim }]}
-        />
-        <Pressable
-          style={styles.backdrop}
-          onPress={close}
-          accessibilityRole="button"
-          accessibilityLabel="Zamknij panel filtrów"
-        />
-        <SheetSurface
-          role="dialog"
-          accessibilityLabel="Filtry wyjazdów"
-          accessibilityViewIsModal
-          aria-modal
-          style={[
-            styles.sheet,
-            {
-              backgroundColor: theme.backgroundElement,
-              marginTop: insets.top,
-            },
-          ]}
-        >
-          <View style={[styles.header, { borderBottomColor: theme.border }]}>
-            <View style={styles.flex}>
-              <AppText variant="heading" accessibilityRole="header">
-                Filtry wyjazdów
-              </AppText>
-              <AppText variant="caption" color="textSecondary">
-                Wybierz typ ogłoszenia, termin, miejsce i klimat.
-              </AppText>
-            </View>
-            <IconButton
-              label="Zamknij filtry bez zmian"
-              icon="close"
-              onPress={close}
-            />
-          </View>
-          <ScrollView
-            style={styles.scroll}
-            contentContainerStyle={styles.content}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-          >
+    <FilterSheet
+      title="Filtry wyjazdów"
+      description="Wybierz typ ogłoszenia, termin, miejsce i klimat."
+      onClose={onClose}
+      footer={<>
+        <Button label="Wyczyść" variant="secondary" onPress={() => setDraft({ ...INITIAL_FILTERS })} />
+        <Button label={dateError ? 'Pokaż wyniki' : 'Pokaż wyniki · ' + resultCount} disabled={Boolean(dateError)} onPress={() => {
+          if (dateError) return;
+          Keyboard.dismiss();
+          onApply(draft);
+        }} />
+      </>}
+      overlay={showDateRange ? <DateRangeSheet allowTolerance initialRange={dateRange} initialTolerance={draft.dateFlexibilityDays}
+        onClose={() => setShowDateRange(false)} onApply={(range, tolerance) => {
+          setDraft(current => updateDiscoveryDateRange(current, range, tolerance));
+          setShowDateRange(false);
+        }} /> : null}
+    >
             <View style={layout.stack}>
               <FieldLabel>Typ ogłoszenia</FieldLabel>
               <AppText variant="caption" color="textSecondary">
@@ -218,7 +178,7 @@ export function DiscoveryFiltersSheet({
             </View>
             <View style={layout.stack}>
               <View style={layout.row}>
-                <FieldLabel style={styles.flex}>
+                <FieldLabel style={{ flex: 1 }}>
                   Termin wyjazdu
                 </FieldLabel>
                 {draft.customDateRange ? (
@@ -342,70 +302,6 @@ export function DiscoveryFiltersSheet({
                 ))}
               </ChipRow>
             </View>
-          </ScrollView>
-          <View style={[styles.footer, { borderTopColor: theme.border }]}>
-            <Button
-              label="Wyczyść"
-              variant="secondary"
-              onPress={() => setDraft({ ...INITIAL_FILTERS })}
-            />
-            <Button
-              label={
-                dateError ? 'Pokaż wyniki' : 'Pokaż wyniki · ' + resultCount
-              }
-              disabled={Boolean(dateError)}
-              onPress={() => {
-                if (dateError) return;
-                Keyboard.dismiss();
-                onApply(draft);
-              }}
-            />
-          </View>
-          {showDateRange ? (
-            <DateRangeSheet
-              allowTolerance
-              initialRange={dateRange}
-              initialTolerance={draft.dateFlexibilityDays}
-              onClose={() => setShowDateRange(false)}
-              onApply={(range, tolerance) => {
-                setDraft((current) =>
-                  updateDiscoveryDateRange(current, range, tolerance),
-                );
-                setShowDateRange(false);
-              }}
-            />
-          ) : null}
-        </SheetSurface>
-      </KeyboardAvoidingView>
-    </SheetModal>
+    </FilterSheet>
   );
 }
-const styles = StyleSheet.create({
-  overlay: { flex: 1, justifyContent: 'flex-end', alignItems: 'center' },
-  backdrop: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
-  sheet: {
-    width: '100%',
-    maxWidth: MaxContentWidth,
-    height: '90%',
-    maxHeight: 800,
-    borderTopLeftRadius: Radius.hero,
-    borderTopRightRadius: Radius.hero,
-    overflow: 'hidden',
-  },
-  flex: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    padding: Spacing.three,
-    borderBottomWidth: 1,
-  },
-  scroll: { flex: 1, minHeight: 0 },
-  content: { padding: Spacing.three, gap: Spacing.four },
-  footer: {
-    paddingHorizontal: Spacing.three,
-    paddingTop: Spacing.three,
-    borderTopWidth: 1,
-    gap: Spacing.two,
-  },
-});

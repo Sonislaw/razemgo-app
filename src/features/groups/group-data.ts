@@ -1,11 +1,13 @@
 import type { AnimalKind } from '../../types/animals';
 import type { TravelGroup, ChildAgeBand, TripProposal } from '../../types/travel';
 import type { ProfileAvatarId } from '../../types/avatar';
+import type { GroupCompatibility, GroupCompatibilityRow } from './group-compatibility';
 
 export interface PublicGroup {
   group: TravelGroup;
   about: string;
   activeTripCount: number;
+  compatibility?: GroupCompatibility;
 }
 export interface PublicGroupDetail extends PublicGroup { trips: TripProposal[] }
 export interface GroupVisibility { discoverable: boolean; about: string }
@@ -19,20 +21,25 @@ export interface GroupFilters {
   hasTrips: boolean;
 }
 export type GroupCursor = { name: string; id: string };
-export interface GroupPage { items: PublicGroup[]; hasMore: boolean; cursor: GroupCursor | null }
+export type GroupSort = 'compatibility' | 'alphabetical';
+export type RankedGroupCursor = GroupCursor & { score: number | null; sort: GroupSort };
+export interface GroupPage { items: PublicGroup[]; hasMore: boolean; cursor: RankedGroupCursor | null }
 export const INITIAL_GROUP_FILTERS: GroupFilters = {
-  name: '', groupKinds: ['family'], childAgeBands: [], travelModes: [], interests: [], animalKinds: [], hasTrips: false,
+  name: '', groupKinds: [], childAgeBands: [], travelModes: [], interests: [], animalKinds: [], hasTrips: false,
 };
 export type PublicGroupRow = {
   crew: { id: string; name: string; avatar_id: ProfileAvatarId; kind: TravelGroup['kind']; adult_count: number;
     child_count: number; child_age_bands: ChildAgeBand[]; travel_mode: string; interests: string[]; animal_kinds: AnimalKind[] };
   about: string; active_trip_count: number;
+  compatibility?: GroupCompatibilityRow;
 };
 export function publicGroupFromRow(row: PublicGroupRow): PublicGroup {
   const g = row.crew;
   return { group: { id: g.id, name: g.name, avatarId: g.avatar_id, kind: g.kind, adultCount: g.adult_count,
     childCount: g.child_count, childAgeBands: g.child_age_bands, travelModes: [g.travel_mode], interests: g.interests,
-    animals: { animals: g.animal_kinds.map(kind => ({ kind })) } }, about: row.about, activeTripCount: row.active_trip_count };
+    animals: { animals: g.animal_kinds.map(kind => ({ kind })) } }, about: row.about, activeTripCount: row.active_trip_count,
+    ...(row.compatibility ? { compatibility: { score: row.compatibility.score, reasons: row.compatibility.reasons,
+      limitedData: row.compatibility.limited_data, evaluatedWeight: row.compatibility.evaluated_weight } } : {}) };
 }
 export function groupFiltersPayload(filters: GroupFilters) {
   return { name: filters.name.trim(), group_kinds: filters.groupKinds, child_age_bands: filters.childAgeBands,
@@ -54,4 +61,11 @@ export function groupDirectoryError(error: unknown) {
   if ((error as { code?: string })?.code === 'PGRST202')
     return 'Wyszukiwanie ekip wymaga nowej migracji backendu. Ta wersja funkcji jest przygotowana lokalnie.';
   return 'Nie udało się pobrać ekip. Sprawdź połączenie i spróbuj ponownie.';
+}
+export function sortPublicGroups(groups: PublicGroup[], sort: GroupSort) {
+  return [...groups].sort((a, b) => {
+    const score = sort === 'compatibility' ? (b.compatibility?.score ?? -1) - (a.compatibility?.score ?? -1) : 0;
+    const first = normalizeGroupSearch(a.group.name), second = normalizeGroupSearch(b.group.name);
+    return score || (first < second ? -1 : first > second ? 1 : a.group.id.localeCompare(b.group.id));
+  });
 }

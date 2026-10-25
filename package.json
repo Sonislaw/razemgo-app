@@ -64,7 +64,7 @@
     "test:animals": "node --test scripts/animals.test.mjs",
     "start:dev": "expo start --dev-client --scheme razemgo-dev",
     "start:demo": "node scripts/start-local-demo.mjs",
-    "test:groups": "node --test scripts/groups.test.mjs scripts/groups-backend.test.mjs",
+    "test:groups": "node --test scripts/groups.test.mjs scripts/groups-backend.test.mjs scripts/group-compatibility-backend.test.mjs",
     "check:preview": "node scripts/check-preview.mjs",
     "check:dev": "node scripts/check-development.mjs",
     "build:dev": "npx eas-cli@latest build --platform android --profile development",

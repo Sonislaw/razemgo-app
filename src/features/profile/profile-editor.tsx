@@ -69,7 +69,7 @@ export default function ProfileEditor({
   const show = (name: ProfileSection) =>
     onboarding
       ? ['crew', 'travel'].includes(name)
-      : !sectionName || sectionName === name;
+      : sectionName ? sectionName === name : name !== 'matching';
   const back = () => {
     Keyboard.dismiss();
     router.dismissTo(from === 'home' ? '/' : '/profile');
@@ -102,7 +102,6 @@ export default function ProfileEditor({
       {show('crew') ? (
         <Card>
           <SectionTitle title="Moja ekipa" />
-          {!onboarding ? <Button label="Opis publiczny i widoczność" variant="secondary" onPress={() => router.push('/group-visibility')} /> : null}
           <ProfileAvatarPicker
             value={draft.group.avatarId}
             onChange={(avatarId) =>

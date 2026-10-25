@@ -116,6 +116,7 @@ async function backend(context, existingState) {
     }
     if (url.pathname.endsWith('/logout')) return respond({});
     if (url.pathname === '/rest/v1/rpc/get_my_account_access') return respond({is_admin:false,suspended:false,hidden_trip_ids:[]});
+    if (url.pathname === '/rest/v1/rpc/get_my_group_visibility') return respond({ discoverable: true, about: '' });
     if (url.pathname.endsWith('/user')) {
       if (state.deleted.includes(id))
         return respond(
@@ -247,9 +248,21 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
   }
   await page.goto('/profile');
   await expect(page.getByText('Ekipa A', { exact: true })).toBeVisible();
+  const matchingCard = page.getByRole('button', { name: 'Edytuj: Kogo chcę poznać?', exact: true });
+  await matchingCard.click();
+  await expect(page.getByRole('textbox', { name: 'Nazwa ekipy', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Towarzystwo: Pary', exact: true }).click();
+  await page.getByRole('button', { name: 'Preferowany wiek dzieci: 7–9 lat', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Kilka słów o towarzystwie', exact: true }).fill('Chcę poznać miłośników spokojnych wyjazdów.');
+  await page.getByRole('button', { name: 'Zapisz zmiany', exact: true }).click();
+  await expect(page).toHaveURL('http://localhost:8085/profile');
+  await expect(matchingCard).toContainText('Chcę poznać miłośników spokojnych wyjazdów.');
+  await expect(matchingCard).toContainText('Pary');
+  await expect(matchingCard).toContainText('7–9 lat');
   await page
     .getByRole('button', { name: 'Edytuj profil', exact: true })
     .click();
+  await expect(page.getByRole('textbox', { name: 'Kilka słów o towarzystwie', exact: true })).toHaveCount(0);
   await page
     .getByRole('textbox', { name: 'Nazwa ekipy', exact: true })
     .fill('Ekipa po zmianie');
@@ -268,6 +281,9 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
   await expect(
     page.getByText('Ekipa po zmianie', { exact: true }),
   ).toBeVisible();
+  expect(state.profiles.get(A).preferences.group_kinds).toContain('couple');
+  expect(state.profiles.get(A).preferences.child_age_bands).toContain('7–9');
+  await expect(matchingCard).toContainText('Chcę poznać miłośników spokojnych wyjazdów.');
   state.loadFail = true;
   await page.reload();
   await expect(

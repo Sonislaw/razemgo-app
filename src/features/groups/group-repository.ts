@@ -1,16 +1,24 @@
 import { backendRequest } from '@/lib/backend-request';
 import { getSupabase } from '@/lib/supabase';
 import { proposalFromRow } from '@/features/trips/trip-mapper';
-import { groupFiltersPayload, publicGroupFromRow, type GroupCursor, type GroupFilters, type GroupPage,
+import { groupFiltersPayload, publicGroupFromRow, type RankedGroupCursor, type GroupSort, type GroupFilters, type GroupPage,
   type GroupVisibility, type PublicGroupDetail, type PublicGroupRow } from './group-data';
 
-export async function fetchPublicGroups(filters: GroupFilters, cursor?: GroupCursor): Promise<GroupPage> {
-  const { data, error } = await backendRequest(signal => getSupabase().rpc('list_public_groups', {
-    filters: groupFiltersPayload(filters), after_name: cursor?.name ?? null, after_id: cursor?.id ?? null,
+export async function fetchPublicGroups(filters: GroupFilters, cursor?: RankedGroupCursor, sort: GroupSort = 'compatibility'): Promise<GroupPage> {
+  const { data, error } = await backendRequest(signal => getSupabase().rpc('list_ranked_public_groups', {
+    filters: groupFiltersPayload(filters), sort_mode: sort, after_cursor: cursor ?? null,
   }).abortSignal(signal), 'groups.search');
   if (error) throw error;
   if (!data || !Array.isArray(data.items)) throw new Error('Missing group directory');
   return { items: (data.items as PublicGroupRow[]).map(publicGroupFromRow), hasMore: data.has_more, cursor: data.cursor };
+}
+export async function fetchPublicGroupCount(filters: GroupFilters): Promise<number> {
+  const { data, error } = await backendRequest(signal => getSupabase().rpc('count_public_groups', {
+    filters: groupFiltersPayload(filters),
+  }).abortSignal(signal), 'groups.search');
+  if (error) throw error;
+  if (!Number.isSafeInteger(data) || data === null || data < 0) throw new Error('Missing group count');
+  return data;
 }
 export async function fetchPublicGroup(id: string): Promise<PublicGroupDetail | null> {
   const { data, error } = await backendRequest(signal => getSupabase().rpc('get_public_group', { target_group_id: id }).abortSignal(signal), 'groups.detail');

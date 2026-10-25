@@ -7,7 +7,7 @@ import type { TripRow, PublicTripRow, tripToPayload } from '../features/trips/tr
 import type { MailboxRow, MessageRow } from '../features/messaging/messaging-mapper';
 import type { NotificationsPage, NotificationPreferences } from '../features/notifications/notification-types';
 import type { AccountAccess,ReportsPage,ReportDetail } from '../features/moderation/moderation-types';
-import type { GroupCursor, GroupVisibility, PublicGroupRow, groupFiltersPayload } from '../features/groups/group-data';
+import type { GroupCursor, RankedGroupCursor, GroupSort, GroupVisibility, PublicGroupRow, groupFiltersPayload } from '../features/groups/group-data';
 
 // Keep in sync with supabase/migrations. Replace using Supabase type generation after linking.
 export interface Database {
@@ -38,6 +38,9 @@ export interface Database {
       save_my_group_visibility: { Args: { is_discoverable: boolean; about_text: string }; Returns: GroupVisibility };
       list_public_groups: { Args: { filters?: ReturnType<typeof groupFiltersPayload>; after_name?: string | null; after_id?: string | null };
         Returns: { items: PublicGroupRow[]; has_more: boolean; cursor: GroupCursor | null } };
+      list_ranked_public_groups: { Args: { filters?: ReturnType<typeof groupFiltersPayload>; sort_mode?: GroupSort; after_cursor?: RankedGroupCursor | null };
+        Returns: { items: PublicGroupRow[]; has_more: boolean; cursor: RankedGroupCursor | null } };
+      count_public_groups: { Args: { filters?: ReturnType<typeof groupFiltersPayload> }; Returns: number };
       get_public_group: { Args: { target_group_id: string }; Returns: (PublicGroupRow & { trips: PublicTripRow[] }) | null };
       send_profile_invitation: { Args: { target_group_id: string; message_text: string; request_key: string }; Returns: string };
       report_profile: { Args: { target_group_id: string; report_reason: string; request_key: string }; Returns: string };

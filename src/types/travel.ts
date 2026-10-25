@@ -7,6 +7,7 @@ export type LandscapeKind = 'coast' | 'lake' | 'mountain' | 'forest';
 
 export interface TravelGroup {
   id: string;
+  crewNumber?: number;
   name: string;
   avatarId?: ProfileAvatarId;
   kind: 'family' | 'couple' | 'solo' | 'friends';

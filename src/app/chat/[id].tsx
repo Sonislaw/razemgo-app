@@ -50,6 +50,7 @@ import {
 import { GroupAvatar, MailboxEmpty } from '@/features/messaging/messaging-ui';
 import { useTheme } from '@/hooks/use-theme';
 import type { ChatMessage } from '@/types/messaging';
+import { crewNumberText } from '@/features/profile/crew-number';
 
 export function generateStaticParams() {
   return DEMO_MAILBOX.conversations.map((conversation) => ({
@@ -157,6 +158,7 @@ export default function ChatScreen() {
               {group.name}
             </AppText>
             <AppText variant="caption" color="textSecondary" numberOfLines={1}>
+              {crewNumberText(group.crewNumber) ? crewNumberText(group.crewNumber) + ' · ' : ''}
               {plan ? getTripHeadline(plan) : 'Kontakt z profilu'}
             </AppText>
           </Pressable>

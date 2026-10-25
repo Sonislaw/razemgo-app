@@ -41,6 +41,10 @@ test('actual PostgreSQL migration enforces ownership, validation, atomic saves a
         'utf8',
       ),
     );
+    await db.exec(await readFile(
+      new URL('../supabase/migrations/202610250012_group_name_length.sql', import.meta.url),
+      'utf8',
+    ));
     async function asUser(id) {
       await db.exec(
         `reset role; set role authenticated; select set_config('request.jwt.claim.sub', '${id}', false);`,
@@ -55,6 +59,19 @@ test('actual PostgreSQL migration enforces ownership, validation, atomic saves a
     await asUser(A);
     const saved = await save(profile);
     const id = saved.group.id;
+    await t.test('20-character names save, longer names fail through RPC and direct writes', async () => {
+      const name = 'ą'.repeat(20);
+      const updated = await save({ ...profile, name });
+      assert.equal(updated.group.name, name);
+      assert.equal(updated.group.id, id);
+      await assert.rejects(save({ ...profile, name: name + 'a' }), e => e.code === '23514');
+      await assert.rejects(
+        db.query('update public.travel_groups set name = $1 where id = $2', [name + 'a', id]),
+        e => e.code === '23514',
+      );
+      assert.equal((await db.query('select name from public.travel_groups')).rows[0].name, name);
+      await save(profile);
+    });
     await t.test(
       'UUID and owner are server controlled; repeat saves update one group',
       async () => {

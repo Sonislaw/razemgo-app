@@ -2,6 +2,7 @@ import type { AnimalKind } from '../../types/animals';
 import type { TravelGroup, ChildAgeBand, TripProposal } from '../../types/travel';
 import type { ProfileAvatarId } from '../../types/avatar';
 import type { GroupCompatibility, GroupCompatibilityRow } from './group-compatibility';
+import { matchesCrewSearch } from '../profile/crew-number.ts';
 
 export interface PublicGroup {
   group: TravelGroup;
@@ -30,14 +31,14 @@ export const INITIAL_GROUP_FILTERS: GroupFilters = {
   name: '', groupKinds: [], childAgeBands: [], travelModes: [], interests: [], animalKinds: [], hasTrips: false, onlineOnly: false, favoritesOnly: false,
 };
 export type PublicGroupRow = {
-  crew: { id: string; name: string; avatar_id: ProfileAvatarId; kind: TravelGroup['kind']; adult_count: number;
+  crew: { id: string; crew_number?: number; name: string; avatar_id: ProfileAvatarId; kind: TravelGroup['kind']; adult_count: number;
     child_count: number; child_age_bands: ChildAgeBand[]; travel_mode: string; interests: string[]; animal_kinds: AnimalKind[] };
   about: string; active_trip_count: number;
   compatibility?: GroupCompatibilityRow;
 };
 export function publicGroupFromRow(row: PublicGroupRow): PublicGroup {
   const g = row.crew;
-  return { group: { id: g.id, name: g.name, avatarId: g.avatar_id, kind: g.kind, adultCount: g.adult_count,
+  return { group: { id: g.id, ...(g.crew_number ? { crewNumber: g.crew_number } : {}), name: g.name, avatarId: g.avatar_id, kind: g.kind, adultCount: g.adult_count,
     childCount: g.child_count, childAgeBands: g.child_age_bands, travelModes: [g.travel_mode], interests: g.interests,
     animals: { animals: g.animal_kinds.map(kind => ({ kind })) } }, about: row.about, activeTripCount: row.active_trip_count,
     ...(row.compatibility ? { compatibility: { score: row.compatibility.score, reasons: row.compatibility.reasons,
@@ -53,8 +54,7 @@ export function normalizeGroupSearch(value: string) {
 }
 export function filterPublicGroups(groups: PublicGroup[], filters: GroupFilters, onlineGroupIds: ReadonlySet<string> = new Set(), favoriteGroupIds: ReadonlySet<string> = new Set()) {
   const overlaps = <T,>(selected: T[], actual: T[]) => !selected.length || selected.some(x => actual.includes(x));
-  const name = normalizeGroupSearch(filters.name.trim());
-  return groups.filter(({ group, activeTripCount }) => normalizeGroupSearch(group.name).includes(name)
+  return groups.filter(({ group, activeTripCount }) => matchesCrewSearch(group.name, group.crewNumber, filters.name)
     && overlaps(filters.groupKinds, [group.kind]) && overlaps(filters.childAgeBands, group.childAgeBands)
     && overlaps(filters.travelModes, group.travelModes) && overlaps(filters.interests, group.interests)
     && overlaps(filters.animalKinds, group.animals.animals.map(x => x.kind)) && (!filters.hasTrips || activeTripCount > 0)

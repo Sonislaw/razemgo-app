@@ -15,7 +15,10 @@ import {
 import { CHILD_AGE_BANDS } from '@/data/mocks/travel';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { useProfile } from '@/features/profile/profile-context';
-import { cloneProfile } from '@/features/profile/profile-data';
+import {
+  cloneProfile,
+  MAX_GROUP_NAME_LENGTH,
+} from '@/features/profile/profile-data';
 import {
   ProfileCounter,
   ProfileTextField,
@@ -115,7 +118,8 @@ export default function ProfileEditor({
             label="Nazwa ekipy"
             required
             value={draft.group.name}
-            maxLength={40}
+            maxLength={MAX_GROUP_NAME_LENGTH}
+            hint="Maksymalnie 20 znaków."
             onChangeText={(name) =>
               setDraft((current) => ({
                 ...current,

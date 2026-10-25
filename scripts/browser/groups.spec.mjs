@@ -26,7 +26,9 @@ async function groupBackend(context, store) {
         if (store.failGroups) return respond({ code: store.missingGroups ? 'PGRST202' : '503', message: 'Local test failure' }, store.missingGroups ? 404 : 503);
       }
       const f = body.filters;
-      const match = (store.publicProfiles.get(other)?.discoverable ?? true) && (!f.name || otherCrew.name.toLowerCase().includes(f.name.toLowerCase()))
+      const query = f.name?.trim() ?? '';
+      const match = (store.publicProfiles.get(other)?.discoverable ?? true) && (!query || (/^#?\s*\d+$/.test(query)
+        ? Number(query.replace(/^#?\s*/, '')) === otherCrew.crew_number : otherCrew.name.toLowerCase().includes(query.toLowerCase())))
         && (!f.group_kinds.length || f.group_kinds.includes(otherCrew.kind)) && !f.has_trips
         && (!f.online_only || [...store.presence.values()].some(p => p.groupId === other && p.online))
         && (!f.favorites_only || store.favoriteGroups.get(id)?.has(other))
@@ -67,6 +69,33 @@ async function groupBackend(context, store) {
     }
   });
 }
+
+test('crew numbers identify profiles and conversations and support exact live-count search', async ({ page, context }) => {
+  test.setTimeout(90000);
+  const store = state(), invitation = '00000000-0000-4000-8000-000000009101', chat = '00000000-0000-4000-8000-000000009102';
+  store.invitations.push({ id: invitation, sender_group_id: groupId(A), recipient_group_id: groupId(B), context_kind: 'profile',
+    trip_id: null, trip_reference: null, source_trip_id: null, trip_snapshot: null, source_trip_snapshot: null,
+    text: 'Poznajmy się!', status: 'accepted', created_at: '2026-10-24T10:00:00Z' });
+  store.conversations.push({ id: chat, invitation_id: invitation, sender_group_id: groupId(A), recipient_group_id: groupId(B), updated_at: '2026-10-24T10:00:00Z' });
+  await groupBackend(context, store); await login(page);
+  await page.goto('/profile'); await expect(page.getByTestId('crew-number-' + groupId(A))).toHaveText('Ekipa #104827');
+  await page.goto('/explore'); await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
+  const card = page.getByTestId('public-group-' + groupId(B));
+  await expect(card).toContainText('Ekipa #104828');
+  await page.setViewportSize({ width: 320, height: 844 });
+  await card.screenshot({ path: '.expo/crew-number-card-small.png' });
+  await page.getByRole('button', { name: 'Filtry ekip', exact: true }).click();
+  const query = page.getByRole('textbox', { name: 'Szukaj po nazwie lub numerze ekipy', exact: true });
+  await query.fill('#104828'); await expect(page.getByRole('button', { name: 'Pokaż wyniki · 1', exact: true })).toBeVisible();
+  await query.fill('#104827'); await expect(page.getByRole('button', { name: 'Pokaż wyniki · 0', exact: true })).toBeVisible();
+  await query.fill('104828'); await page.getByRole('button', { name: 'Pokaż wyniki · 1', exact: true }).click();
+  await expect(card).toBeVisible(); await card.click(); await expect(page).toHaveURL('http://localhost:8085/crew/' + groupId(B));
+  await expect(page.locator('[data-testid="crew-number-' + groupId(B) + '"]:visible')).toHaveText('Ekipa #104828');
+  await page.goto('/chat/' + chat); await expect(page.getByTestId('chat-screen')).toContainText('Ekipa #104828');
+  await page.getByRole('button', { name: 'Opcje bezpieczeństwa rozmowy', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('Ekipa #104828');
+  await page.getByRole('dialog').screenshot({ path: '.expo/crew-number-chat-small.png' });
+});
 
 test('online avatar dots follow another account, backgrounding, reconnection and logout', async ({ page, context, browser }) => {
   const store = state(); await groupBackend(context, store);
@@ -194,26 +223,26 @@ test('directory → profile without trips → invitation retry → accepted chat
     const card = page.getByTestId('public-group-' + groupId(B));
     await expect(card).toBeVisible(); expect(store.lastGroupFilters.group_kinds).toEqual([]);
     await expect(page.getByRole('button', { name: 'Wyczyść filtry ekip', exact: true })).toHaveCount(0);
-    await expect(page.getByRole('textbox', { name: 'Szukaj po nazwie ekipy', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('textbox', { name: 'Szukaj po nazwie lub numerze ekipy', exact: true })).toHaveCount(0);
     await page.getByRole('button', { name: 'Filtry ekip', exact: true }).click();
-    await page.getByRole('textbox', { name: 'Szukaj po nazwie ekipy', exact: true }).fill('Nie zapisuj');
+    await page.getByRole('textbox', { name: 'Szukaj po nazwie lub numerze ekipy', exact: true }).fill('Nie zapisuj');
     await page.getByRole('button', { name: 'Zamknij filtry bez zmian', exact: true }).click();
     await expect(card).toBeVisible(); expect(store.lastGroupFilters.name).toBe('');
     await page.getByRole('button', { name: 'Filtry ekip', exact: true }).click();
-    await expect(page.getByRole('textbox', { name: 'Szukaj po nazwie ekipy', exact: true })).toHaveValue('');
-    await page.getByRole('textbox', { name: 'Szukaj po nazwie ekipy', exact: true }).fill('Nieistniejąca');
+    await expect(page.getByRole('textbox', { name: 'Szukaj po nazwie lub numerze ekipy', exact: true })).toHaveValue('');
+    await page.getByRole('textbox', { name: 'Szukaj po nazwie lub numerze ekipy', exact: true }).fill('Nieistniejąca');
     await expect(page.getByRole('button', { name: 'Pokaż wyniki · 0', exact: true })).toBeInViewport({ ratio: 1 });
     await page.screenshot({ path: '.expo/groups-filters-mobile.png', fullPage: true, animations: 'disabled' });
     await page.getByRole('button', { name: /^Pokaż wyniki/ }).click();
     await expect(page.getByText('Jeszcze nie ma tu ekip', { exact: true })).toBeVisible();
     expect(store.lastGroupFilters.name).toBe('Nieistniejąca');
     await page.getByRole('button', { name: 'Filtry ekip', exact: true }).click();
-    await expect(page.getByRole('textbox', { name: 'Szukaj po nazwie ekipy', exact: true })).toHaveValue('Nieistniejąca');
+    await expect(page.getByRole('textbox', { name: 'Szukaj po nazwie lub numerze ekipy', exact: true })).toHaveValue('Nieistniejąca');
     await page.getByRole('button', { name: 'Wyczyść', exact: true }).click();
-    await expect(page.getByRole('textbox', { name: 'Szukaj po nazwie ekipy', exact: true })).toHaveValue('');
+    await expect(page.getByRole('textbox', { name: 'Szukaj po nazwie lub numerze ekipy', exact: true })).toHaveValue('');
     await page.getByRole('button', { name: /^Pokaż wyniki/ }).click(); await expect(card).toBeVisible();
     await page.getByRole('button', { name: 'Filtry ekip', exact: true }).click();
-    await page.getByRole('textbox', { name: 'Szukaj po nazwie ekipy', exact: true }).fill('Nieistniejąca');
+    await page.getByRole('textbox', { name: 'Szukaj po nazwie lub numerze ekipy', exact: true }).fill('Nieistniejąca');
     await page.getByRole('button', { name: /^Pokaż wyniki/ }).click();
     await expect(page.getByText('Jeszcze nie ma tu ekip', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Pokaż wszystkie ekipy', exact: true }).click(); await expect(card).toBeVisible();
@@ -258,7 +287,7 @@ test('live profile counts follow draft filters, ignore stale replies and recover
   await page.goto('/explore'); await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
   await page.getByRole('button', { name: 'Filtry ekip', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Pokaż wyniki · 1', exact: true })).toBeVisible();
-  const name = page.getByRole('textbox', { name: 'Szukaj po nazwie ekipy', exact: true });
+  const name = page.getByRole('textbox', { name: 'Szukaj po nazwie lub numerze ekipy', exact: true });
   store.groupCountDelay = filters => filters.name === 'Brak' ? 800 : 0;
   await name.fill('Brak');
   await expect(page.getByRole('button', { name: 'Pokaż wyniki · …', exact: true })).toBeVisible();

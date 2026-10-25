@@ -16,6 +16,7 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
     exampleReactions: { love: 12, curious: 7, envy: 4 },
     group: {
       id: 'welcome-crew-coast',
+      crewNumber: 200101,
       name: 'Ekipa spod wydm',
       avatarId: 'camp-bear',
       kind: 'family',
@@ -44,6 +45,7 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
     exampleReactions: { adventure: 8, love: 5, applause: 3 },
     group: {
       id: 'welcome-crew-lake',
+      crewNumber: 200102,
       name: 'Kajaki i ognisko',
       avatarId: 'paddle-beaver',
       kind: 'family',
@@ -72,6 +74,7 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
     exampleReactions: { adventure: 11, envy: 8, curious: 5 },
     group: {
       id: 'welcome-crew-mountain',
+      crewNumber: 200103,
       name: 'Na dobrym szlaku',
       avatarId: 'summit-chamois',
       kind: 'couple',
@@ -99,6 +102,7 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
     exampleReactions: { love: 9, applause: 6, curious: 3 },
     group: {
       id: 'welcome-crew-forest',
+      crewNumber: 200104,
       name: 'Leśna ekipa',
       avatarId: 'campfire-squirrel',
       kind: 'family',
@@ -127,6 +131,7 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
     exampleReactions: { curious: 9, applause: 4, love: 3 },
     group: {
       id: 'welcome-crew-idea',
+      crewNumber: 200105,
       name: 'Kierunek przygoda',
       avatarId: 'trail-fox',
       kind: 'friends',

@@ -232,6 +232,10 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
   test.setTimeout(120000);
   const state = await backend(context);
   await login(page);
+  const nameField = page.getByRole('textbox', { name: 'Nazwa ekipy', exact: true });
+  await expect(nameField).toHaveAttribute('maxlength', '20');
+  await nameField.fill('a'.repeat(21));
+  await expect(nameField).toHaveValue('a'.repeat(20));
   await createProfile(page, 'Ekipa A');
   await expect(page).toHaveURL('http://localhost:8085/');
   expect(state.profiles.size).toBe(1);
@@ -269,6 +273,7 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
     .getByRole('button', { name: 'Edytuj profil', exact: true })
     .click();
   await expect(page.getByRole('textbox', { name: 'Kilka słów o towarzystwie', exact: true })).toHaveCount(0);
+  await expect(nameField).toHaveAttribute('maxlength', '20');
   await page
     .getByRole('textbox', { name: 'Nazwa ekipy', exact: true })
     .fill('Ekipa po zmianie');

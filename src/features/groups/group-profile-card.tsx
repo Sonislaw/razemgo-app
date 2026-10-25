@@ -6,6 +6,7 @@ import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 import { AnimalBadge } from '@/features/animals/animal-portrait';
 import type { TravelGroup } from '@/types/travel';
+import { crewNumberText } from '@/features/profile/crew-number';
 
 interface GroupCardContentProps {
   group: TravelGroup;
@@ -34,6 +35,9 @@ export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar 
         <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={64} testID={avatarTestID} decorative={decorativeAvatar} />
         <View style={{ flex: 1, gap: 4 }}>
           <AppText variant="heading" numberOfLines={2}>{group.name}</AppText>
+          {crewNumberText(group.crewNumber) ? <AppText variant="caption" color="textSecondary" testID={'crew-number-' + group.id}>
+            {crewNumberText(group.crewNumber)}
+          </AppText> : null}
           {expanded ? <AppText variant="caption" color="textSecondary">
             {GROUP_KIND_OPTIONS.find(option => option.value === group.kind)?.label}
           </AppText> : null}

@@ -31,6 +31,7 @@ import {
 } from '@/features/messaging/messaging-ui';
 import { useTheme } from '@/hooks/use-theme';
 import { PushPermissionCard } from '@/features/notifications/push-permission-card';
+import { crewNumberText } from '@/features/profile/crew-number';
 import type {
   ContactInvitation,
   Conversation,
@@ -88,6 +89,7 @@ function ConversationRow({ conversation }: { conversation: Conversation }) {
           ) : null}
         </View>
         <AppText variant="caption" color="primaryStrong" numberOfLines={1}>
+          {crewNumberText(group.crewNumber) ? crewNumberText(group.crewNumber) + ' · ' : ''}
           {plan ? getTripHeadline(plan) : 'Kontakt z profilu'}
         </AppText>
         <View style={layout.row}>
@@ -164,6 +166,7 @@ function InvitationCard({ invitation }: { invitation: ContactInvitation }) {
             {group.name}
           </AppText>
           <AppText variant="caption" color="textSecondary">
+            {crewNumberText(group.crewNumber) ? crewNumberText(group.crewNumber) + ' · ' : ''}
             {group.adultCount}{' '}
             {group.adultCount === 1 ? 'dorosły' : 'dorosłych'}
           </AppText>

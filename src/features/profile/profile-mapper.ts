@@ -5,6 +5,7 @@ import type { ProfileAvatarId } from '../../types/avatar';
 
 export type GroupRow = {
   id: string;
+  crew_number?: number;
   owner_user_id: string;
   name: string;
   avatar_id: ProfileAvatarId;
@@ -29,6 +30,7 @@ export function profileFromRows(
   return {
     group: {
       id: group.id,
+      ...(group.crew_number ? { crewNumber: group.crew_number } : {}),
       name: group.name,
       avatarId: group.avatar_id,
       kind: group.kind,

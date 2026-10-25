@@ -18,6 +18,7 @@ export interface ReactionSummary {
 export interface TripReactor {
   id: string; group_id: string; name: string; avatar_id: ProfileAvatarId;
   kind: ReactionKind; updated_at: string; profile_available: boolean;
+  crew_number?: number;
 }
 export interface ReactorsPage { items: TripReactor[]; has_more: boolean }
 export const reactionOption = (kind: ReactionKind) => REACTIONS.find(option => option.kind === kind)!;

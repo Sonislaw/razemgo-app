@@ -10,6 +10,8 @@ import {
   validateAnimals,
 } from '../animals/animal-data.ts';
 
+export const MAX_GROUP_NAME_LENGTH = 20;
+
 export function createEmptyProfile(): TravelerProfile {
   return {
     group: {
@@ -42,6 +44,7 @@ export function cloneProfile(profile: TravelerProfile): TravelerProfile {
   return {
     group: {
       id: profile.group.id,
+      ...(profile.group.crewNumber ? { crewNumber: profile.group.crewNumber } : {}),
       name: profile.group.name,
       avatarId: getProfileAvatar(profile.group.avatarId).id,
       kind: profile.group.kind,
@@ -72,8 +75,11 @@ export function validateProfile(profile: TravelerProfile): string[] {
   const errors: string[] = [];
   const { group, matching } = profile;
   errors.push(...validateAnimals(group.animals.animals));
-  if (group.name.trim().length < 2 || group.name.trim().length > 40)
-    errors.push('Nazwa ekipy powinna mieć od 2 do 40 znaków.');
+  if (
+    group.name.trim().length < 2 ||
+    group.name.trim().length > MAX_GROUP_NAME_LENGTH
+  )
+    errors.push(`Nazwa ekipy powinna mieć od 2 do ${MAX_GROUP_NAME_LENGTH} znaków.`);
   if (
     !Number.isInteger(group.adultCount) ||
     group.adultCount < 1 ||

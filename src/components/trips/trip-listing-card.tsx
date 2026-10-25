@@ -14,6 +14,7 @@ import { useTheme } from '@/hooks/use-theme';
 import type { ChildAgeBand, TravelGroup, TripPlan } from '@/types/travel';
 import { LandscapePhoto } from './landscape-photo';
 import { TripPlanningIcon } from './trip-planning-icon';
+import { crewNumberText } from '@/features/profile/crew-number';
 
 const INTEREST_ICONS: Record<string, IconName> = {
   Plaża: 'water',
@@ -160,6 +161,7 @@ export function TripListingCard({
             <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={44} decorative />
             <View style={styles.flex}>
               <AppText variant="label">{group.name}</AppText>
+              {crewNumberText(group.crewNumber) ? <AppText variant="caption" color="textSecondary">{crewNumberText(group.crewNumber)}</AppText> : null}
               <AppText variant="caption" color="textSecondary">
                 {group.adultCount} {group.adultCount === 1 ? 'dorosły' : 'dorosłych'}
                 {travelMode ? ' · ' + (travelMode === 'Van' ? 'Kampervan' : travelMode) : ''}

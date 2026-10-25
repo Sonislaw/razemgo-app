@@ -82,6 +82,7 @@ export function proposalFromRow({ trip, crew }: PublicTripRow): TripProposal {
     trip: tripFromRow(trip),
     group: {
       id: crew.id, name: crew.name, avatarId: crew.avatar_id, kind: crew.kind,
+      ...(crew.crew_number ? { crewNumber: crew.crew_number } : {}),
       adultCount: crew.adult_count, childCount: crew.child_count,
       childAgeBands: [...crew.child_age_bands], travelModes: [crew.travel_mode],
       interests: [...crew.interests],

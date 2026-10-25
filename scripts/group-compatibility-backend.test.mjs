@@ -71,7 +71,7 @@ test('profile ranking: server parity, bilateral private preferences, global pagi
       assert.equal(page.items[2].compatibility.score,null);
     });
     await t.test('ranking happens before the 20-result limit and stable cursors cover scored and unscored ties',async()=>{
-      for(let i=0;i<23;i++) await create({...base,name:'Alphabetical first '+String(i).padStart(2,'0'),travel_mode:'Namiot'});
+      for(let i=0;i<23;i++) await create({...base,name:'Alpha first '+String(i).padStart(2,'0'),travel_mode:'Namiot'});
       await as(0); const first=await list(); assert.equal(first.items.length,20); assert.equal(first.has_more,true);
       assert.equal(first.items[0].crew.id,profiles[1].group.id); assert.equal(first.items[0].compatibility.score,100);
       const seen=[...first.items]; let page=first;

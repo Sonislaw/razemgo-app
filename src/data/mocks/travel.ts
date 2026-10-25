@@ -35,6 +35,7 @@ export const DEMO_DATE_RANGES: DemoDateRange[] = [
 ];
 export const MY_GROUP: TravelGroup = {
   id: 'demo-us',
+  crewNumber: 100001,
   name: 'Nasza rodzina',
   kind: 'family',
   adultCount: 2,
@@ -47,6 +48,7 @@ export const MY_GROUP: TravelGroup = {
 export const DEMO_GROUPS: TravelGroup[] = [
   {
     id: 'demo-1',
+    crewNumber: 100101,
     name: 'Rodzina A',
     avatarId: 'camp-bear',
     kind: 'family',
@@ -59,6 +61,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
   },
   {
     id: 'demo-2',
+    crewNumber: 100102,
     name: 'Rodzina B',
     avatarId: 'paddle-beaver',
     kind: 'family',
@@ -71,6 +74,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
   },
   {
     id: 'demo-3',
+    crewNumber: 100103,
     name: 'Para C',
     avatarId: 'road-wolf',
     kind: 'couple',
@@ -83,6 +87,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
   },
   {
     id: 'demo-4',
+    crewNumber: 100104,
     name: 'Rodzina D',
     avatarId: 'meadow-hedgehog',
     kind: 'family',
@@ -95,6 +100,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
   },
   {
     id: 'demo-5',
+    crewNumber: 100105,
     name: 'Grupa E',
     avatarId: 'campfire-squirrel',
     kind: 'friends',
@@ -107,6 +113,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
   },
   {
     id: 'demo-6',
+    crewNumber: 100108,
     name: 'Rodzina F',
     avatarId: 'summit-chamois',
     kind: 'family',

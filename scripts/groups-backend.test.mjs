@@ -62,7 +62,7 @@ test('group directory and profile invitations: real local SQL, privacy, safety a
       assert.equal((await rpc('get_my_group_visibility')).discoverable, true);
       await as(0); assert.ok((await list()).items.some(x => x.crew.id === saved.group.id));
       await as(index); await visible(false, 'Opis ukrytej ekipy.');
-      await rpc('save_my_profile', [{ ...profile, name: 'Nowa nazwa ukrytej ekipy' }]);
+      await rpc('save_my_profile', [{ ...profile, name: 'Nowa nazwa ukrytej' }]);
       assert.deepEqual(await rpc('get_my_group_visibility'), { discoverable: false, about: 'Opis ukrytej ekipy.' });
       await as(0); assert.equal((await list()).items.some(x => x.crew.id === saved.group.id), false);
       await root(); await db.query('delete from auth.users where id=$1', [users[index]]);

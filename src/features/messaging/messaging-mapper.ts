@@ -2,7 +2,7 @@ import type { ProfileAvatarId } from '../../types/avatar';
 import type { ChatMessage, ContactInvitation, Conversation, LocalReport, MessagingContact } from '../../types/messaging';
 import type { TripPlan } from '../../types/travel';
 
-export type ContactRow = { id: string; name: string; avatar_id: ProfileAvatarId; adult_count: number };
+export type ContactRow = { id: string; crew_number?: number; name: string; avatar_id: ProfileAvatarId; adult_count: number };
 export type TripSnapshot = {
   id: string; group_id: string; mode: 'planned' | 'flexible'; description: string;
   start_date: string; end_date: string; location_name: string; location_region: string;
@@ -61,7 +61,7 @@ export function mailboxFromRow(row: MailboxRow, groupId: string): MailboxData {
     selfReadSequence: Number(c.self_read_sequence), otherReadSequence: Number(c.other_read_sequence),
   }));
   return { invitations, conversations,
-    contacts: Object.fromEntries(row.contacts.map(c => [c.id, { id: c.id, name: c.name, avatarId: c.avatar_id, adultCount: c.adult_count }])),
+    contacts: Object.fromEntries(row.contacts.map(c => [c.id, { id: c.id, ...(c.crew_number ? { crewNumber: c.crew_number } : {}), name: c.name, avatarId: c.avatar_id, adultCount: c.adult_count }])),
     trips: Object.fromEntries(row.invitations.flatMap(i => [i.trip_snapshot, i.source_trip_snapshot].filter((t): t is TripSnapshot => !!t).map(t => [t.id, snapshotToTrip(t)]))),
     messages: row.conversations.flatMap(c => c.last_message ? [messageFromRow(c.last_message, groupId, conversations.find(x => x.id === c.id))] : []),
     blockedGroupIds: row.blocked_group_ids,

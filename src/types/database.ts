@@ -22,8 +22,8 @@ export interface Database {
       };
       travel_groups: {
         Row: GroupRow & { created_at: string; updated_at: string };
-        Insert: Omit<GroupRow, 'id'> & { id?: string };
-        Update: Partial<GroupRow>;
+        Insert: Omit<GroupRow, 'id' | 'crew_number'> & { id?: string };
+        Update: Partial<Omit<GroupRow, 'crew_number'>>;
         Relationships: [];
       };
       group_preferences: {

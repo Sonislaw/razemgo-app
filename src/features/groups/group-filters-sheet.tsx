@@ -53,7 +53,7 @@ export function GroupFiltersSheet({ filters, onApply, onClose }: {
     setDraft(prev => { const items = prev[key] as (typeof value)[];
       return { ...prev, [key]: items.includes(value) ? items.filter(x => x !== value) : [...items, value] }; });
   };
-  return <FilterSheet title="Filtry ekip" description="Wybierz nazwę, rodzaj ekipy i zainteresowania." onClose={onClose}
+  return <FilterSheet title="Filtry ekip" description="Wyszukaj po nazwie lub numerze i wybierz pozostałe kryteria." onClose={onClose}
     footer={<>
       {countError ? <View style={layout.row}>
         <AppText variant="caption" color="textSecondary" accessibilityRole="alert" style={{ flex: 1 }}>Nie udało się sprawdzić liczby profili.</AppText>
@@ -63,7 +63,7 @@ export function GroupFiltersSheet({ filters, onApply, onClose }: {
       <Button label={resultCount !== null ? 'Pokaż wyniki · ' + resultCount : countError ? 'Pokaż wyniki' : 'Pokaż wyniki · …'}
         onPress={() => { Keyboard.dismiss(); onApply({ ...draft, name: draft.name.trim() }); }} />
     </>}>
-    <ProfileTextField label="Szukaj po nazwie ekipy" value={draft.name} onChangeText={name => setDraft(prev => ({ ...prev, name }))} maxLength={80} />
+    <ProfileTextField label="Szukaj po nazwie lub numerze ekipy" value={draft.name} onChangeText={name => setDraft(prev => ({ ...prev, name }))} maxLength={80} />
     <View style={layout.row}><AppText style={{ flex: 1 }}>Tylko ulubione</AppText>
       <Switch accessibilityLabel="Tylko ulubione" value={draft.favoritesOnly} onValueChange={favoritesOnly => setDraft(prev => ({ ...prev, favoritesOnly }))} /></View>
     <View style={layout.row}><AppText style={{ flex: 1 }}>Tylko online</AppText>

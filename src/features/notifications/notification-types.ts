@@ -10,6 +10,7 @@ export interface NotificationEntry {
   read_at: string | null;
   actor_group_id: string;
   actor_name: string;
+  actor_crew_number?: number;
   actor_avatar_id: ProfileAvatarId;
   trip_label: string;
   own_trip_id: string | null;

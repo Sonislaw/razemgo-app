@@ -10,7 +10,7 @@ const session=id=>({
 });
 function profile(id){
   return {
-    group:{id:groupId(id),owner_user_id:id,name:id===A?'Ekipa A':'Ekipa B',avatar_id:id===A?'camp-bear':'trail-fox',kind:'family',adult_count:2,child_count:1,child_age_bands:['4–6'],travel_mode:'Kamper',interests:['Rowery'],animal_kinds:[]},
+    group:{id:groupId(id),crew_number:id===A?104827:104828,owner_user_id:id,name:id===A?'Ekipa A':'Ekipa B',avatar_id:id===A?'camp-bear':'trail-fox',kind:'family',adult_count:2,child_count:1,child_age_bands:['4–6'],travel_mode:'Kamper',interests:['Rowery'],animal_kinds:[]},
     preferences:{group_id:groupId(id),group_kinds:['family'],child_age_bands:['4–6'],description:''},
   };
 }
@@ -53,7 +53,7 @@ async function backend(context,store){
       store.reactions.set(key,row);
       let entry=store.notifications.find(n=>n.kind==='trip_reaction'&&n.source_id===row.id);
       if(!entry&&body.reaction_kind){entry={id:'00000000-0000-4000-8000-'+String(store.next++).padStart(12,'0'),kind:'trip_reaction',source_id:row.id,
-        recipient_group_id:trip.group_id,actor_group_id:groupId(id),actor_name:profile(id).group.name,actor_avatar_id:profile(id).group.avatar_id,
+        recipient_group_id:trip.group_id,actor_group_id:groupId(id),actor_name:profile(id).group.name,actor_avatar_id:profile(id).group.avatar_id,actor_crew_number:profile(id).group.crew_number,
         trip_label:trip.description,proposed_trip_id:trip.id,own_trip_id:null,invitation_id:null,conversation_id:null,created_at:row.updated_at,read_at:null};store.notifications.push(entry);}
       if(entry){entry.reaction_kind=body.reaction_kind??entry.reaction_kind;entry.reaction_active=!!body.reaction_kind;
         entry.available=!!body.reaction_kind;if(!body.reaction_kind)entry.read_at??=row.updated_at;}
@@ -64,7 +64,8 @@ async function backend(context,store){
       if(store.failReactorLoad)return respond({message:'Offline'},503);
       const trip=store.trips.get(body.target_trip_id);if(trip?.group_id!==groupId(id))return respond({code:'P0002'},404);
       const rows=[...store.reactions.values()].filter(r=>r.trip_id===trip.id&&r.kind).map(r=>({...r,...{
-        name:profile(r.group_id===groupId(A)?A:B).group.name,avatar_id:profile(r.group_id===groupId(A)?A:B).group.avatar_id,profile_available:true}}));
+        name:profile(r.group_id===groupId(A)?A:B).group.name,avatar_id:profile(r.group_id===groupId(A)?A:B).group.avatar_id,
+        crew_number:profile(r.group_id===groupId(A)?A:B).group.crew_number,profile_available:true}}));
       return respond({items:rows,has_more:false});
     }
     if(url.pathname==='/rest/v1/rpc/get_my_favorites'){

@@ -105,6 +105,22 @@ test('validation rejects blank identity, impossible ages and missing travel mode
   assert.equal(validateProfile(draft).length, 3);
 });
 
+test('crew names accept 2 through 20 characters and reject longer values', () => {
+  const draft = cloneProfile(example);
+  for (const length of [2, 19, 20]) {
+    draft.group.name = 'ą'.repeat(length);
+    assert.deepEqual(validateProfile(draft), []);
+  }
+  for (const length of [0, 1, 21, 40]) {
+    draft.group.name = 'ą'.repeat(length);
+    assert.deepEqual(validateProfile(draft), [
+      'Nazwa ekipy powinna mieć od 2 do 20 znaków.',
+    ]);
+  }
+  draft.group.name = `  ${'ą'.repeat(20)}  `;
+  assert.deepEqual(validateProfile(normalizeProfile(draft)), []);
+});
+
 test('a new profile saves without a home location and older residence data is discarded', () => {
   const draft = createEmptyProfile();
   draft.group.name = 'Nasza ekipa';

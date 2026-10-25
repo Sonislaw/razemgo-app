@@ -3,6 +3,7 @@ import type { TripPlan } from './travel';
 
 export interface MessagingContact {
   id: string;
+  crewNumber?: number;
   name: string;
   avatarId?: ProfileAvatarId;
   adultCount: number;

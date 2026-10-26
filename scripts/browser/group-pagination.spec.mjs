@@ -1,5 +1,6 @@
 import {test,expect} from '@playwright/test';
 import {B,groupId,profile,state,backend,login} from './trip-fixtures.mjs';
+import {expectLoaded,scrollToRow} from './collection-helpers.mjs';
 
 const uuid=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
 
@@ -44,21 +45,21 @@ test('crew pages load five at a time, show progress, retry and restore profile s
   await expect(progress).toBeDisabled();await expect(progress.getByLabel('Wczytywanie kolejnych ekip',{exact:true})).toBeVisible();
   await expect(cards).toHaveCount(5);releaseMore();
   await expect(page.getByRole('alert')).toContainText('Nie udało się pobrać ekip');await expect(cards).toHaveCount(5);
-  failMore=false;await page.getByRole('button',{name:'Spróbuj ponownie',exact:true}).click();await expect(cards).toHaveCount(10);
-  const target=cards.nth(8),id=await target.getAttribute('data-testid');
-  await target.scrollIntoViewIfNeeded();const scroll=await screen.evaluate(el=>el.scrollTop);expect(scroll).toBeGreaterThan(1000);
+  failMore=false;await page.getByRole('button',{name:'Spróbuj ponownie',exact:true}).click();await expectLoaded(screen,10);
+  const id='public-group-'+rows[8].crew.id,target=page.getByTestId(id);
+  await scrollToRow(screen,target);const scroll=await screen.evaluate(el=>el.scrollTop);expect(scroll).toBeGreaterThan(1000);
   await target.click();await expect(page).toHaveURL('http://localhost:8085/crew/'+id.replace('public-group-',''));
   await page.getByRole('button',{name:'Zobacz wyjazd',exact:true}).click();await expect(page).toHaveURL('http://localhost:8085/trip/'+tripId);
   await page.getByRole('button',{name:'Wróć do listy wyjazdów',exact:true}).click();await expect(page).toHaveURL('http://localhost:8085/crew/'+groupId(B));
   await page.getByRole('button',{name:'Wróć',exact:true}).click();await expect(page).toHaveURL('http://localhost:8085/explore');
-  await expect(cards).toHaveCount(10);await expect(page.getByText('Ekipy · 13',{exact:true})).toBeVisible();
+  await expectLoaded(screen,10);await expect(page.getByText('Ekipy · 13',{exact:true})).toBeAttached();
   await expect.poll(async()=>Math.abs(await screen.evaluate(el=>el.scrollTop)-scroll)).toBeLessThan(4);
   const profileButton=page.getByRole('button',{name:'Otwórz profil: Ekipa 08',exact:true});
   await profileButton.scrollIntoViewIfNeeded();const buttonScroll=await screen.evaluate(el=>el.scrollTop);
   await profileButton.click();await expect(page).toHaveURL('http://localhost:8085/crew/'+groupId(B));
   await page.getByRole('button',{name:'Wróć',exact:true}).click();await expect(page).toHaveURL('http://localhost:8085/explore');
-  await expect(cards).toHaveCount(10);await expect.poll(async()=>Math.abs(await screen.evaluate(el=>el.scrollTop)-buttonScroll)).toBeLessThan(4);
-  await page.getByRole('button',{name:'Pokaż więcej ekip',exact:true}).click();await expect(cards).toHaveCount(13);
+  await expectLoaded(screen,10);await expect.poll(async()=>Math.abs(await screen.evaluate(el=>el.scrollTop)-buttonScroll)).toBeLessThan(4);
+  await page.getByRole('button',{name:'Pokaż więcej ekip',exact:true}).click();await expectLoaded(screen,13);
   await expect(page.getByRole('button',{name:'Pokaż więcej ekip',exact:true})).toHaveCount(0);
   expect(calls.every(call=>call.page_size===5)).toBe(true);
   await page.getByRole('tab',{name:'Start',exact:true}).click();await expect(page).toHaveURL('http://localhost:8085/');

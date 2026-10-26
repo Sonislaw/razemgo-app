@@ -1,5 +1,6 @@
 import {test,expect} from '@playwright/test';
 import {B,groupId,profile,state,backend,login} from './trip-fixtures.mjs';
+import {expectLoaded,scrollToRow} from './collection-helpers.mjs';
 
 const uuid=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
 
@@ -37,17 +38,17 @@ test('crew listings fetch 5/10/13 with a spinner, retry and restore the listing 
   await expect(cards).toHaveCount(5);release();
   await expect(screen.getByRole('alert')).toContainText('Nie udało się pobrać ogłoszeń');
   await expect(cards).toHaveCount(5);failMore=false;
-  await screen.getByRole('button',{name:'Spróbuj ponownie',exact:true}).click();await expect(cards).toHaveCount(10);
+  await screen.getByRole('button',{name:'Spróbuj ponownie',exact:true}).click();await expectLoaded(screen,10);
   expect(calls.at(-1).after_cursor).toEqual(calls.at(-2).after_cursor);
   const target=screen.getByTestId('discovery-trip-'+trips[8].id),button=target.getByRole('button',{name:'Zobacz wyjazd',exact:true});
-  await button.scrollIntoViewIfNeeded();const scroll=await screen.evaluate(el=>el.scrollTop);expect(scroll).toBeGreaterThan(1000);
+  await scrollToRow(screen,button);const scroll=await screen.evaluate(el=>el.scrollTop);expect(scroll).toBeGreaterThan(1000);
   const before=calls.length;await button.click();await expect(page).toHaveURL('http://localhost:8085/trip/'+trips[8].id);
   await page.getByRole('button',{name:'Wróć do listy wyjazdów',exact:true}).click();
-  await expect(page).toHaveURL('http://localhost:8085/crew/'+groupId(B));await expect(cards).toHaveCount(10);
+  await expect(page).toHaveURL('http://localhost:8085/crew/'+groupId(B));await expectLoaded(screen,10);
   await expect.poll(()=>calls.length).toBe(before+2);
   await expect.poll(async()=>Math.abs(await screen.evaluate(el=>el.scrollTop)-scroll)).toBeLessThan(4);
   await expect(button).toBeInViewport();
-  await screen.getByRole('button',{name:'Pokaż więcej wyjazdów',exact:true}).click();await expect(cards).toHaveCount(13);
+  await screen.getByRole('button',{name:'Pokaż więcej wyjazdów',exact:true}).click();await expectLoaded(screen,13);
   await expect(screen.getByRole('button',{name:'Pokaż więcej wyjazdów',exact:true})).toHaveCount(0);
   expect(calls.every(call=>call.page_size===5)).toBe(true);
   await page.reload();await expect(cards).toHaveCount(5);

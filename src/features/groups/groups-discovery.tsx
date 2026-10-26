@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import { ActivityIndicator, AppState, Platform, View } from 'react-native';
+import { ActivityIndicator, AppState, Platform } from 'react-native';
 import { Button, EmptyState } from '@/components/ui/primitives';
 import { SortOptionsSheet } from '@/components/ui/sort-options-sheet';
 import { DiscoveryFilterBar, DiscoveryResultsHeader } from '@/features/discovery/discovery-controls';
@@ -20,6 +20,7 @@ import { PRESENCE_POLL_MS } from '@/features/presence/presence-controller';
 import { useFavorites } from '@/features/favorites/favorites-context';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { useTheme } from '@/hooks/use-theme';
+import { CollectionScreen } from '@/components/ui/collection-screen';
 
 const EMPTY_PAGE: GroupPage = { items: [], totalCount: 0, hasMore: false, cursor: null };
 
@@ -28,7 +29,7 @@ const SORT_OPTIONS: { value: GroupSort; label: string }[] = [
   { value: 'alphabetical', label: 'Alfabetycznie' },
 ];
 
-export function GroupsDiscovery() {
+export function GroupsDiscovery({ header, beforeList }: { header?: ReactNode; beforeList?: ReactNode }) {
   const { groupFilters: filters, setGroupFilters: setFilters, groupSort: sort, setGroupSort: setSort } = useDiscovery();
   const theme = useTheme();
   const [showFilters, setShowFilters] = useState(false);
@@ -130,7 +131,10 @@ export function GroupsDiscovery() {
     filters.favoritesOnly ? 'Tylko ulubione' : '',
   ].filter(Boolean).join(' · ');
   const reset = () => setFilters({ ...INITIAL_GROUP_FILTERS });
-  return <View style={{ gap: 16 }}>
+  return <CollectionScreen testID="discovery-screen" header={header} data={items} itemGap={16}
+    keyExtractor={item => item.group.id} renderItem={({ item }) => <GroupCard item={item} onNavigate={preserveOnReturn} />}
+    beforeList={<>
+    {beforeList}
     <DiscoveryFilterBar activeCount={activeCount} summary={summary} placeholder="Nazwa, rodzaj ekipy i zainteresowania"
       filterLabel="Filtry ekip" filterHint="Wybierz nazwę, rodzaj ekipy, wiek dzieci i sposób podróżowania"
       clearLabel="Wyczyść filtry ekip" refreshLabel="Odśwież ekipy" onOpen={() => setShowFilters(true)} onClear={reset} onRefresh={() => void load(true)} />
@@ -138,7 +142,8 @@ export function GroupsDiscovery() {
       sortLabel={sort === 'compatibility' ? 'Zgodność' : 'Alfabetycznie'}
       sortAccessibilityLabel={'Sortowanie ekip: ' + (sort === 'compatibility' ? 'Najwyższa zgodność' : 'Alfabetycznie')}
       onSort={() => setShowSort(true)} />
-    {items.map(item => <GroupCard key={item.group.id} item={item} onNavigate={preserveOnReturn} />)}
+    </>}
+    afterList={<>
     <DataStatus status={isLoadingMore ? 'ready' : status} error={error} label="Wczytywanie ekip" onRetry={() => { void (failedRequest.current === 'more' ? more() : load(true)); }} />
     {status === 'ready' && !items.length ? <EmptyState title="Jeszcze nie ma tu ekip" description="Zmień filtry albo wróć później. W wyszukiwarce pojawiają się widoczne profile ekip."
       action={<Button label="Pokaż wszystkie ekipy" onPress={reset} />} /> : null}
@@ -146,9 +151,11 @@ export function GroupsDiscovery() {
       disabled={isLoadingMore} leading={isLoadingMore ? <ActivityIndicator size="small" color={theme.primaryStrong} accessibilityLabel="Wczytywanie kolejnych ekip" /> : undefined}
       onPress={() => void more()} /> : null}
     <Button label="Ustaw widoczność mojej ekipy" variant="secondary" onPress={() => router.push('/group-visibility')} />
+    </>}
+  >
     {showFilters ? <GroupFiltersSheet filters={filters} onClose={() => setShowFilters(false)} onApply={next => { setFilters(next); setShowFilters(false); }} /> : null}
     {showSort ? <SortOptionsSheet title="Sortowanie ekip" value={sort} options={SORT_OPTIONS}
       caption="Przy sortowaniu po zgodności profile bez wystarczających danych są na końcu. Niska zgodność nie ukrywa ekipy."
       onClose={() => setShowSort(false)} onSelect={value => { setSort(value); setShowSort(false); }} /> : null}
-  </View>;
+  </CollectionScreen>;
 }

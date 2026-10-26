@@ -35,6 +35,9 @@ export function LandscapePhoto({
         (kind === 'mountain' ? { top: '20%', left: '50%' } : 'center')
       }
       recyclingKey={kind}
+      cachePolicy="memory-disk"
+      allowDownscaling
+      transition={0}
       accessible
       accessibilityLabel={`Ilustracja krajobrazu: ${labels[kind]}`}
     />

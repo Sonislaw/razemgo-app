@@ -7,7 +7,6 @@ import {
   AppText,
   Button,
   IconButton,
-  Screen,
   layout,
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
@@ -24,6 +23,7 @@ import { OwnTripCard } from '@/features/trips/trip-ui';
 import { TripActions } from '@/features/trips/trip-actions';
 import { OwnTripFiltersSheet } from '@/features/trips/own-trip-filters';
 import type { OwnTripFilters } from '@/types/owned-trip';
+import { CollectionScreen } from '@/components/ui/collection-screen';
 
 export default function TripsScreen() {
   const { state, refresh } = useOwnTrips();
@@ -59,8 +59,12 @@ function TripsContent() {
   const notice = state.trips.find((trip) => trip.id === noticeId);
   return (
     <>
-      <Screen
+      <CollectionScreen
         key={noticeId ?? 'initial'}
+        testID="own-trips-screen"
+        data={trips}
+        keyExtractor={trip => trip.id}
+        renderItem={({ item: trip }) => <OwnTripCard trip={trip} onMenu={() => setSelectedId(trip.id)} />}
         header={
           <IllustratedPageHeader
             title="Moje wyjazdy"
@@ -89,9 +93,9 @@ function TripsContent() {
             }
           />
         }
-      >
+        beforeList={
         <View style={{ gap: 12 }}>
-          <DataStatus status={status} error={error} onRetry={() => { void refresh(); }} />
+          <DataStatus status={status === 'loading' && state.trips.length ? 'ready' : status} error={error} onRetry={() => { void refresh(); }} />
           {notice ? (
             <View
               accessibilityLiveRegion="polite"
@@ -211,14 +215,8 @@ function TripsContent() {
               />
             </View>
           ) : null}
-          {trips.map((trip) => (
-            <OwnTripCard
-              key={trip.id}
-              trip={trip}
-              onMenu={() => setSelectedId(trip.id)}
-            />
-          ))}
-          {!trips.length && status === 'ready' ? (
+        </View>}
+        empty={status === 'ready' ? (
             <View
               style={{ gap: 12, paddingVertical: 24, alignItems: 'center' }}
             >
@@ -276,8 +274,7 @@ function TripsContent() {
               </View>
             </View>
           ) : null}
-        </View>
-      </Screen>
+      />
       {selected ? (
         <TripActions trip={selected} onClose={() => setSelectedId(null)} />
       ) : null}

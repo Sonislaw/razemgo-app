@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { AppText, Button, Card, EmptyState, Screen, SectionTitle } from '@/components/ui/primitives';
+import { AppText, Button, Card, EmptyState, SectionTitle } from '@/components/ui/primitives';
+import { CollectionScreen } from '@/components/ui/collection-screen';
 import { DataStatus } from '@/components/ui/data-status';
 import { ProfileSubpageHeader } from '@/features/profile/profile-ui';
 import { GroupContactAction } from '@/features/messaging/trip-contact-action';
@@ -23,7 +24,11 @@ export default function PublicGroupScreen() {
   const { setBlock, busy, actionError, state } = useMessaging();
   const blocked = state.blockedGroupIds.includes(id);
   const back = () => router.canGoBack() ? router.back() : router.replace('/explore');
-  return <Screen testID="crew-profile-screen">
+  const available = !!data && !blocked;
+  return <CollectionScreen testID="crew-profile-screen" data={available ? data.trips : []} itemGap={24}
+    keyExtractor={item => item.trip.id}
+    renderItem={({ item }) => <DiscoveryTripCard {...item} onNavigate={preserveOnReturn} facts={{ ageBands: item.group.childAgeBands, matchingAgeBands: [] }} />}
+    beforeList={<>
     <ProfileSubpageHeader title="Profil ekipy" backLabel="Wróć" onBack={back} />
     <FavoritesNotice />
     {!data ? <DataStatus status={status} error={error} label="Wczytywanie profilu ekipy" onRetry={() => void retry()} /> : null}
@@ -39,19 +44,22 @@ export default function PublicGroupScreen() {
         </View>
       </View>
       <SectionTitle title={'Ogłoszenia ekipy · ' + data.activeTripCount} />
-      {data.trips.length ? data.trips.map(p => <DiscoveryTripCard key={p.trip.id} {...p} onNavigate={preserveOnReturn} facts={{ ageBands: p.group.childAgeBands, matchingAgeBands: [] }} />)
-        : <Card><AppText color="textSecondary">Ta ekipa nie ma teraz aktywnych ogłoszeń. Możesz zaprosić ją do kontaktu i wspólnie wymyślić wyjazd.</AppText></Card>}
-      <DataStatus status={loadingMore ? 'ready' : status} error={error} label="Wczytywanie ogłoszeń" onRetry={() => void retry()} />
-      {data.hasMore && (status !== 'loading' || loadingMore) ? <Button label={loadingMore ? 'Wczytywanie ogłoszeń' : 'Pokaż więcej wyjazdów'} variant="secondary"
-        disabled={loadingMore} leading={loadingMore ? <ActivityIndicator size="small" color={theme.primaryStrong} accessibilityLabel="Wczytywanie kolejnych ogłoszeń" /> : undefined}
+    </> : null}
+    </>}
+    empty={available ? <Card><AppText color="textSecondary">Ta ekipa nie ma teraz aktywnych ogłoszeń. Możesz zaprosić ją do kontaktu i wspólnie wymyślić wyjazd.</AppText></Card> : null}
+    afterList={available ? <>
+      <DataStatus status={status === 'loading' ? 'ready' : status} error={error} label="Wczytywanie ogłoszeń" onRetry={() => void retry()} />
+      {data.hasMore ? <Button label={loadingMore ? 'Wczytywanie ogłoszeń' : 'Pokaż więcej wyjazdów'} variant="secondary"
+        disabled={status === 'loading'} leading={loadingMore ? <ActivityIndicator size="small" color={theme.primaryStrong} accessibilityLabel="Wczytywanie kolejnych ogłoszeń" /> : undefined}
         onPress={() => void loadMore()} /> : null}
       <GroupReportAction groupId={id} />
       <Button label="Zablokuj ekipę" variant="secondary" icon="block" onPress={() => setBlocking(true)} />
+    </> : null}
+  >
       {blocking ? <BottomSheet title="Zablokować ekipę?" onClose={() => { if (!busy) setBlocking(false); }}>
         <AppText>Ekipa zniknie z Twoich propozycji i wyszukiwania. Obie strony stracą możliwość wysyłania wiadomości. Blokadę możesz usunąć w ustawieniach bezpieczeństwa.</AppText>
         {actionError ? <AppText accessibilityRole="alert">{actionError}</AppText> : null}
         <Button label={busy ? 'Blokowanie…' : 'Zablokuj ekipę'} disabled={busy} onPress={async () => { if (await setBlock(id, true)) { setBlocking(false); back(); } }} />
       </BottomSheet> : null}
-    </> : null}
-  </Screen>;
+  </CollectionScreen>;
 }

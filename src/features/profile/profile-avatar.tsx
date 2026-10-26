@@ -52,6 +52,10 @@ export function ProfileAvatar({
       <View style={[styles.frame, { width: size, height: size, borderRadius: size / 2, backgroundColor: theme.hero }]}>
         <Image
           source={AVATAR_IMAGES[avatar.id]}
+          recyclingKey={avatar.id}
+          cachePolicy="memory-disk"
+          allowDownscaling
+          transition={0}
           contentFit="contain"
           style={{ width: size * 0.84, height: size * 0.84 }}
           accessible={false}

@@ -6,7 +6,6 @@ import {
   Button,
   EmptyState,
   IconButton,
-  Screen,
   layout,
 } from '@/components/ui/primitives';
 import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
@@ -32,6 +31,7 @@ import { getTripHeadline } from '@/features/trips/trip-headline';
 import { LANDSCAPE_OPTIONS } from '@/constants/landscape-options';
 import { GroupsDiscovery } from '@/features/groups/groups-discovery';
 import { FavoritesNotice } from '@/features/favorites/favorite-button';
+import { CollectionScreen } from '@/components/ui/collection-screen';
 
 export default function ExploreScreen() {
   const [view, setView] = useState<'trips' | 'groups'>('trips');
@@ -92,18 +92,15 @@ export default function ExploreScreen() {
     .filter(Boolean)
     .join(' · ');
   const reset = () => setFilters({ ...INITIAL_FILTERS });
-  return (
-    <Screen
-      testID="discovery-screen"
-      header={
+  const header = <>
         <IllustratedPageHeader
           title="Odkrywaj"
           description={'Znajdź wyjazdy i ludzi\nz podobnymi planami.'}
         />
-      }
-    >
-      <FavoritesNotice />
-      <View style={styles.viewSwitch}
+    </>;
+  const switcher = <>
+    <FavoritesNotice />
+    <View style={styles.viewSwitch}
         accessibilityRole="tablist" accessibilityLabel="Odkrywaj">
         <View pointerEvents="none" style={[styles.viewOutline, { borderColor: theme.border }]} />
         {([{ value: 'trips', label: 'Wyjazdy', icon: 'tent' }, { value: 'groups', label: 'Ekipy', icon: 'people' }] as const).map(item => {
@@ -121,8 +118,20 @@ export default function ExploreScreen() {
           );
         })}
       </View>
-      {view === 'groups' ? <GroupsDiscovery /> : <>
-      <DataStatus status={loadingMore ? 'ready' : status} error={error} onRetry={() => { void retry(); }} label="Wczytywanie ogłoszeń" />
+    </>;
+  if (view === 'groups') return <GroupsDiscovery header={header} beforeList={switcher} />;
+  return (
+    <CollectionScreen
+      testID="discovery-screen"
+      header={header}
+      data={proposals}
+      keyExtractor={proposal => proposal.trip.id}
+      renderItem={({ item: proposal }) => <DiscoveryTripCard {...proposal}
+        facts={{ ageBands: proposal.group.childAgeBands, matchingAgeBands: proposal.group.childAgeBands.filter(band => preferredAges.includes(band)) }}
+        score={proposal.compatibility.score} onNavigate={preserveOnReturn} />}
+      beforeList={<>
+      {switcher}
+      <DataStatus status={status === 'loading' && proposals.length ? 'ready' : status} error={error} onRetry={() => { void retry(); }} label="Wczytywanie ogłoszeń" />
       <View style={styles.controls}>
         {filters.sourceTripId ? (
           <View style={layout.row}>
@@ -146,27 +155,12 @@ export default function ExploreScreen() {
           filterHint="Wybierz typ ogłoszenia, klimat, termin, miejsce i wiek dzieci" refreshLabel="Odśwież ogłoszenia"
           onOpen={() => setShowFilters(true)} onClear={reset} onRefresh={() => void refresh()} />
       </View>
-      <View style={styles.results}>
         <DiscoveryResultsHeader title={totalCount === null ? 'Propozycje' : 'Propozycje · ' + totalCount}
           sortLabel={sort === 'compatibility' ? 'Zgodność' : 'Domyślnie'}
           sortAccessibilityLabel={'Sortowanie: ' + (sort === 'compatibility' ? 'Najwyższa zgodność' : 'Domyślnie')}
           onSort={() => setShowSort(true)} />
-        {proposals.length ? (
-          proposals.map((proposal) => (
-            <DiscoveryTripCard
-              key={proposal.trip.id}
-              {...proposal}
-              facts={{
-                ageBands: proposal.group.childAgeBands,
-                matchingAgeBands: proposal.group.childAgeBands.filter((band) =>
-                  preferredAges.includes(band),
-                ),
-              }}
-              score={proposal.compatibility.score}
-              onNavigate={preserveOnReturn}
-            />
-          ))
-        ) : status === 'ready' ? (
+      </>}
+      empty={status === 'ready' ? (
           <EmptyState
             title="Jeszcze się mijamy"
             description="Żaden plan nie pasuje do tych filtrów. Zmień klimat wyjazdu lub pozostałe kryteria."
@@ -175,16 +169,18 @@ export default function ExploreScreen() {
             }
           />
         ) : null}
-        {hasMore && (status !== 'loading' || loadingMore) ? (
+      afterList={<>
+        {hasMore ? (
           <Button
             label={loadingMore ? 'Wczytywanie ogłoszeń' : 'Pokaż więcej wyjazdów'}
             leading={loadingMore ? <ActivityIndicator size="small" color={theme.primaryStrong} accessibilityLabel="Wczytywanie kolejnych ogłoszeń" /> : undefined}
             variant="secondary"
-            disabled={loadingMore}
+            disabled={status === 'loading'}
             onPress={() => { void loadMore(); }}
           />
         ) : null}
-      </View>
+      </>}
+    >
       {showFilters ? (
         <DiscoveryFiltersSheet
           initialFilters={filters}
@@ -205,8 +201,7 @@ export default function ExploreScreen() {
           }}
         />
       ) : null}
-      </>}
-    </Screen>
+    </CollectionScreen>
   );
 }
 const styles = StyleSheet.create({

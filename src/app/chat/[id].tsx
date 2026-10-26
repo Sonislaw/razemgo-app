@@ -1,5 +1,6 @@
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { DataStatus } from '@/components/ui/data-status';
+import { TripTimeline } from '@/components/trips/trip-timeline';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import {
@@ -191,6 +192,7 @@ export default function ChatScreen() {
             <AppText variant="caption">
               {formatTripDates(plan)}
             </AppText>
+            <TripTimeline trip={plan} compact />
           </View>
           <Icon name="chevron" size={18} />
         </Pressable> : null}

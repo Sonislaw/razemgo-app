@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/primitives';
 import { Landscape } from '@/components/trips/landscape';
 import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
+import { TripTimeline } from '@/components/trips/trip-timeline';
 import { TripMapCard } from '@/components/trips/trip-map-card';
 import { AVAILABLE_PROPOSALS } from '@/data/proposals';
 import {
@@ -118,6 +119,7 @@ export default function TripDetailsScreen() {
           <TripPlanningIcon kind="dates" size={24} framed={false} />
           <AppText style={styles.flex}>{formatTripDates(trip)}</AppText>
         </View>
+        <TripTimeline trip={trip} />
       </View>
       <TripMapCard trip={trip} />
       <Card>

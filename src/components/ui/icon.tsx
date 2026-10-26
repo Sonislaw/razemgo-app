@@ -5,6 +5,7 @@ import { TAB_ICONS } from '@/constants/tab-icons';
 import { useTheme } from '@/hooks/use-theme';
 
 export const SYMBOLS = {
+  clock: { ios: 'clock', android: 'schedule', web: 'schedule' },
   sort: { ios: 'arrow.up.arrow.down', android: 'sort', web: 'sort' },
   paw: { ios: 'pawprint', android: 'pets', web: 'pets' },
   pause: { ios: 'pause', android: 'pause', web: 'pause' },

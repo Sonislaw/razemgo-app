@@ -12,6 +12,7 @@ import {
   layout,
 } from '@/components/ui/primitives';
 import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
+import { TripTimeline } from '@/components/trips/trip-timeline';
 import { TripMapCard } from '@/components/trips/trip-map-card';
 import { Landscape } from '@/components/trips/landscape';
 import { DEMO_OWN_TRIPS } from '@/data/mocks/owned-trips';
@@ -150,6 +151,7 @@ export default function OwnTripDetailsScreen() {
               <TripPlanningIcon kind="dates" size={24} framed={false} />
               <AppText style={{ flex: 1 }}>{ownTripDates(trip)}</AppText>
             </View>
+            <TripTimeline trip={trip} />
           </View>
           <TripMapCard trip={trip} />
           <Card>

@@ -14,6 +14,7 @@ import { useTheme } from '@/hooks/use-theme';
 import type { ChildAgeBand, TravelGroup, TripPlan } from '@/types/travel';
 import { LandscapePhoto } from './landscape-photo';
 import { TripPlanningIcon } from './trip-planning-icon';
+import { TripTimeline } from './trip-timeline';
 
 const INTEREST_ICONS: Record<string, IconName> = {
   Plaża: 'water',
@@ -127,6 +128,7 @@ export function TripListingCard({
             </AppText>
           </View>
         </View>
+        <TripTimeline trip={trip} />
         {ageBands.length || group?.childCount || trip.animals.animals.length || trip.interests.length ? (
           <View style={styles.facts}>
             {ageBands.length || group?.childCount ? (

@@ -1,8 +1,8 @@
 import { backendRequest } from '@/lib/backend-request';
 import { getSupabase } from '@/lib/supabase';
 import { proposalFromRow } from '@/features/trips/trip-mapper';
-import { GROUP_SEARCH_PAGE_SIZE, groupFiltersPayload, publicGroupFromRow, type RankedGroupCursor, type GroupSort, type GroupFilters, type GroupPage,
-  type GroupVisibility, type PublicGroupDetail, type PublicGroupRow } from './group-data';
+import { GROUP_SEARCH_PAGE_SIZE, GROUP_TRIP_PAGE_SIZE, groupFiltersPayload, publicGroupFromRow, type GroupTripCursor, type PublicGroupPage, type RankedGroupCursor, type GroupSort, type GroupFilters, type GroupPage,
+  type GroupVisibility, type PublicGroupRow } from './group-data';
 
 export async function fetchPublicGroups(filters: GroupFilters, cursor?: RankedGroupCursor, sort: GroupSort = 'compatibility', pageSize = GROUP_SEARCH_PAGE_SIZE): Promise<GroupPage> {
   const { data, error } = await backendRequest(signal => getSupabase().rpc('list_ranked_public_groups', {
@@ -21,10 +21,18 @@ export async function fetchPublicGroupCount(filters: GroupFilters): Promise<numb
   if (!Number.isSafeInteger(data) || data === null || data < 0) throw new Error('Missing group count');
   return data;
 }
-export async function fetchPublicGroup(id: string): Promise<PublicGroupDetail | null> {
-  const { data, error } = await backendRequest(signal => getSupabase().rpc('get_public_group', { target_group_id: id }).abortSignal(signal), 'groups.detail');
+export async function fetchPublicGroup(userId: string, id: string, cursor?: GroupTripCursor): Promise<PublicGroupPage | null> {
+  const { data: { session } } = await getSupabase().auth.getSession();
+  if (!session || session.user.id !== userId) throw Object.assign(new Error(), { name: 'AbortError' });
+  const { data, error } = await backendRequest(signal => getSupabase().rpc('get_public_group', {
+    target_group_id: id, after_cursor: cursor ?? null, page_size: GROUP_TRIP_PAGE_SIZE,
+  }).setHeader('Authorization', 'Bearer ' + session.access_token).abortSignal(signal), 'groups.detail');
   if (error) throw error;
-  return data ? { ...publicGroupFromRow(data), trips: (data.trips ?? []).map(proposalFromRow) } : null;
+  if (!data) return null;
+  if (!Array.isArray(data.trips) || data.trips.length > GROUP_TRIP_PAGE_SIZE || typeof data.has_more !== 'boolean'
+    || !Number.isSafeInteger(data.active_trip_count) || data.active_trip_count < 0 || (data.has_more && (!data.cursor || !data.trips.length)))
+    throw new Error('Invalid crew trip page');
+  return { ...publicGroupFromRow(data), trips: data.trips.map(proposalFromRow), hasMore: data.has_more, cursor: data.cursor };
 }
 export async function fetchGroupVisibility(): Promise<GroupVisibility> {
   const { data, error } = await backendRequest(signal => getSupabase().rpc('get_my_group_visibility').abortSignal(signal), 'groups.visibility');

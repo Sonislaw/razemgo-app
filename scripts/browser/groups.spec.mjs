@@ -17,7 +17,7 @@ async function groupBackend(context, store) {
     const me = groupId(id), other = groupId(id === A ? B : A);
     const target = body.target_group_id;
     const otherCrew = profile(id === A ? B : A).group;
-    const info = () => ({ crew: otherCrew, about: store.publicProfiles.get(other)?.about ?? '', active_trip_count: 0, trips: [],
+    const info = () => ({ crew: otherCrew, about: store.publicProfiles.get(other)?.about ?? '', active_trip_count: 0, trips: [], has_more: false, cursor: null,
       compatibility: store.groupMatch ?? { score: 100, reasons: ['Pasujący rodzaj ekipy', 'Pasujący wiek dzieci', 'Rowery'], limited_data: false, evaluated_weight: 100 } });
     if (name === 'list_public_groups' || name === 'list_ranked_public_groups' || name === 'count_public_groups') {
       if (name !== 'count_public_groups') {

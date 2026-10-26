@@ -11,6 +11,9 @@ export interface PublicGroup {
   compatibility?: GroupCompatibility;
 }
 export interface PublicGroupDetail extends PublicGroup { trips: TripProposal[] }
+export type GroupTripCursor = { id: string; published_at: string; query_key: string };
+export interface PublicGroupPage extends PublicGroupDetail { hasMore: boolean; cursor: GroupTripCursor | null }
+export const GROUP_TRIP_PAGE_SIZE = 5;
 export interface GroupVisibility { discoverable: boolean; about: string }
 export interface GroupFilters {
   name: string;

@@ -25,7 +25,7 @@ test('crew pages load five at a time, show progress, retry and restore profile s
     const respond=(json,status=200)=>route.fulfill({json,status,headers:{'access-control-allow-origin':'http://localhost:8085'}});
     if(name==='get_public_group'){
       const row=rows.find(row=>row.crew.id===body.target_group_id);
-      return respond({...row,trips:body.target_group_id===groupId(B)?[{trip,crew:row.crew}]:[]});
+      return respond({...row,trips:body.target_group_id===groupId(B)?[{trip,crew:row.crew}]:[],has_more:false,cursor:null});
     }
     const filtered=rows.filter(row=>!body.filters.name||row.crew.name.includes(body.filters.name));
     if(name==='count_public_groups')return respond(filtered.length);

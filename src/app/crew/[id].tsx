@@ -1,5 +1,5 @@
-import { useCallback, useRef, useState } from 'react';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
 import { AppText, Button, Card, EmptyState, Screen, SectionTitle } from '@/components/ui/primitives';
 import { DataStatus } from '@/components/ui/data-status';
 import { ProfileSubpageHeader } from '@/features/profile/profile-ui';
@@ -8,41 +8,25 @@ import { GroupReportAction } from '@/features/moderation/trip-report-action';
 import { useMessaging } from '@/features/messaging/messaging-context';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
-import { fetchPublicGroup } from '@/features/groups/group-repository';
-import { groupDirectoryError, type PublicGroupDetail } from '@/features/groups/group-data';
-import { DEMO_PUBLIC_GROUPS, withDemoGroupCompatibility } from '@/features/groups/group-demo';
-import { USE_DEMO_DATA } from '@/constants/app';
-import { useProfile } from '@/features/profile/profile-context';
+import { useGroupProfile } from '@/features/groups/use-group-profile';
 import { GroupCompatibilitySummary } from '@/features/groups/group-compatibility-summary';
 import { GroupProfileCard } from '@/features/groups/group-profile-card';
 import { FavoriteButton, FavoritesNotice } from '@/features/favorites/favorite-button';
-import { View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
+import { useTheme } from '@/hooks/use-theme';
 
 export default function PublicGroupScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { profile } = useProfile();
-  const [data, setData] = useState<PublicGroupDetail | null>(null);
-  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [error, setError] = useState<string | null>(null);
+  const { data, status, error, loadingMore, retry, loadMore, preserveOnReturn } = useGroupProfile(id);
+  const theme = useTheme();
   const [blocking, setBlocking] = useState(false);
-  const generation = useRef(0);
   const { setBlock, busy, actionError, state } = useMessaging();
   const blocked = state.blockedGroupIds.includes(id);
-  const load = useCallback(async () => {
-    const version = ++generation.current;
-    setStatus('loading'); setError(null); setData(null);
-    try {
-      const example = DEMO_PUBLIC_GROUPS.find(x => x.group.id === id);
-      const result = USE_DEMO_DATA ? example ? withDemoGroupCompatibility(example, profile) : null : await fetchPublicGroup(id);
-      if (version === generation.current) { setData(result); setStatus('ready'); }
-    } catch (e) { if (version === generation.current) { setError(groupDirectoryError(e)); setStatus('error'); } }
-  }, [id, profile]);
-  useFocusEffect(useCallback(() => { void load(); return () => { generation.current++; }; }, [load]));
   const back = () => router.canGoBack() ? router.back() : router.replace('/explore');
-  return <Screen>
+  return <Screen testID="crew-profile-screen">
     <ProfileSubpageHeader title="Profil ekipy" backLabel="Wróć" onBack={back} />
     <FavoritesNotice />
-    <DataStatus status={status} error={error} label="Wczytywanie profilu ekipy" onRetry={() => void load()} />
+    {!data ? <DataStatus status={status} error={error} label="Wczytywanie profilu ekipy" onRetry={() => void retry()} /> : null}
     {status === 'ready' && (!data || blocked) ? <EmptyState title="Ten profil jest niedostępny"
       description="Ekipa mogła wyłączyć widoczność, usunąć konto lub ograniczyć kontakt."
       action={<Button label="Wróć do Odkrywaj" onPress={() => router.dismissTo('/explore')} />} /> : data && !blocked ? <>
@@ -54,9 +38,13 @@ export default function PublicGroupScreen() {
           <GroupContactAction key={id} group={data.group} />
         </View>
       </View>
-      <SectionTitle title={'Ogłoszenia ekipy · ' + data.trips.length} />
-      {data.trips.length ? data.trips.map(p => <DiscoveryTripCard key={p.trip.id} {...p} facts={{ ageBands: p.group.childAgeBands, matchingAgeBands: [] }} />)
+      <SectionTitle title={'Ogłoszenia ekipy · ' + data.activeTripCount} />
+      {data.trips.length ? data.trips.map(p => <DiscoveryTripCard key={p.trip.id} {...p} onNavigate={preserveOnReturn} facts={{ ageBands: p.group.childAgeBands, matchingAgeBands: [] }} />)
         : <Card><AppText color="textSecondary">Ta ekipa nie ma teraz aktywnych ogłoszeń. Możesz zaprosić ją do kontaktu i wspólnie wymyślić wyjazd.</AppText></Card>}
+      <DataStatus status={loadingMore ? 'ready' : status} error={error} label="Wczytywanie ogłoszeń" onRetry={() => void retry()} />
+      {data.hasMore && (status !== 'loading' || loadingMore) ? <Button label={loadingMore ? 'Wczytywanie ogłoszeń' : 'Pokaż więcej wyjazdów'} variant="secondary"
+        disabled={loadingMore} leading={loadingMore ? <ActivityIndicator size="small" color={theme.primaryStrong} accessibilityLabel="Wczytywanie kolejnych ogłoszeń" /> : undefined}
+        onPress={() => void loadMore()} /> : null}
       <GroupReportAction groupId={id} />
       <Button label="Zablokuj ekipę" variant="secondary" icon="block" onPress={() => setBlocking(true)} />
       {blocking ? <BottomSheet title="Zablokować ekipę?" onClose={() => { if (!busy) setBlocking(false); }}>

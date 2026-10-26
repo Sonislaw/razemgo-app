@@ -50,7 +50,7 @@ test('returning from a listing or its crew restores all viewed pages and the scr
   const store=state();seed(store);await backend(context,store);
   await page.route('**/rest/v1/rpc/get_public_group',async route=>{
     if(route.request().method()==='OPTIONS')return route.fallback();
-    return route.fulfill({json:{crew:profile(B).group,about:'Ekipa na wspólne wyjazdy.',active_trip_count:0,trips:[]},
+    return route.fulfill({json:{crew:profile(B).group,about:'Ekipa na wspólne wyjazdy.',active_trip_count:0,trips:[],has_more:false,cursor:null},
       headers:{'access-control-allow-origin':'http://localhost:8085'}});
   });
   await login(page);await page.goto('/explore');

@@ -7,7 +7,7 @@ import type { TripRow, PublicTripRow, tripToPayload } from '../features/trips/tr
 import type { MailboxRow, MessageRow } from '../features/messaging/messaging-mapper';
 import type { NotificationsPage, NotificationPreferences } from '../features/notifications/notification-types';
 import type { AccountAccess,ReportsPage,ReportDetail } from '../features/moderation/moderation-types';
-import type { GroupCursor, RankedGroupCursor, GroupSort, GroupVisibility, PublicGroupRow, groupFiltersPayload } from '../features/groups/group-data';
+import type { GroupCursor, GroupTripCursor, RankedGroupCursor, GroupSort, GroupVisibility, PublicGroupRow, groupFiltersPayload } from '../features/groups/group-data';
 import type { ReactionKind, ReactionSummary, ReactorsPage } from '../features/reactions/reaction-data';
 
 // Keep in sync with supabase/migrations. Replace using Supabase type generation after linking.
@@ -50,7 +50,8 @@ export interface Database {
       list_ranked_public_groups: { Args: { filters?: ReturnType<typeof groupFiltersPayload>; sort_mode?: GroupSort; after_cursor?: RankedGroupCursor | null; page_size?: number };
         Returns: { items: PublicGroupRow[]; total_count: number; has_more: boolean; cursor: RankedGroupCursor | null } };
       count_public_groups: { Args: { filters?: ReturnType<typeof groupFiltersPayload> }; Returns: number };
-      get_public_group: { Args: { target_group_id: string }; Returns: (PublicGroupRow & { trips: PublicTripRow[] }) | null };
+      get_public_group: { Args: { target_group_id: string; after_cursor?: GroupTripCursor | null; page_size?: number };
+        Returns: (PublicGroupRow & { trips: PublicTripRow[]; has_more: boolean; cursor: GroupTripCursor | null }) | null };
       send_profile_invitation: { Args: { target_group_id: string; message_text: string; request_key: string }; Returns: string };
       report_profile: { Args: { target_group_id: string; report_reason: string; request_key: string }; Returns: string };
       get_my_account_access: {Args:Record<never,never>;Returns:AccountAccess};

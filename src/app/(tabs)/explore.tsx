@@ -22,6 +22,7 @@ import { DiscoveryFiltersSheet } from '@/features/discovery/discovery-filters-sh
 import { DiscoverySortSheet } from '@/features/discovery/discovery-sort-sheet';
 import { DiscoveryFilterBar, DiscoveryResultsHeader } from '@/features/discovery/discovery-controls';
 import { useTripSearch } from '@/features/discovery/use-trip-search';
+import { TRIP_SEARCH_PAGE_SIZE } from '@/features/discovery/discovery-data';
 import { useTheme } from '@/hooks/use-theme';
 import { useProfile } from '@/features/profile/profile-context';
 import { getPreferredChildAges } from '@/features/profile/profile-data';
@@ -36,7 +37,7 @@ export default function ExploreScreen() {
   const [view, setView] = useState<'trips' | 'groups'>('trips');
   const theme = useTheme();
   const { filters, setFilters, sort, setSort } = useDiscovery();
-  const { items: proposals, totalCount, hasMore, status, error, refresh, retry, loadMore } = useTripSearch(filters, sort, 20, view === 'trips');
+  const { items: proposals, totalCount, hasMore, status, error, refresh, retry, loadMore } = useTripSearch(filters, sort, TRIP_SEARCH_PAGE_SIZE, view === 'trips');
   const { profile } = useProfile();
   const { state: ownTrips } = useOwnTrips();
   const sourceTrip = ownTrips.trips.find(

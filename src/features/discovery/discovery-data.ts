@@ -4,6 +4,8 @@ import type { DiscoverySort } from './sort-proposals';
 import { resolveDiscoveryRange } from './filter-trips.ts';
 import { findTripLocation } from '../trips/trip-locations.ts';
 
+export const TRIP_SEARCH_PAGE_SIZE = 5;
+
 export interface TripSearchCursor {
   id: string;
   published_at: string;

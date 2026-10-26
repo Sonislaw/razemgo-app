@@ -4,7 +4,7 @@ Zmiana działa wyłącznie w **RazemGo Dev**, backend `kswuakzcnoqgovnwejhb`. Mi
 
 ## Zachowanie aplikacji
 
-- Odkrywaj pobiera pierwsze 20 pasujących wyjazdów. „Pokaż więcej wyjazdów” pobiera następną stronę. Aplikacja nie pobiera całego katalogu w tle.
+- Odkrywaj pobiera pierwsze 5 pasujących wyjazdów. „Pokaż więcej wyjazdów” pobiera kolejnych 5 (ostatnia porcja może być mniejsza). Aplikacja nie pobiera całego katalogu w tle.
 - Typ ogłoszenia, klimat, miejsce, zakres dat z tolerancją, rodzaj ekipy, wiek dzieci, zwierzęta i ulubione filtruje baza, przed sortowaniem i limitem strony. Wybory jednej kategorii łączą się jako „lub”, różne kategorie jako „i”.
 - „Domyślnie” oznacza najnowszą publikację, następnie ID. Zgodność jest obliczana w bazie dla całego pasującego zbioru, przed stronicowaniem; przy remisie decyduje publikacja i ID. Zachowano dotychczasowe wagi, powody, zwykłe punktowanie zwierząt i wybór jednego najlepszego własnego planu. Wynik na karcie pochodzi z tego samego obliczenia co sortowanie.
 - Nagłówek wyników i przycisk w filtrach pokazują pełną liczbę dopasowań, nie liczbę wczytanych kart. Licznik w filtrach wysyła zapytanie po 250 ms przerwy; stare odpowiedzi są ignorowane. Nieudany odczyt udostępnia ponowienie, bez fikcyjnego zera.
@@ -15,7 +15,7 @@ Zmiana działa wyłącznie w **RazemGo Dev**, backend `kswuakzcnoqgovnwejhb`. Mi
 
 ## API i uprawnienia
 
-`search_public_trips(filters, sort_mode, after_cursor, page_size)` zwraca `items`, `total_count`, `has_more`, `cursor`. Rozmiar strony wynosi 1–20; Start wybiera 1, lista 20. `count_public_trips(filters)` stosuje te same warunki bez limitu strony. `get_discovery_trip(target_trip_id, filters)` zwraca pojedynczy dostępny wyjazd i zgodność; kryteria wpływają na ocenę, lecz nie ukrywają szczegółów dostępnego ogłoszenia.
+`search_public_trips(filters, sort_mode, after_cursor, page_size)` zwraca `items`, `total_count`, `has_more`, `cursor`. API obsługuje strony 1–20; Start wybiera 1, lista 5. Wspólny rozmiar porcji listy określa `TRIP_SEARCH_PAGE_SIZE`. `count_public_trips(filters)` stosuje te same warunki bez limitu strony. `get_discovery_trip(target_trip_id, filters)` zwraca pojedynczy dostępny wyjazd i zgodność; kryteria wpływają na ocenę, lecz nie ukrywają szczegółów dostępnego ogłoszenia.
 
 Kursor jest oparty na wyniku, czasie publikacji i ID oraz powiązany z zalogowaną ekipą, kryteriami i sortowaniem. Nie korzysta z przesunięć numerowanych stron. Powtórzone ID nie duplikują kart. Błędny kursor lub kryteria są odrzucane z `22023`.
 
@@ -31,5 +31,7 @@ Wszystkie endpointy wymagają aktywnej sesji i profilu. Uwzględniają obustronn
 - Testy magazynu listy: ograniczona liczba pobrań, ponowienia, usuwanie duplikatów, odświeżanie obejrzanych stron, spóźnione odpowiedzi oraz izolacja kont.
 - 14 różnych scenariuszy Playwright: strony 20/40/45, błąd następnej strony i ponowienie, pełny licznik filtrów, sortowanie oraz szczegóły spoza bieżących wyników, a także istniejące ulubione, reakcje, logowanie, Ekipy i powiadomienia. Osobny scenariusz sprawdza błąd licznika. Scenariusz pełnego cyklu wyjazdu ponowiono po błędzie sieci przeglądarki przy przeładowaniu; ponowny przebieg przeszedł.
 - Rzeczywiste API Dev na dwóch tymczasowych kontach i 25 wyjazdach potwierdziło strony 20+5, zgodność przed limitem, licznik, daty, ulubione, szczegóły i blokady. Konta oraz wyjazdy usunięto, bez rejestrowania urządzeń i wysyłania fizycznych push.
+
+Po zmniejszeniu porcji listy do 5 przeszły 52 testy Node, lint, TypeScript oraz 2 scenariusze Playwright. Obecny scenariusz stronicowania sprawdza 5/10/13 kart, ponowienie nieudanej strony, pełny licznik, sortowanie i bezpośredni link do szczegółów.
 
 Lint i TypeScript przeszły bez ostrzeżeń. Manifest i rzeczywisty bundle Androida na porcie 8081 potwierdziły pakiet, schemat i backend Dev oraz trzy nowe RPC, bez adresu backendu Preview. Zmiana nie dodaje bibliotek ani konfiguracji natywnej. Wystarczy odświeżyć aplikację Dev. Testy instalacji i wyglądu na fizycznym telefonie pozostają osobną kontrolą.

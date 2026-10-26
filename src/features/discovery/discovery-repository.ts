@@ -4,7 +4,7 @@ import { proposalFromRow, type PublicTripRow } from '@/features/trips/trip-mappe
 import type { DiscoveryFilters } from '@/types/travel';
 import type { DiscoverySort } from './sort-proposals';
 import type { Compatibility } from './compatibility';
-import { discoveryFiltersPayload, type RankedTripProposal, type TripSearchCursor, type TripSearchPage } from './discovery-data';
+import { discoveryFiltersPayload, TRIP_SEARCH_PAGE_SIZE, type RankedTripProposal, type TripSearchCursor, type TripSearchPage } from './discovery-data';
 
 async function accountToken(userId: string) {
   const { data: { session } } = await getSupabase().auth.getSession();
@@ -14,7 +14,7 @@ async function accountToken(userId: string) {
 export type RankedTripRow = PublicTripRow & { compatibility: Compatibility };
 export interface TripSearchPageRow { items: RankedTripRow[]; total_count: number; has_more: boolean; cursor: TripSearchCursor | null }
 const ranked = (row: RankedTripRow): RankedTripProposal => ({ ...proposalFromRow(row), compatibility: row.compatibility });
-export async function fetchTripPage(userId: string, filters: DiscoveryFilters, sort: DiscoverySort, cursor?: TripSearchCursor, pageSize = 20): Promise<TripSearchPage> {
+export async function fetchTripPage(userId: string, filters: DiscoveryFilters, sort: DiscoverySort, cursor?: TripSearchCursor, pageSize = TRIP_SEARCH_PAGE_SIZE): Promise<TripSearchPage> {
   const token = await accountToken(userId);
   const { data, error } = await backendRequest(signal => getSupabase().rpc('search_public_trips', {
     filters: discoveryFiltersPayload(filters), sort_mode: sort, after_cursor: cursor ?? null, page_size: pageSize,

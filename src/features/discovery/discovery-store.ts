@@ -1,5 +1,5 @@
 import type { TripSearchCursor, TripSearchPage, RankedTripProposal } from './discovery-data';
-import { discoveryError } from './discovery-data.ts';
+import { discoveryError, TRIP_SEARCH_PAGE_SIZE } from './discovery-data.ts';
 
 export interface TripSearchState {
   items: RankedTripProposal[];
@@ -11,7 +11,7 @@ export interface TripSearchState {
   loadingMore: boolean;
   error: string | null;
 }
-export function createTripSearchStore(fetchPage: (cursor?: TripSearchCursor) => Promise<TripSearchPage>, pageSize = 20) {
+export function createTripSearchStore(fetchPage: (cursor?: TripSearchCursor) => Promise<TripSearchPage>, pageSize = TRIP_SEARCH_PAGE_SIZE) {
   let state: TripSearchState = { items: [], totalCount: null, hasMore: false, cursor: null, status: 'loading', hasLoaded: false, loadingMore: false, error: null };
   let generation = 0;
   let failed: 'load' | 'more' = 'load';

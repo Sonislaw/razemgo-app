@@ -10,14 +10,14 @@ import { useFavorites } from '@/features/favorites/favorites-context';
 import { todayDate } from '@/features/trips/own-trips-state';
 import type { DiscoveryFilters } from '@/types/travel';
 import { tripCompatibility } from './compatibility';
-import { discoveryError, discoveryFiltersPayload, type RankedTripProposal, type TripSearchCursor } from './discovery-data';
+import { discoveryError, discoveryFiltersPayload, TRIP_SEARCH_PAGE_SIZE, type RankedTripProposal, type TripSearchCursor } from './discovery-data';
 import { filterProposals } from './filter-trips';
 import { sortDiscoveryProposals, type DiscoverySort } from './sort-proposals';
 import { createTripSearchStore } from './discovery-store';
 import { fetchDiscoveryTrip, fetchTripCount, fetchTripPage } from './discovery-repository';
 import { useDiscovery } from './discovery-context';
 
-export function useTripSearch(filters: DiscoveryFilters, sort: DiscoverySort = 'default', pageSize = 20, enabled = true) {
+export function useTripSearch(filters: DiscoveryFilters, sort: DiscoverySort = 'default', pageSize = TRIP_SEARCH_PAGE_SIZE, enabled = true) {
   const { session } = useAuth();
   const { profile, hasProfile, status: profileStatus } = useProfile();
   const { state: ownTrips } = useOwnTrips();

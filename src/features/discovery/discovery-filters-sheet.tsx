@@ -1,4 +1,4 @@
-import { useDiscovery } from './discovery-context';
+import { useTripResultCount } from './use-trip-search';
 import { useState } from 'react';
 import {
   Keyboard,
@@ -20,7 +20,6 @@ import { ChipRow } from '@/components/ui/chip-row';
 import { CHILD_AGE_BANDS } from '@/data/mocks/travel';
 import {
   clearDiscoveryDates,
-  filterProposals,
   getDiscoveryDateRangeError,
   INITIAL_FILTERS,
   resolveDiscoveryRange,
@@ -40,7 +39,6 @@ import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
 import { AnimalChoice } from '@/features/animals/animal-portrait';
 import { TripLocationField } from '@/features/trips/trip-location-field';
 import { TripLandscapePicker } from '@/features/trips/trip-landscape-picker';
-import { useFavorites } from '@/features/favorites/favorites-context';
 import { FavoritesNotice } from '@/features/favorites/favorite-button';
 
 interface DiscoveryFiltersSheetProps {
@@ -53,8 +51,6 @@ export function DiscoveryFiltersSheet({
   onApply,
   onClose,
 }: DiscoveryFiltersSheetProps) {
-  const { proposals: availableProposals } = useDiscovery();
-  const favorites = useFavorites();
   const theme = useTheme();
   const [showDateRange, setShowDateRange] = useState(false);
   const [draft, setDraft] = useState<DiscoveryFilters>(() => ({
@@ -69,8 +65,7 @@ export function DiscoveryFiltersSheet({
   }));
   const dateRange = resolveDiscoveryRange(draft);
   const dateError = getDiscoveryDateRangeError(draft.customDateRange);
-  const resultCount = draft.favoritesOnly && favorites.status !== 'ready' ? null
-    : filterProposals(availableProposals, draft, dateRange, favorites.tripIds).length;
+  const { count: resultCount, countError, retryCount } = useTripResultCount(draft, !dateError);
   const toggleAge = (band: ChildAgeBand) =>
     setDraft((current) => ({
       ...current,
@@ -84,8 +79,12 @@ export function DiscoveryFiltersSheet({
       description="Wybierz typ ogłoszenia, termin, miejsce i klimat."
       onClose={onClose}
       footer={<>
+        {countError ? <View style={layout.row}>
+          <AppText variant="caption" color="textSecondary" accessibilityRole="alert" style={{ flex: 1 }}>Nie udało się sprawdzić liczby wyjazdów.</AppText>
+          <IconButton icon="refresh" label="Policz wyjazdy ponownie" onPress={retryCount} />
+        </View> : null}
         <Button label="Wyczyść" variant="secondary" onPress={() => setDraft({ ...INITIAL_FILTERS })} />
-        <Button label={dateError ? 'Pokaż wyniki' : 'Pokaż wyniki · ' + (resultCount ?? '…')} disabled={Boolean(dateError)} onPress={() => {
+        <Button label={dateError || countError ? 'Pokaż wyniki' : 'Pokaż wyniki · ' + (resultCount ?? '…')} disabled={Boolean(dateError)} onPress={() => {
           if (dateError) return;
           Keyboard.dismiss();
           onApply(draft);

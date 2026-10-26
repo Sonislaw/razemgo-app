@@ -1,4 +1,8 @@
 import { expect } from '@playwright/test';
+import {proposalFromRow,tripFromRow} from '../../src/features/trips/trip-mapper.ts';
+import {profileFromRows} from '../../src/features/profile/profile-mapper.ts';
+import {filterProposals,INITIAL_FILTERS} from '../../src/features/discovery/filter-trips.ts';
+import {tripCompatibility} from '../../src/features/discovery/compatibility.ts';
 
 const A='00000000-0000-4000-8000-000000000001';
 const B='00000000-0000-4000-8000-000000000002';
@@ -117,6 +121,25 @@ async function backend(context,store){
     if(url.pathname==='/rest/v1/trip_plans'){
       if(store.failLoad)return respond({message:'Temporary failure'},503);
       return respond([...store.trips.values()].filter(trip=>trip.group_id===groupId(id)));
+    }
+    if(['search_public_trips','count_public_trips','get_discovery_trip'].includes(url.pathname.split('/').at(-1))){
+      const endpoint=url.pathname.split('/').at(-1),f=body.filters??{};
+      (store.tripSearchCalls??=[]).push({endpoint,...body});
+      if(store.failPublic||endpoint==='search_public_trips'&&body.after_cursor&&store.failMore)return respond({message:'Temporary failure'},503);
+      if(endpoint==='count_public_trips'&&store.failTripCount)return respond({message:'Temporary failure'},503);
+      const filters={...INITIAL_FILTERS,tripModes:f.trip_modes??INITIAL_FILTERS.tripModes,landscapeKinds:f.landscapes??[],groupKinds:f.group_kinds??[],childAgeBands:f.child_age_bands??[],animalKinds:f.animal_kinds??[],
+        favoritesOnly:f.favorites_only??false,location:f.location_query??'',locationId:f.location?.id,sourceTripId:f.source_trip_id??undefined,
+        dateRangeId:f.start_date?'custom':'all',customDateRange:f.start_date?{startDate:f.start_date,endDate:f.end_date}:undefined,dateFlexibilityDays:f.tolerance_days??0};
+      const currentProfile=profile(id),own=[...store.trips.values()].filter(t=>t.group_id===groupId(id)).map(tripFromRow);
+      const rows=[...store.trips.values()].filter(t=>t.group_id!==groupId(id)&&t.status==='published'&&t.visibility==='public'&&t.end_date>'2026-10-24')
+        .map(trip=>({trip,crew:profile(trip.group_id===groupId(A)?A:B).group}));
+      const scored=row=>({...row,compatibility:tripCompatibility(proposalFromRow(row),profileFromRows(currentProfile.group,currentProfile.preferences),own,filters,'2026-10-24')});
+      if(endpoint==='get_discovery_trip')return respond(rows.find(r=>r.trip.id===body.target_trip_id)?scored(rows.find(r=>r.trip.id===body.target_trip_id)):null);
+      const allowed=new Set(filterProposals(rows.map(proposalFromRow),filters,undefined,store.favoriteTrips.get(id)??new Set()).map(p=>p.trip.id));
+      const result=rows.filter(r=>allowed.has(r.trip.id)).map(scored).sort((a,b)=>(body.sort_mode==='compatibility'?b.compatibility.score-a.compatibility.score:0)||b.trip.published_at.localeCompare(a.trip.published_at)||a.trip.id.localeCompare(b.trip.id));
+      if(endpoint==='count_public_trips')return respond(result.length);
+      const offset=body.after_cursor?result.findIndex(r=>r.trip.id===body.after_cursor.id)+1:0,size=body.page_size??20,items=result.slice(offset,offset+size),last=items.at(-1);
+      return respond({items,total_count:result.length,has_more:offset+items.length<result.length,cursor:last?{id:last.trip.id,published_at:last.trip.published_at,score:last.compatibility.score,sort:body.sort_mode??'default',query_key:'mock'}:null});
     }
     if(url.pathname==='/rest/v1/rpc/list_public_trips'){
       if(store.failPublic)return respond({message:'Temporary failure'},503);

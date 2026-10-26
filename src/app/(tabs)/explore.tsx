@@ -1,6 +1,5 @@
-import { useFocusEffect } from 'expo-router';
 import { DataStatus } from '@/components/ui/data-status';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import {
   AppText,
@@ -14,7 +13,6 @@ import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import { Icon } from '@/components/ui/icon';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
 import {
-  filterProposals,
   INITIAL_FILTERS,
   resolveDiscoveryRange,
   formatTripDates,
@@ -23,7 +21,7 @@ import { useDiscovery } from '@/features/discovery/discovery-context';
 import { DiscoveryFiltersSheet } from '@/features/discovery/discovery-filters-sheet';
 import { DiscoverySortSheet } from '@/features/discovery/discovery-sort-sheet';
 import { DiscoveryFilterBar, DiscoveryResultsHeader } from '@/features/discovery/discovery-controls';
-import { sortDiscoveryProposals } from '@/features/discovery/sort-proposals';
+import { useTripSearch } from '@/features/discovery/use-trip-search';
 import { useTheme } from '@/hooks/use-theme';
 import { useProfile } from '@/features/profile/profile-context';
 import { getPreferredChildAges } from '@/features/profile/profile-data';
@@ -32,15 +30,13 @@ import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { LANDSCAPE_OPTIONS } from '@/constants/landscape-options';
 import { GroupsDiscovery } from '@/features/groups/groups-discovery';
-import { useFavorites } from '@/features/favorites/favorites-context';
 import { FavoritesNotice } from '@/features/favorites/favorite-button';
 
 export default function ExploreScreen() {
   const [view, setView] = useState<'trips' | 'groups'>('trips');
   const theme = useTheme();
-  const { filters, setFilters, sort, setSort, proposals: availableProposals, compatibility, status, error, refresh } = useDiscovery();
-  const favorites = useFavorites();
-  useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
+  const { filters, setFilters, sort, setSort } = useDiscovery();
+  const { items: proposals, totalCount, hasMore, status, error, refresh, retry, loadMore } = useTripSearch(filters, sort, 20, view === 'trips');
   const { profile } = useProfile();
   const { state: ownTrips } = useOwnTrips();
   const sourceTrip = ownTrips.trips.find(
@@ -50,11 +46,6 @@ export default function ExploreScreen() {
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
   const dateRange = resolveDiscoveryRange(filters);
-  const proposals = sortDiscoveryProposals(
-    filterProposals(availableProposals, filters, dateRange, favorites.tripIds),
-    sort,
-    Object.fromEntries(Object.entries(compatibility).map(([id, match]) => [id, match.score])),
-  );
   const activeCount =
     Number(filters.tripModes.length === 1) +
     Number(filters.dateRangeId !== 'all') +
@@ -129,8 +120,7 @@ export default function ExploreScreen() {
         })}
       </View>
       {view === 'groups' ? <GroupsDiscovery /> : <>
-      {filters.favoritesOnly && favorites.status === 'loading' ? <DataStatus status="loading" error={null} onRetry={() => void favorites.refresh()} label="Wczytywanie ulubionych" /> : null}
-      <DataStatus status={status} error={error} onRetry={() => { void refresh(); }} label="Wczytywanie ogłoszeń" />
+      <DataStatus status={status} error={error} onRetry={() => { void retry(); }} label="Wczytywanie ogłoszeń" />
       <View style={styles.controls}>
         {filters.sourceTripId ? (
           <View style={layout.row}>
@@ -155,7 +145,7 @@ export default function ExploreScreen() {
           onOpen={() => setShowFilters(true)} onClear={reset} onRefresh={() => void refresh()} />
       </View>
       <View style={styles.results}>
-        <DiscoveryResultsHeader title={'Propozycje · ' + proposals.length}
+        <DiscoveryResultsHeader title={totalCount === null ? 'Propozycje' : 'Propozycje · ' + totalCount}
           sortLabel={sort === 'compatibility' ? 'Zgodność' : 'Domyślnie'}
           sortAccessibilityLabel={'Sortowanie: ' + (sort === 'compatibility' ? 'Najwyższa zgodność' : 'Domyślnie')}
           onSort={() => setShowSort(true)} />
@@ -170,10 +160,10 @@ export default function ExploreScreen() {
                   preferredAges.includes(band),
                 ),
               }}
-              score={compatibility[proposal.trip.id]?.score}
+              score={proposal.compatibility.score}
             />
           ))
-        ) : status === 'ready' && (!filters.favoritesOnly || favorites.status === 'ready') ? (
+        ) : status === 'ready' ? (
           <EmptyState
             title="Jeszcze się mijamy"
             description="Żaden plan nie pasuje do tych filtrów. Zmień klimat wyjazdu lub pozostałe kryteria."
@@ -182,6 +172,7 @@ export default function ExploreScreen() {
             }
           />
         ) : null}
+        {hasMore && status !== 'loading' ? <Button label="Pokaż więcej wyjazdów" variant="secondary" onPress={() => { void loadMore(); }} /> : null}
       </View>
       {showFilters ? (
         <DiscoveryFiltersSheet

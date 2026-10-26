@@ -1,0 +1,35 @@
+# Wyszukiwanie wyjazdów po stronie Supabase — Dev
+
+Zmiana działa wyłącznie w **RazemGo Dev**, backend `kswuakzcnoqgovnwejhb`. Migracja `202610260001_trip_discovery.sql` została wdrożona do Dev. Preview 1.1.0 i jego baza pozostają przy dotychczasowym wydaniu.
+
+## Zachowanie aplikacji
+
+- Odkrywaj pobiera pierwsze 20 pasujących wyjazdów. „Pokaż więcej wyjazdów” pobiera następną stronę. Aplikacja nie pobiera całego katalogu w tle.
+- Typ ogłoszenia, klimat, miejsce, zakres dat z tolerancją, rodzaj ekipy, wiek dzieci, zwierzęta i ulubione filtruje baza, przed sortowaniem i limitem strony. Wybory jednej kategorii łączą się jako „lub”, różne kategorie jako „i”.
+- „Domyślnie” oznacza najnowszą publikację, następnie ID. Zgodność jest obliczana w bazie dla całego pasującego zbioru, przed stronicowaniem; przy remisie decyduje publikacja i ID. Zachowano dotychczasowe wagi, powody, zwykłe punktowanie zwierząt i wybór jednego najlepszego własnego planu. Wynik na karcie pochodzi z tego samego obliczenia co sortowanie.
+- Nagłówek wyników i przycisk w filtrach pokazują pełną liczbę dopasowań, nie liczbę wczytanych kart. Licznik w filtrach wysyła zapytanie po 250 ms przerwy; stare odpowiedzi są ignorowane. Nieudany odczyt udostępnia ponowienie, bez fikcyjnego zera.
+- Błąd kolejnej strony zachowuje już wczytane karty i kursor. Ponowienie pobiera tę samą stronę. Zmiana kryteriów zaczyna nową listę. Odświeżenie po powrocie na ekran zachowuje liczbę wcześniej obejrzanych stron.
+- Start niezależnie pobiera tylko najnowsze cudze ogłoszenie i porównuje je z własnymi planami. Nie dziedziczy kryteriów otwartego Odkrywaj.
+- Szczegóły wyjazdu pobierają wskazany ID niezależnie od strony i filtrów listy. Działają linki z powiadomień i profilu ekipy, także do ogłoszenia spoza aktualnych wyników.
+- Licznik propozycji w szczegółach własnego planu korzysta z zapytania zliczającego, nie z zawartości wczytanej strony.
+
+## API i uprawnienia
+
+`search_public_trips(filters, sort_mode, after_cursor, page_size)` zwraca `items`, `total_count`, `has_more`, `cursor`. Rozmiar strony wynosi 1–20; Start wybiera 1, lista 20. `count_public_trips(filters)` stosuje te same warunki bez limitu strony. `get_discovery_trip(target_trip_id, filters)` zwraca pojedynczy dostępny wyjazd i zgodność; kryteria wpływają na ocenę, lecz nie ukrywają szczegółów dostępnego ogłoszenia.
+
+Kursor jest oparty na wyniku, czasie publikacji i ID oraz powiązany z zalogowaną ekipą, kryteriami i sortowaniem. Nie korzysta z przesunięć numerowanych stron. Powtórzone ID nie duplikują kart. Błędny kursor lub kryteria są odrzucane z `22023`.
+
+Lokalizacja zachowuje ID wybranej miejscowości. Region obejmuje wyjazdy w województwie, a kraje odpowiadają obecnemu katalogowi miejsc w aplikacji: Polska i przykładowa Słowenia. Obsłużono starsze nazwy „Pomorze” i „Dolny Śląsk”. Swobodne wyszukiwanie tekstu pomija polskie znaki i traktuje `%` oraz `_` dosłownie.
+
+Wszystkie endpointy wymagają aktywnej sesji i profilu. Uwzględniają obustronne blokady, zawieszenia kont, moderację oraz publikację, widoczność i termin planu. Ukrycie samego profilu nie ukrywa jego publicznych wyjazdów. Prywatne preferencje są używane w obliczeniu na serwerze, ale nie są zwracane klientowi. Pomocniki w `discovery_private` są niedostępne dla `anon` i `authenticated`. Starszy `list_public_trips` pozostaje zgodny z dotychczasowymi klientami.
+
+Żądania aplikacji są przypinane do tokenu konkretnego konta. Zmiana konta, filtrów lub ekranu unieważnia spóźnione odpowiedzi. Podgląd demonstracyjny nadal filtruje lokalnie; zwykły Dev korzysta z nowych RPC, bez automatycznego powrotu do pobierania całego katalogu.
+
+## Weryfikacja
+
+- 372 testy Node, w tym rzeczywiste migracje PostgreSQL/PGlite: ponad 20 wyjazdów, remisy, sortowanie całego zbioru, wszystkie filtry i licznik, tolerancja dat, zgodność z dotychczasowym modelem, ulubione, bezpośrednie linki, prywatność, brak sesji i dostęp anonimowy.
+- Testy magazynu listy: ograniczona liczba pobrań, ponowienia, usuwanie duplikatów, odświeżanie obejrzanych stron, spóźnione odpowiedzi oraz izolacja kont.
+- 14 różnych scenariuszy Playwright: strony 20/40/45, błąd następnej strony i ponowienie, pełny licznik filtrów, sortowanie oraz szczegóły spoza bieżących wyników, a także istniejące ulubione, reakcje, logowanie, Ekipy i powiadomienia. Osobny scenariusz sprawdza błąd licznika. Scenariusz pełnego cyklu wyjazdu ponowiono po błędzie sieci przeglądarki przy przeładowaniu; ponowny przebieg przeszedł.
+- Rzeczywiste API Dev na dwóch tymczasowych kontach i 25 wyjazdach potwierdziło strony 20+5, zgodność przed limitem, licznik, daty, ulubione, szczegóły i blokady. Konta oraz wyjazdy usunięto, bez rejestrowania urządzeń i wysyłania fizycznych push.
+
+Lint i TypeScript przeszły bez ostrzeżeń. Manifest i rzeczywisty bundle Androida na porcie 8081 potwierdziły pakiet, schemat i backend Dev oraz trzy nowe RPC, bez adresu backendu Preview. Zmiana nie dodaje bibliotek ani konfiguracji natywnej. Wystarczy odświeżyć aplikację Dev. Testy instalacji i wyglądu na fizycznym telefonie pozostają osobną kontrolą.

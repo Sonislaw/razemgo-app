@@ -22,7 +22,7 @@ Serduszko nie udostępnia prywatnych danych i nie wysyła powiadomienia ekipie. 
 
 Filtr `favorites_only` dla katalogu Ekip jest sprawdzany po stronie SQL **przed** sortowaniem i stronicowaniem; `count_public_groups` używa tego samego warunku, bez limitu 20 profili. Ukryta ekipa nie wróci do wyszukiwarki dzięki serduszku, nawet jeśli pozostaje dostępna przez wcześniejszy kontakt. Dotychczasowe API działa bez nowego, opcjonalnego parametru JSON.
 
-W Wyjazdach filtr przecina zbiór dostępnych ogłoszeń z prywatnymi identyfikatorami zapisanych wyjazdów. Repozytorium pobiera wszystkie strony istniejącego `list_public_trips`, a filtr i licznik w panelu wykorzystują tę samą funkcję. Żadne dodatkowe dane prywatnych, zakończonych ani usuniętych ogłoszeń nie są pobierane. Model katalogu wyjazdów nadal jest oparty na obecnym pobieraniu wszystkich publicznych planów; ewentualne przejście całej wyszukiwarki wyjazdów na stronicowanie serwerowe stanowi osobną zmianę.
+W wydaniu Preview 1.1.0 filtr Wyjazdów przecina zbiór dostępnych ogłoszeń z prywatnymi identyfikatorami zapisanych wyjazdów. Od 26.10.2026 w Dev filtrowanie ulubionych odbywa się w SQL przed sortowaniem i limitem strony; licznik stosuje ten sam warunek. Aplikacja pobiera maksymalnie 20 wyników na żądanie. Szczegóły: [wyszukiwanie wyjazdów](TRIP_DISCOVERY.md).
 
 `FavoritesProvider` jest częścią stanu konta. Żądania są przypinane do tokenu konkretnego użytkownika. Zapisy blokują ponowne wysłanie tej samej operacji w trakcie oczekiwania, a stary odczyt nie nadpisze nowszego zapisu. Monitoring używa etykiet `favorites.load` i `favorites.save`, bez treści profili i tokenów.
 

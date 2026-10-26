@@ -79,6 +79,9 @@ export interface Database {
       duplicate_my_trip: { Args: { trip_id: string }; Returns: TripRow };
       delete_my_trip: { Args: { trip_id: string }; Returns: string };
       list_public_trips: { Args: { requested_trip_id?: string | null }; Returns: PublicTripRow[] };
+      search_public_trips: { Args: { filters?: ReturnType<typeof import('../features/discovery/discovery-data').discoveryFiltersPayload>; sort_mode?: string; after_cursor?: import('../features/discovery/discovery-data').TripSearchCursor | null; page_size?: number }; Returns: import('../features/discovery/discovery-repository').TripSearchPageRow };
+      count_public_trips: { Args: { filters?: ReturnType<typeof import('../features/discovery/discovery-data').discoveryFiltersPayload> }; Returns: number };
+      get_discovery_trip: { Args: { target_trip_id: string; filters?: ReturnType<typeof import('../features/discovery/discovery-data').discoveryFiltersPayload> }; Returns: import('../features/discovery/discovery-repository').RankedTripRow | null };
       save_my_profile: {
         Args: { profile_data: ReturnType<typeof profileToPayload> };
         Returns: { group: GroupRow; preferences: PreferencesRow };

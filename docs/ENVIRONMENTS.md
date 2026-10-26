@@ -14,13 +14,15 @@ Dwie aplikacje mają osobne identyfikatory, schematy linków logowania i konfigu
 
 Dotychczasowy projekt Supabase ma nazwę „razemgo-dev”, ale obsługuje zainstalowane Preview. Zachowano jego adres, konta, dane i działające funkcje. Po usunięciu „Sonislaw's Project” przez użytkownika utworzono osobny **razemgo-development** w `eu-west-3` (Paryż), 25.10.2026. Nie włączono płatnego planu.
 
-26.10.2026 aktualny kod przeniesiono do wydania **Preview 1.1.0**. Preview otrzymało migracje `202610250001`–`202610250012` i aktualne Edge Functions; oba backendy mają 20 migracji. Zachowano dane testerów i odrębną konfigurację Auth, Firebase i push. Szczegóły wydania oraz status APK są w [RELEASE_1.1.0.md](RELEASE_1.1.0.md).
+26.10.2026 aktualny kod przeniesiono do wydania **Preview 1.1.0**. Preview otrzymało migracje `202610250001`–`202610250012` i aktualne Edge Functions; na moment wydania oba backendy miały 20 migracji. Zachowano dane testerów i odrębną konfigurację Auth, Firebase i push. Szczegóły wydania oraz status APK są w [RELEASE_1.1.0.md](RELEASE_1.1.0.md).
+
+Kolejna zmiana jest już wyłącznie w Dev: `202610260001_trip_discovery.sql` przenosi filtrowanie, ranking, licznik i stronicowanie wyjazdów do Supabase. Dev ma 21 migracji; Preview nadal 20. Obsługę i weryfikację opisuje [TRIP_DISCOVERY.md](TRIP_DISCOVERY.md).
 
 ## Skonfigurowany Dev
 
 1. `.env.local` i środowisko EAS **development** mają URL oraz publiczny klucz nowego Dev. Dotychczasowe wartości zachowano w ignorowanym `.env.preview.local` i środowisku EAS **preview**. Nie wpisuj klucza administracyjnego do zmiennych `EXPO_PUBLIC_*`.
 2. Dev ma własną aplikację Android w Firebase, plik `google-services.development.json`, osobny klucz podpisujący APK i przypisany klucz FCM V1. Powiązanie Firebase Preview pozostało bez zmian. Obie aplikacje używają tego samego projektu Firebase i usługi Expo Push, lecz osobnych instalacji oraz kolejek i tokenów przechowywanych w swoich bazach.
-3. Wdrożono dwadzieścia migracji (w tym `202610250001_group_discovery.sql` dla wyszukiwania ekip, `202610250002_default_group_visibility.sql` dla domyślnej widoczności profilu, `202610250003_group_compatibility.sql` dla zgodności profili, `202610250004_group_result_count.sql` dla licznika wyników filtrów, `202610250005_group_presence.sql` dla statusu online, `202610250006_online_group_filter.sql` dla filtra aktywnych ekip, `202610250007_favorites.sql` dla ulubionych, `202610250008_favorite_trip_notifications.sql` dla powiadomień o ich nowych publikacjach, `202610250009_default_favorite_trip_push.sql` dla domyślnie włączonego push tej kategorii, `202610250010_trip_reactions.sql` dla emocji pod ogłoszeniami, `202610250011_crew_numbers.sql` dla stałych numerów ekip i `202610250012_group_name_length.sql` dla limitu nazwy ekipy do 20 znaków) i funkcje `delete-account`, `dispatch-push`, `monitor-push`. Główny katalog CLI jest powiązany wyłącznie z Dev. Kolejne zmiany wdrażaj jawnie:
+3. Wdrożono dwadzieścia jeden migracji: profil, wyjazdy, wiadomości, powiadomienia, moderację, Ekipy, zgodność, obecność, ulubione, reakcje, numery ekip, limit nazwy oraz `202610260001_trip_discovery.sql` dla wyszukiwania wyjazdów po stronie bazy. Dostępne są funkcje `delete-account`, `dispatch-push`, `monitor-push`. Główny katalog CLI jest powiązany wyłącznie z Dev. Kolejne zmiany wdrażaj jawnie:
 
    ```powershell
    npm run backend:dev -- link

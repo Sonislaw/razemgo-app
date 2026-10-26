@@ -32,7 +32,8 @@ import {
 } from '@/features/trips/trip-ui';
 import { TripActions } from '@/features/trips/trip-actions';
 import { useDiscovery } from '@/features/discovery/discovery-context';
-import { filterProposals } from '@/features/discovery/filter-trips';
+import { INITIAL_FILTERS } from '@/features/discovery/filter-trips';
+import { useTripResultCount } from '@/features/discovery/use-trip-search';
 import { useMessaging } from '@/features/messaging/messaging-context';
 import { isConversationAccepted } from '@/features/messaging/messaging-state';
 import { GroupAvatar } from '@/features/messaging/messaging-ui';
@@ -53,10 +54,12 @@ export default function OwnTripDetailsScreen() {
   const { state, status: loadStatus, error: loadError, refresh, hasLoaded } = useOwnTrips();
   const { profile } = useProfile();
   const { state: messaging, dispatch: dispatchMessaging, contact } = useMessaging();
-  const { setFilters, proposals: availableProposals } = useDiscovery();
+  const { setFilters } = useDiscovery();
   const theme = useTheme();
   const [menu, setMenu] = useState(false);
   const trip = state.trips.find((item) => item.id === id);
+  const canSearch = !!trip && !hidden_trip_ids.includes(trip.id) && isSearchingTrip(trip, todayDate());
+  const { count: proposalCount, countError, retryCount } = useTripResultCount(trip ? discoveryFiltersForTrip(trip) : INITIAL_FILTERS, canSearch);
   const back = () => router.dismissTo('/trips');
   if (!hasLoaded) return (
     <Screen><TripPageHeader title="Twój wyjazd" onBack={back} /><DataStatus status={loadStatus} error={loadError} onRetry={() => { void refresh(); }} /></Screen>
@@ -78,9 +81,6 @@ export default function OwnTripDetailsScreen() {
   const hidden = hidden_trip_ids.includes(trip.id);
   const searching = !hidden && isSearchingTrip(trip, todayDate());
   const discoveryFilters = discoveryFiltersForTrip(trip);
-  const proposals = searching
-    ? filterProposals(availableProposals, discoveryFilters)
-    : [];
   const invitations = messaging.invitations.filter(
     (item) =>
       item.ownTripId === trip.id &&
@@ -218,7 +218,7 @@ export default function OwnTripDetailsScreen() {
               {[
                 {
                   label: 'Propozycje',
-                  value: searching ? proposals.length : '—',
+                  value: searching ? (proposalCount ?? '—') : '—',
                 },
                 { label: 'Zaproszenia', value: pending.length },
                 { label: 'Ekipy', value: acceptedGroups.length },
@@ -246,6 +246,10 @@ export default function OwnTripDetailsScreen() {
               wspólnych nocy i wybranego towarzystwa. Zaproszenia i ekipy
               dotyczą wyłącznie tego wyjazdu.
             </AppText>
+            {countError ? <>
+              <AppText variant="caption" accessibilityRole="alert">Nie udało się sprawdzić liczby propozycji.</AppText>
+              <Button label="Policz propozycje ponownie" variant="secondary" onPress={retryCount} />
+            </> : null}
             <Button
               label="Znajdź towarzystwo"
               icon="people"

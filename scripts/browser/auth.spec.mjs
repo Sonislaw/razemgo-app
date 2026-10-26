@@ -129,6 +129,9 @@ async function backend(context, existingState) {
       if (request.method() === 'PUT') state.lastPassword = body.password;
       return respond(user(id));
     }
+    if (url.pathname === '/rest/v1/rpc/search_public_trips') return respond({items:[],total_count:0,has_more:false,cursor:null});
+    if (url.pathname === '/rest/v1/rpc/count_public_trips') return respond(0);
+    if (url.pathname === '/rest/v1/rpc/get_discovery_trip') return respond(null);
     if (url.pathname === '/rest/v1/trip_plans' || url.pathname === '/rest/v1/rpc/list_public_trips') return respond([]);
     if (url.pathname === '/rest/v1/rpc/get_my_mailbox') return respond({invitations:[],conversations:[],contacts:[],blocked_group_ids:[],reports:[]});
     if (url.pathname === '/rest/v1/rpc/get_my_notifications') return respond({items:[],unread_count:0,has_more:false,fetched_at:new Date().toISOString(),preferences:{push_messages:true,push_invitations:true,updated_at:null}});

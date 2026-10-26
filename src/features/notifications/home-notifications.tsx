@@ -23,6 +23,7 @@ import {
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { useTheme } from '@/hooks/use-theme';
 import { USE_DEMO_DATA } from '@/constants/app';
+import { DEMO_PROPOSALS } from '@/data/mocks/travel';
 import { NotificationBell } from './notification-bell';
 import { useNotifications } from './notifications-context';
 import {
@@ -111,10 +112,10 @@ function DemoHomeNotifications() {
   const { width, height } = useWindowDimensions();
   const { state: ownTrips } = useOwnTrips();
   const { state: mailbox, dispatch, contact } = useMessaging();
-  const { setFilters, setSort, proposals: availableProposals } = useDiscovery();
+  const { setFilters, setSort } = useDiscovery();
   const { readKeys, markRead } = useNotifications();
   const notifications = selectHomeNotifications(
-    availableProposals,
+    DEMO_PROPOSALS,
     ownTrips.trips,
     mailbox,
     readKeys,

@@ -64,6 +64,14 @@ Budowanie nie publikuje aplikacji w Google Play i nie uruchamia EAS Update. Zmia
 
 Zapisz numer wydania, model telefonu i wynik scenariusza. Kontrole komputerowe oraz udany build nie zastępują testów instalacji, przeglądarki Google, klawiatury i dostarczenia push na fizycznych urządzeniach.
 
+## Wydanie 1.1.0 — 26.10.2026
+
+Gotowy **RazemGo Preview 1.1.0 (4)**: [pobierz APK](https://expo.dev/artifacts/eas/LotUv6GyCKwFm87eh1Rkwfv84Xzzr83p2tIFjEzhcX8.apk) · [EAS](https://expo.dev/accounts/sonislaw/projects/razemgo/builds/e44981d4-308d-4fe9-9142-c25020bbaa89).
+
+Backend Preview ma komplet 20 migracji oraz aktualne funkcje serwerowe. Konta i dane testerów zachowano. Sprawdzono gotowy APK, konfigurację Preview i zgodność certyfikatu podpisującego z poprzednim wydaniem. Aktualizuj istniejące Preview bez odinstalowywania; Dev nadal działa osobno.
+
+Zakres, kontrolę danych i wyniki testów opisano w [wydaniu 1.1.0](RELEASE_1.1.0.md).
+
 ## Wydanie 25.10.2026
 
 Gotowy **RazemGo 1.0.0 (2)**: [pobierz APK](https://expo.dev/artifacts/eas/1VTujDT3rSFmldfcGsP7wqPACh6pUSqj029xqoIFNUg.apk) · [build EAS](https://expo.dev/accounts/sonislaw/projects/razemgo/builds/adaeb4ad-236e-4d33-924d-a6d9a4af224a).

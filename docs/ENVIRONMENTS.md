@@ -14,6 +14,8 @@ Dwie aplikacje mają osobne identyfikatory, schematy linków logowania i konfigu
 
 Dotychczasowy projekt Supabase ma nazwę „razemgo-dev”, ale obsługuje zainstalowane Preview. Zachowano jego adres, konta, dane i działające funkcje. Po usunięciu „Sonislaw's Project” przez użytkownika utworzono osobny **razemgo-development** w `eu-west-3` (Paryż), 25.10.2026. Nie włączono płatnego planu.
 
+26.10.2026 aktualny kod przeniesiono do wydania **Preview 1.1.0**. Preview otrzymało migracje `202610250001`–`202610250012` i aktualne Edge Functions; oba backendy mają 20 migracji. Zachowano dane testerów i odrębną konfigurację Auth, Firebase i push. Szczegóły wydania oraz status APK są w [RELEASE_1.1.0.md](RELEASE_1.1.0.md).
+
 ## Skonfigurowany Dev
 
 1. `.env.local` i środowisko EAS **development** mają URL oraz publiczny klucz nowego Dev. Dotychczasowe wartości zachowano w ignorowanym `.env.preview.local` i środowisku EAS **preview**. Nie wpisuj klucza administracyjnego do zmiennych `EXPO_PUBLIC_*`.

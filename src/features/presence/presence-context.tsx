@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useSyncExternalStore, type ReactNode } from 'react';
 import { AppState, Platform } from 'react-native';
-import * as Crypto from 'expo-crypto';
+import { createRequestKey } from '@/lib/request-key';
 import { USE_DEMO_DATA } from '@/constants/app';
 import { useAuth } from '@/features/auth/auth-context';
 import { useProfile } from '@/features/profile/profile-context';
@@ -24,7 +24,7 @@ export function PresenceProvider({ children }: { children: ReactNode }) {
   const userId = session?.user.id, groupId = profile.group.id;
   const ready = !USE_DEMO_DATA && !!userId && !isLoading && !isRecovering && !error && hasProfile && status === 'ready';
   const controller = useMemo(() => ready && userId ? createPresenceController(groupId, {
-    newConnection: () => Crypto.randomUUID(),
+    newConnection: createRequestKey,
     setPresence: (id, online) => setPresence(userId, id, online),
     getOnline: ids => getOnlineGroups(userId, ids),
   }) : null, [ready, userId, groupId]);

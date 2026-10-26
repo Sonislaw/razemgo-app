@@ -1,6 +1,6 @@
 import { DataStatus } from '@/components/ui/data-status';
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import {
   AppText,
   Button,
@@ -37,7 +37,7 @@ export default function ExploreScreen() {
   const [view, setView] = useState<'trips' | 'groups'>('trips');
   const theme = useTheme();
   const { filters, setFilters, sort, setSort } = useDiscovery();
-  const { items: proposals, totalCount, hasMore, status, error, refresh, retry, loadMore } = useTripSearch(filters, sort, TRIP_SEARCH_PAGE_SIZE, view === 'trips');
+  const { items: proposals, totalCount, hasMore, status, loadingMore, error, refresh, retry, loadMore, preserveOnReturn } = useTripSearch(filters, sort, TRIP_SEARCH_PAGE_SIZE, view === 'trips');
   const { profile } = useProfile();
   const { state: ownTrips } = useOwnTrips();
   const sourceTrip = ownTrips.trips.find(
@@ -94,6 +94,7 @@ export default function ExploreScreen() {
   const reset = () => setFilters({ ...INITIAL_FILTERS });
   return (
     <Screen
+      testID="discovery-screen"
       header={
         <IllustratedPageHeader
           title="Odkrywaj"
@@ -121,7 +122,7 @@ export default function ExploreScreen() {
         })}
       </View>
       {view === 'groups' ? <GroupsDiscovery /> : <>
-      <DataStatus status={status} error={error} onRetry={() => { void retry(); }} label="Wczytywanie ogłoszeń" />
+      <DataStatus status={loadingMore ? 'ready' : status} error={error} onRetry={() => { void retry(); }} label="Wczytywanie ogłoszeń" />
       <View style={styles.controls}>
         {filters.sourceTripId ? (
           <View style={layout.row}>
@@ -162,6 +163,7 @@ export default function ExploreScreen() {
                 ),
               }}
               score={proposal.compatibility.score}
+              onNavigate={preserveOnReturn}
             />
           ))
         ) : status === 'ready' ? (
@@ -173,7 +175,15 @@ export default function ExploreScreen() {
             }
           />
         ) : null}
-        {hasMore && status !== 'loading' ? <Button label="Pokaż więcej wyjazdów" variant="secondary" onPress={() => { void loadMore(); }} /> : null}
+        {hasMore && (status !== 'loading' || loadingMore) ? (
+          <Button
+            label={loadingMore ? 'Wczytywanie ogłoszeń' : 'Pokaż więcej wyjazdów'}
+            leading={loadingMore ? <ActivityIndicator size="small" color={theme.primaryStrong} accessibilityLabel="Wczytywanie kolejnych ogłoszeń" /> : undefined}
+            variant="secondary"
+            disabled={loadingMore}
+            onPress={() => { void loadMore(); }}
+          />
+        ) : null}
       </View>
       {showFilters ? (
         <DiscoveryFiltersSheet

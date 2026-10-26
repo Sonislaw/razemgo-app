@@ -36,6 +36,25 @@ test('foreground refresh restores only previously viewed pages and a failed refr
   await store.refresh();await store.more();calls=0;await store.refresh();assert.equal(calls,2);assert.equal(store.getSnapshot().items.length,4);
   fail=true;await store.refresh();assert.equal(store.getSnapshot().items.length,4);assert.equal(store.getSnapshot().hasLoaded,true);assert.equal(store.getSnapshot().status,'error');
 });
+test('returning to the list clears old pagination, fetches only the first page and ignores an earlier pending page',async()=>{
+  const calls=[],first=deferred(),lateMore=deferred();let restarting=false;
+  const store=createTripSearchStore(async c=>{
+    calls.push(c);
+    if(!c)return restarting?first.promise:page(['a','b'],9,true);
+    return c.id==='b'?page(['c','d'],9,true):lateMore.promise;
+  },2);
+  await store.refresh();await store.more();assert.equal(store.getSnapshot().items.length,4);
+  const pendingMore=store.more();store.stop();restarting=true;
+  const returning=store.restart();
+  assert.deepEqual(store.getSnapshot().items,[]);assert.equal(store.getSnapshot().cursor,null);
+  assert.equal(store.getSnapshot().totalCount,null);assert.equal(store.getSnapshot().loadingMore,false);
+  lateMore.resolve(page(['stale-e','stale-f'],9,true));await pendingMore;
+  assert.deepEqual(store.getSnapshot().items,[]);
+  first.resolve(page(['fresh-a','fresh-b'],9,true));await returning;
+  assert.deepEqual(store.getSnapshot().items.map(p=>p.trip.id),['fresh-a','fresh-b']);
+  assert.equal(store.getSnapshot().cursor.id,'fresh-b');assert.equal(store.getSnapshot().hasMore,true);
+  assert.equal(store.getSnapshot().totalCount,9);assert.equal(calls.length,4);assert.equal(calls.at(-1),undefined);
+});
 test('query payload preserves selected location identity, date tolerance and source and canonicalizes equivalent choices',()=>{
   const filters={...INITIAL_FILTERS,tripModes:['flexible','planned'],locationId:'pl-locality:4259',location:'Chłapowo',dateRangeId:'custom',customDateRange:{startDate:'2099-05-21',endDate:'2099-05-24'},dateFlexibilityDays:2,sourceTripId:'source',landscapeKinds:['forest','coast']};
   const f=discoveryFiltersPayload(filters);assert.equal(f.location.id,'pl-locality:4259');assert.equal(f.location.country,'Polska');assert.equal(f.start_date,'2099-05-21');assert.equal(f.tolerance_days,2);assert.equal(f.source_trip_id,'source');

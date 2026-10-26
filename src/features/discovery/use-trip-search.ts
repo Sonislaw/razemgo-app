@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { AppState, Platform } from 'react-native';
 import { USE_DEMO_DATA } from '@/constants/app';
@@ -41,10 +41,14 @@ export function useTripSearch(filters: DiscoveryFilters, sort: DiscoverySort = '
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, pageSize), [userId, key, sort, pageSize, profile, ownTrips.revision, USE_DEMO_DATA ? favorites.tripIds : null]);
   const state = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
+  const returnStore = useRef<typeof store | null>(null);
+  const preserveOnReturn = useCallback(() => { returnStore.current = store; }, [store]);
   const favoritesRevision = filters.favoritesOnly ? favorites.tripIds : null;
   useFocusEffect(useCallback(() => {
     if (!enabled || !ready) return;
-    void store.refresh();
+    const restore = returnStore.current === store;
+    returnStore.current = null;
+    void (restore ? store.refresh() : store.restart());
     const sync = () => { if (Platform.OS !== 'web' || document.visibilityState === 'visible') void store.refresh(); };
     const native = AppState.addEventListener('change', value => { if (value === 'active') sync(); });
     if (Platform.OS === 'web') window.addEventListener('visibilitychange', sync);
@@ -52,7 +56,7 @@ export function useTripSearch(filters: DiscoveryFilters, sort: DiscoverySort = '
     // These revisions explicitly invalidate the current server results.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, enabled, ready, revision, favoritesRevision]));
-  return { ...state, refresh: store.refresh, loadMore: store.more, retry: store.retry };
+  return { ...state, refresh: store.refresh, loadMore: store.more, retry: store.retry, preserveOnReturn };
 }
 
 export function useTripResultCount(filters: DiscoveryFilters, enabled = true) {

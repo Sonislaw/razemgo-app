@@ -12,16 +12,18 @@ export interface TripSearchState {
   error: string | null;
 }
 export function createTripSearchStore(fetchPage: (cursor?: TripSearchCursor) => Promise<TripSearchPage>, pageSize = TRIP_SEARCH_PAGE_SIZE) {
-  let state: TripSearchState = { items: [], totalCount: null, hasMore: false, cursor: null, status: 'loading', hasLoaded: false, loadingMore: false, error: null };
+  const initialState: TripSearchState = { items: [], totalCount: null, hasMore: false, cursor: null, status: 'loading', hasLoaded: false, loadingMore: false, error: null };
+  let state = initialState;
   let generation = 0;
   let failed: 'load' | 'more' = 'load';
   const listeners = new Set<() => void>();
   const publish = (patch: Partial<TripSearchState>) => { state = { ...state, ...patch }; for (const notify of listeners) notify(); };
   const unique = (items: RankedTripProposal[]) => [...new Map(items.map(item => [item.trip.id, item])).values()];
-  const refresh = async () => {
+  const refresh = async (fromStart = false) => {
     const version = ++generation;
-    const wanted = Math.max(pageSize, state.items.length);
-    publish({ status: 'loading', error: null, loadingMore: false });
+    const wanted = fromStart ? pageSize : Math.max(pageSize, state.items.length);
+    failed = 'load';
+    publish({ ...(fromStart ? initialState : {}), status: 'loading', error: null, loadingMore: false });
     try {
       let page = await fetchPage();
       while (version === generation && page.hasMore && page.cursor && page.items.length < wanted) {
@@ -47,7 +49,8 @@ export function createTripSearchStore(fetchPage: (cursor?: TripSearchCursor) => 
   return {
     subscribe: (notify: () => void) => { listeners.add(notify); return () => { listeners.delete(notify); }; },
     getSnapshot: () => state,
-    refresh, more,
+    refresh: () => refresh(), more,
+    restart: () => refresh(true),
     retry: () => failed === 'more' ? more() : refresh(),
     stop: () => { generation++; },
   };

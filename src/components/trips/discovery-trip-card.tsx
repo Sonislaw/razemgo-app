@@ -9,15 +9,16 @@ import { TripReactionsButton } from '@/features/reactions/trip-reactions';
 interface DiscoveryTripCardProps extends TripProposal {
   facts: Pick<MatchFacts, 'ageBands' | 'matchingAgeBands'>;
   score?: number;
+  onNavigate?: () => void;
 }
 
-export function DiscoveryTripCard({ trip, group, facts, score }: DiscoveryTripCardProps) {
+export function DiscoveryTripCard({ trip, group, facts, score, onNavigate }: DiscoveryTripCardProps) {
   return (
     <TripListingCard
       testID={'discovery-trip-' + trip.id}
       trip={trip}
       group={group}
-      onPressGroup={() => router.push({ pathname: '/crew/[id]', params: { id: group.id } })}
+      onPressGroup={() => { onNavigate?.(); router.push({ pathname: '/crew/[id]', params: { id: group.id } }); }}
       travelModes={trip.travelModes}
       ageBands={facts.matchingAgeBands.length ? facts.matchingAgeBands : facts.ageBands}
       score={score}
@@ -27,7 +28,7 @@ export function DiscoveryTripCard({ trip, group, facts, score }: DiscoveryTripCa
         <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} />
         <TripListingAction
           label="Zobacz wyjazd"
-          onPress={() => router.push({ pathname: '/trip/[id]', params: { id: trip.id } })}
+          onPress={() => { onNavigate?.(); router.push({ pathname: '/trip/[id]', params: { id: trip.id } }); }}
         />
         </View>
       }

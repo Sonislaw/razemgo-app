@@ -1,16 +1,17 @@
 import { backendRequest } from '@/lib/backend-request';
 import { getSupabase } from '@/lib/supabase';
 import { proposalFromRow } from '@/features/trips/trip-mapper';
-import { groupFiltersPayload, publicGroupFromRow, type RankedGroupCursor, type GroupSort, type GroupFilters, type GroupPage,
+import { GROUP_SEARCH_PAGE_SIZE, groupFiltersPayload, publicGroupFromRow, type RankedGroupCursor, type GroupSort, type GroupFilters, type GroupPage,
   type GroupVisibility, type PublicGroupDetail, type PublicGroupRow } from './group-data';
 
-export async function fetchPublicGroups(filters: GroupFilters, cursor?: RankedGroupCursor, sort: GroupSort = 'compatibility'): Promise<GroupPage> {
+export async function fetchPublicGroups(filters: GroupFilters, cursor?: RankedGroupCursor, sort: GroupSort = 'compatibility', pageSize = GROUP_SEARCH_PAGE_SIZE): Promise<GroupPage> {
   const { data, error } = await backendRequest(signal => getSupabase().rpc('list_ranked_public_groups', {
-    filters: groupFiltersPayload(filters), sort_mode: sort, after_cursor: cursor ?? null,
+    filters: groupFiltersPayload(filters), sort_mode: sort, after_cursor: cursor ?? null, page_size: pageSize,
   }).abortSignal(signal), 'groups.search');
   if (error) throw error;
-  if (!data || !Array.isArray(data.items)) throw new Error('Missing group directory');
-  return { items: (data.items as PublicGroupRow[]).map(publicGroupFromRow), hasMore: data.has_more, cursor: data.cursor };
+  if (!data || !Array.isArray(data.items) || !Number.isSafeInteger(data.total_count) || data.total_count < 0
+    || typeof data.has_more !== 'boolean' || (data.has_more && !data.cursor)) throw new Error('Missing group directory');
+  return { items: (data.items as PublicGroupRow[]).map(publicGroupFromRow), totalCount: data.total_count, hasMore: data.has_more, cursor: data.cursor };
 }
 export async function fetchPublicGroupCount(filters: GroupFilters): Promise<number> {
   const { data, error } = await backendRequest(signal => getSupabase().rpc('count_public_groups', {

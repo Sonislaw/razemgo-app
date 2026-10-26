@@ -42,7 +42,7 @@ async function groupBackend(context, store) {
         (store.countResponses ??= []).push(f.name);
         return result;
       }
-      return respond({ items: match ? [info()] : [], has_more: false, cursor: null });
+      return respond({ items: match ? [info()] : [], total_count: match ? 1 : 0, has_more: false, cursor: null });
     }
     if (name === 'get_public_group') {
       if (store.failGroupDetail) return respond({ code: '503' }, 503);

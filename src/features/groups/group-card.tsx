@@ -9,11 +9,11 @@ import { GroupCardContent, groupCardStyles } from './group-profile-card';
 import { useGroupOnline } from '@/features/presence/presence-context';
 import { FavoriteButton } from '@/features/favorites/favorite-button';
 
-export function GroupCard({ item }: { item: PublicGroup }) {
+export function GroupCard({ item, onNavigate }: { item: PublicGroup; onNavigate?: () => void }) {
   const theme = useTheme();
   const { group, about, activeTripCount } = item;
   const online = useGroupOnline(group.id);
-  const open = () => router.push({ pathname: '/crew/[id]', params: { id: group.id } });
+  const open = () => { onNavigate?.(); router.push({ pathname: '/crew/[id]', params: { id: group.id } }); };
   return <View style={[groupCardStyles.frame, { borderColor: theme.border, backgroundColor: theme.backgroundElement }]}>
     <Pressable accessibilityRole="button" accessibilityLabel={'Zobacz profil: ' + group.name + (online ? '. Online' : '')}
     testID={'public-group-' + group.id}

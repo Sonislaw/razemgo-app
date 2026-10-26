@@ -26,7 +26,8 @@ export interface GroupFilters {
 export type GroupCursor = { name: string; id: string };
 export type GroupSort = 'compatibility' | 'alphabetical';
 export type RankedGroupCursor = GroupCursor & { score: number | null; sort: GroupSort };
-export interface GroupPage { items: PublicGroup[]; hasMore: boolean; cursor: RankedGroupCursor | null }
+export const GROUP_SEARCH_PAGE_SIZE = 5;
+export interface GroupPage { items: PublicGroup[]; totalCount: number; hasMore: boolean; cursor: RankedGroupCursor | null }
 export const INITIAL_GROUP_FILTERS: GroupFilters = {
   name: '', groupKinds: [], childAgeBands: [], travelModes: [], interests: [], animalKinds: [], hasTrips: false, onlineOnly: false, favoritesOnly: false,
 };

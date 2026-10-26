@@ -84,6 +84,28 @@ test('profile ranking: server parity, bilateral private preferences, global pagi
       const filtered=await list({name:'Zeta',group_kinds:['family'],animal_kinds:['dog']}); assert.equal(filtered.items.length,1);
       assert.equal(await count({name:'Zeta',group_kinds:['family'],animal_kinds:['dog']}),1);
     });
+    await t.test('five-profile pages preserve global sorting and full counts with a smaller final page',async()=>{
+      await as(0);
+      for(const sort of ['compatibility','alphabetical']){
+        const legacy=await list({},sort);
+        let page=await rpc('list_ranked_public_groups',[{},sort,null,5]);
+        const expected=await count();const ids=[];let cursor=null;
+        assert.equal(page.items.length,5);assert.equal(page.total_count,expected);
+        assert.deepEqual(page.items.map(item=>item.crew.id),legacy.items.slice(0,5).map(item=>item.crew.id));
+        for(let attempt=0;attempt<20;attempt++){
+          assert.ok(page.items.length<=5);assert.equal(page.total_count,expected);
+          ids.push(...page.items.map(item=>item.crew.id));
+          if(!page.has_more)break;
+          assert.notDeepEqual(page.cursor,cursor);cursor=page.cursor;
+          page=await rpc('list_ranked_public_groups',[{},sort,cursor,5]);
+        }
+        assert.equal(page.has_more,false);assert.equal(new Set(ids).size,expected);assert.equal(ids.length,expected);
+        assert.equal(legacy.items.length,20);
+      }
+      const filtered=await rpc('list_ranked_public_groups',[{name:'Zeta'},'compatibility',null,5]);
+      assert.equal(filtered.total_count,await count({name:'Zeta'}));assert.equal(filtered.items.length,1);
+      for(const size of [null,0,-1,21])await assert.rejects(rpc('list_ranked_public_groups',[{},'compatibility',null,size]),e=>e.code==='22023');
+    });
     await t.test('online filtering runs before pagination and both sort modes agree with the full online count', async () => {
       await as(25); await rpc('set_my_presence', [randomUUID(), true]);
       await as(0);

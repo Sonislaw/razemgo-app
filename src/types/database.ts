@@ -5,6 +5,7 @@ import type {
 } from '../features/profile/profile-mapper';
 import type { TripRow, PublicTripRow, tripToPayload } from '../features/trips/trip-mapper';
 import type { MailboxRow, MessageRow } from '../features/messaging/messaging-mapper';
+import type { MessageReactionKind, MessageReactionRow } from '../features/messaging/message-reactions-data';
 import type { NotificationsPage, NotificationPreferences } from '../features/notifications/notification-types';
 import type { AccountAccess,ReportsPage,ReportDetail } from '../features/moderation/moderation-types';
 import type { GroupCursor, GroupTripCursor, RankedGroupCursor, GroupSort, GroupVisibility, PublicGroupRow, groupFiltersPayload } from '../features/groups/group-data';
@@ -69,6 +70,8 @@ export interface Database {
       respond_contact_invitation: { Args: { invitation_id: string; response: string }; Returns: string | null };
       send_chat_message: { Args: { conversation_id: string; message_text: string; request_key: string }; Returns: MessageRow };
       get_conversation_messages: { Args: { conversation_id: string; before_sequence?: number | null; page_size?: number }; Returns: MessageRow[] };
+      get_message_reactions: { Args: { conversation_id: string; message_ids: string[] }; Returns: MessageReactionRow[] };
+      set_message_reaction: { Args: { target_message_id: string; reaction_kind: MessageReactionKind | null }; Returns: MessageReactionRow };
       mark_conversation_read: { Args: { conversation_id: string; through_message_id: string }; Returns: number };
       set_group_block: { Args: { target_group_id: string; blocked: boolean }; Returns: undefined };
       report_conversation: { Args: { conversation_id: string; report_reason: string; request_key: string }; Returns: string };

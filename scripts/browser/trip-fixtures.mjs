@@ -116,7 +116,7 @@ async function backend(context,store){
     }
     if(url.pathname.startsWith('/rest/v1/rpc/')&&[
       'get_my_mailbox','send_contact_invitation','respond_contact_invitation','send_chat_message',
-      'mark_conversation_read','get_conversation_messages','set_group_block','report_conversation',
+      'mark_conversation_read','get_conversation_messages','get_message_reactions','set_message_reaction','set_group_block','report_conversation',
     ].includes(url.pathname.split('/').at(-1)))return messagingEndpoint(url.pathname.split('/').at(-1),id,body,store,respond);
     if(url.pathname==='/rest/v1/trip_plans'){
       if(store.failLoad)return respond({message:'Temporary failure'},503);
@@ -243,6 +243,20 @@ async function messagingEndpoint(name,id,body,store,respond){
     if(!owned())return respond({code:'42501'},403);
     if(store.failHistory)return respond({message:'Offline'},503);
     return respond(store.messages.filter(m=>m.conversation_id===body.conversation_id&&(!body.before_sequence||m.sequence<body.before_sequence)).sort((a,b)=>b.sequence-a.sequence).slice(0,body.page_size??50));
+  }
+  if(name==='get_message_reactions'){
+    if(!owned())return respond({code:'42501'},403);
+    if(store.failMessageReactionLoad)return respond({message:'Offline'},503);
+    return respond(body.message_ids.map(message_id=>({message_id,kind:store.messageReactions?.get(message_id)??null})));
+  }
+  if(name==='set_message_reaction'){
+    if(store.failMessageReactionSave===true)return respond({message:'Offline'},503);
+    const message=store.messages.find(m=>m.id===body.target_message_id);
+    const chat=store.conversations.find(c=>c.id===message?.conversation_id&&[c.sender_group_id,c.recipient_group_id].includes(me));
+    if(!message||!chat||message.sender_group_id===me||pairBlocked())return respond({code:'42501'},403);
+    store.messageReactions??=new Map();store.messageReactions.set(message.id,body.reaction_kind);
+    if(store.failMessageReactionSave==='after-commit')return respond({message:'Lost reply'},503);
+    return respond({message_id:message.id,kind:body.reaction_kind});
   }
   if(name==='mark_conversation_read'){
     if(!owned())return respond({code:'42501'},403);

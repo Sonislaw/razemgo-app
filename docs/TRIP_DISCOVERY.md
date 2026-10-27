@@ -1,6 +1,6 @@
-# Wyszukiwanie wyjazdów po stronie Supabase — Dev
+# Wyszukiwanie wyjazdów po stronie Supabase
 
-Zmiana działa wyłącznie w **RazemGo Dev**, backend `kswuakzcnoqgovnwejhb`. Migracja `202610260001_trip_discovery.sql` została wdrożona do Dev. Preview 1.1.0 i jego baza pozostają przy dotychczasowym wydaniu.
+Funkcja działa w **RazemGo Dev** (`kswuakzcnoqgovnwejhb`) oraz od wydania **Preview 1.2.0** w backendzie testerów (`tueqqnbdvuazdxoqtpvk`). Migracja `202610260001_trip_discovery.sql` jest wdrożona do obu projektów. Zachowano starsze API i dane testerów. Kontrolę wydania opisano w [RELEASE_1.2.0.md](RELEASE_1.2.0.md).
 
 ## Zachowanie aplikacji
 

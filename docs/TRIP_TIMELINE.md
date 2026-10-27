@@ -1,4 +1,4 @@
-# Linia czasu wyjazdu — Dev
+# Linia czasu wyjazdu
 
 `TripTimeline` wyświetla pod datą dzisiejszy dzień, początek i koniec wyjazdu oraz licznik dni. Jest częścią `TripListingCard`, więc występuje w Odkrywaj, Moich wyjazdach, ogłoszeniach profilu ekipy, na Start, w przykładzie na stronie powitalnej i w podglądzie kreatora. Ten sam komponent jest w szczegółach własnego i cudzego wyjazdu oraz w kompaktowym odnośniku do planu w rozmowie.
 
@@ -18,4 +18,4 @@
 
 `scripts/trip-timeline.test.mjs` sprawdza przyszłe, trwające, zakończone i anulowane plany, niepełne daty, lata przestępne, zmianę czasu oraz przełom roku. `scripts/browser/trip-timeline.spec.mjs` sprawdza miejsca użycia, zmianę lokalnej daty, brak duplikatu znacznika „Dziś” i układ na szerokościach 320 i 390 px. Istniejące scenariusze obejmują doładowywanie list, powrót do przewinięcia, kreator, ulubione i rozmowy.
 
-Zmiana nie wymaga migracji bazy ani nowego development buildu. Wystarczy odświeżenie RazemGo Dev. Nie opublikowano aktualizacji Preview. Wygląd na fizycznym telefonie pozostaje do sprawdzenia.
+Zmiana nie wymaga migracji bazy ani nowego development buildu. W Dev wystarczy odświeżenie aplikacji. Dla testerów jest częścią [Preview 1.2.0](RELEASE_1.2.0.md), instalowanego jako nowy APK. Wygląd na fizycznym telefonie pozostaje do sprawdzenia.

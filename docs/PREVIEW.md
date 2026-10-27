@@ -4,9 +4,13 @@ Aktualny podział na niezależne Dev i Preview opisano w [Środowiska](ENVIRONME
 
 Profil `preview` buduje podpisany APK z kodem JavaScript i ilustracjami wewnątrz aplikacji. Nie wymaga Expo Go, Metro ani komputera. Internet nadal jest potrzebny do Supabase, Google, wiadomości, map i push. Konfiguracja dystrybucji odpowiada [EAS internal distribution](https://docs.expo.dev/build/internal-distribution/).
 
+Aktualne wydanie: **[Preview 1.2.0 (5) — pobierz APK](https://expo.dev/artifacts/eas/98uxA1QnwXv0DGDIqGs98ViMg3QyA0nnuaZ5IZvD5sw.apk)**. Zakres i wyniki kontroli: [RELEASE_1.2.0.md](RELEASE_1.2.0.md).
+
 ## Środowisko
 
 To wydanie korzysta z obecnego **testowego Supabase**. Nie tworzy bazy produkcyjnej ani nie kopiuje danych. Nowe konto ma własny profil oraz pustą listę wyjazdów i rozmów. Przykłady na ekranie powitalnym pozostają częścią interfejsu.
+
+27.10.2026 na prośbę użytkownika dodano do Preview **30 kont testowych i 150 publicznych ogłoszeń — po 5 na konto**. Batch Auth: `preview-community-20261027`. Profile i wyjazdy zapisano przez standardowe RPC po zalogowaniu każdego konta; sprawdzono ponowne logowanie, widoczność wszystkich profili i ogłoszeń oraz stronicowanie. Dane obejmują 18 rodzin, 6 par, 3 osoby podróżujące samodzielnie i 3 grupy znajomych, wszystkie sposoby podróżowania i cztery klimaty wyjazdu; terminy od listopada 2026 do września 2027. Zachowano istniejące konta i dane. Dane logowania oraz raport znajdują się wyłącznie w ignorowanym `.expo/seeded-preview-community-20261027.*.local.*`; haseł nie przechowujemy w repozytorium. Nowe APK nie jest wymagane.
 
 W EAS projektu `sonislaw/razemgo`, środowisko **preview** zawiera:
 
@@ -63,6 +67,16 @@ Budowanie nie publikuje aplikacji w Google Play i nie uruchamia EAS Update. Zmia
 7. Zgłoś wyjazd z B, obsłuż go z konta administratora: ukryj, przywróć, zablokuj konto i odblokuj. Potwierdzenia mają być widoczne bez awarii; blokada ma obejmować również istniejącą sesję.
 
 Zapisz numer wydania, model telefonu i wynik scenariusza. Kontrole komputerowe oraz udany build nie zastępują testów instalacji, przeglądarki Google, klawiatury i dostarczenia push na fizycznych urządzeniach.
+
+## Wydanie 1.2.0 — 26.10.2026
+
+Gotowy **RazemGo Preview 1.2.0 (5)**: [pobierz APK](https://expo.dev/artifacts/eas/98uxA1QnwXv0DGDIqGs98ViMg3QyA0nnuaZ5IZvD5sw.apk) · [EAS](https://expo.dev/accounts/sonislaw/projects/razemgo/builds/c4c170f7-f04d-4e79-9ffa-3df88e74277b).
+
+Wydanie obejmuje wyszukiwanie wyjazdów w bazie, stronicowanie po 5 wyjazdów i ekip, powrót do obejrzanej karty, linię czasu oraz wirtualizację list. Preview ma 23 migracje. Konta, dane testerów i dotychczasową konfigurację zachowano. Dev pozostaje niezależny.
+
+Przeszły lint, TypeScript, **391 testów Node**, **47 scenariuszy Playwright**, **4 testy Edge z 10 krokami**, kontrola zależności i **20/20** kontroli Expo Doctor. Sprawdzono prawdziwe API Preview, statyczny eksport webowy, gotowy APK i zgodność certyfikatu podpisującego z 1.1.0. Kontrolne konta i wyjazdy usunięto.
+
+Zainstaluj na istniejącym Preview bez odinstalowywania. Testy Google, aktualizacji, płynności i push na fizycznych telefonach pozostają do wykonania po instalacji. Szczegóły, rozmiar i suma pliku: [wydanie 1.2.0](RELEASE_1.2.0.md).
 
 ## Wydanie 1.1.0 — 26.10.2026
 

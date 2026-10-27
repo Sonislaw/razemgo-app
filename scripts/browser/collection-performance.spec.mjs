@@ -12,7 +12,14 @@ function seed(store,owner=B,count=50,base=10000){
   for(const trip of trips)store.trips.set(trip.id,trip);return trips;
 }
 async function loadAll(screen,label,count=50){
-  for(let n=5;n<count;n+=5){await screen.getByRole('button',{name:label,exact:true}).click();await expectLoaded(screen,Math.min(n+5,count));}
+  for(let n=5;n<count;n+=5){
+    const more=screen.getByRole('button',{name:label,exact:true});
+    // Reach the footer through the render window, as a person scrolling would.
+    // Playwright's instant scroll can move it again while FlatList measures rows,
+    // cancelling the press even though the click action reports success.
+    await scrollToRow(screen,more);
+    await more.click();await expectLoaded(screen,Math.min(n+5,count));
+  }
 }
 async function bounded(screen,prefix,total){
   const cards=screen.locator('[data-testid^="'+prefix+'"]');
@@ -80,16 +87,19 @@ test('delayed or failed images keep card geometry and a failed next page keeps t
   let release,intercepted=0,failed=0;const images=new Promise(resolve=>{release=resolve;});
   page.on('requestfailed',request=>{if(request.url().includes('landscapes'))failed++;});
   await page.route(/landscapes/,async route=>{intercepted++;await images;await route.abort();});
-  await page.goto('/explore',{waitUntil:'domcontentloaded'});await page.setViewportSize({width:320,height:800});
+  await page.setViewportSize({width:320,height:800});await page.goto('/explore',{waitUntil:'domcontentloaded'});
   const screen=page.getByTestId('discovery-screen'),card=screen.getByTestId('discovery-trip-'+uuid(10000));await card.scrollIntoViewIfNeeded();
   await expect.poll(()=>intercepted).toBeGreaterThan(0);
+  // Wait for the narrow timeline's measured legend before comparing geometry;
+  // its first onLayout is independent of the intentionally blocked image.
+  await expect(card.getByTestId('trip-timeline').getByText(/^Start\n/)).toBeVisible();
   const before=await card.boundingBox();release();
   await expect.poll(()=>failed).toBeGreaterThan(0);
   await expect(card.locator('img[src*="landscapes"]')).toHaveCount(0);
   await expect.poll(async()=>Math.abs((await card.boundingBox()).height-before.height)).toBeLessThan(1);
   expect(await card.evaluate(el=>el.scrollWidth-el.clientWidth)).toBeLessThanOrEqual(2);
   await card.screenshot({path:'.expo/collection-card-320.png'});
-  store.failMore=true;await screen.getByRole('button',{name:'Pokaż więcej wyjazdów',exact:true}).click();
+  store.failMore=true;const more=screen.getByRole('button',{name:'Pokaż więcej wyjazdów',exact:true});await scrollToRow(screen,more);await more.click();
   await expect(screen.getByRole('alert')).toContainText('Nie udało się pobrać ogłoszeń');await expectLoaded(screen,5);
   store.failMore=false;await screen.getByRole('button',{name:'Spróbuj ponownie',exact:true}).click();await expectLoaded(screen,10);
 });

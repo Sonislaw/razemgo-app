@@ -90,9 +90,9 @@ export function createChunkedStorage(store: KeyValueStorage): KeyValueStorage {
         let previous: Manifest | null = null;
         try {
           previous = await manifest(key);
-        } finally {
-          await store.removeItem(key + '.manifest');
-        }
+        } catch { /* A damaged manifest must not prevent removing the session. */ }
+        // Failure to actually remove the manifest remains an error.
+        await store.removeItem(key + '.manifest');
         await clean(key, previous);
       }),
   };

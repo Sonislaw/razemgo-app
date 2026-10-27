@@ -2,7 +2,7 @@ import { getTripHeadline } from '@/features/trips/trip-headline';
 import { DataStatus } from '@/components/ui/data-status';
 import { TripTimeline } from '@/components/trips/trip-timeline';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import {
   FlatList,
   AppState,
@@ -40,6 +40,8 @@ import {
 import { ConversationSafety } from '@/features/messaging/conversation-safety';
 import { DemoControls } from '@/features/messaging/demo-controls';
 import { useMessaging } from '@/features/messaging/messaging-context';
+import { createChatScrollController } from '@/features/messaging/chat-scroll';
+import { MessageReactionButton, MessageReactionPicker } from '@/features/messaging/message-reactions-ui';
 import {
   canSendToConversation,
   formatMessageDate,
@@ -61,18 +63,21 @@ export function generateStaticParams() {
 export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { state, contact, trip: contactTrip, send: sendMessage, setBlock, markRead, loadHistory,
-    refresh, histories, hasLoaded, error, actionError, busy } = useMessaging();
+    refresh, histories, hasLoaded, error, actionError } = useMessaging();
   const { profile } = useProfile();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, fontScale } = useWindowDimensions();
+  const reactionScale = Math.max(1, fontScale);
   const { height: headerHeight } = getScenicHeaderLayout(width);
   const [draft, setDraft] = useState('');
   const [safetyOpen, setSafetyOpen] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);
   const [reported, setReported] = useState(false);
+  const [reactionMessageId, setReactionMessageId] = useState<string | null>(null);
   const list = useRef<FlatListInstance>(null);
-  const atBottom = useRef(true);
+  const scroll = useRef(createChatScrollController());
+  useLayoutEffect(() => { scroll.current = createChatScrollController(); }, [id]);
   const focused = useRef(false);
   const conversation = state.conversations.find(
     (item) => item.id === id && isConversationAccepted(state, item),
@@ -81,6 +86,12 @@ export default function ChatScreen() {
   const plan = conversation ? contactTrip(conversation.tripId) : undefined;
   const history = histories[id];
   const messages = state.messages.filter(item => item.conversationId === id);
+  const displayMessages = [...messages].reverse();
+  const historyReady = !!history?.loaded || IS_DEMO_MODE;
+  const tail = messages.at(-1);
+  const tailKey = tail?.requestKey ?? tail?.id ?? null;
+  const reactionMessage = messages.find(message => message.id === reactionMessageId);
+  useLayoutEffect(() => { scroll.current.messagesChanged(tailKey, historyReady); }, [id, tailKey, historyReady]);
   const latest = messages.filter(item => item.sequence !== undefined || IS_DEMO_MODE).at(-1);
   const unread = unreadCount(state, id);
   useFocusEffect(
@@ -93,7 +104,7 @@ export default function ChatScreen() {
   );
   useFocusEffect(
     useCallback(() => {
-      if (unread && latest && atBottom.current && (history?.loaded || IS_DEMO_MODE) && AppState.currentState === 'active') void markRead(id, latest.id);
+      if (unread && latest && scroll.current.isAtBottom() && (history?.loaded || IS_DEMO_MODE) && AppState.currentState === 'active') void markRead(id, latest.id);
     }, [id, unread, latest, history?.loaded, markRead]),
   );
   const back = () => router.dismissTo('/messages');
@@ -111,11 +122,12 @@ export default function ChatScreen() {
     );
   const ownBlock = state.blockedGroupIds.includes(conversation.groupId);
   const blocked = ownBlock || conversation.blocked;
-  const canSend = canSendToConversation(state, id) && !busy;
+  const canSend = canSendToConversation(state, id);
   const send = () => {
     if (!canSend || !draft.trim()) return;
+    scroll.current.requestBottom();
+    list.current?.scrollToOffset({ offset: 0, animated: false });
     void sendMessage(id, draft);
-    atBottom.current = true;
     setDraft('');
   };
   return (
@@ -225,52 +237,51 @@ export default function ChatScreen() {
         ) : null}
         {error ? <DataStatus status="error" error={error} onRetry={() => { void refresh(); void loadHistory(id); }} /> : null}
         {actionError ? <AppText accessibilityRole="alert" variant="caption" color="textSecondary" style={{ padding: 8 }}>{actionError}</AppText> : null}
+        <View style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        <View pointerEvents="none" style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}><ScenicFooter /></View>
         <FlatList<ChatMessage>
+          testID="chat-message-list"
           ref={list}
           style={{ flex: 1, minHeight: 0 }}
-          data={messages}
+          inverted
+          data={historyReady ? displayMessages : []}
           keyExtractor={(item) => item.id}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           contentContainerStyle={{ padding: 16, gap: 12, flexGrow: 1 }}
-          ListFooterComponent={ScenicFooter}
-          ListFooterComponentStyle={{
-            marginTop: 'auto',
-            marginHorizontal: -16,
-            marginBottom: -16,
-          }}
-          ListHeaderComponent={
+          ListFooterComponent={
             <View style={{ gap: 8 }}>
-              {history?.loading ? <AppText variant="caption" color="textSecondary">Wczytywanie wiadomości…</AppText> : null}
+              {history?.loading && !history.loaded ? <AppText variant="caption" color="textSecondary">Wczytywanie wiadomości…</AppText> : null}
               {history?.error ? <DataStatus status="error" error={history.error} onRetry={() => { void loadHistory(id); }} /> : null}
-              {history?.hasMore ? <Button label="Wczytaj starsze wiadomości" variant="secondary" disabled={history.loading}
-                onPress={() => { atBottom.current = false; void loadHistory(id, true); }} /> : null}
+              {history?.hasMore ? <Button label={history.loading ? 'Wczytywanie…' : 'Wczytaj starsze wiadomości'} variant="secondary" disabled={history.loading}
+                onPress={() => { scroll.current.readingOlder(); void loadHistory(id, true); }} /> : null}
             </View>
           }
           onScroll={event => {
             const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-            atBottom.current = contentSize.height - contentOffset.y - layoutMeasurement.height < 100;
-            if (atBottom.current && focused.current && unread && latest && (history?.loaded || IS_DEMO_MODE) && AppState.currentState === 'active') void markRead(id, latest.id);
+            scroll.current.scrolled(contentOffset.y, contentSize.height, layoutMeasurement.height);
+            if (scroll.current.isAtBottom() && focused.current && unread && latest && (history?.loaded || IS_DEMO_MODE) && AppState.currentState === 'active') void markRead(id, latest.id);
           }}
           scrollEventThrottle={100}
-          maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+          onScrollBeginDrag={() => scroll.current.readingOlder()}
+          maintainVisibleContentPosition={{ minIndexForVisible: 0, autoscrollToTopThreshold: 100 }}
           onContentSizeChange={() =>
-            atBottom.current && list.current?.scrollToEnd({ animated: false })
+            scroll.current.contentChanged() && list.current?.scrollToOffset({ offset: 0, animated: false })
           }
-          onLayout={() => list.current?.scrollToEnd({ animated: false })}
-          ListEmptyComponent={
+          onLayout={event => { if (scroll.current.viewportChanged(event.nativeEvent.layout.height)) list.current?.scrollToOffset({ offset: 0, animated: false }); }}
+          ListEmptyComponent={historyReady ?
             <AppText color="textSecondary" style={{ textAlign: 'center' }}>
               Napisz pierwsze „cześć”!
             </AppText>
-          }
+          : undefined}
           renderItem={({ item, index }) => {
             const self = item.sender === 'self';
             const firstOfDay =
-              !index ||
-              messages[index - 1].createdAt.slice(0, 10) !==
+              index === displayMessages.length - 1 ||
+              displayMessages[index + 1].createdAt.slice(0, 10) !==
                 item.createdAt.slice(0, 10);
             return (
-              <View style={{ gap: 12 }}>
+              <View testID={'chat-message-' + item.id} style={{ gap: 12 }}>
                 {firstOfDay ? (
                   <AppText
                     variant="caption"
@@ -280,45 +291,60 @@ export default function ChatScreen() {
                     {formatMessageDate(item.createdAt)}
                   </AppText>
                 ) : null}
-                <View
-                  style={[
-                    styles.bubble,
-                    {
-                      alignSelf: self ? 'flex-end' : 'flex-start',
-                      backgroundColor: self
-                        ? theme.primaryStrong
-                        : theme.backgroundElement,
-                      borderColor: self ? theme.primaryStrong : theme.border,
-                      borderBottomLeftRadius: self ? 18 : 4,
-                      borderBottomRightRadius: self ? 4 : 18,
-                    },
-                  ]}
-                >
-                  <AppText
-                    style={{
-                      color: self ? theme.onPrimary : theme.text,
-                      fontSize: 15,
-                      lineHeight: 22,
-                    }}
+                <View style={[styles.bubbleFrame, {
+                  alignSelf: self ? 'flex-end' : 'flex-start',
+                  paddingBottom: 14 * reactionScale,
+                }]}>
+                  <Pressable
+                    testID={'chat-bubble-' + item.id}
+                    accessible={false}
+                    delayLongPress={300}
+                    onLongPress={!self && canSend && item.status === 'sent' ? () => setReactionMessageId(item.id) : undefined}
+                    style={[
+                      styles.bubble,
+                      {
+                        minWidth: self ? 180 : 110,
+                        paddingBottom: 16 * reactionScale,
+                        backgroundColor: self
+                          ? theme.primaryStrong
+                          : theme.backgroundElement,
+                        borderColor: self ? theme.primaryStrong : theme.border,
+                        borderBottomLeftRadius: self ? 18 : 4,
+                        borderBottomRightRadius: self ? 4 : 18,
+                      },
+                    ]}
                   >
-                    {item.text}
-                  </AppText>
-                  <AppText
-                    variant="caption"
-                    style={{
-                      color: self ? theme.onPrimary : theme.textSecondary,
-                      textAlign: 'right',
-                    }}
-                  >
-                    {formatMessageTime(item.createdAt)}
-                    {self
-                      ? item.status === 'sending'
-                        ? ' · Wysyłanie…'
-                        : item.status === 'failed'
-                        ? ' · Nie wysłano'
-                        : item.read ? ' · Odczytano' : ' · Wysłano'
-                      : ''}
-                  </AppText>
+                    <AppText
+                      style={{
+                        color: self ? theme.onPrimary : theme.text,
+                        fontSize: 15,
+                        lineHeight: 22,
+                      }}
+                    >
+                      {item.text}
+                    </AppText>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <AppText
+                        variant="caption"
+                        numberOfLines={1}
+                        style={{
+                          color: self ? theme.onPrimary : theme.textSecondary,
+                          textAlign: 'right',
+                          alignSelf: 'stretch',
+                        }}
+                      >
+                        {formatMessageTime(item.createdAt)}
+                        {self
+                          ? item.status === 'sending'
+                            ? ' · Wysyłanie…'
+                            : item.status === 'failed'
+                            ? ' · Nie wysłano'
+                            : item.read ? ' · Odczytano' : ' · Wysłano'
+                          : ''}
+                      </AppText>
+                    </View>
+                  </Pressable>
+                  <MessageReactionButton message={item} disabled={!canSend || item.status !== 'sent'} onPress={() => setReactionMessageId(item.id)} />
                 </View>
                 {item.status === 'failed' ? (
                   <View
@@ -342,6 +368,7 @@ export default function ChatScreen() {
             );
           }}
         />
+        </View>
         <View
           style={{
             paddingBottom: Math.max(8, insets.bottom),
@@ -444,6 +471,7 @@ export default function ChatScreen() {
         />
       ) : null}
       {demoOpen ? <DemoControls onClose={() => setDemoOpen(false)} /> : null}
+      {reactionMessage && reactionMessage.sender === 'other' ? <MessageReactionPicker key={reactionMessage.id} message={reactionMessage} onClose={() => setReactionMessageId(null)} /> : null}
     </KeyboardAvoidingView>
   );
 }
@@ -472,8 +500,10 @@ const styles = StyleSheet.create({
     gap: 8,
     minHeight: 60,
   },
-  bubble: {
+  bubbleFrame: {
     maxWidth: '88%',
+  },
+  bubble: {
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 18,

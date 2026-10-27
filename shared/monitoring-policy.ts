@@ -8,6 +8,7 @@ export const OPERATIONS = [
   'moderation.list','moderation.detail','moderation.action','trips.report',
   'profile.load', 'profile.preferences', 'profile.save', 'trips.load', 'trips.save', 'trips.status', 'trips.duplicate', 'trips.delete',
   'discovery.load', 'mailbox.load', 'invitations.send', 'invitations.respond', 'messages.send', 'messages.load', 'messages.read',
+  'messages.reactions.load', 'messages.reactions.save',
   'groups.search', 'groups.detail', 'groups.visibility', 'groups.save_visibility', 'groups.report',
   'presence.heartbeat', 'presence.lookup',
   'favorites.load', 'favorites.save',

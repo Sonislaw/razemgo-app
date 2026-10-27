@@ -1,4 +1,4 @@
-# Wydajność list — Dev
+# Wydajność list
 
 `CollectionScreen` zastępuje pionowy `ScrollView` z pełną tablicą kart jedną listą `FlatList`. Jest używany w Odkrywaj → Wyjazdy, Odkrywaj → Ekipy, ogłoszeniach profilu ekipy oraz Moich wyjazdach. Zachowuje pełną szerokość ilustracji nagłówka i stopki oraz dotychczasowe marginesy kart. Lista nie jest zagnieżdżona w drugim pionowym scrollerze.
 
@@ -18,4 +18,4 @@ Końcowa próba przeglądarkowa z 50 wczytanymi rekordami, po przewinięciu na k
 
 Przeszły lint, TypeScript, 391 testów Node i scenariusze przeglądarkowe dotyczące stronicowania, filtrów, nawigacji, kontaktów, ulubionych, reakcji oraz zapisu własnych wyjazdów. Końcowy przebieg ośmiu scenariuszy sprawdził także 50 rekordów i celowo nieudane pobieranie zdjęć. Eksport Androida zakończył się poprawnie; Metro zgłasza istniejące ostrzeżenie pakietu `expo-router` o zastępczym sposobie rozwiązywania `router-store`.
 
-Zmiana nie dodaje zależności, konfiguracji natywnej ani migracji. Wystarczy odświeżyć RazemGo Dev. Preview nie zostało zaktualizowane. Płynność na fizycznym Androidzie wymaga osobnej kontroli na urządzeniu.
+Zmiana nie dodaje zależności, konfiguracji natywnej ani migracji. Wystarczy odświeżyć RazemGo Dev. Dla testerów jest częścią [Preview 1.2.0](RELEASE_1.2.0.md), instalowanego jako nowy APK. Płynność na fizycznym Androidzie wymaga osobnej kontroli na urządzeniu.

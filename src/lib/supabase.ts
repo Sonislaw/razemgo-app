@@ -3,7 +3,8 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 import { sessionStorage } from './session-storage';
 import { installAuthCrypto } from './auth-crypto';
-import { monitorAuthRefresh } from './monitoring-core';
+import { monitorAuthRefresh, reportFailure } from './monitoring-core';
+import { signOutStoredSession, withAuthRequestTimeout } from '@/features/auth/auth-network';
 
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim() ?? '';
 const key = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ?? '';
@@ -19,7 +20,7 @@ export function getSupabase() {
   if (!client) {
     installAuthCrypto();
     client = createClient<Database>(url, key, {
-      global: { fetch: monitorAuthRefresh((input,init)=>fetch(input,init)) },
+      global: { fetch: monitorAuthRefresh(withAuthRequestTimeout((input,init)=>fetch(input,init))) },
       auth: {
         storageKey,
         storage: sessionStorage,
@@ -33,9 +34,14 @@ export function getSupabase() {
   return client;
 }
 
+export async function signOutSupabase(accessToken?: string) {
+  await signOutStoredSession(getSupabase().auth, sessionStorage, storageKey, accessToken,
+    error => reportFailure(error, 'auth.sign_out'));
+}
+
 export async function resetPersistedAuth() {
-  client?.auth.stopAutoRefresh();
-  // Also permits recovery when the stored session manifest is damaged.
-  await sessionStorage.removeItem(storageKey).catch(() => undefined);
-  if (client) await client.auth.signOut({ scope: 'local' });
+  // Also permits recovery when the stored session manifest is damaged. Keep
+  // auto-refresh enabled for the next login in the same foreground app session.
+  if (client) await signOutStoredSession(client.auth, sessionStorage, storageKey);
+  else await sessionStorage.removeItem(storageKey);
 }

@@ -1,6 +1,6 @@
-# Wyszukiwanie ekip — aplikacja Dev
+# Wyszukiwanie ekip
 
-Bieżące zmiany działają w aplikacji **RazemGo Dev** na jej osobnym backendzie **`kswuakzcnoqgovnwejhb`**. Migracje `202610260002_group_pagination.sql` i `202610260003_group_trip_pagination.sql` zostały wdrożone do Dev 26.10.2026. Dodają stronicowanie katalogu ekip oraz ogłoszeń w profilu ekipy. Preview 1.1.0, jego baza i zainstalowane APK testerów pozostają bez zmian.
+Funkcja działa w **RazemGo Dev** na osobnym backendzie **`kswuakzcnoqgovnwejhb`** oraz w **Preview 1.2.0** na `tueqqnbdvuazdxoqtpvk`. Migracje `202610260002_group_pagination.sql` i `202610260003_group_trip_pagination.sql` dodają stronicowanie katalogu ekip oraz ogłoszeń w profilu i są wdrożone do obu projektów. Dane testerów zachowano. Szczegóły aktualizacji są w [RELEASE_1.2.0.md](RELEASE_1.2.0.md).
 
 ## Praca na prawdziwych kontach Dev
 
@@ -55,7 +55,7 @@ Nowe RPC `list_ranked_public_groups` sortuje wszystkie pasujące, dostępne prof
 
 `npm run test:web` używa osobnego Metro na porcie 8085 i przechwytuje żądania do lokalnego API. Scenariusze obejmują filtry, profil bez ogłoszeń, przerwaną odpowiedź zaproszenia, akceptację i czat na dwóch kontach, nieudany zapis widoczności oraz brak migracji. Nie wysyła danych do zdalnych projektów.
 
-Migracja jest już wdrożona **wyłącznie do Dev**. Do weryfikacji na urządzeniach pozostaje próba na dwóch telefonach. Nie uruchamiać `backend:preview migrate` ani publikacji Preview w ramach bieżącej pracy deweloperskiej.
+Codzienną pracę prowadzimy w Dev. Preview aktualizujemy wyłącznie w ramach zatwierdzonego wydania; ostatnim takim wdrożeniem jest 1.2.0. Testy na fizycznych telefonach raportujemy oddzielnie od kontroli API i przeglądarki. Poniższe wyniki z 25.10 opisują wcześniejsze wdrożenie Dev; bieżące wyniki Preview są w dokumencie wydania.
 
 ### Wynik weryfikacji 25.10.2026
 

@@ -2,6 +2,7 @@ import { backendRequest } from '@/lib/backend-request';
 import { getSupabase } from '@/lib/supabase';
 import type { ReportReason } from '@/types/messaging';
 import { mailboxFromRow } from './messaging-mapper';
+import { parseMessageReaction, type MessageReactionKind, type MessageReactionRow } from './message-reactions-data';
 
 export async function fetchMailbox(groupId: string) {
   const { data, error } = await backendRequest(signal => getSupabase().rpc('get_my_mailbox').abortSignal(signal), 'mailbox.load');
@@ -43,6 +44,31 @@ export async function persistRead(id: string, throughId: string) {
   const { data, error } = await backendRequest(signal => getSupabase().rpc('mark_conversation_read', { conversation_id: id, through_message_id: throughId }).abortSignal(signal), 'messages.read');
   if (error) throw error;
   return Number(data);
+}
+export async function fetchMessageReactions(conversationId: string, messageIds: string[]) {
+  const ids = [...new Set(messageIds)], rows: MessageReactionRow[] = [];
+  for (let offset = 0; offset < ids.length; offset += 100) {
+    const batch = ids.slice(offset, offset + 100);
+    const { data, error } = await backendRequest(signal => getSupabase().rpc('get_message_reactions', {
+      conversation_id: conversationId, message_ids: batch,
+    }).abortSignal(signal), 'messages.reactions.load');
+    if (error) throw error;
+    if (!Array.isArray(data)) throw new Error('Missing message reactions');
+    const parsed = data.map(parseMessageReaction);
+    if (parsed.length !== batch.length || new Set(parsed.map(row => row.message_id)).size !== batch.length
+      || parsed.some(row => !batch.includes(row.message_id))) throw new Error('Incomplete message reactions');
+    rows.push(...parsed);
+  }
+  return rows;
+}
+export async function persistMessageReaction(messageId: string, kind: MessageReactionKind | null) {
+  const { data, error } = await backendRequest(signal => getSupabase().rpc('set_message_reaction', {
+    target_message_id: messageId, reaction_kind: kind,
+  }).abortSignal(signal), 'messages.reactions.save');
+  if (error) throw error;
+  const row = parseMessageReaction(data);
+  if (row.message_id !== messageId || row.kind !== kind) throw new Error('Unexpected message reaction');
+  return row;
 }
 export async function persistBlock(groupId: string, blocked: boolean) {
   const { error } = await backendRequest(signal => getSupabase().rpc('set_group_block', { target_group_id: groupId, blocked }).abortSignal(signal), 'contacts.block');

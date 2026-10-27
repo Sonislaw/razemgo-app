@@ -14,9 +14,10 @@ import { getSupabase } from '@/lib/supabase';
 import { createRequestKey } from '@/lib/request-key';
 import type { MessagingContact, MessagingState, ReportReason } from '@/types/messaging';
 import type { TripPlan } from '@/types/travel';
-import { createMessagingState, messagingReducer, type MessagingAction } from './messaging-state';
+import { canSendToConversation, createMessagingState, messagingReducer, type MessagingAction } from './messaging-state';
 import { messageFromRow } from './messaging-mapper';
 import * as repository from './messaging-repository';
+import type { MessageReactionKind } from './message-reactions-data';
 
 type HistoryStatus = { loaded: boolean; loading: boolean; hasMore: boolean; error: string | null };
 interface MessagingContextValue {
@@ -28,6 +29,10 @@ interface MessagingContextValue {
   busy: boolean;
   realtime: 'connecting' | 'live' | 'reconnecting';
   histories: Record<string, HistoryStatus>;
+  messageReactions: Record<string, MessageReactionKind | null>;
+  messageReactionErrors: Record<string, string | null>;
+  reloadMessageReactions: (id: string, messageIds?: string[]) => Promise<boolean>;
+  reactToMessage: (messageId: string, kind: MessageReactionKind | null) => Promise<void>;
   refresh: () => Promise<void>;
   loadHistory: (id: string, older?: boolean) => Promise<void>;
   invite: (tripId: string, text: string, key: string, sourceId?: string) => Promise<boolean>;
@@ -55,6 +60,11 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
   const [busy, setBusy] = useState(false);
   const [realtime, setRealtime] = useState<MessagingContextValue['realtime']>('connecting');
   const [histories, setHistories] = useState<Record<string, HistoryStatus>>({});
+  const [messageReactions, setMessageReactions] = useState<Record<string, MessageReactionKind | null>>({});
+  const [messageReactionErrors, setMessageReactionErrors] = useState<Record<string, string | null>>({});
+  const reactionVersions = useRef(new Map<string, number>());
+  const reactionLoads = useRef(new Map<string, number>());
+  const pendingReactions = useRef(new Set<string>());
   const current = useRef(state);
   const historiesRef = useRef(histories);
   const loaded = useRef(USE_DEMO_DATA);
@@ -101,10 +111,32 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
     fetching.current = pending;
     return pending;
   }, [groupId, ready]);
+  const reloadMessageReactions = useCallback(async (id: string, messageIds?: string[]) => {
+    if (USE_DEMO_DATA) return true;
+    if (!ready || !alive.current) return false;
+    const ids = messageIds ?? current.current.messages.filter(m => m.conversationId === id && m.sequence !== undefined).map(m => m.id);
+    if (!ids.length) return true;
+    const load = (reactionLoads.current.get(id) ?? 0) + 1;
+    reactionLoads.current.set(id, load);
+    const versions = new Map(ids.map(messageId => [messageId, reactionVersions.current.get(messageId) ?? 0]));
+    try {
+      const rows = await repository.fetchMessageReactions(id, ids);
+      if (!alive.current || reactionLoads.current.get(id) !== load) return false;
+      setMessageReactions(previous => ({ ...previous, ...Object.fromEntries(rows.filter(row =>
+        !pendingReactions.current.has(row.message_id) && (reactionVersions.current.get(row.message_id) ?? 0) === versions.get(row.message_id),
+      ).map(row => [row.message_id, row.kind])) }));
+      setMessageReactionErrors(previous => ({ ...previous, [id]: null }));
+      return true;
+    } catch {
+      if (alive.current && reactionLoads.current.get(id) === load) setMessageReactionErrors(previous => ({ ...previous, [id]: 'Nie udało się wczytać reakcji. Spróbuj ponownie.' }));
+      return false;
+    }
+  }, [ready]);
   const loadHistory = useCallback(async (id: string, older = false) => {
     if (USE_DEMO_DATA || !ready || !alive.current || activeHistories.current.has(id)) return;
     activeHistories.current.add(id);
-    setHistories(h => ({ ...h, [id]: { loaded: h[id]?.loaded ?? false, loading: true, hasMore: h[id]?.hasMore ?? false, error: null } }));
+    // A background sync must not insert a loading row above an already open chat.
+    setHistories(h => ({ ...h, [id]: { loaded: h[id]?.loaded ?? false, loading: older || !h[id]?.loaded, hasMore: h[id]?.hasMore ?? false, error: null } }));
     try {
       const persisted = current.current.messages.filter(m => m.conversationId === id && m.sequence !== undefined);
       const before = older ? historyCursor.current.get(id) : undefined;
@@ -116,10 +148,33 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
       reduce({ type: 'history', messages: rows.map(m => messageFromRow(m, groupId, conversation)) });
       setHistories(h => ({ ...h, [id]: { loaded: true, loading: false,
         hasMore: older || !h[id]?.loaded || gap ? rows.length === 50 : (h[id]?.hasMore ?? rows.length === 50), error: null } }));
+      // Include older loaded pages: reacting to an old message on another device
+      // must update here without downloading the entire text history again.
+      await reloadMessageReactions(id, [...new Set([...persisted.map(m => m.id), ...rows.map(m => m.id)])]);
     } catch {
       if (alive.current) setHistories(h => ({ ...h, [id]: { loaded: h[id]?.loaded ?? false, loading: false, hasMore: h[id]?.hasMore ?? false, error: 'Nie udało się pobrać wiadomości. Spróbuj ponownie.' } }));
     } finally { activeHistories.current.delete(id); }
-  }, [groupId, ready]);
+  }, [groupId, ready, reloadMessageReactions]);
+  const reactToMessage = useCallback(async (messageId: string, kind: MessageReactionKind | null) => {
+    const message = current.current.messages.find(m => m.id === messageId);
+    if (!alive.current || !message || message.sender !== 'other' || message.status !== 'sent'
+      || !canSendToConversation(current.current, message.conversationId) || pendingReactions.current.has(messageId)) throw new Error('Message unavailable');
+    pendingReactions.current.add(messageId);
+    reactionVersions.current.set(messageId, (reactionVersions.current.get(messageId) ?? 0) + 1);
+    try {
+      if (!USE_DEMO_DATA) {
+        if (!ready) throw new Error('Session unavailable');
+        await repository.persistMessageReaction(messageId, kind);
+      }
+      if (alive.current) setMessageReactions(previous => ({ ...previous, [messageId]: kind }));
+    } finally {
+      pendingReactions.current.delete(messageId);
+      reactionVersions.current.set(messageId, (reactionVersions.current.get(messageId) ?? 0) + 1);
+      // Also reconcile a write whose response was lost. Repeating the same choice
+      // is an idempotent set, not a toggle that could accidentally undo it.
+      if (alive.current) void reloadMessageReactions(message.conversationId);
+    }
+  }, [ready, reloadMessageReactions]);
   useEffect(() => { void refresh(); }, [refresh]);
   useEffect(() => {
     if (USE_DEMO_DATA || !ready) return;
@@ -216,7 +271,7 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
   };
   const contact = (id: string) => state.contacts?.[id] ?? (USE_DEMO_DATA ? DEMO_PUBLIC_GROUPS.find(p => p.group.id === id)?.group : undefined);
   const trip = (id: string | null) => id ? state.trips?.[id] ?? (USE_DEMO_DATA ? DEMO_PROPOSALS.find(p => p.trip.id === id)?.trip : undefined) : undefined;
-  return <MessagingContext value={{ state, dispatch, hasLoaded, error, actionError, busy, realtime, histories, refresh, loadHistory, invite, inviteProfile, respond, send, markRead, setBlock, report, contact, trip }}>{children}</MessagingContext>;
+  return <MessagingContext value={{ state, dispatch, hasLoaded, error, actionError, busy, realtime, histories, messageReactions, messageReactionErrors, reloadMessageReactions, reactToMessage, refresh, loadHistory, invite, inviteProfile, respond, send, markRead, setBlock, report, contact, trip }}>{children}</MessagingContext>;
 }
 export function useMessaging() {
   const value = useContext(MessagingContext);

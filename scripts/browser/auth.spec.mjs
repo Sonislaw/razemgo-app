@@ -66,7 +66,10 @@ async function backend(context, existingState) {
     if (request.method() === 'OPTIONS')
       return route.fulfill({ status: 204, headers });
     const body = request.postDataJSON() ?? {};
-    if (url.pathname === '/rest/v1/rpc/set_my_presence') return respond(null);
+    if (url.pathname === '/rest/v1/rpc/set_my_presence') {
+      if (state.stallPresence && body.is_online === false) return new Promise(() => {});
+      return respond(null);
+    }
     if (url.pathname === '/rest/v1/rpc/get_online_groups') return respond([]);
     if (url.pathname === '/rest/v1/rpc/get_my_favorites') return respond({ group_ids: [], trip_ids: [] });
     let id = A;
@@ -117,7 +120,12 @@ async function backend(context, existingState) {
         body: '',
       });
     }
-    if (url.pathname.endsWith('/logout')) return respond({});
+    if (url.pathname.endsWith('/logout')) {
+      if (state.logoutFailure === 'offline') return route.abort('failed');
+      if (state.logoutFailure === 'server') return respond({ message: 'Unavailable' }, 503);
+      if (state.logoutFailure === 'stalled') return new Promise(() => {});
+      return respond({});
+    }
     if (url.pathname === '/rest/v1/rpc/get_my_account_access') return respond({is_admin:false,suspended:false,hidden_trip_ids:[]});
     if (url.pathname === '/rest/v1/rpc/get_my_group_visibility') return respond({ discoverable: true, about: '' });
     if (url.pathname.endsWith('/user')) {
@@ -328,6 +336,32 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
   await expect(page.getByRole('heading', { name: 'Jaki masz plan?', exact: true })).toBeVisible();
   expect(state.profiles.size).toBe(2);
 });
+
+for (const failure of ['offline', 'server', 'stalled']) {
+  test(`logout succeeds with ${failure} Auth and stalled offline presence, persists after reload, and permits another account`, async ({ page, context }) => {
+    const state = await backend(context);
+    await login(page);
+    await createProfile(page, 'Ekipa A');
+    await page.goto('/settings');
+    state.logoutFailure = failure;
+    state.stallPresence = true;
+    await page.getByRole('button', { name: 'Wyloguj się', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Nowe konto', exact: true })).toBeVisible({ timeout: 12000 });
+    expect(await page.evaluate(() => Object.keys(localStorage).filter(key => key.endsWith('.session')))).toEqual([]);
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Nowe konto', exact: true })).toBeVisible();
+    await page.goto('/profile');
+    await expect(page.getByRole('button', { name: 'Nowe konto', exact: true })).toBeVisible();
+    state.logoutFailure = null;
+    state.stallPresence = false;
+    await login(page, 'b@example.com');
+    await expect(page.getByRole('textbox', { name: 'Nazwa ekipy', exact: true })).toHaveValue('');
+    await createProfile(page, 'Ekipa B');
+    await page.goto('/profile');
+    await expect(page.getByText('Ekipa B', { exact: true })).toBeVisible();
+    await expect(page.getByText('Ekipa A', { exact: true })).toHaveCount(0);
+  });
+}
 
 test('Google PKCE callback, password recovery and confirmed account deletion', async ({
   page,

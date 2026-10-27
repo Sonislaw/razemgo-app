@@ -16,6 +16,7 @@ import {
   getSupabase,
   isSupabaseConfigured,
   resetPersistedAuth,
+  signOutSupabase,
 } from '@/lib/supabase';
 import { USE_DEMO_DATA } from '@/constants/app';
 import { monitoredOperation, reportFailure } from '@/lib/monitoring-core';
@@ -27,6 +28,7 @@ import {
   normalizeEmail,
   parseAuthCallback,
 } from './auth-data';
+import { cleanUpBeforeSignOut } from './auth-network';
 
 export function getAuthRedirectUrl(recovery = false) {
   return authRedirectUrl(
@@ -189,14 +191,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     if (USE_DEMO_DATA) return;
     try {
-      await stopCurrentPresence();
-      await unregisterPushDevice().catch(() => undefined);
-      await clearDeviceNotifications().catch(() => undefined);
-      const result = await monitoredOperation('auth.sign_out', () => getSupabase().auth.signOut({ scope: 'local' }));
-      const current = await getSupabase().auth.getSession();
-      if (result.error && current.data.session) throw result.error;
+      await cleanUpBeforeSignOut([
+        () => stopCurrentPresence(),
+        signal => unregisterPushDevice(signal),
+        () => clearDeviceNotifications(),
+      ]);
+      await monitoredOperation('auth.sign_out', () => signOutSupabase(session?.access_token));
+      authRevision.current++;
       setSession(null);
       setRecovering(false);
+      setError(null);
       callbacks.current.clear();
     } catch (cause) {
       resumeCurrentPresence();
@@ -205,10 +209,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
   const resetSession = async () => {
     try {
-      await stopCurrentPresence();
-      if(isSupabaseConfigured) await unregisterPushDevice().catch(() => undefined);
-      await clearDeviceNotifications().catch(() => undefined);
+      await cleanUpBeforeSignOut([
+        () => stopCurrentPresence(),
+        signal => isSupabaseConfigured ? unregisterPushDevice(signal) : Promise.resolve(),
+        () => clearDeviceNotifications(),
+      ]);
       await resetPersistedAuth();
+      authRevision.current++;
       setSession(null);
       setRecovering(false);
       setError(null);

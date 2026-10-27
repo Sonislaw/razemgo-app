@@ -48,13 +48,19 @@ export async function registerPushDevice(token: string, userId: string) {
   if (result.error) throw result.error;
   return (await getSupabase().auth.getSession()).data.session?.user.id===userId;
 }
-export async function unregisterPushDevice() {
+export async function unregisterPushDevice(signal?: AbortSignal) {
   const raw=await SecureStore.getItemAsync('razemgo.push.installation');
-  if (!raw) return;
+  if (!raw || signal?.aborted) return;
   const value=JSON.parse(raw) as Installation;
-  const {error}=await backendRequest(signal => getSupabase().rpc('unregister_my_push_device', {
+  const client=getSupabase();
+  const current=await client.auth.getSession();
+  const token=current.data.session?.access_token;
+  if (!token || signal?.aborted) return;
+  // Pin to the account leaving this device. A delayed request must never remove
+  // the registration belonging to a subsequently signed-in account.
+  const {error}=await backendRequest(requestSignal => client.rpc('unregister_my_push_device', {
     installation_id:value.id,installation_key:value.key,
-  }).abortSignal(signal), 'push.unregister');
+  }).setHeader('Authorization', 'Bearer '+token).abortSignal(signal ?? requestSignal), 'push.unregister');
   if (error) throw error;
 }
 export async function clearDeviceNotifications() {

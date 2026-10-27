@@ -4,5 +4,5 @@ export const loadPushModule = async (): Promise<typeof import('expo-notification
 export const pushOptedOut = async () => false;
 export const setPushOptedOut = async (_value: boolean) => {};
 export const registerPushDevice = async (_token: string, _userId: string) => false;
-export const unregisterPushDevice = async () => {};
+export const unregisterPushDevice = async (_signal?: AbortSignal) => {};
 export const clearDeviceNotifications = async () => {};

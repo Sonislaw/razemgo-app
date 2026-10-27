@@ -36,6 +36,21 @@ test('favorite trip taps use only validated trip identifiers and remain isolated
   assert.equal(pushPreferenceAllows('message',{push_favorite_trips:true,push_messages:false}),false);
   assert.equal(pushPreferenceAllows('invitation_received',{push_favorite_trips:true,push_invitations:false}),false);
 });
+
+test('proposal digests route to an unread trip, respect the account preference and expose no match or profile contents',()=>{
+  const notification='00000000-0000-4000-8000-000000000004';
+  const payload=pushMessage(job({kind:'proposal',trip_id:chat,notification_id:notification,proposal_count:3,invitation_id:null,conversation_id:null}));
+  assert.equal(payload.channelId,'razemgo-proposals');assert.equal(payload.title,'Nowe propozycje wyjazdów');
+  const target=parsePushTarget({...payload.data,url:'https://untrusted.example'});
+  assert.equal(target.notificationId,notification);assert.notEqual(target.notificationId,target.eventId);
+  assert.deepEqual(pushDestination(target,group),{pathname:'/trip/[id]',params:{id:chat}});assert.equal(pushDestination(target,event),null);
+  assert.equal(pushPreferenceAllows('proposal',null),true);assert.equal(pushPreferenceAllows('proposal',{push_proposals:false}),false);
+  assert.equal(parsePushTarget({...payload.data,notificationId:'../../settings'}),null);
+  assert.equal(parsePushTarget({...payload.data,tripId:'../../settings'}),null);
+  assert.equal(parsePushTarget({...payload.data,notificationId:undefined}),null);
+  assert.deepEqual(Object.keys(payload.data).sort(),['eventId','kind','notificationId','recipientGroupId','tripId','v']);
+  assert.equal(pushMessage(job({kind:'proposal',proposal_count:1})).title,'Nowa propozycja wyjazdu');
+});
 test('cold-start notification navigation waits for restoration, onboarding and authentication redirects',()=>{
   assert.equal(pushNavigationReady(false,'root','/'),false);
   assert.equal(pushNavigationReady(true,undefined,'/'),false);

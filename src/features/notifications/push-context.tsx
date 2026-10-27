@@ -95,6 +95,10 @@ export function PushProvider({children}: {children: ReactNode}) {
         name:'Reakcje na ogłoszenia',importance:notifications.AndroidImportance.DEFAULT,
         lockscreenVisibility:notifications.AndroidNotificationVisibility.PRIVATE,
       });
+      if(Platform.OS==='android') await notifications.setNotificationChannelAsync('razemgo-proposals',{
+        name:'Propozycje do Twoich wyjazdów',importance:notifications.AndroidImportance.DEFAULT,
+        lockscreenVisibility:notifications.AndroidNotificationVisibility.PRIVATE,
+      });
       let permission=await notifications.getPermissionsAsync();
       if(!permission.granted && ask && permission.canAskAgain) permission=await notifications.requestPermissionsAsync({ios:{allowAlert:true,allowBadge:true,allowSound:true}});
       if(!permission.granted) {
@@ -156,7 +160,7 @@ export function PushAccountBridge({ready}: {ready: boolean}) {
     const destination=pushDestination(pending,groupId);
     consume(pending.eventId);
     if(!destination) return;
-    void readNotifications([pending.eventId]);
+    void readNotifications([pending.notificationId ?? pending.eventId]);
     void refresh();
     if(pending.kind==='invitation_received') dispatch({type:'view',view:'invitations',direction:'received'});
     router.navigate(destination);

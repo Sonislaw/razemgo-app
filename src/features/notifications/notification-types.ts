@@ -2,7 +2,7 @@ import type { ProfileAvatarId } from '@/types/avatar';
 import type { ReactionKind } from '@/features/reactions/reaction-data';
 
 export type NotificationKind = 'message' | 'invitation_received' | 'invitation_accepted' | 'proposal' | 'favorite_trip' | 'trip_reaction';
-export type NotificationPreferenceKey = 'messages' | 'invitations' | 'favorite_trips' | 'reactions';
+export type NotificationPreferenceKey = 'messages' | 'invitations' | 'favorite_trips' | 'reactions' | 'proposals';
 export interface NotificationEntry {
   id: string;
   kind: NotificationKind;
@@ -26,6 +26,7 @@ export interface NotificationPreferences {
   push_invitations: boolean;
   push_favorite_trips: boolean;
   push_reactions: boolean;
+  push_proposals: boolean;
   updated_at: string | null;
 }
 export interface NotificationsPage {
@@ -36,7 +37,7 @@ export interface NotificationsPage {
   fetched_at: string;
 }
 export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
-  push_messages: true, push_invitations: true, push_favorite_trips: true, push_reactions: true, updated_at: null,
+  push_messages: true, push_invitations: true, push_favorite_trips: true, push_reactions: true, push_proposals: true, updated_at: null,
 };
 export function notificationTitle(kind: NotificationKind) {
   return {

@@ -98,7 +98,7 @@ async function backend(context,store){
       const entries=all.filter(n=>(!body.only_unread||!n.read_at)&&(!body.before_at||n.created_at<body.before_at||n.created_at===body.before_at&&n.id<body.before_id))
         .sort((a,b)=>b.created_at.localeCompare(a.created_at)||b.id.localeCompare(a.id));
       return respond({items:entries.slice(0,body.page_size??30),has_more:entries.length>(body.page_size??30),unread_count:all.filter(n=>!n.read_at).length,
-        preferences:store.notificationPreferences.get(groupId(id))??{push_messages:true,push_invitations:true,push_favorite_trips:true,push_reactions:true,updated_at:null},fetched_at:new Date().toISOString()});
+        preferences:store.notificationPreferences.get(groupId(id))??{push_messages:true,push_invitations:true,push_favorite_trips:true,push_reactions:true,push_proposals:true,updated_at:null},fetched_at:new Date().toISOString()});
     }
     if(url.pathname==='/rest/v1/rpc/mark_my_notifications_read'){
       if(store.failNotificationSave)return respond({message:'Offline'},503);
@@ -108,8 +108,8 @@ async function backend(context,store){
     }
     if(url.pathname==='/rest/v1/rpc/save_my_notification_preference'){
       if(store.failNotificationSave)return respond({message:'Offline'},503);
-      const previous=store.notificationPreferences.get(groupId(id))??{push_messages:true,push_invitations:true,push_favorite_trips:true,push_reactions:true,updated_at:null};
-      const fields={messages:'push_messages',invitations:'push_invitations',favorite_trips:'push_favorite_trips',reactions:'push_reactions'};
+      const previous=store.notificationPreferences.get(groupId(id))??{push_messages:true,push_invitations:true,push_favorite_trips:true,push_reactions:true,push_proposals:true,updated_at:null};
+      const fields={messages:'push_messages',invitations:'push_invitations',favorite_trips:'push_favorite_trips',reactions:'push_reactions',proposals:'push_proposals'};
       if(!fields[body.preference_key])return respond({code:'22023'},400);
       const saved={...previous,[fields[body.preference_key]]:body.enabled,updated_at:new Date().toISOString()};
       store.notificationPreferences.set(groupId(id),saved);return respond(saved);

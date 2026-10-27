@@ -85,6 +85,7 @@ export function NotificationPreferencesCard() {
       {([
         ['messages', 'Wiadomości', 'Nowa wiadomość w rozmowie.', inbox.preferences.push_messages],
         ['invitations', 'Zaproszenia', 'Nowe zaproszenie oraz akceptacja wysłanego zaproszenia.', inbox.preferences.push_invitations],
+        ['proposals', 'Propozycje do Twoich wyjazdów', 'Nowe wyjazdy pasujące terminem, kierunkiem i preferencjami do Twoich ogłoszeń. Kilka propozycji łączymy w jeden push.', inbox.preferences.push_proposals],
         ['favorite_trips', 'Wyjazdy ulubionych ekip', 'Nowe ogłoszenia ekip dodanych do ulubionych.', inbox.preferences.push_favorite_trips],
         ['reactions', 'Reakcje na ogłoszenia', 'Nowa emocja pozostawiona pod Twoim ogłoszeniem.', inbox.preferences.push_reactions],
       ] as const).map(([key, title, description, enabled]) => <View key={key} style={[layout.row, { minHeight: 56 }]}>

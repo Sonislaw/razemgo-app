@@ -20,6 +20,8 @@ Na prośbę użytkownika 26.10.2026 przygotowano **Preview 1.2.0**. Migracje `20
 
 27.10.2026 dodano wyłącznie do Dev migrację `202610270001_message_reactions.sql` oraz poprawkę stabilności rozmowy. Dev ma teraz **24 migracje**, Preview pozostaje przy **23** i zainstalowanym APK 1.2.0. Obsługę i weryfikację opisuje [CHAT_REACTIONS.md](CHAT_REACTIONS.md).
 
+27.10.2026 Dev otrzymał również `202610270002_background_proposals.sql` i nową wersję `dispatch-push`: **25 migracji**, automatyczne propozycje co minutę i zbiorcze push w oknach pięciominutowych. Preview nadal ma **23 migracje** i nie otrzymał tego wdrożenia. Szczegóły: [PROPOSAL_NOTIFICATIONS.md](PROPOSAL_NOTIFICATIONS.md).
+
 ## Skonfigurowany Dev
 
 1. `.env.local` i środowisko EAS **development** mają URL oraz publiczny klucz nowego Dev. Dotychczasowe wartości zachowano w ignorowanym `.env.preview.local` i środowisku EAS **preview**. Nie wpisuj klucza administracyjnego do zmiennych `EXPO_PUBLIC_*`.

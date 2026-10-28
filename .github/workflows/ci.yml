@@ -81,7 +81,9 @@ jobs:
   local-supabase:
     name: Local Auth, PostgreSQL contracts and schema types
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Six four-minute measurements plus backend startup, parity and SQL profiles.
+    # Endpoint deadlines and performance thresholds are unchanged.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
         with:
@@ -127,6 +129,18 @@ jobs:
         run: |
           node scripts/benchmark-ranking-baseline.mjs --diverse
           npm run benchmark:sessions -- --diverse --strict
+      - name: Optional varied scoring inputs and exact parity (local only)
+        id: varied-profile
+        if: ${{ !cancelled() && inputs.session_test && steps.diverse-profile.outcome == 'success' }}
+        run: |
+          node scripts/profile-discovery.mjs --make-varied --previous
+          node scripts/profile-discovery.mjs --varied
+          node scripts/verify-ranking-parity.mjs
+      - name: Optional paced synthetic read sessions (varied scoring inputs, local only)
+        if: ${{ !cancelled() && inputs.session_test && steps.varied-profile.outcome == 'success' }}
+        run: |
+          node scripts/benchmark-ranking-baseline.mjs --varied
+          npm run benchmark:sessions -- --varied --strict
       - name: Preserve failed checks and measured load results
         if: always()
         uses: actions/upload-artifact@v4

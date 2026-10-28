@@ -11,7 +11,8 @@ if (process.argv.includes('--seed')) localPostgres(config,
 const legacy = process.argv.includes('--legacy');
 const previous = process.argv.includes('--previous');
 if (legacy && previous) throw Error('Choose one baseline');
-const diverse = process.argv.includes('--diverse') || process.argv.includes('--make-diverse');
+const varied = process.argv.includes('--varied') || process.argv.includes('--make-varied');
+const diverse = varied || process.argv.includes('--diverse') || process.argv.includes('--make-diverse');
 if (process.argv.includes('--make-diverse')) {
   const count = Number(localPostgres(config, `select count(*) from public.trip_plans t
     where t.id in(select md5('synthetic-trip-'||n)::uuid from generate_series(1,50000) n);`).stdout);
@@ -30,6 +31,25 @@ if (process.argv.includes('--make-diverse')) {
       with ordinality v(tag,position) where (n/1024 & (1<<(position::int-1)))<>0) from variations x where p.group_id=x.id;
     alter table public.trip_plans enable trigger user;alter table public.travel_groups enable trigger user;
     alter table public.group_preferences enable trigger user;commit; analyze;`);
+}
+if (process.argv.includes('--make-varied')) {
+  const count = Number(localPostgres(config, `select count(*) from public.trip_plans t
+    where t.id in(select md5('synthetic-trip-'||n)::uuid from generate_series(1,50000) n);`).stdout);
+  if (count !== 50000) throw Error('Complete synthetic fixture required for varied scoring inputs');
+  localPostgres(config, `begin; alter table public.trip_plans disable trigger user;
+    with variations as(select md5('synthetic-trip-'||n)::uuid id,n from generate_series(1,50000) n)
+    update public.trip_plans t set location_id='diverse:'||t.id::text,location_name='Miejsce '||t.id::text,
+      start_date=current_date+7+n%365,end_date=current_date+8+n%365+n%21,
+      travel_mode=(array['Przyczepa','Kamper','Namiot','Van','Samochód'])[1+n%5],
+      interests=array(select tag from unnest(array['Rowery','Spokojny wypoczynek','Ognisko','Plaża','Przyroda','Wędrówki','Kajaki','Fotografia','Gry planszowe','Zwiedzanie','Las'])
+        with ordinality v(tag,position) where (n%2048 & (1<<(position::int-1)))<>0),
+      animal_kinds=case when n%3=0 then array['dog'] when n%3=1 then array['cat'] else '{}'::text[] end,
+      matching_group_kinds=array(select tag from unnest(array['family','couple','solo','friends'])
+        with ordinality v(tag,position) where (n/7%16 & (1<<(position::int-1)))<>0),
+      matching_child_age_bands=array(select tag from unnest(array['0–3','4–6','7–9','10–12','13–17'])
+        with ordinality v(tag,position) where (n/11%32 & (1<<(position::int-1)))<>0)
+      from variations x where t.id=x.id;
+    alter table public.trip_plans enable trigger user;commit;analyze;`);
 }
 let previousDefinitions = '';
 if (previous) previousDefinitions = await rankingDefinition(true);
@@ -62,9 +82,9 @@ const queries = {
   groupRanking: "public.list_ranked_public_groups('{}','compatibility',null,5)",
 };
 const report = { commit: process.env.GITHUB_SHA ?? null, nestedMinDurationMs: 10,
-  timing: false, legacy, previous, dataset: diverse ? 'unique locations and diverse profile preferences' : 'uniform fixture',
+  timing: false, legacy, previous, dataset: varied ? 'varied dates, tags, travel modes and mutual preferences' : diverse ? 'unique locations and diverse profile preferences' : 'uniform fixture',
   source: 'Disposable synthetic SQL; legacy definitions rolled back; instrumentation overhead applies', operations: [] };
-const output = '.expo/hardening-query-plans' + (diverse ? '-diverse' : '') + (legacy ? '-legacy' : previous ? '-previous' : '') + '.json';
+const output = '.expo/hardening-query-plans' + (varied ? '-varied' : diverse ? '-diverse' : '') + (legacy ? '-legacy' : previous ? '-previous' : '') + '.json';
 await mkdir('.expo', { recursive: true });
 for (const [id, query] of Object.entries(queries)) {
   const result = localPostgres(config, `

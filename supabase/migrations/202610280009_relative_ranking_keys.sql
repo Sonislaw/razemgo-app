@@ -10,6 +10,8 @@
 -- search tolerance). Every shifted source interval lies inside that envelope,
 -- so clipping a target to it preserves every possible overlap exactly. Targets
 -- wholly before/after it become zero-length intervals at its boundary.
+-- A target tag absent from every source cannot contribute to any intersection;
+-- remove only those bits from the request-local key, never from stored data.
 create type discovery_private.relative_score_target as (
   start_date date,end_date date,place_id integer,place_name integer,place_region integer,has_region boolean,
   landscape text,kind text,travel_mode text,hobby_mask integer,age_mask integer,animal_mask integer,
@@ -85,6 +87,7 @@ begin
     select bool_or(has_plan) as place,bool_or(d1 is not null and d2>d1) as dates,
       bool_or(hobby_count>0) as hobby,bool_or(age_count>0) as age,bool_or(animal_count>0) as animal,
       bool_or(cardinality(kinds)>0) as kind,
+      bit_or(hobby_mask) as hobby_mask,bit_or(age_mask) as age_mask,bit_or(animal_mask) as animal_mask,
       min(d1-tolerance) filter(where d1 is not null and d2>d1) as window_start,
       max(d2+tolerance) filter(where d1 is not null and d2>d1) as window_end from sources
   ), target_values as not materialized(
@@ -99,9 +102,9 @@ begin
       r.place and t.location_region<>'' as has_region,
       case when r.place then t.landscape else '' end as landscape,
       case when r.kind then g.kind else '' end as kind,coalesce(t.travel_mode,g.travel_mode) as travel_mode,
-      case when r.hobby then discovery_private.tag_mask(t.interests,'interest') else 0 end as hobby_mask,
-      case when r.age then discovery_private.tag_mask(g.child_age_bands,'age') else 0 end as age_mask,
-      case when r.animal then discovery_private.tag_mask(t.animal_kinds,'animal') else 0 end as animal_mask,
+      case when r.hobby then discovery_private.tag_mask(t.interests,'interest') & r.hobby_mask else 0 end as hobby_mask,
+      case when r.age then discovery_private.tag_mask(g.child_age_bands,'age') & r.age_mask else 0 end as age_mask,
+      case when r.animal then discovery_private.tag_mask(t.animal_kinds,'animal') & r.animal_mask else 0 end as animal_mask,
       coalesce((case when cardinality(t.matching_group_kinds)>0 then ((ctx.crew).kind=any(t.matching_group_kinds))::int*10 end),0)
         +coalesce((case when cardinality(t.matching_child_age_bands)>0 then
           bit_count((discovery_private.tag_mask(t.matching_child_age_bands,'age') & discovery_private.tag_mask((ctx.crew).child_age_bands,'age'))::bit(32))::numeric/cardinality(t.matching_child_age_bands)*10 end),0) as other_points,

@@ -151,7 +151,7 @@ test('optimized discovery retains complete legacy pages, scores, reasons and cur
           await compare('search_public_trips', filter, 'compatibility', { all: true, size: 20 });
       } finally { await db.exec('reset role; rollback'); await asUser(db, user); }
     });
-    await t.test('date envelope equals exhaustive shifted overlaps for 4,644 intervals and three source windows', async () => {
+    await t.test('date envelope equals exhaustive shifted overlaps for 4,656 intervals and three source windows', async () => {
       const { rows } = await db.query(`with sources(a,b,tolerance) as(values(0,3,0),(4,6,2),(10,17,7)),
         envelope as(select min(a-tolerance) lo,max(b+tolerance) hi from sources),
         intervals as(select a,b from generate_series(-30,65) a cross join generate_series(-29,66) b where b>a),
@@ -163,7 +163,7 @@ test('optimized discovery retains complete legacy pages, scores, reasons and cur
           from intervals t cross join sources s cross join envelope e)
         select count(*)::int checked,count(*) filter(where clipped<>original)::int differences from compared`);
       assert.equal(rows[0].differences, 0);
-      assert.ok(rows[0].checked > 13000);
+      assert.equal(rows[0].checked, 13968);
     });
     await t.test('group order, private-preference score and filters match complete legacy cards', async () => {
       const filters = [{}, { name: 'Łąka' }, { name: '#100006' }, { group_kinds: ['family'], child_age_bands: ['4–6'] },

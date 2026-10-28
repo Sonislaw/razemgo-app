@@ -12,14 +12,14 @@ let setup = `begin;
   ${await rankingDefinition(true)}
   set local role authenticated;
 `;
-const filters = [{}, { start_date: '2099-01-01', end_date: '2099-01-05', tolerance_days: 2 },
-  { landscapes: ['coast', 'lake'], group_kinds: ['family'] }];
+const filters = ["'{}'::jsonb",
+  "jsonb_build_object('start_date',current_date+10,'end_date',current_date+16,'tolerance_days',2)",
+  "'{\"landscapes\":[\"coast\",\"lake\"],\"group_kinds\":[\"family\"]}'::jsonb"];
 for (const viewer of [1, 37, 200]) {
   const claims = `jsonb_build_object('sub',md5('synthetic-user-${viewer}')::uuid,
     'session_id',md5('synthetic-session-${viewer}')::uuid,'role','authenticated')::text`;
   setup += `select set_config('request.jwt.claims',${claims},true);\n`;
-  for (const filter of filters) {
-    const f = `'${JSON.stringify(filter)}'::jsonb`;
+  for (const f of filters) {
     setup += `insert into ranking_expected values(${viewer},${f},1,public.search_public_trips(${f},'compatibility',null,5));
       insert into ranking_expected select ${viewer},${f},2,
         public.search_public_trips(${f},'compatibility',answer->'cursor',5)

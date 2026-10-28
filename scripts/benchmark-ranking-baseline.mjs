@@ -4,7 +4,7 @@ import { localPostgres } from './support/local-postgres.mjs';
 import { rankingDefinition } from './support/ranking-version.mjs';
 
 const args = process.argv.slice(2);
-if (args.some(arg => arg !== '--diverse')) throw Error('Only --diverse is supported');
+if (args.some(arg => !['--diverse', '--varied'].includes(arg))) throw Error('Unknown baseline argument');
 const config = localBackend(); // Loopback only; never a Dev/Preview URL.
 try {
   localPostgres(config, await rankingDefinition(true));

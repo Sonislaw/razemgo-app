@@ -4,28 +4,11 @@ import { execFileSync } from 'node:child_process';
 import { availableParallelism, cpus, totalmem } from 'node:os';
 import { performance } from 'node:perf_hooks';
 import { localBackend, localToken, localRpc } from './local-backend-check.mjs';
+import { localPostgres } from './support/local-postgres.mjs';
 import { meetsTargets, safeErrorCode, summarizeSamples, validReadResult } from './load-results.mjs';
 
 const config = localBackend();
-const database = new URL(config.DB_URL);
-if (!['postgres:', 'postgresql:'].includes(database.protocol) ||
-    !['127.0.0.1', 'localhost', '[::1]'].includes(database.hostname))
-  throw Error('Disposable loopback database required');
-
-function sql(source) {
-  try {
-    // Credentials stay in the child environment; no URL/password in argv/logs.
-    return execFileSync('psql', ['-X', '-At', '-v', 'ON_ERROR_STOP=1'], {
-      input: source, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env, PGHOST: database.hostname.replaceAll(/[\[\]]/g, ''),
-        PGPORT: database.port, PGDATABASE: decodeURIComponent(database.pathname.slice(1)),
-        PGUSER: decodeURIComponent(database.username), PGPASSWORD: decodeURIComponent(database.password) },
-    }).trim();
-  } catch {
-    // execFileSync errors include argv/stderr; never forward them to CI.
-    throw Error('Local benchmark SQL failed; connection details and SQL output omitted');
-  }
-}
+const sql = (source) => localPostgres(config, source).stdout;
 
 const seedStarted = performance.now();
 if (process.argv.includes('--seed'))

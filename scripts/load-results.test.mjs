@@ -45,12 +45,14 @@ test('diagnostic codes discard free text and never include response details', ()
 });
 
 test('load fixtures must return real non-empty pages, not just HTTP 200', () => {
-  const group = { crew: {}, compatibility: { score: 70 } };
+  const group = { crew: { id: '11111111-1111-4111-8111-111111111111' }, compatibility: { score: 70 } };
   const page = { items: Array(5).fill(group), total_count: 9999, has_more: true, cursor: {} };
   assert.equal(validReadResult('groups', page), true);
   assert.equal(validReadResult('trips', page), false);
   assert.equal(validReadResult('groups', { ...page, items: [] }), false);
   assert.equal(validReadResult('groups', { ...page, total_count: 2 }), false);
+  assert.equal(validReadResult('groups', { ...page, cursor: undefined }), false);
+  assert.equal(validReadResult('groups', { ...page, items: Array(5).fill({ crew: {}, compatibility: { score: 70 } }) }), false);
   assert.equal(validReadResult('mailbox', { conversations: [], invitations: [], pages: {} }), false);
   assert.equal(validReadResult('summary', { revision: 0, unread_messages: 0, pending_invitations: 0, unread_notifications: 0, active_trips: 5, archived_trips: 0 }), true);
   assert.equal(validReadResult('summary', { revision: 0 }), false);

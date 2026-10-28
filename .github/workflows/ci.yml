@@ -13,6 +13,10 @@ on:
         description: Run the disposable local 10k/50k/500k load fixture up to 200 sessions
         type: boolean
         default: false
+      profile_only:
+        description: Collect sanitized SQL plans on the disposable load fixture without HTTP load
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -90,9 +94,12 @@ jobs:
       - run: npm run types:database -- --local --check
       - run: npm run test:local-backend
         if: ${{ !cancelled() && steps.local-reset.outcome == 'success' }}
+      - name: Optional synthetic SQL profiles (local only)
+        if: github.event_name == 'workflow_dispatch' && (inputs.load_test || inputs.profile_only)
+        run: node scripts/profile-discovery.mjs --seed
       - name: Optional full synthetic HTTP load (local only)
         if: github.event_name == 'workflow_dispatch' && inputs.load_test
-        run: npm run benchmark:load -- --seed --strict
+        run: npm run benchmark:load -- --strict
       - name: Preserve failed checks and measured load results
         if: always()
         uses: actions/upload-artifact@v4
@@ -100,6 +107,7 @@ jobs:
           name: local-backend-results
           path: |
             .expo/hardening-http-load.json
+            .expo/hardening-query-plans.json
             .expo/database.generated.local.ts
           include-hidden-files: true
           if-no-files-found: ignore

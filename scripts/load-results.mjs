@@ -62,11 +62,12 @@ export function validReadResult(kind, value) {
     return Array.isArray(value.conversations) && value.conversations.length > 0 &&
       Array.isArray(value.invitations) && value.invitations.length > 0 &&
       !!value.pages && typeof value.pages === 'object';
+  const uuid = (id) => typeof id === 'string' && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id);
   return Array.isArray(value.items) && value.items.length === 5 &&
     Number.isSafeInteger(value.total_count) && value.total_count >= 9999 &&
-    value.has_more === true && value.cursor !== null &&
+    value.has_more === true && !!value.cursor && typeof value.cursor === 'object' &&
     value.items.every((item) =>
-      !!item.crew && (kind === 'groups' || !!item.trip) &&
-      Number.isFinite(item.compatibility?.score),
+      uuid(item.crew?.id) && (kind === 'groups' || uuid(item.trip?.id)) &&
+      Number.isInteger(item.compatibility?.score) && item.compatibility.score >= 0 && item.compatibility.score <= 100,
     );
 }

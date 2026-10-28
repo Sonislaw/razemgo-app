@@ -1,11 +1,11 @@
-import { createHash } from 'node:crypto';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { availableParallelism, cpus, totalmem } from 'node:os';
 import { performance } from 'node:perf_hooks';
-import { localBackend, localToken, localRpc } from './local-backend-check.mjs';
+import { localBackend, localToken } from './local-backend-check.mjs';
 import { localPostgres } from './support/local-postgres.mjs';
-import { meetsTargets, safeErrorCode, summarizeSamples, validReadResult } from './load-results.mjs';
+import { meetsTargets, summarizeSamples } from './load-results.mjs';
+import { loadOperations as queries, readLoadPage, syntheticUuid as uuid } from './load-protocol.mjs';
 
 const config = localBackend();
 const sql = (source) => localPostgres(config, source).stdout;
@@ -48,19 +48,9 @@ function restSettings() {
     return { image: container.Config.Image, explicitSettings };
   } catch { return null; }
 }
-const uuid = (text) => createHash('md5').update(text).digest('hex')
-  .replace(/^(........)(....)(....)(....)(............)$/, '$1-$2-$3-$4-$5');
 const tokens = Array.from({ length: 200 }, (_, i) => localToken(
   config, uuid('synthetic-user-' + (i + 1)), uuid('synthetic-session-' + (i + 1)),
 ));
-const queries = [
-  { id: 'summary', rpc: 'get_my_sync_state', args: {}, kind: 'summary', ranking: false },
-  { id: 'trips', rpc: 'search_public_trips', args: { page_size: 5 }, kind: 'trips', ranking: false },
-  { id: 'groups', rpc: 'list_ranked_public_groups', args: { sort_mode: 'alphabetical', page_size: 5 }, kind: 'groups', ranking: false },
-  { id: 'mailbox', rpc: 'get_my_mailbox_page', args: {}, kind: 'mailbox', ranking: false },
-  { id: 'tripRanking', rpc: 'search_public_trips', args: { sort_mode: 'compatibility', page_size: 5 }, kind: 'trips', ranking: true },
-  { id: 'groupRanking', rpc: 'list_ranked_public_groups', args: { sort_mode: 'compatibility', page_size: 5 }, kind: 'groups', ranking: true },
-];
 const report = {
   schemaVersion: 2,
   engine: 'Disposable local Supabase HTTP; synthetic read burst, not sustained app sessions',
@@ -84,25 +74,7 @@ await mkdir('.expo', { recursive: true });
 const save = () => writeFile('.expo/hardening-http-load.json', JSON.stringify(report, null, 2) + '\n');
 await save();
 
-async function read(token, query) {
-  const started = performance.now();
-  let bytes = 0, status = 0;
-  try {
-    const response = await localRpc(config, token, query.rpc, query.args);
-    status = response.status;
-    const body = await response.arrayBuffer();
-    bytes = body.byteLength;
-    let value;
-    try { value = JSON.parse(new TextDecoder().decode(body)); }
-    catch { return { ok: false, status, bytes, ms: performance.now() - started, code: 'INVALID_JSON' }; }
-    const ok = response.ok && validReadResult(query.kind, value);
-    return { ok, status, bytes, ms: performance.now() - started,
-      code: ok ? null : response.ok ? 'INVALID_CONTRACT' : safeErrorCode(value?.code) };
-  } catch (error) {
-    return { ok: false, status, bytes, ms: performance.now() - started,
-      code: error?.name === 'TimeoutError' ? 'CLIENT_TIMEOUT' : 'TRANSPORT_ERROR' };
-  }
-}
+const read = (token, query) => readLoadPage(config, token, query);
 
 // Prevent leftover timed-out server work from silently contaminating the next
 // level. This observes only a count, never queries, claims or connection data.

@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 
-export function localPostgres(config, source, { profile = false } = {}) {
+export function localPostgres(config, source, { profile = false, timeout = 180000 } = {}) {
   const url = new URL(config.DB_URL);
   if (!['postgres:', 'postgresql:'].includes(url.protocol) ||
       !['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))
@@ -17,10 +17,10 @@ export function localPostgres(config, source, { profile = false } = {}) {
     const result = spawnSync(command, args, {
       input: source, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'],
       maxBuffer: 32 * 1024 * 1024,
-      timeout: 180000, windowsHide: true,
+      timeout, windowsHide: true,
       env: { ...process.env, PGHOST: url.hostname.replaceAll(/[\[\]]/g, ''),
         PGPORT: url.port, PGDATABASE: decodeURIComponent(url.pathname.slice(1)),
-        PGUSER: decodeURIComponent(url.username), PGPASSWORD: decodeURIComponent(url.password) },
+        PGUSER: decodeURIComponent(url.username), PGPASSWORD: decodeURIComponent(url.password), PGCONNECT_TIMEOUT: '2' },
     });
     if (result.status !== 0) {
       const code = result.stderr?.match(/ERROR:\s*([0-9A-Z]{5}):/)?.[1];

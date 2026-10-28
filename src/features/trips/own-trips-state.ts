@@ -1,3 +1,4 @@
+import { isValidDate } from '../../lib/calendar-date.ts';
 import type {
   OwnedTrip,
   OwnTripFilters,
@@ -13,8 +14,8 @@ import {
   isConcreteTripLocation,
   isLocationAllowedForTrip,
   PLANNED_TRIP_LOCATION_REQUIRED_ERROR,
-  tripLocationIdForPlace,
   TRIP_LOCATION_REQUIRED_ERROR,
+  tripLocationIdForPlace,
 } from './trip-locations.ts';
 
 export const TRIP_STATUS_LABELS: Record<TripStatus, string> = {
@@ -36,22 +37,7 @@ export function tripDescriptionLength(description: string): number {
   return Array.from(description.trim().replace(/\s+/gu, ' ')).length;
 }
 
-export function todayDate(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-}
-export function isValidDate(value: string): boolean {
-  return (
-    /^\d{4}-\d{2}-\d{2}$/.test(value) &&
-    Number.isFinite(Date.parse(value)) &&
-    new Date(value).toISOString().slice(0, 10) === value
-  );
-}
-export function shiftDate(value: string, days: number): string {
-  return new Date(Date.parse(value + 'T00:00:00Z') + days * 86400000)
-    .toISOString()
-    .slice(0, 10);
-}
+export { isValidDate, shiftDate, todayDate } from '../../lib/calendar-date.ts';
 export function getTripStatus(trip: OwnedTrip, today: string): TripStatus {
   return (trip.status === 'published' || trip.status === 'paused') &&
     isValidDate(trip.endDate) &&
@@ -112,7 +98,8 @@ export function toTripForm(trip: OwnedTrip): TripForm {
     endDate: trip.endDate,
     locationId: tripLocationIdForPlace(place),
     campgroundName: trip.mode === 'planned' ? (trip.campgroundName ?? '') : '',
-    campgroundAddress: trip.mode === 'planned' ? (trip.campgroundAddress ?? '') : '',
+    campgroundAddress:
+      trip.mode === 'planned' ? (trip.campgroundAddress ?? '') : '',
     travelModes: trip.travelModes.slice(0, 1),
     interests: [...trip.interests],
     description: trip.description,
@@ -351,17 +338,23 @@ export function ownTripsReducer(
 ): OwnTripsState {
   if (action.type === 'reset') return action.state;
   if (action.type === 'hydrate') return { ...state, trips: action.trips };
-  if (action.type === 'persisted') return {
-    ...state,
-    trips: state.trips.some(trip => trip.id === action.trip.id)
-      ? state.trips.map(trip => trip.id === action.trip.id ? action.trip : trip)
-      : [...state.trips, action.trip],
-    revision: state.revision + 1,
-    lastSavedId: action.trip.id,
-  };
-  if (action.type === 'removed') return {
-    ...state, trips: state.trips.filter(trip => trip.id !== action.id), revision: state.revision + 1,
-  };
+  if (action.type === 'persisted')
+    return {
+      ...state,
+      trips: state.trips.some((trip) => trip.id === action.trip.id)
+        ? state.trips.map((trip) =>
+            trip.id === action.trip.id ? action.trip : trip,
+          )
+        : [...state.trips, action.trip],
+      revision: state.revision + 1,
+      lastSavedId: action.trip.id,
+    };
+  if (action.type === 'removed')
+    return {
+      ...state,
+      trips: state.trips.filter((trip) => trip.id !== action.id),
+      revision: state.revision + 1,
+    };
   if (action.type === 'save') {
     const existing = action.id
       ? state.trips.find((trip) => trip.id === action.id)
@@ -389,7 +382,7 @@ export function ownTripsReducer(
       status,
       existing?.publishedAt ??
         (status === 'published'
-          ? action.publishedAt ?? action.today + 'T00:00:00.000Z'
+          ? (action.publishedAt ?? action.today + 'T00:00:00.000Z')
           : undefined),
     );
     return {

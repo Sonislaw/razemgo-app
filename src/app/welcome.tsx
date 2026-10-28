@@ -1,10 +1,10 @@
-import { router } from 'expo-router';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { BrandHeader } from '@/components/ui/brand-header';
 import { AppText, Screen } from '@/components/ui/primitives';
 import { Spacing } from '@/constants/theme';
 import { HomeAction } from '@/features/home/home-ui';
 import { WelcomeFeaturedListing } from '@/features/welcome/welcome-featured-listing';
+import { router } from 'expo-router';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 
 export default function WelcomeScreen() {
   const { width } = useWindowDimensions();
@@ -22,8 +22,8 @@ export default function WelcomeScreen() {
           Znajdź swoją ekipę w drodze.
         </AppText>
         <AppText color="textSecondary" style={styles.description}>
-          Kamper, przyczepa, kampervan czy namiot — tu spotkasz ludzi z podobnymi
-          planami.
+          Kamper, przyczepa, kampervan czy namiot — tu spotkasz ludzi z
+          podobnymi planami.
         </AppText>
       </View>
 
@@ -31,7 +31,7 @@ export default function WelcomeScreen() {
         <HomeAction
           label="Nowe konto"
           description="Załóż konto i znajdź towarzystwo na wyjazd."
-          illustration={require('@/assets/images/welcome/join-the-crew.png')}
+          illustration={require('@/assets/images/welcome/join-the-crew.webp')}
           illustrationSize={illustrationSize}
           density={density}
           orientation="vertical"
@@ -42,7 +42,7 @@ export default function WelcomeScreen() {
         <HomeAction
           label="Zaloguj się"
           description="Wróć do swojej ekipy i wspólnych planów."
-          illustration={require('@/assets/images/welcome/back-to-camp.png')}
+          illustration={require('@/assets/images/welcome/back-to-camp.webp')}
           illustrationSize={illustrationSize}
           density={density}
           orientation="vertical"

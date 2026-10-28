@@ -6,7 +6,7 @@ Integracja Sentry obejmuje błędy JavaScript, nieobsłużone odrzucenia Promise
 
 Własne Edge Functions `delete-account` i `dispatch-push` otrzymały bezpieczne raportowanie i nagłówek `X-Request-Id`. Identyfikator w logu funkcji pozwala znaleźć związane zdarzenie; aplikacja zachowuje go przy błędzie wywołania funkcji. Zwykłe RPC bazy są obserwowane przez klienta; ta integracja nie daje wglądu do wewnętrznych awarii hostowanego Supabase Auth ani pełnych logów PostgreSQL.
 
-Na tym etapie SDK ma **wyłączoną warstwę natywną**. Raportowanie JavaScript działa w obecnym development APK i na webie po konfiguracji oraz restarcie Metro. Awarie Androida/iOS przed załadowaniem JavaScript, ANR i awarie silnika natywnego nie są objęte tym etapem. Nie dodajemy pluginu natywnego Sentry, automatycznej inicjalizacji ani `Sentry.wrap`, żeby żaden raport natywny nie ominął filtra JavaScript. Bez DSN i w podglądzie demo monitoring jest wyłączony.
+SDK ma **wyłączone raportowanie natywne**. Raportowanie JavaScript działa w development APK i na webie po konfiguracji oraz restarcie Metro. Awarie Androida/iOS przed załadowaniem JavaScript, ANR i awarie silnika natywnego nie są objęte tym etapem. Od 28.10.2026 Dev ma plugin Sentry wyłącznie do konfiguracji przesyłania map podczas budowania. Nie włącza on natywnej inicjalizacji (`useNativeInit` domyślnie `false` w przypiętej wersji), a SDK nadal ma `enableNative: false` i `enableNativeCrashHandling: false`. Nie dodano `Sentry.wrap`; raporty JavaScript nadal przechodzą filtr danych. Bez DSN i w podglądzie demo monitoring jest wyłączony.
 
 ## Konfiguracja Sentry
 
@@ -82,7 +82,20 @@ npx expo export --platform web --source-maps --output-dir .expo/monitoring-web
 npx sentry-expo-upload-sourcemaps .expo/monitoring-web
 ```
 
-`SENTRY_AUTH_TOKEN` służy wyłącznie do przesyłania map przez narzędzia deweloperskie. Nie zapisuj go w `EXPO_PUBLIC_*`, `app.json`, plikach śledzonych przez Git ani aplikacji. Map nie publikuj jako ogólnodostępnych plików hostingu. Automatyczny upload map natywnego buildu EAS nie jest włączony bez pluginu natywnego; jego kontrolowana konfiguracja i pełne raporty natywne to osobny etap. Sam poprawny test `monitoring.test` nie dowodzi poprawnej symbolikacji wydania.
+`SENTRY_AUTH_TOKEN` służy wyłącznie do przesyłania map przez narzędzia deweloperskie. Nie zapisuj go w `EXPO_PUBLIC_*`, `app.json`, plikach śledzonych przez Git ani aplikacji. Map nie publikuj jako ogólnodostępnych plików hostingu. Sam poprawny test `monitoring.test` nie dowodzi poprawnej symbolikacji wydania.
+
+### Przygotowana konfiguracja EAS Dev — 28.10.2026
+
+`app.config.js` dodaje plugin `@sentry/react-native/expo` tylko dla wariantu Development, z organizacją **`zgranago`**, projektem **`react-native`** i adresem `https://sentry.io/`. Wariant Preview nie otrzymał tej konfiguracji. Release ma postać `razemgo@<wersja>+<wariant>.<skrót źródeł>`; skrót obejmuje również niezacommitowane zmiany, ale nie pliki środowiska ani sekrety. Debug IDs pozostają w dozwolonym, oczyszczonym zdarzeniu.
+
+Użytkownik zdecydował dodać token później. Gdy będzie gotowy:
+
+1. Utwórz token Sentry uprawniony do przesyłania map do tej organizacji i projektu.
+2. W projekcie Expo RazemGo dodaj `SENTRY_AUTH_TOKEN` jako zmienną **Secret**, wyłącznie dla środowiska **Development**. Nie wklejaj wartości do rozmowy.
+3. Zbuduj nowy APK `npm run build:performance` lub `npm run build:dev`. Token dodany po budowie nie prześle automatycznie wcześniejszych map.
+4. Sprawdź log uploadu, a następnie odczyt rzeczywistego kontrolowanego błędu z tego konkretnego APK w Sentry.
+
+Profil `performance` pozwala zbudować APK bez tokena (`SENTRY_ALLOW_FAILURE=true`). Nie wolno traktować powodzenia tego buildu jako potwierdzenia uploadu. Zwykły profil `development` nie ma tego wyjątku. Wysyłka map obecnego APK i końcowa symbolikacja **nie są potwierdzone**. Pełny raport zmian: [ARCHITECTURE_HARDENING.md](ARCHITECTURE_HARDENING.md).
 
 Kontrole lokalne:
 
@@ -92,13 +105,12 @@ npm run lint
 npm run typecheck
 npm test
 npm run test:web
-npx deno check --node-modules-dir=none --no-lock supabase/functions/delete-account/index.ts supabase/functions/dispatch-push/index.ts
-npx deno test --node-modules-dir=none --no-lock --allow-env --allow-net --allow-sys --allow-read supabase/functions/_shared/monitoring.test.ts supabase/functions/dispatch-push/handler.test.ts
+npm run test:edge
 ```
 
 Testy jednostkowe sprawdzają usuwanie danych, kategorie, limity, zachowanie wyników żądań i timeout. Testy przeglądarkowe uruchamiają rzeczywisty SDK z fikcyjnym DSN, przechwytują wysłaną kopertę i sprawdzają brak danych konta oraz prywatnej treści wyjątku. Testy Deno sprawdzają również odmowę dostępu do diagnostyki, wyłączenie jej w produkcji, limit powtórzeń, odrzucenie raportu przez Sentry i niezależność od zwykłego dispatchera. Te testy automatyczne używają atrap transportu. Skrypt `check-backend-monitoring.mjs` wykonuje osobny test rzeczywistej funkcji i prawdziwego projektu Sentry.
 
-Kontrola Expo nadal wskazuje siedem dostępnych aktualizacji poprawek istniejących pakietów SDK 58. Pozostawiono ich dotychczasowe wersje. `npm audit` zgłasza także pięć istniejących ostrzeżeń o wysokiej wadze w drzewie zależności Expo; automatyczna sugestia obniża główną wersję Expo, więc nie zastosowano `audit fix --force` w ramach integracji monitoringu. Nie dotyczą one dodanego SDK Sentry.
+Historyczny stan z 24.10.2026: kontrola Expo wskazywała siedem aktualizacji poprawek SDK 58 i pięć ostrzeżeń high w drzewie narzędzi Expo. Od tego czasu wykonano etap 0. Aktualna kontrola zgodności przechodzi; audyt 28.10.2026 wskazuje 3 pozycje high i 5 low, opisane z ograniczeniami aktualizacji w [raporcie technicznym](ARCHITECTURE_HARDENING.md). Nie zastosowano `audit fix --force` ani cofnięcia SDK.
 
 Weryfikacja 24.10.2026: lint i TypeScript przeszły; 225 testów Node, 17 scenariuszy Playwright oraz test transportu SDK Deno przeszły. Eksporty Androida i webu z mapami źródeł zakończyły się powodzeniem. Zdalnie sprawdzono odmowę usuwania konta bez JWT oraz autoryzację i obsługę pustej kolejki workera bez wysyłania push.
 

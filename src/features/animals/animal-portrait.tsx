@@ -1,15 +1,15 @@
-import { Image } from 'expo-image';
-import { StyleSheet, View } from 'react-native';
-import { Chip } from '@/components/ui/primitives';
-import { IllustrationChoice } from '@/components/ui/illustration-choice';
 import { Icon } from '@/components/ui/icon';
+import { IllustrationChoice } from '@/components/ui/illustration-choice';
+import { Chip } from '@/components/ui/primitives';
 import { useTheme } from '@/hooks/use-theme';
 import type { AnimalKind } from '@/types/animals';
+import { Image } from 'expo-image';
+import { StyleSheet, View } from 'react-native';
 import { ANIMAL_OPTIONS } from './animal-data';
 
 const ANIMAL_IMAGES = {
-  dog: require('../../../assets/images/animals/dog.png'),
-  cat: require('../../../assets/images/animals/cat.png'),
+  dog: require('../../../assets/images/animals/dog.webp'),
+  cat: require('../../../assets/images/animals/cat.webp'),
 };
 
 export function AnimalPortrait({
@@ -32,7 +32,8 @@ export function AnimalPortrait({
           width: size,
           height: size,
           borderRadius: size / 2,
-          backgroundColor: kind === 'dog' ? theme.hero : theme.backgroundSelected,
+          backgroundColor:
+            kind === 'dog' ? theme.hero : theme.backgroundSelected,
         },
       ]}
     >

@@ -1,5 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
-import { createChunkedStorage } from '@/features/auth/chunked-storage';
+import { createChunkedStorage } from './chunked-storage';
 
 export const sessionStorage = createChunkedStorage({
   getItem: (key) => SecureStore.getItemAsync(key),

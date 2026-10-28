@@ -1,20 +1,20 @@
-import { Image, type ImageProps } from 'expo-image';
-import { StyleSheet, View } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
 import type { ProfileAvatarId } from '@/types/avatar';
+import { Image, type ImageProps } from 'expo-image';
+import { StyleSheet, View } from 'react-native';
 import { getProfileAvatar } from './profile-avatar-data';
 
 const AVATAR_IMAGES = {
-  'trail-fox': require('@/assets/images/avatars/trail-fox.png'),
-  'camp-bear': require('@/assets/images/avatars/camp-bear.png'),
-  'star-owl': require('@/assets/images/avatars/star-owl.png'),
-  'paddle-beaver': require('@/assets/images/avatars/paddle-beaver.png'),
-  'summit-chamois': require('@/assets/images/avatars/summit-chamois.png'),
-  'meadow-hedgehog': require('@/assets/images/avatars/meadow-hedgehog.png'),
-  'road-wolf': require('@/assets/images/avatars/road-wolf.png'),
-  'cycling-hare': require('@/assets/images/avatars/cycling-hare.png'),
-  'campfire-squirrel': require('@/assets/images/avatars/campfire-squirrel.png'),
-  'happy-dog': require('@/assets/images/avatars/happy-dog.png'),
+  'trail-fox': require('@/assets/images/avatars/trail-fox.webp'),
+  'camp-bear': require('@/assets/images/avatars/camp-bear.webp'),
+  'star-owl': require('@/assets/images/avatars/star-owl.webp'),
+  'paddle-beaver': require('@/assets/images/avatars/paddle-beaver.webp'),
+  'summit-chamois': require('@/assets/images/avatars/summit-chamois.webp'),
+  'meadow-hedgehog': require('@/assets/images/avatars/meadow-hedgehog.webp'),
+  'road-wolf': require('@/assets/images/avatars/road-wolf.webp'),
+  'cycling-hare': require('@/assets/images/avatars/cycling-hare.webp'),
+  'campfire-squirrel': require('@/assets/images/avatars/campfire-squirrel.webp'),
+  'happy-dog': require('@/assets/images/avatars/happy-dog.webp'),
 } satisfies Record<ProfileAvatarId, ImageProps['source']>;
 
 export function ProfileAvatar({
@@ -37,7 +37,13 @@ export function ProfileAvatar({
       testID={testID}
       accessible={!decorative}
       accessibilityRole={decorative ? undefined : 'image'}
-      accessibilityLabel={decorative ? undefined : 'Awatar: ' + avatar.name + (online === undefined ? '' : online ? '. Online' : '. Offline')}
+      accessibilityLabel={
+        decorative
+          ? undefined
+          : 'Awatar: ' +
+            avatar.name +
+            (online === undefined ? '' : online ? '. Online' : '. Offline')
+      }
       accessibilityElementsHidden={decorative}
       importantForAccessibility={decorative ? 'no-hide-descendants' : 'auto'}
       style={[
@@ -49,7 +55,17 @@ export function ProfileAvatar({
         },
       ]}
     >
-      <View style={[styles.frame, { width: size, height: size, borderRadius: size / 2, backgroundColor: theme.hero }]}>
+      <View
+        style={[
+          styles.frame,
+          {
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            backgroundColor: theme.hero,
+          },
+        ]}
+      >
         <Image
           source={AVATAR_IMAGES[avatar.id]}
           recyclingKey={avatar.id}
@@ -62,22 +78,36 @@ export function ProfileAvatar({
           alt=""
         />
       </View>
-      {online !== undefined && <View
-        testID={testID ? testID + (online ? '-online' : '-offline') : undefined}
-        accessible={false}
-        style={[styles.online, {
-          width: Math.max(12, Math.min(24, size * 0.25)),
-          height: Math.max(12, Math.min(24, size * 0.25)),
-          backgroundColor: online ? theme.community : '#9CA3AF',
-        }]}
-      />}
+      {online !== undefined && (
+        <View
+          testID={
+            testID ? testID + (online ? '-online' : '-offline') : undefined
+          }
+          accessible={false}
+          style={[
+            styles.online,
+            {
+              width: Math.max(12, Math.min(24, size * 0.25)),
+              height: Math.max(12, Math.min(24, size * 0.25)),
+              backgroundColor: online ? theme.community : '#9CA3AF',
+            },
+          ]}
+        />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flexShrink: 0 },
-  online: { position: 'absolute', right: 0, bottom: 0, borderRadius: 99, borderWidth: 2, borderColor: '#FFFFFF' },
+  online: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    borderRadius: 99,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
   frame: {
     flexShrink: 0,
     overflow: 'hidden',

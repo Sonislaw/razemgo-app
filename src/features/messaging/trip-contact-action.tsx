@@ -1,20 +1,24 @@
-import { getTripHeadline } from '@/features/trips/trip-headline';
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { TextInput, View } from 'react-native';
+import { DataStatus } from '@/components/ui/data-status';
 import { AppText, Button, layout } from '@/components/ui/primitives';
 import { Fonts, Typography } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
-import type { TravelGroup, TripProposal } from '@/types/travel';
-import { useMessaging } from './messaging-context';
-import { getGroupContact, getTripContact, MAX_INVITATION_LENGTH } from './messaging-state';
-import { MessagingSheet } from './messaging-ui';
 import { useDiscovery } from '@/features/discovery/discovery-context';
+import { GroupAvatar } from '@/features/profile/group-avatar';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import { isSearchingTrip, todayDate } from '@/features/trips/own-trips-state';
-import { GroupAvatar } from '@/features/profile/group-avatar';
+import { getTripHeadline } from '@/features/trips/trip-headline';
+import { useTheme } from '@/hooks/use-theme';
 import { createRequestKey } from '@/lib/request-key';
-import { DataStatus } from '@/components/ui/data-status';
+import type { TravelGroup, TripProposal } from '@/types/travel';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { TextInput, View } from 'react-native';
+import { useMessaging } from './messaging-context';
+import {
+  getGroupContact,
+  getTripContact,
+  MAX_INVITATION_LENGTH,
+} from './messaging-state';
+import { MessagingSheet } from './messaging-ui';
 
 export function TripContactAction({ proposal }: { proposal: TripProposal }) {
   return <ContactAction group={proposal.group} proposal={proposal} />;
@@ -22,30 +26,60 @@ export function TripContactAction({ proposal }: { proposal: TripProposal }) {
 export function GroupContactAction({ group }: { group: TravelGroup }) {
   return <ContactAction group={group} />;
 }
-function ContactAction({ group, proposal }: { group: TravelGroup; proposal?: TripProposal }) {
-  const { state, dispatch, invite, inviteProfile, busy, actionError, error, refresh } = useMessaging();
+function ContactAction({
+  group,
+  proposal,
+}: {
+  group: TravelGroup;
+  proposal?: TripProposal;
+}) {
+  const {
+    state,
+    dispatch,
+    invite,
+    inviteProfile,
+    busy,
+    actionError,
+    error,
+    refresh,
+  } = useMessaging();
+  useFocusEffect(
+    useCallback(() => {
+      void refresh();
+    }, [refresh]),
+  );
   const { filters } = useDiscovery();
   const { state: ownTrips } = useOwnTrips();
   const ownTrip = ownTrips.trips.find(
     (item) => Boolean(proposal) && item.id === filters.sourceTripId,
   );
   const unavailableSource = Boolean(
-    proposal && filters.sourceTripId &&
-    (!ownTrip || !isSearchingTrip(ownTrip, todayDate())),
+    proposal &&
+      filters.sourceTripId &&
+      (!ownTrip || !isSearchingTrip(ownTrip, todayDate())),
   );
   const theme = useTheme();
   const [composing, setComposing] = useState(false);
   const [text, setText] = useState('');
   const [requestKey] = useState(createRequestKey);
   const trip = proposal?.trip;
-  const contact = trip ? getTripContact(state, group.id, trip.id) : getGroupContact(state, group.id);
+  const contact = trip
+    ? getTripContact(state, group.id, trip.id)
+    : getGroupContact(state, group.id);
   const openInvitations = (direction: 'received' | 'sent') => {
     dispatch({ type: 'view', view: 'invitations', direction });
     router.dismissTo('/messages');
   };
   return (
     <View style={{ gap: 8 }}>
-      <DataStatus label="Wczytywanie kontaktów" status={error ? 'error' : state.loadStatus} error={error} onRetry={() => { void refresh(); }} />
+      <DataStatus
+        label="Wczytywanie kontaktów"
+        status={error ? 'error' : state.loadStatus}
+        error={error}
+        onRetry={() => {
+          void refresh();
+        }}
+      />
       {contact.kind === 'blocked' ? (
         <>
           <Button label="Ekipa zablokowana" icon="block" disabled />
@@ -89,24 +123,36 @@ function ContactAction({ group, proposal }: { group: TravelGroup; proposal?: Tri
       )}
       {unavailableSource ? (
         <AppText variant="caption" color="textSecondary">
-          Wyjazd, dla którego szukasz towarzystwa, nie przyjmuje nowych zaproszeń.
-          Zmień jego status albo wyczyść kryteria w Odkrywaj.
+          Wyjazd, dla którego szukasz towarzystwa, nie przyjmuje nowych
+          zaproszeń. Zmień jego status albo wyczyść kryteria w Odkrywaj.
         </AppText>
       ) : null}
       {composing ? (
         <MessagingSheet
           title="Zaproś do kontaktu"
-          onClose={() => { if (!busy) setComposing(false); }}
+          onClose={() => {
+            if (!busy) setComposing(false);
+          }}
         >
           <View style={layout.row}>
-            <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={40} />
+            <GroupAvatar
+              groupId={group.id}
+              avatarId={group.avatarId}
+              size={40}
+            />
             <AppText variant="label" style={{ flex: 1 }}>
               {group.name}
             </AppText>
           </View>
-          {trip ? <AppText variant="caption" color="primaryStrong">
-            {getTripHeadline(trip)}
-          </AppText> : <AppText variant="caption" color="primaryStrong">Kontakt z profilu · bez przypisanego wyjazdu</AppText>}
+          {trip ? (
+            <AppText variant="caption" color="primaryStrong">
+              {getTripHeadline(trip)}
+            </AppText>
+          ) : (
+            <AppText variant="caption" color="primaryStrong">
+              Kontakt z profilu · bez przypisanego wyjazdu
+            </AppText>
+          )}
           {ownTrip ? (
             <AppText variant="caption" color="textSecondary">
               Twój wyjazd: {getTripHeadline(ownTrip)}
@@ -116,8 +162,8 @@ function ContactAction({ group, proposal }: { group: TravelGroup; proposal?: Tri
             color="textSecondary"
             style={{ fontSize: 14, lineHeight: 21 }}
           >
-            Przedstaw się i napisz, co Cię zainteresowało. Dane dzieci z
-            profilu nie zostaną dodane do wiadomości.
+            Przedstaw się i napisz, co Cię zainteresowało. Dane dzieci z profilu
+            nie zostaną dodane do wiadomości.
           </AppText>
           <TextInput
             accessibilityLabel="Treść zaproszenia"
@@ -144,7 +190,11 @@ function ContactAction({ group, proposal }: { group: TravelGroup; proposal?: Tri
           <AppText variant="caption" color="textSecondary">
             {text.length}/{MAX_INVITATION_LENGTH}
           </AppText>
-          {actionError ? <AppText accessibilityRole="alert" color="textSecondary">{actionError}</AppText> : null}
+          {actionError ? (
+            <AppText accessibilityRole="alert" color="textSecondary">
+              {actionError}
+            </AppText>
+          ) : null}
           <Button
             label={busy ? 'Wysyłanie…' : 'Wyślij zaproszenie'}
             icon="send"
@@ -156,7 +206,11 @@ function ContactAction({ group, proposal }: { group: TravelGroup; proposal?: Tri
               (contact.kind !== 'available' && contact.kind !== 'sent')
             }
             onPress={async () => {
-              if (await (trip ? invite(trip.id, text, requestKey, ownTrip?.id) : inviteProfile(group.id, text, requestKey))) {
+              if (
+                await (trip
+                  ? invite(trip.id, text, requestKey, ownTrip?.id)
+                  : inviteProfile(group.id, text, requestKey))
+              ) {
                 setComposing(false);
                 setText('');
                 router.dismissTo('/messages');

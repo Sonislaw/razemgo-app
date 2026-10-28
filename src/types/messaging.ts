@@ -10,12 +10,22 @@ export interface MessagingContact {
 }
 export type InvitationDirection = 'received' | 'sent';
 export type InvitationStatus =
-  'pending' | 'accepted' | 'declined' | 'withdrawn';
+  | 'pending'
+  | 'accepted'
+  | 'declined'
+  | 'withdrawn';
 export type MailboxView = 'conversations' | 'invitations';
 export type MailboxScenario =
-  'initial' | 'conversations' | 'empty' | 'loading' | 'error';
+  | 'initial'
+  | 'conversations'
+  | 'empty'
+  | 'loading'
+  | 'error';
 export type ReportReason =
-  'Spam' | 'Niewłaściwe treści' | 'Podszywanie się' | 'Inny powód';
+  | 'Spam'
+  | 'Niewłaściwe treści'
+  | 'Podszywanie się'
+  | 'Inny powód';
 
 export interface ContactInvitation {
   id: string;
@@ -64,6 +74,7 @@ export interface MessagingSeed {
   messages: ChatMessage[];
 }
 export interface MessagingState {
+  summary?: { unreadMessages: number; pendingInvitations: number };
   contacts?: Record<string, MessagingContact>;
   trips?: Record<string, TripPlan>;
   invitations: ContactInvitation[];

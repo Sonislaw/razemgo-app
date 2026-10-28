@@ -1,0 +1,149 @@
+{
+  "date": "2026-10-28",
+  "network": {
+    "baseline": "25715b5",
+    "method": "Controlled browser, same synthetic fixture; decoded JSON bytes, not compressed wire traffic",
+    "fixture": {
+      "ownedTrips": 50,
+      "conversations": 80,
+      "visitedHistories": 3
+    },
+    "before": {
+      "initial": {
+        "requests": 16,
+        "decodedJsonBytes": 167656
+      },
+      "quietPoll": {
+        "requests": 11,
+        "decodedJsonBytes": 175251
+      },
+      "changedPoll": {
+        "requests": 14,
+        "decodedJsonBytes": 310315,
+        "activeHistoryRequests": 1,
+        "inactiveHistoryRequests": 2
+      }
+    },
+    "after": {
+      "initial": {
+        "requests": 17,
+        "decodedJsonBytes": 49600
+      },
+      "quietPoll": {
+        "requests": 4,
+        "decodedJsonBytes": 287
+      },
+      "changedPoll": {
+        "requests": 19,
+        "decodedJsonBytes": 110799,
+        "activeHistoryRequests": 2,
+        "inactiveHistoryRequests": 0
+      }
+    }
+  },
+  "sql": {
+    "method": "PGlite/WASM, one session, median of three runs; not HTTP or hosted capacity",
+    "beforeState": "After migrations 202610280001–004, before 005–006",
+    "before": {
+      "engine": "PGlite single session; not an HTTP load test",
+      "profiles": 10000,
+      "trips": 50000,
+      "messages": 500000,
+      "seedMs": 37000,
+      "results": {
+        "trips": {
+          "medianMs": 2313,
+          "maxMs": 2407,
+          "responseBytes": 5604
+        },
+        "tripRanking": {
+          "medianMs": 45715,
+          "maxMs": 46773,
+          "responseBytes": 5741
+        },
+        "crews": {
+          "medianMs": 379,
+          "maxMs": 396,
+          "responseBytes": 2608
+        },
+        "crewRanking": {
+          "medianMs": 880,
+          "maxMs": 902,
+          "responseBytes": 2829
+        },
+        "summary": {
+          "medianMs": 3,
+          "maxMs": 7,
+          "responseBytes": 144
+        },
+        "mailbox": {
+          "medianMs": 101,
+          "maxMs": 116,
+          "responseBytes": 6793
+        }
+      }
+    },
+    "after": {
+      "engine": "PGlite single session; not an HTTP load test",
+      "profiles": 10000,
+      "trips": 50000,
+      "messages": 500000,
+      "seedMs": 35662,
+      "results": {
+        "trips": {
+          "medianMs": 350,
+          "maxMs": 355,
+          "responseBytes": 5598
+        },
+        "tripRanking": {
+          "medianMs": 5473,
+          "maxMs": 6457,
+          "responseBytes": 5735
+        },
+        "crews": {
+          "medianMs": 374,
+          "maxMs": 401,
+          "responseBytes": 2608
+        },
+        "crewRanking": {
+          "medianMs": 791,
+          "maxMs": 794,
+          "responseBytes": 2829
+        },
+        "summary": {
+          "medianMs": 4,
+          "maxMs": 9,
+          "responseBytes": 144
+        },
+        "mailbox": {
+          "medianMs": 96,
+          "maxMs": 120,
+          "responseBytes": 6774
+        }
+      }
+    }
+  },
+  "assets": {
+    "method": "Lossless conversion; all decoded RGBA pixels verified equal",
+    "illustrations": 24,
+    "beforeBytes": 12159511,
+    "afterBytes": 7798004
+  },
+  "androidExport": {
+    "method": "Uncompressed export files, not APK download or phone memory",
+    "baseline": {
+      "hermesBytes": 11383863,
+      "assetBytes": 14009094
+    },
+    "after": {
+      "hermesBytes": 10244596,
+      "assetBytes": 9755325
+    }
+  },
+  "unverified": [
+    "Real local Supabase Auth/PostgREST checks require Docker",
+    "200 concurrent HTTP sessions and hosted p95 targets",
+    "Physical Android release measurements and integrations",
+    "Sentry artifact upload and symbolication pending token"
+  ]
+}

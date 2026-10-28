@@ -1,0 +1,1356 @@
+[
+  {
+    "schema": "discovery_private",
+    "name": "candidates",
+    "arguments": "f jsonb, me uuid",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "matching_context",
+    "arguments": "me uuid, f jsonb",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "overlap_ratio",
+    "arguments": "wanted text[], actual text[]",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "region_text",
+    "arguments": "value text",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "score",
+    "arguments": "t trip_plans, g travel_groups, ctx discovery_private.match_context, f jsonb",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "score_pair",
+    "arguments": "t trip_plans, g travel_groups, ctx discovery_private.match_context, own_plan trip_plans, f jsonb",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "score_rows",
+    "arguments": "t trip_plans, g travel_groups, ctx discovery_private.match_context, f jsonb",
+    "definer": false,
+    "settings": [],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "validate_filters",
+    "arguments": "f jsonb",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "favorites_private",
+    "name": "can_view_group",
+    "arguments": "me uuid, target uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "favorites_private",
+    "name": "can_view_trip",
+    "arguments": "me uuid, target uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "favorites_private",
+    "name": "my_group_id",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "messaging_private",
+    "name": "group_compatibility",
+    "arguments": "a travel_groups, b travel_groups",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "messaging_private",
+    "name": "group_compatibility_values",
+    "arguments": "a travel_groups, b travel_groups, pa group_preferences, pb group_preferences",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "messaging_private",
+    "name": "group_removed",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "messaging_private",
+    "name": "group_search_matches",
+    "arguments": "g travel_groups, query text",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "messaging_private",
+    "name": "initialize_group_visibility",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "messaging_private",
+    "name": "lock_pair",
+    "arguments": "a uuid, b uuid",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "messaging_private",
+    "name": "my_group_id",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "messaging_private",
+    "name": "pair_blocked",
+    "arguments": "a uuid, b uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "messaging_private",
+    "name": "participates",
+    "arguments": "target uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "messaging_private",
+    "name": "public_crew",
+    "arguments": "g travel_groups",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "messaging_private",
+    "name": "public_trip_count",
+    "arguments": "target uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "messaging_private",
+    "name": "search_text",
+    "arguments": "value text",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "messaging_private",
+    "name": "touch_pair",
+    "arguments": "a uuid, b uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "messaging_private",
+    "name": "trip_snapshot",
+    "arguments": "t trip_plans",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "moderation_private",
+    "name": "can_use_app",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "moderation_private",
+    "name": "guard_invitation",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "moderation_private",
+    "name": "guard_proposal",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "moderation_private",
+    "name": "is_admin",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "moderation_private",
+    "name": "report_summary",
+    "arguments": "r account_reports",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "moderation_private",
+    "name": "require_admin",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "moderation_private",
+    "name": "trip_evidence",
+    "arguments": "t trip_plans",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "blocked",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "changed",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "chat_read",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "favorite_group_removed",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "favorite_trip_published",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "invitation_resolved",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "normalized",
+    "arguments": "value text",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "proposal_available",
+    "arguments": "n notifications",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "proposal_health",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
+    ]
+  },
+  {
+    "schema": "notifications_private",
+    "name": "proposal_matches",
+    "arguments": "o trip_plans, p trip_plans",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "push_allowed",
+    "arguments": "recipient uuid, event_kind text",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "queue_proposal_crew",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "queue_proposal_trip",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "refresh_proposals",
+    "arguments": "me uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "visible",
+    "arguments": "recipient uuid, actor uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "presence_private",
+    "name": "group_is_online",
+    "arguments": "target_group_id uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "public",
+    "name": "admin_apply_action",
+    "arguments": "report_id uuid, moderation_action text, action_note text, request_key uuid, expected_updated_at timestamp with time zone",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "admin_list_reports",
+    "arguments": "status_filter text, search_text text, before_at timestamp with time zone, before_id uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "admin_report_detail",
+    "arguments": "report_id uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "change_my_trip_status",
+    "arguments": "trip_id uuid, new_status text",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "claim_push_deliveries",
+    "arguments": "batch_size integer",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "claim_push_health_alerts",
+    "arguments": "active_codes text[]",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "count_public_groups",
+    "arguments": "filters jsonb",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "count_public_trips",
+    "arguments": "filters jsonb",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "delete_my_trip",
+    "arguments": "trip_id uuid",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "duplicate_my_trip",
+    "arguments": "trip_id uuid",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "finish_push_delivery",
+    "arguments": "delivery_id uuid, lease uuid, result text, expected_token text, expo_ticket_id text, failure_code text",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "finish_push_health_alert",
+    "arguments": "alert_code text, claim_lease uuid, accepted boolean",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_conversation_messages",
+    "arguments": "conversation_id uuid, before_sequence bigint, page_size integer",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_discovery_trip",
+    "arguments": "target_trip_id uuid, filters jsonb",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_message_reactions",
+    "arguments": "conversation_id uuid, message_ids uuid[]",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_my_account_access",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_my_favorites",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_my_group_visibility",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_my_mailbox",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_my_mailbox_page",
+    "arguments": "page_kind text, before_at timestamp with time zone, before_id uuid, page_size integer, target_conversation_id uuid, target_group_id uuid, target_trip_id uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_my_mailbox_states",
+    "arguments": "conversation_ids uuid[], invitation_ids uuid[]",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_my_notification_states",
+    "arguments": "notification_ids uuid[]",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_my_notifications",
+    "arguments": "before_at timestamp with time zone, before_id uuid, page_size integer, only_unread boolean",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_my_sync_state",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_my_trip",
+    "arguments": "target_trip_id uuid",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_my_trip_contact_counts",
+    "arguments": "target_trip_id uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_my_trip_reactors",
+    "arguments": "target_trip_id uuid, after_at timestamp with time zone, after_id uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_online_groups",
+    "arguments": "group_ids uuid[]",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_public_group",
+    "arguments": "target_group_id uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_public_group",
+    "arguments": "target_group_id uuid, after_cursor jsonb, page_size integer",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_push_health",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_trip_reactions",
+    "arguments": "trip_ids uuid[]",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "guard_crew_number",
+    "arguments": "",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "public",
+    "name": "guard_trip_write",
+    "arguments": "",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "public",
+    "name": "list_my_trip_page",
+    "arguments": "archived boolean, filters jsonb, after_cursor jsonb, page_size integer",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "list_public_groups",
+    "arguments": "filters jsonb, after_name text, after_id uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "list_public_trips",
+    "arguments": "requested_trip_id uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "list_ranked_public_groups",
+    "arguments": "filters jsonb, sort_mode text, after_cursor jsonb, page_size integer",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "mark_conversation_read",
+    "arguments": "conversation_id uuid, through_message_id uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "mark_my_notifications_read",
+    "arguments": "notification_ids uuid[], read_through timestamp with time zone",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "process_proposal_notifications",
+    "arguments": "batch_size integer",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "profile_array_valid",
+    "arguments": "items text[], allowed text[], maximum integer",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "refresh_public_group_results",
+    "arguments": "group_ids uuid[], filters jsonb",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "refresh_public_trip_results",
+    "arguments": "trip_ids uuid[], filters jsonb",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "register_my_push_device",
+    "arguments": "installation_id uuid, installation_key uuid, push_token text, device_platform text, expo_project_id uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "report_conversation",
+    "arguments": "conversation_id uuid, report_reason text, request_key uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "report_profile",
+    "arguments": "target_group_id uuid, report_reason text, request_key uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "report_trip",
+    "arguments": "target_trip_id uuid, report_reason text, request_key uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "respond_contact_invitation",
+    "arguments": "invitation_id uuid, response text",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "save_my_group_visibility",
+    "arguments": "is_discoverable boolean, about_text text",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "save_my_notification_preference",
+    "arguments": "preference_key text, enabled boolean",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "save_my_profile",
+    "arguments": "profile_data jsonb",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "save_my_trip",
+    "arguments": "trip_data jsonb, trip_id uuid, as_draft boolean, request_key uuid",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "search_public_trips",
+    "arguments": "filters jsonb, sort_mode text, after_cursor jsonb, page_size integer",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "send_chat_message",
+    "arguments": "conversation_id uuid, message_text text, request_key uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "send_contact_invitation",
+    "arguments": "target_trip_id uuid, message_text text, request_key uuid, source_trip_id uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "send_profile_invitation",
+    "arguments": "target_group_id uuid, message_text text, request_key uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "set_group_block",
+    "arguments": "target_group_id uuid, blocked boolean",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "set_message_reaction",
+    "arguments": "target_message_id uuid, reaction_kind text",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "set_my_group_favorite",
+    "arguments": "target_group_id uuid, is_favorite boolean",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "set_my_presence",
+    "arguments": "connection_id uuid, is_online boolean",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "set_my_trip_favorite",
+    "arguments": "target_trip_id uuid, is_favorite boolean",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "set_my_trip_reaction",
+    "arguments": "target_trip_id uuid, reaction_kind text",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "unregister_my_push_device",
+    "arguments": "installation_id uuid, installation_key uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "push_private",
+    "name": "conversation_inserted",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "push_private",
+    "name": "deliverable",
+    "arguments": "delivery uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "push_private",
+    "name": "enqueue",
+    "arguments": "kind text, source_id uuid, recipient uuid, actor uuid, invitation uuid, conversation uuid, message uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "push_private",
+    "name": "invitation_inserted",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "push_private",
+    "name": "message_inserted",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "push_private",
+    "name": "touch_delivery_outcome",
+    "arguments": "",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "push_private",
+    "name": "wake_dispatcher",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "reactions_private",
+    "name": "can_read",
+    "arguments": "me uuid, target uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "reactions_private",
+    "name": "notify",
+    "arguments": "saved reactions_private.trip_reactions, owner_id uuid, description text",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "reactions_private",
+    "name": "summary",
+    "arguments": "me uuid, target uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  }
+]

@@ -1,32 +1,17 @@
+import {
+  parseGroupRow,
+  parsePreferencesRow,
+} from '../../data/contracts/validate.ts';
 import type { TravelerProfile } from '../../types/profile';
-import type { TravelGroup, ChildAgeBand } from '../../types/travel';
-import type { AnimalKind } from '../../types/animals';
-import type { ProfileAvatarId } from '../../types/avatar';
 
-export type GroupRow = {
-  id: string;
-  crew_number?: number;
-  owner_user_id: string;
-  name: string;
-  avatar_id: ProfileAvatarId;
-  kind: TravelGroup['kind'];
-  adult_count: number;
-  child_count: number;
-  child_age_bands: ChildAgeBand[];
-  travel_mode: string;
-  interests: string[];
-  animal_kinds: AnimalKind[];
-};
-export type PreferencesRow = {
-  group_id: string;
-  group_kinds: TravelGroup['kind'][];
-  child_age_bands: ChildAgeBand[];
-  description: string;
-};
+export type { GroupRow, PreferencesRow } from '../../data/contracts/profile';
+
 export function profileFromRows(
-  group: GroupRow,
-  preferences: PreferencesRow,
+  groupInput: unknown,
+  preferencesInput: unknown,
 ): TravelerProfile {
+  const group = parseGroupRow(groupInput);
+  const preferences = parsePreferencesRow(preferencesInput);
   return {
     group: {
       id: group.id,

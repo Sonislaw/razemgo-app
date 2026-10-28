@@ -1,3 +1,7 @@
+import { USE_DEMO_DATA } from '@/constants/app';
+import { demoProfile } from '@/data/demo-adapter';
+import { useAuth } from '@/features/auth/auth-context';
+import type { TravelerProfile } from '@/types/profile';
 import {
   createContext,
   useCallback,
@@ -7,17 +11,13 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { DEMO_PROFILE } from '@/data/mocks/profile';
-import { USE_DEMO_DATA } from '@/constants/app';
-import { useAuth } from '@/features/auth/auth-context';
-import { fetchProfile, persistProfile } from './profile-repository';
-import type { TravelerProfile } from '@/types/profile';
 import {
   cloneProfile,
   createEmptyProfile,
   normalizeProfile,
   validateProfile,
 } from './profile-data';
+import { fetchProfile, persistProfile } from './profile-repository';
 
 interface ProfileState {
   profile: TravelerProfile;
@@ -35,7 +35,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth();
   const userId = session?.user.id;
   const [profile, setProfile] = useState(() =>
-    USE_DEMO_DATA ? cloneProfile(DEMO_PROFILE) : createEmptyProfile(),
+    USE_DEMO_DATA ? cloneProfile(demoProfile()) : createEmptyProfile(),
   );
   const [hasProfile, setHasProfile] = useState(USE_DEMO_DATA);
   const [status, setStatus] = useState<ProfileState['status']>(
@@ -76,7 +76,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const resetProfile = (kind: 'example' | 'new') => {
     if (!USE_DEMO_DATA) return;
     setProfile(
-      kind === 'new' ? createEmptyProfile() : cloneProfile(DEMO_PROFILE),
+      kind === 'new' ? createEmptyProfile() : cloneProfile(demoProfile()),
     );
     setHasProfile(kind !== 'new');
   };

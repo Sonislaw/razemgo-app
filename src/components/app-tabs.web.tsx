@@ -1,23 +1,23 @@
+import { AppText } from '@/components/ui/primitives';
+import { TabBarGradient } from '@/components/ui/tab-bar-gradient';
+import { TAB_ITEMS } from '@/constants/navigation';
+import { TAB_ICONS, type TabIconName } from '@/constants/tab-icons';
+import { MaxContentWidth, Radius } from '@/constants/theme';
+import { useMessagingSelector } from '@/features/messaging/messaging-context';
+import { notificationCount } from '@/features/messaging/messaging-state';
+import { CountBadge } from '@/features/messaging/messaging-ui';
+import { useTheme } from '@/hooks/use-theme';
+import { Image } from 'expo-image';
 import {
-  Tabs,
   TabList,
-  TabTrigger,
+  Tabs,
   TabSlot,
+  TabTrigger,
   type TabTriggerSlotProps,
 } from 'expo-router/ui';
 import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppText } from '@/components/ui/primitives';
-import { TAB_ITEMS } from '@/constants/navigation';
-import { TAB_ICONS, type TabIconName } from '@/constants/tab-icons';
-import { useTheme } from '@/hooks/use-theme';
-import { MaxContentWidth, Radius } from '@/constants/theme';
-import { useMessaging } from '@/features/messaging/messaging-context';
-import { notificationCount } from '@/features/messaging/messaging-state';
-import { CountBadge } from '@/features/messaging/messaging-ui';
-import { TabBarGradient } from '@/components/ui/tab-bar-gradient';
 
 // Router's slot ref still uses the legacy View type. Use Pressable's instance ref.
 type TabButtonProps = Omit<TabTriggerSlotProps, 'ref'> &
@@ -83,8 +83,9 @@ function TabButton({
 export default function AppTabs() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const { state } = useMessaging();
-  const notifications = notificationCount(state);
+  const notifications = useMessagingSelector((value) =>
+    notificationCount(value.state),
+  );
   return (
     <Tabs
       style={[styles.tabs, { backgroundColor: theme.backgroundElement }]}

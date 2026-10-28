@@ -14,6 +14,8 @@ Aplikacja do poznawania osób podróżujących kamperem, przyczepą, kampervanem
 
 Pracujemy w Dev. Preview ma własne konta, dane i samodzielny APK dla testerów. Zmiana kodu lub wdrożenie do Dev nie aktualizuje Preview. Procedura wydawania: [ENVIRONMENTS.md](docs/ENVIRONMENTS.md).
 
+Aktualna paczka techniczna Dev: [architektura, wydajność i bezpieczeństwo](docs/ARCHITECTURE_HARDENING.md). Raport zawiera wdrożone migracje, wyniki porównawcze, profil APK `performance` i wyraźnie oddzielone testy wymagające telefonu lub Dockera.
+
 ## Uruchomienie
 
 Wymagane są Node.js 24.3 lub nowszy z linii 24 i npm. Projekt używa Expo SDK 58, React Native 0.88 i Expo Router. Konfiguracja pochodzi z `app.json` i `app.config.js`; katalogi natywne są generowane przez Expo.
@@ -59,6 +61,8 @@ npx expo-doctor
 Node sprawdza logikę oraz rzeczywiste migracje i uprawnienia w lokalnym PostgreSQL/PGlite, bez Dockera. Playwright uruchamia osobne Metro na porcie 8085 i kontrolowane API, bez prawdziwych kont lub backendów Dev/Preview.
 
 GitHub Actions uruchamia te kontrole, testy Edge Functions i eksporty Androida oraz webu dla push i pull requestów. Używa fikcyjnej konfiguracji, nie otrzymuje sekretów i niczego nie wdraża. Raporty nieudanych testów przeglądarkowych są przechowywane siedem dni.
+
+Dodatkowe kontrole: `npm run check:source`, `npm run test:edge` oraz `npm run types:database -- --check`. CI uruchamia też jednorazowy lokalny Supabase z rzeczywistym Auth/PostgREST i porównuje wygenerowany schemat. Opcjonalny ręczny przebieg `load_test` sprawdza wyłącznie lokalne dane syntetyczne. Szczegóły i ograniczenia: [raport techniczny](docs/ARCHITECTURE_HARDENING.md).
 
 Google, dostarczenie e-maila, klawiatura Androida i rzeczywiste push wymagają oddzielnej kontroli na telefonach. Eksport i test przeglądarkowy nie potwierdzają działania tych usług na urządzeniu.
 

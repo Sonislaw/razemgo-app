@@ -1,4 +1,5 @@
 import type { GoogleMapFrameProps } from './google-map-frame.types';
+import { isGoogleMapUrl } from './map-navigation';
 
 export function GoogleMapFrame({
   uri,
@@ -7,6 +8,7 @@ export function GoogleMapFrame({
   onLoad,
   onError,
 }: GoogleMapFrameProps) {
+  if (!isGoogleMapUrl(uri)) return null;
   return (
     <iframe
       title={title}
@@ -14,6 +16,7 @@ export function GoogleMapFrame({
       onLoad={onLoad}
       onError={onError}
       referrerPolicy="strict-origin-when-cross-origin"
+      sandbox="allow-scripts allow-same-origin"
       style={{
         width: '100%',
         height: '100%',

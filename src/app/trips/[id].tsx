@@ -1,22 +1,30 @@
+import { Landscape } from '@/components/trips/landscape';
+import { TripMapCard } from '@/components/trips/trip-map-card';
+import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
+import { TripTimeline } from '@/components/trips/trip-timeline';
 import { DataStatus } from '@/components/ui/data-status';
-import { getTripHeadline } from '@/features/trips/trip-headline';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { View } from 'react-native';
 import {
   AppText,
   Button,
   Card,
   Chip,
-  Screen,
   layout,
+  Screen,
 } from '@/components/ui/primitives';
-import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
-import { TripTimeline } from '@/components/trips/trip-timeline';
-import { TripMapCard } from '@/components/trips/trip-map-card';
-import { Landscape } from '@/components/trips/landscape';
 import { DEMO_OWN_TRIPS } from '@/data/mocks/owned-trips';
-import { useTheme } from '@/hooks/use-theme';
+import { AnimalInformation } from '@/features/animals/animal-ui';
+import { useDiscovery } from '@/features/discovery/discovery-context';
+import { INITIAL_FILTERS } from '@/features/discovery/filter-trips';
+import { useTripResultCount } from '@/features/discovery/use-trip-search';
+import { useMessaging } from '@/features/messaging/messaging-context';
+import { isConversationAccepted } from '@/features/messaging/messaging-state';
+import { GroupAvatar } from '@/features/messaging/messaging-ui';
+import { useTripContactCounts } from '@/features/messaging/use-trip-contact-counts';
+import { useAccountAccess } from '@/features/moderation/account-access-context';
+import { useProfile } from '@/features/profile/profile-context';
+import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
+import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
+import { TripReactionsButton } from '@/features/reactions/trip-reactions';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import {
   discoveryFiltersForTrip,
@@ -24,6 +32,8 @@ import {
   isSearchingTrip,
   todayDate,
 } from '@/features/trips/own-trips-state';
+import { TripActions } from '@/features/trips/trip-actions';
+import { getTripHeadline } from '@/features/trips/trip-headline';
 import {
   ownTripDates,
   ownTripPlace,
@@ -31,19 +41,11 @@ import {
   TripPageHeader,
   TripStatusBadge,
 } from '@/features/trips/trip-ui';
-import { TripActions } from '@/features/trips/trip-actions';
-import { useDiscovery } from '@/features/discovery/discovery-context';
-import { INITIAL_FILTERS } from '@/features/discovery/filter-trips';
-import { useTripResultCount } from '@/features/discovery/use-trip-search';
-import { useMessaging } from '@/features/messaging/messaging-context';
-import { isConversationAccepted } from '@/features/messaging/messaging-state';
-import { GroupAvatar } from '@/features/messaging/messaging-ui';
-import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
-import { AnimalInformation } from '@/features/animals/animal-ui';
-import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
-import { useProfile } from '@/features/profile/profile-context';
-import { useAccountAccess } from '@/features/moderation/account-access-context';
-import { TripReactionsButton } from '@/features/reactions/trip-reactions';
+import { useOwnTrip } from '@/features/trips/use-own-trip';
+import { useTheme } from '@/hooks/use-theme';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { View } from 'react-native';
 
 export function generateStaticParams() {
   return DEMO_OWN_TRIPS.map((trip) => ({ id: trip.id }));
@@ -52,19 +54,62 @@ export function generateStaticParams() {
 export default function OwnTripDetailsScreen() {
   const { hidden_trip_ids } = useAccountAccess();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { state, status: loadStatus, error: loadError, refresh, hasLoaded } = useOwnTrips();
+  const {
+    status: loadStatus,
+    error: loadError,
+    refresh,
+    hasLoaded,
+  } = useOwnTrips();
   const { profile } = useProfile();
-  const { state: messaging, dispatch: dispatchMessaging, contact } = useMessaging();
+  const {
+    state: messaging,
+    dispatch: dispatchMessaging,
+    contact,
+    refresh: refreshMailbox,
+    loadMoreMailbox,
+  } = useMessaging();
+  const {
+    counts: contactCounts,
+    error: contactError,
+    retry: retryContacts,
+  } = useTripContactCounts(id);
+  useFocusEffect(
+    useCallback(() => {
+      void refreshMailbox();
+    }, [refreshMailbox]),
+  );
   const { setFilters } = useDiscovery();
   const theme = useTheme();
   const [menu, setMenu] = useState(false);
-  const trip = state.trips.find((item) => item.id === id);
-  const canSearch = !!trip && !hidden_trip_ids.includes(trip.id) && isSearchingTrip(trip, todayDate());
-  const { count: proposalCount, countError, retryCount } = useTripResultCount(trip ? discoveryFiltersForTrip(trip) : INITIAL_FILTERS, canSearch);
-  const back = () => router.dismissTo('/trips');
-  if (!hasLoaded) return (
-    <Screen><TripPageHeader title="Twój wyjazd" onBack={back} /><DataStatus status={loadStatus} error={loadError} onRetry={() => { void refresh(); }} /></Screen>
+  const details = useOwnTrip(id);
+  const trip = details.trip;
+  const canSearch =
+    !!trip &&
+    !hidden_trip_ids.includes(trip.id) &&
+    isSearchingTrip(trip, todayDate());
+  const {
+    count: proposalCount,
+    countError,
+    retryCount,
+  } = useTripResultCount(
+    trip ? discoveryFiltersForTrip(trip) : INITIAL_FILTERS,
+    canSearch,
   );
+  const back = () => router.dismissTo('/trips');
+  if (!hasLoaded || details.status !== 'ready')
+    return (
+      <Screen>
+        <TripPageHeader title="Twój wyjazd" onBack={back} />
+        <DataStatus
+          status={details.status !== 'ready' ? details.status : loadStatus}
+          error={details.error ?? loadError}
+          onRetry={() => {
+            details.retry();
+            void refresh();
+          }}
+        />
+      </Screen>
+    );
   if (!trip)
     return (
       <Screen>
@@ -110,15 +155,42 @@ export default function OwnTripDetailsScreen() {
   };
   return (
     <>
-      <Screen>
+      <Screen
+        onNearEnd={() => {
+          void loadMoreMailbox();
+        }}
+      >
         <View style={{ gap: 16 }}>
           <TripPageHeader
             title="Twój wyjazd"
             onBack={back}
             onMenu={() => setMenu(true)}
           />
-          <DataStatus status={loadStatus} error={loadError} onRetry={() => { void refresh(); }} />
-          {hidden ? <Card><AppText variant="heading">Ogłoszenie ukryte przez moderację</AppText><AppText color="textSecondary">Plan pozostaje na Twojej liście. Edycja nie przywróci widoczności w Odkrywaj — wymaga to decyzji moderatora.</AppText></Card> : null}
+          {contactError ? (
+            <DataStatus
+              status="error"
+              error={contactError}
+              onRetry={retryContacts}
+            />
+          ) : null}
+          <DataStatus
+            status={loadStatus}
+            error={loadError}
+            onRetry={() => {
+              void refresh();
+            }}
+          />
+          {hidden ? (
+            <Card>
+              <AppText variant="heading">
+                Ogłoszenie ukryte przez moderację
+              </AppText>
+              <AppText color="textSecondary">
+                Plan pozostaje na Twojej liście. Edycja nie przywróci
+                widoczności w Odkrywaj — wymaga to decyzji moderatora.
+              </AppText>
+            </Card>
+          ) : null}
           <View style={{ borderRadius: 20, overflow: 'hidden' }}>
             <Landscape kind={trip.landscape} />
           </View>
@@ -173,7 +245,11 @@ export default function OwnTripDetailsScreen() {
               {trip.description ||
                 'Jeszcze bez opisu. Możesz uzupełnić go w edycji.'}
             </AppText>
-            <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} compact />
+            <TripReactionsButton
+              tripId={trip.id}
+              ownerGroupId={trip.groupId}
+              compact
+            />
             {trip.travelModes.length ? (
               <TravelModeBadges modes={trip.travelModes} />
             ) : (
@@ -222,8 +298,14 @@ export default function OwnTripDetailsScreen() {
                   label: 'Propozycje',
                   value: searching ? (proposalCount ?? '—') : '—',
                 },
-                { label: 'Zaproszenia', value: pending.length },
-                { label: 'Kontakty', value: acceptedGroups.length },
+                {
+                  label: 'Zaproszenia',
+                  value: contactCounts?.pending ?? pending.length,
+                },
+                {
+                  label: 'Kontakty',
+                  value: contactCounts?.contacts ?? acceptedGroups.length,
+                },
               ].map((item) => (
                 <View
                   key={item.label}
@@ -244,14 +326,22 @@ export default function OwnTripDetailsScreen() {
               ))}
             </View>
             <AppText variant="caption" color="textSecondary">
-              Propozycje dobieramy według regionu,
-              wspólnych nocy i wybranego towarzystwa. Zaproszenia i kontakty
-              dotyczą wyłącznie tego wyjazdu.
+              Propozycje dobieramy według regionu, wspólnych nocy i wybranego
+              towarzystwa. Zaproszenia i kontakty dotyczą wyłącznie tego
+              wyjazdu.
             </AppText>
-            {countError ? <>
-              <AppText variant="caption" accessibilityRole="alert">Nie udało się sprawdzić liczby propozycji.</AppText>
-              <Button label="Policz propozycje ponownie" variant="secondary" onPress={retryCount} />
-            </> : null}
+            {countError ? (
+              <>
+                <AppText variant="caption" accessibilityRole="alert">
+                  Nie udało się sprawdzić liczby propozycji.
+                </AppText>
+                <Button
+                  label="Policz propozycje ponownie"
+                  variant="secondary"
+                  onPress={retryCount}
+                />
+              </>
+            ) : null}
             <Button
               label="Znajdź towarzystwo"
               icon="people"
@@ -286,7 +376,11 @@ export default function OwnTripDetailsScreen() {
               acceptedGroups.map((conversation) => (
                 <View key={conversation.id} style={{ gap: 8 }}>
                   <View style={layout.row}>
-                    <GroupAvatar groupId={conversation.groupId} avatarId={contact(conversation.groupId)?.avatarId} size={40} />
+                    <GroupAvatar
+                      groupId={conversation.groupId}
+                      avatarId={contact(conversation.groupId)?.avatarId}
+                      size={40}
+                    />
                     <AppText variant="label" style={{ flex: 1 }}>
                       {contact(conversation.groupId)?.name ?? 'Ekipa'}
                     </AppText>
@@ -310,8 +404,8 @@ export default function OwnTripDetailsScreen() {
                 style={{ fontSize: 14, lineHeight: 21 }}
               >
                 Po zaakceptowaniu zaproszenia powiązanego z tym wyjazdem
-                zobaczysz tutaj kontakt do rozmowy. Akceptacja zaproszenia
-                nie oznacza potwierdzenia wspólnego wyjazdu.
+                zobaczysz tutaj kontakt do rozmowy. Akceptacja zaproszenia nie
+                oznacza potwierdzenia wspólnego wyjazdu.
               </AppText>
             )}
           </Card>

@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const { previewConfigurationErrors, isPublicSupabaseKey } = require('./scripts/preview-config.cjs');
 const { variants, getAppVariant, assertBackendIsolation } = require('./config/app-variants.cjs');
+const { monitoringRelease } = require('./config/monitoring-release.cjs');
 
 module.exports = ({ config }) => {
   const variant = getAppVariant(process.env);
@@ -16,7 +17,11 @@ module.exports = ({ config }) => {
     scheme: settings.scheme,
     ios: { ...config.ios, bundleIdentifier: settings.package },
     android: { ...config.android, package: settings.package, ...(googleServicesFile ? { googleServicesFile } : {}) },
-    extra: { ...config.extra, appVariant: variant, authScheme: settings.scheme },
+    extra: { ...config.extra, appVariant: variant, authScheme: settings.scheme,
+      monitoringRelease: monitoringRelease(__dirname, config.version ?? 'unknown', variant) },
+    plugins: [...(config.plugins ?? []), ...(variant === 'development' ? [['@sentry/react-native/expo', {
+      organization: 'zgranago', project: 'react-native', url: 'https://sentry.io/',
+    }]] : [])],
   };
   // Validate the actual cloud environment, where secret file variables exist.
   // Do not stop local Expo startup or the CLI's initial project discovery.

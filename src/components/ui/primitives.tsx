@@ -1,3 +1,13 @@
+import { IS_DEMO_MODE } from '@/constants/app';
+import {
+  Fonts,
+  MaxContentWidth,
+  Radius,
+  Spacing,
+  Typography,
+  type ThemeColor,
+} from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import type { ReactNode } from 'react';
 import {
   Platform,
@@ -11,16 +21,6 @@ import {
   type ViewProps,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  Fonts,
-  MaxContentWidth,
-  Radius,
-  Spacing,
-  Typography,
-  type ThemeColor,
-} from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
-import { IS_DEMO_MODE } from '@/constants/app';
 import { Icon, type IconName } from './icon';
 import { ScenicFooter } from './scenic-footer';
 import { getScenicHeaderLayout, ScenicHeaderBackground } from './scenic-header';
@@ -74,18 +74,34 @@ export function Screen({
   testID,
   adjustKeyboardInsets = true,
   footerPlacement = 'flow',
+  onNearEnd,
 }: {
   children: ReactNode;
   header?: ReactNode;
   testID?: string;
   adjustKeyboardInsets?: boolean;
   footerPlacement?: 'flow' | 'fixed';
+  onNearEnd?: () => void;
 }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const fixedFooter = footerPlacement === 'fixed';
   const content = (
     <ScrollView
+      scrollEventThrottle={onNearEnd ? 100 : undefined}
+      onScroll={
+        onNearEnd
+          ? (event) => {
+              const { contentOffset, contentSize, layoutMeasurement } =
+                event.nativeEvent;
+              if (
+                contentOffset.y + layoutMeasurement.height >
+                contentSize.height - 600
+              )
+                onNearEnd();
+            }
+          : undefined
+      }
       testID={testID}
       style={{
         flex: 1,

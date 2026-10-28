@@ -1,44 +1,152 @@
-import { getSupabase } from '@/lib/supabase';
+import { integer, object, strings } from '@/data/contracts/validate';
+import {
+  proposalFromRow,
+  type PublicTripRow,
+} from '@/features/trips/trip-mapper';
 import { backendRequest } from '@/lib/backend-request';
-import { proposalFromRow, type PublicTripRow } from '@/features/trips/trip-mapper';
+import { getSupabase } from '@/lib/supabase';
 import type { DiscoveryFilters } from '@/types/travel';
-import type { DiscoverySort } from './sort-proposals';
 import type { Compatibility } from './compatibility';
-import { discoveryFiltersPayload, TRIP_SEARCH_PAGE_SIZE, type RankedTripProposal, type TripSearchCursor, type TripSearchPage } from './discovery-data';
+import {
+  discoveryFiltersPayload,
+  TRIP_SEARCH_PAGE_SIZE,
+  type RankedTripProposal,
+  type TripSearchCursor,
+  type TripSearchPage,
+} from './discovery-data';
+import type { DiscoverySort } from './sort-proposals';
 
 async function accountToken(userId: string) {
-  const { data: { session } } = await getSupabase().auth.getSession();
-  if (!session || session.user.id !== userId) throw Object.assign(new Error(), { name: 'AbortError' });
+  const {
+    data: { session },
+  } = await getSupabase().auth.getSession();
+  if (!session || session.user.id !== userId)
+    throw Object.assign(new Error(), { name: 'AbortError' });
   return session.access_token;
 }
 export type RankedTripRow = PublicTripRow & { compatibility: Compatibility };
-export interface TripSearchPageRow { items: RankedTripRow[]; total_count: number; has_more: boolean; cursor: TripSearchCursor | null }
-const ranked = (row: RankedTripRow): RankedTripProposal => ({ ...proposalFromRow(row), compatibility: row.compatibility });
-export async function fetchTripPage(userId: string, filters: DiscoveryFilters, sort: DiscoverySort, cursor?: TripSearchCursor, pageSize = TRIP_SEARCH_PAGE_SIZE): Promise<TripSearchPage> {
-  const token = await accountToken(userId);
-  const { data, error } = await backendRequest(signal => getSupabase().rpc('search_public_trips', {
-    filters: discoveryFiltersPayload(filters), sort_mode: sort, after_cursor: cursor ?? null, page_size: pageSize,
-  }).setHeader('Authorization', 'Bearer ' + token).abortSignal(signal), 'discovery.load');
-  if (error) throw error;
-  if (!data || !Array.isArray(data.items) || !Number.isSafeInteger(data.total_count) || data.total_count < 0
-    || typeof data.has_more !== 'boolean' || (data.has_more && !data.cursor)) throw new Error('Invalid trip page');
-  return { items: data.items.map(ranked), totalCount: data.total_count, hasMore: data.has_more, cursor: data.cursor };
+export interface TripSearchPageRow {
+  items: RankedTripRow[];
+  total_count: number;
+  has_more: boolean;
+  cursor: TripSearchCursor | null;
 }
-export async function fetchTripCount(userId: string, filters: DiscoveryFilters) {
+const ranked = (row: RankedTripRow): RankedTripProposal => {
+  const matching = object(row.compatibility);
+  integer(matching.score, 0, 100);
+  strings(matching.reasons, 30);
+  return { ...proposalFromRow(row), compatibility: row.compatibility };
+};
+export async function fetchTripPage(
+  userId: string,
+  filters: DiscoveryFilters,
+  sort: DiscoverySort,
+  cursor?: TripSearchCursor,
+  pageSize = TRIP_SEARCH_PAGE_SIZE,
+  parentSignal?: AbortSignal,
+): Promise<TripSearchPage> {
   const token = await accountToken(userId);
-  const { data, error } = await backendRequest(signal => getSupabase().rpc('count_public_trips', {
-    filters: discoveryFiltersPayload(filters),
-  }).setHeader('Authorization', 'Bearer ' + token).abortSignal(signal), 'discovery.load');
+  const { data, error } = await backendRequest(
+    (signal) =>
+      getSupabase()
+        .rpc('search_public_trips', {
+          filters: discoveryFiltersPayload(filters),
+          sort_mode: sort,
+          after_cursor: cursor ?? null,
+          page_size: pageSize,
+        })
+        .setHeader('Authorization', 'Bearer ' + token)
+        .abortSignal(signal),
+    'discovery.load',
+    { signal: parentSignal, read: true, retries: 1 },
+  );
   if (error) throw error;
-  if (data === null || !Number.isSafeInteger(data) || data < 0) throw new Error('Invalid trip count');
+  if (
+    !data ||
+    !Array.isArray(data.items) ||
+    !Number.isSafeInteger(data.total_count) ||
+    data.total_count < 0 ||
+    typeof data.has_more !== 'boolean' ||
+    (data.has_more && !data.cursor)
+  )
+    throw new Error('Invalid trip page');
+  return {
+    items: data.items.map(ranked),
+    totalCount: data.total_count,
+    hasMore: data.has_more,
+    cursor: data.cursor,
+  };
+}
+export async function fetchTripCount(
+  userId: string,
+  filters: DiscoveryFilters,
+  parentSignal?: AbortSignal,
+) {
+  const token = await accountToken(userId);
+  const { data, error } = await backendRequest(
+    (signal) =>
+      getSupabase()
+        .rpc('count_public_trips', {
+          filters: discoveryFiltersPayload(filters),
+        })
+        .setHeader('Authorization', 'Bearer ' + token)
+        .abortSignal(signal),
+    'discovery.load',
+    { signal: parentSignal, read: true, retries: 1 },
+  );
+  if (error) throw error;
+  if (data === null || !Number.isSafeInteger(data) || data < 0)
+    throw new Error('Invalid trip count');
   return data;
 }
-export async function fetchDiscoveryTrip(userId: string, id: string, filters: DiscoveryFilters) {
+export async function fetchDiscoveryTrip(
+  userId: string,
+  id: string,
+  filters: DiscoveryFilters,
+  parentSignal?: AbortSignal,
+) {
   if (!/^[a-f\d]{8}(-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(id)) return null;
   const token = await accountToken(userId);
-  const { data, error } = await backendRequest(signal => getSupabase().rpc('get_discovery_trip', {
-    target_trip_id: id, filters: discoveryFiltersPayload(filters),
-  }).setHeader('Authorization', 'Bearer ' + token).abortSignal(signal), 'discovery.load');
+  const { data, error } = await backendRequest(
+    (signal) =>
+      getSupabase()
+        .rpc('get_discovery_trip', {
+          target_trip_id: id,
+          filters: discoveryFiltersPayload(filters),
+        })
+        .setHeader('Authorization', 'Bearer ' + token)
+        .abortSignal(signal),
+    'discovery.load',
+    { signal: parentSignal, read: true, retries: 1 },
+  );
   if (error) throw error;
   return data ? ranked(data) : null;
+}
+export async function refreshTripResults(
+  userId: string,
+  ids: string[],
+  filters: DiscoveryFilters,
+  parentSignal?: AbortSignal,
+) {
+  const token = await accountToken(userId),
+    items: RankedTripProposal[] = [];
+  for (let offset = 0; offset < ids.length; offset += 100) {
+    const { data, error } = await backendRequest(
+      (signal) =>
+        getSupabase()
+          .rpc('refresh_public_trip_results', {
+            trip_ids: ids.slice(offset, offset + 100),
+            filters: discoveryFiltersPayload(filters),
+          })
+          .setHeader('Authorization', 'Bearer ' + token)
+          .abortSignal(signal),
+      'discovery.load',
+      { signal: parentSignal, read: true, retries: 1 },
+    );
+    if (error) throw error;
+    if (!Array.isArray(data) || data.length > 100)
+      throw new Error('Invalid cached trip results');
+    items.push(...data.map(ranked));
+  }
+  return items;
 }

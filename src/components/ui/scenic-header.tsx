@@ -1,3 +1,4 @@
+import { Spacing } from '@/constants/theme';
 import { Image } from 'expo-image';
 import {
   StyleSheet,
@@ -6,7 +7,6 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { Spacing } from '@/constants/theme';
 
 export function getScenicHeaderLayout(width: number) {
   const artworkHeight = Math.min(width / 3, 180);
@@ -37,11 +37,8 @@ export function ScenicHeaderBackground({
       importantForAccessibility="no-hide-descendants"
     >
       <Image
-        source={require('@/assets/images/home-header-meadow.png')}
-        style={[
-          styles.artwork,
-          { height: artworkHeight, top: -artworkOffset },
-        ]}
+        source={require('@/assets/images/home-header-meadow.webp')}
+        style={[styles.artwork, { height: artworkHeight, top: -artworkOffset }]}
         contentFit="cover"
         contentPosition="bottom"
         accessible={false}

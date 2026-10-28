@@ -1,4 +1,4 @@
-import rawData from './polish-localities.json' with { type: 'json' };
+import { loadDictionary } from './locality-dictionary.cjs';
 import source from './polish-localities-source.json' with { type: 'json' };
 
 export type LocalityRow = readonly [
@@ -12,7 +12,7 @@ export type LocalityRow = readonly [
   longitude: number,
   normalizedName: string,
 ];
-interface LocalityData {
+export interface LocalityData {
   provinces: readonly string[];
   districts: readonly string[];
   communes: readonly string[];
@@ -20,5 +20,12 @@ interface LocalityData {
   prefixes: Readonly<Record<string, readonly number[]>>;
 }
 // The importer validates the original data before producing this compact snapshot.
-export const POLISH_LOCALITIES = rawData as unknown as LocalityData;
+export function getLocalities(): LocalityData {
+  return loadDictionary() as LocalityData;
+}
+// Compatibility for map helpers and data tests. Creating the proxy is cheap;
+// accessing dictionary content performs the deferred load once.
+export const POLISH_LOCALITIES: LocalityData = new Proxy({} as LocalityData, {
+  get: (_target, property: keyof LocalityData) => getLocalities()[property],
+});
 export const LOCALITY_SOURCE = source;

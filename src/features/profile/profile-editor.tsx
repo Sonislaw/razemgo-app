@@ -1,19 +1,19 @@
-import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { Keyboard, View } from 'react-native';
 import {
   AppText,
   Button,
   Card,
   Chip,
   FieldLabel,
+  layout,
   PageHeader,
   Screen,
   SectionTitle,
-  layout,
 } from '@/components/ui/primitives';
-import { CHILD_AGE_BANDS } from '@/data/mocks/travel';
 import { IS_DEMO_MODE } from '@/constants/app';
+import { CHILD_AGE_BANDS } from '@/constants/travel';
+import { GroupAnimalFields } from '@/features/animals/animal-fields';
+import { useAuth } from '@/features/auth/auth-context';
+import { ProfileAvatarPicker } from '@/features/profile/profile-avatar-picker';
 import { useProfile } from '@/features/profile/profile-context';
 import {
   cloneProfile,
@@ -27,13 +27,13 @@ import {
   GROUP_KIND_OPTIONS,
   INTEREST_OPTIONS,
 } from '@/features/profile/profile-options';
-import { TravelModePicker } from '@/features/profile/travel-mode-ui';
 import { ProfileSubpageHeader } from '@/features/profile/profile-ui';
-import type { ProfileSection } from '@/types/profile';
+import { TravelModePicker } from '@/features/profile/travel-mode-ui';
 import { useTheme } from '@/hooks/use-theme';
-import { GroupAnimalFields } from '@/features/animals/animal-fields';
-import { ProfileAvatarPicker } from '@/features/profile/profile-avatar-picker';
-import { useAuth } from '@/features/auth/auth-context';
+import type { ProfileSection } from '@/types/profile';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
+import { Keyboard, View } from 'react-native';
 
 const titles: Record<ProfileSection, string> = {
   crew: 'Moja ekipa',
@@ -72,7 +72,9 @@ export default function ProfileEditor({
   const show = (name: ProfileSection) =>
     onboarding
       ? ['crew', 'travel'].includes(name)
-      : sectionName ? sectionName === name : name !== 'matching';
+      : sectionName
+        ? sectionName === name
+        : name !== 'matching';
   const back = () => {
     Keyboard.dismiss();
     router.dismissTo(from === 'home' ? '/' : '/profile');

@@ -1,3 +1,25 @@
+import { USE_DEMO_DATA } from '@/constants/app';
+import {
+  clearDeviceNotifications,
+  unregisterPushDevice,
+} from '@/features/notifications/push-platform';
+import {
+  resumeCurrentPresence,
+  stopCurrentPresence,
+} from '@/features/presence/presence-controller';
+import { backendRequest } from '@/lib/backend-request';
+import { monitoredOperation, reportFailure } from '@/lib/monitoring-core';
+import { backendLifecycle } from '@/lib/request-lifecycle';
+import {
+  getSupabase,
+  isSupabaseConfigured,
+  resetPersistedAuth,
+  signOutSupabase,
+} from '@/lib/supabase';
+import type { Session } from '@supabase/supabase-js';
+import Constants from 'expo-constants';
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
 import {
   createContext,
   useCallback,
@@ -7,21 +29,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import type { Session } from '@supabase/supabase-js';
-import * as Linking from 'expo-linking';
-import * as WebBrowser from 'expo-web-browser';
-import Constants from 'expo-constants';
 import { AppState, Platform } from 'react-native';
-import {
-  getSupabase,
-  isSupabaseConfigured,
-  resetPersistedAuth,
-  signOutSupabase,
-} from '@/lib/supabase';
-import { USE_DEMO_DATA } from '@/constants/app';
-import { monitoredOperation, reportFailure } from '@/lib/monitoring-core';
-import { unregisterPushDevice, clearDeviceNotifications } from '@/features/notifications/push-platform';
-import { stopCurrentPresence, resumeCurrentPresence } from '@/features/presence/presence-controller';
 import {
   authErrorMessage,
   authRedirectUrl,
@@ -33,7 +41,9 @@ import { cleanUpBeforeSignOut } from './auth-network';
 export function getAuthRedirectUrl(recovery = false) {
   return authRedirectUrl(
     Constants.expoConfig?.extra?.authScheme ?? 'razemgo-dev',
-    Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.origin : undefined,
+    Platform.OS === 'web' && typeof window !== 'undefined'
+      ? window.location.origin
+      : undefined,
     recovery,
   );
 }
@@ -85,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       data: { subscription },
     } = client.auth.onAuthStateChange((event, current) => {
       if (!alive) return;
+      backendLifecycle.setAccount(current?.user.id ?? null);
       authRevision.current++;
       setSession(current);
       if (event === 'SIGNED_IN') setError(null);
@@ -106,14 +117,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           new URL(initialUrl).searchParams.get('flow') === 'recovery'
         )
           setRecovering(true);
-        const result = await monitoredOperation('auth.restore', () => client.auth.getSession());
+        const result = await monitoredOperation('auth.restore', () =>
+          client.auth.getSession(),
+        );
         if (result.error) throw result.error;
         const revision = authRevision.current;
         if (result.data.session) {
-          const accessToken=result.data.session.access_token;
-          const checked = await monitoredOperation('auth.restore', () => client.auth.getUser(
-            accessToken,
-          ));
+          const accessToken = result.data.session.access_token;
+          const checked = await monitoredOperation('auth.restore', () =>
+            client.auth.getUser(accessToken),
+          );
           if (!alive || revision !== authRevision.current) return;
           if (checked.error) {
             if ([401, 403, 404].includes(checked.error.status ?? 0)) {
@@ -124,7 +137,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             throw checked.error;
           }
         }
-        if (alive) setSession(result.data.session);
+        if (alive) {
+          backendLifecycle.setAccount(result.data.session?.user.id ?? null);
+          setSession(result.data.session);
+        }
       } catch (cause) {
         reportFailure(cause, 'auth.restore');
         if (alive) setError(authErrorMessage(cause));
@@ -170,11 +186,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             recovery: parsed.recovery,
           };
         }
-        const code=parsed.code;
-        const result = await monitoredOperation('auth.callback', () => getSupabase().auth.exchangeCodeForSession(
-          code,
-          parsed.flowId ? { flowId: parsed.flowId } : undefined,
-        ));
+        const code = parsed.code;
+        const result = await monitoredOperation('auth.callback', () =>
+          getSupabase().auth.exchangeCodeForSession(
+            code,
+            parsed.flowId ? { flowId: parsed.flowId } : undefined,
+          ),
+        );
         if (result.error) throw result.error;
         setSession(result.data.session);
         return { error: null, recovery: parsed.recovery };
@@ -193,10 +211,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await cleanUpBeforeSignOut([
         () => stopCurrentPresence(),
-        signal => unregisterPushDevice(signal),
+        (signal) => unregisterPushDevice(signal),
         () => clearDeviceNotifications(),
       ]);
-      await monitoredOperation('auth.sign_out', () => signOutSupabase(session?.access_token));
+      await monitoredOperation('auth.sign_out', () =>
+        signOutSupabase(session?.access_token),
+      );
       authRevision.current++;
       setSession(null);
       setRecovering(false);
@@ -211,7 +231,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await cleanUpBeforeSignOut([
         () => stopCurrentPresence(),
-        signal => isSupabaseConfigured ? unregisterPushDevice(signal) : Promise.resolve(),
+        (signal) =>
+          isSupabaseConfigured
+            ? unregisterPushDevice(signal)
+            : Promise.resolve(),
         () => clearDeviceNotifications(),
       ]);
       await resetPersistedAuth();
@@ -236,17 +259,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return 'Logowanie Google jest dostępne w zainstalowanej aplikacji. W Expo Go skorzystaj z e-maila.';
     try {
       const redirectTo = getAuthRedirectUrl();
-      const { data, error: cause } = await monitoredOperation('auth.google', () => getSupabase().auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo,
-          skipBrowserRedirect: Platform.OS !== 'web',
-          scopes: 'openid email profile',
-        },
-      }));
+      const { data, error: cause } = await monitoredOperation(
+        'auth.google',
+        () =>
+          getSupabase().auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo,
+              skipBrowserRedirect: Platform.OS !== 'web',
+              scopes: 'openid email profile',
+            },
+          }),
+      );
       if (cause) throw cause;
       if (Platform.OS === 'web') return null;
-      if (!data.url) { reportFailure(new Error(), 'auth.google'); return 'Nie udało się rozpocząć logowania Google.'; }
+      if (!data.url) {
+        reportFailure(new Error(), 'auth.google');
+        return 'Nie udało się rozpocząć logowania Google.';
+      }
       const result = await WebBrowser.openAuthSessionAsync(
         data.url,
         redirectTo,
@@ -260,10 +290,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
   const requestPasswordReset = async (email: string) => {
     try {
-      const result = await monitoredOperation('auth.reset_request', () => getSupabase().auth.resetPasswordForEmail(
-        normalizeEmail(email),
-        { redirectTo: getAuthRedirectUrl(true) },
-      ));
+      const result = await monitoredOperation('auth.reset_request', () =>
+        getSupabase().auth.resetPasswordForEmail(normalizeEmail(email), {
+          redirectTo: getAuthRedirectUrl(true),
+        }),
+      );
       return result.error ? authErrorMessage(result.error) : null;
     } catch (cause) {
       reportFailure(cause, 'auth.reset_request');
@@ -272,9 +303,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
   const updatePassword = async (password: string) => {
     try {
-      const { error: cause } = await monitoredOperation('auth.password', () => getSupabase().auth.updateUser({
-        password,
-      }));
+      const { error: cause } = await monitoredOperation('auth.password', () =>
+        getSupabase().auth.updateUser({
+          password,
+        }),
+      );
       if (cause) return authErrorMessage(cause);
       setRecovering(false);
       callbacks.current.clear();
@@ -286,10 +319,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
   const deleteAccount = async () => {
     try {
-      const { data, error: cause } = await monitoredOperation('account.delete', () => getSupabase().functions.invoke(
-        'delete-account',
-        { method: 'POST' },
-      ));
+      const { data, error: cause } = await backendRequest(
+        (signal) =>
+          getSupabase().functions.invoke('delete-account', {
+            method: 'POST',
+            signal,
+          }),
+        'account.delete',
+      );
       if (cause || !data?.deleted)
         return 'Nie udało się usunąć konta. Sprawdź połączenie i spróbuj ponownie.';
       await signOut();

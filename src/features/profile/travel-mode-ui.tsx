@@ -1,17 +1,17 @@
-import { Image, type ImageSource } from 'expo-image';
-import { StyleSheet, View } from 'react-native';
 import { ChipRow } from '@/components/ui/chip-row';
 import { IllustrationChoice } from '@/components/ui/illustration-choice';
 import { Chip, layout } from '@/components/ui/primitives';
 import { useTheme } from '@/hooks/use-theme';
+import { Image, type ImageSource } from 'expo-image';
+import { StyleSheet, View } from 'react-native';
 import { TRAVEL_MODE_OPTIONS } from './profile-options';
 
 const TRAVEL_MODE_IMAGES: Record<string, ImageSource> = {
-  Przyczepa: require('../../../assets/images/travel-modes/caravan.png'),
-  Kamper: require('../../../assets/images/travel-modes/motorhome.png'),
-  Namiot: require('../../../assets/images/travel-modes/tent.png'),
-  Van: require('../../../assets/images/travel-modes/van.png'),
-  Samochód: require('../../../assets/images/travel-modes/car.png'),
+  Przyczepa: require('../../../assets/images/travel-modes/caravan.webp'),
+  Kamper: require('../../../assets/images/travel-modes/motorhome.webp'),
+  Namiot: require('../../../assets/images/travel-modes/tent.webp'),
+  Van: require('../../../assets/images/travel-modes/van.webp'),
+  Samochód: require('../../../assets/images/travel-modes/car.webp'),
 };
 
 function TravelModeArtwork({
@@ -59,7 +59,10 @@ export function TravelModePicker({
   horizontal?: boolean;
 }) {
   return (
-    <View accessibilityRole="radiogroup" accessibilityLabel="Sposób podróżowania">
+    <View
+      accessibilityRole="radiogroup"
+      accessibilityLabel="Sposób podróżowania"
+    >
       <ChipRow horizontal={horizontal} label="Sposób podróżowania">
         {TRAVEL_MODE_OPTIONS.map((mode) => (
           <IllustrationChoice

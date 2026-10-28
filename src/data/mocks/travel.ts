@@ -1,18 +1,11 @@
 import type {
-  ChildAgeBand,
   DemoDateRange,
   TravelGroup,
   TripPlan,
   TripProposal,
 } from '../../types/travel';
 
-export const CHILD_AGE_BANDS: ChildAgeBand[] = [
-  '0–3',
-  '4–6',
-  '7–9',
-  '10–12',
-  '13–17',
-];
+export { CHILD_AGE_BANDS } from '../../constants/travel.ts';
 export const DEMO_DATE_RANGES: DemoDateRange[] = [
   {
     id: 'may',

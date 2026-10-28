@@ -26,6 +26,8 @@ Na prośbę użytkownika 26.10.2026 przygotowano **Preview 1.2.0**. Migracje `20
 
 ## Skonfigurowany Dev
 
+28.10.2026 wdrożono wyłącznie na Dev siedem migracji `202610280001`–`202610280007` i aktualne trzy Edge Functions: **33 migracje**. Zmiany dodają lekkie podsumowania, strony skrzynki i własnych wyjazdów, kontrolę cache, optymalizację rankingu i blokady limitów zapisów. Preview zachowuje 23 migracje i APK 1.2.0. Profil EAS **`performance`** tworzy samodzielny release APK z backendem Development i pakietem Dev; nie jest nowym środowiskiem ani wydaniem Preview. [Raport techniczny](ARCHITECTURE_HARDENING.md).
+
 1. `.env.local` i środowisko EAS **development** mają URL oraz publiczny klucz nowego Dev. Dotychczasowe wartości zachowano w ignorowanym `.env.preview.local` i środowisku EAS **preview**. Nie wpisuj klucza administracyjnego do zmiennych `EXPO_PUBLIC_*`.
 2. Dev ma własną aplikację Android w Firebase, plik `google-services.development.json`, osobny klucz podpisujący APK i przypisany klucz FCM V1. Powiązanie Firebase Preview pozostało bez zmian. Obie aplikacje używają tego samego projektu Firebase i usługi Expo Push, lecz osobnych instalacji oraz kolejek i tokenów przechowywanych w swoich bazach.
 3. Zakres migracji różni się między środowiskami: Preview 1.2.0 ma 23 migracje, a Dev rozwija również reakcje na wiadomości, automatyczne propozycje i monitoring opisany w [STAGE_0.md](STAGE_0.md). Dostępne są funkcje `delete-account`, `dispatch-push`, `monitor-push`. Główny katalog CLI jest powiązany wyłącznie z Dev. Kolejne zmiany wdrażaj jawnie:

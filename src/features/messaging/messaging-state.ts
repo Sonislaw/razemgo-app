@@ -98,6 +98,7 @@ export function unreadCount(
   ).length;
 }
 export function pendingReceivedCount(state: MessagingState): number {
+  if (state.summary) return state.summary.pendingInvitations;
   return state.invitations.filter(
     (item) =>
       item.direction === 'received' &&
@@ -107,6 +108,8 @@ export function pendingReceivedCount(state: MessagingState): number {
 }
 export function notificationCount(state: MessagingState): number {
   if (state.loadStatus !== 'ready') return 0;
+  if (state.summary)
+    return state.summary.unreadMessages + state.summary.pendingInvitations;
   return (
     pendingReceivedCount(state) +
     state.conversations.reduce(
@@ -120,7 +123,10 @@ export function getTripContact(
   groupId: string,
   tripId: string | null,
 ) {
-  if (state.blockedGroupIds.includes(groupId) || state.conversations.some(c => c.groupId === groupId && c.blocked))
+  if (
+    state.blockedGroupIds.includes(groupId) ||
+    state.conversations.some((c) => c.groupId === groupId && c.blocked)
+  )
     return { kind: 'blocked' } as const;
   const conversation = state.conversations.find(
     (item) =>
@@ -141,16 +147,25 @@ export function getTripContact(
 
 // A profile contact reuses an existing relationship, including one begun on a trip.
 export function getGroupContact(state: MessagingState, groupId: string) {
-  if (state.blockedGroupIds.includes(groupId) || state.conversations.some(c => c.groupId === groupId && c.blocked))
+  if (
+    state.blockedGroupIds.includes(groupId) ||
+    state.conversations.some((c) => c.groupId === groupId && c.blocked)
+  )
     return { kind: 'blocked' } as const;
-  const conversation = state.conversations.find(c => c.groupId === groupId && isConversationAccepted(state, c));
+  const conversation = state.conversations.find(
+    (c) => c.groupId === groupId && isConversationAccepted(state, c),
+  );
   if (conversation) return { kind: 'conversation', conversation } as const;
-  const invitation = state.invitations.find(i => i.groupId === groupId && i.status === 'pending');
+  const invitation = state.invitations.find(
+    (i) => i.groupId === groupId && i.status === 'pending',
+  );
   if (invitation) return { kind: invitation.direction, invitation } as const;
   return { kind: 'available' } as const;
 }
 
 export type MessagingAction =
+  | { type: 'summary'; unreadMessages: number; pendingInvitations: number }
+  | { type: 'trim-history'; keepIds: string[] }
   | { type: 'hydrate'; data: MailboxData }
   | { type: 'history'; messages: ChatMessage[] }
   | { type: 'load-status'; status: MessagingState['loadStatus'] }
@@ -183,23 +198,95 @@ export function messagingReducer(
   action: MessagingAction,
 ): MessagingState {
   switch (action.type) {
+    case 'summary':
+      return {
+        ...state,
+        summary: {
+          unreadMessages: action.unreadMessages,
+          pendingInvitations: action.pendingInvitations,
+        },
+      };
+    case 'trim-history': {
+      const latest = new Map<string, ChatMessage>();
+      for (const message of state.messages)
+        if (message.sequence !== undefined)
+          latest.set(message.conversationId, message);
+      return {
+        ...state,
+        messages: state.messages.filter(
+          (message) =>
+            action.keepIds.includes(message.conversationId) ||
+            message.sequence === undefined ||
+            latest.get(message.conversationId)?.id === message.id,
+        ),
+      };
+    }
     case 'hydrate':
-      return { ...state, ...action.data, loadStatus: 'ready',
-        messages: mergeMessages(state.messages, action.data.messages, action.data.conversations) };
+      return {
+        ...state,
+        ...action.data,
+        loadStatus: 'ready',
+        messages: mergeMessages(
+          state.messages,
+          action.data.messages,
+          action.data.conversations,
+        ),
+      };
     case 'history':
-      return { ...state, messages: mergeMessages(state.messages, action.messages, state.conversations) };
+      return {
+        ...state,
+        messages: mergeMessages(
+          state.messages,
+          action.messages,
+          state.conversations,
+        ),
+      };
     case 'load-status':
       return { ...state, loadStatus: action.status };
     case 'outbox':
-      return { ...state, messages: [...state.messages.filter(m => m.id !== action.message.id), action.message] };
+      return {
+        ...state,
+        messages: [
+          ...state.messages.filter((m) => m.id !== action.message.id),
+          action.message,
+        ],
+      };
     case 'message-saved':
-      return { ...state, messages: mergeMessages(state.messages.filter(m => m.requestKey !== action.requestKey), [action.message], state.conversations) };
+      return {
+        ...state,
+        messages: mergeMessages(
+          state.messages.filter((m) => m.requestKey !== action.requestKey),
+          [action.message],
+          state.conversations,
+        ),
+      };
     case 'message-failed':
-      return { ...state, messages: state.messages.map(m => m.requestKey === action.requestKey && m.sequence === undefined ? { ...m, status: 'failed' } : m) };
+      return {
+        ...state,
+        messages: state.messages.map((m) =>
+          m.requestKey === action.requestKey && m.sequence === undefined
+            ? { ...m, status: 'failed' }
+            : m,
+        ),
+      };
     case 'read-confirmed': {
-      const conversations = state.conversations.map(c => c.id === action.conversationId
-        ? { ...c, selfReadSequence: Math.max(c.selfReadSequence ?? 0, action.sequence), unreadCount: undefined } : c);
-      return { ...state, conversations, messages: mergeMessages(state.messages, [], conversations) };
+      const conversations = state.conversations.map((c) =>
+        c.id === action.conversationId
+          ? {
+              ...c,
+              selfReadSequence: Math.max(
+                c.selfReadSequence ?? 0,
+                action.sequence,
+              ),
+              unreadCount: undefined,
+            }
+          : c,
+      );
+      return {
+        ...state,
+        conversations,
+        messages: mergeMessages(state.messages, [], conversations),
+      };
     }
     case 'reset':
       return action.state;
@@ -297,8 +384,10 @@ export function messagingReducer(
         state.loadStatus !== 'ready' ||
         !text ||
         text.length > MAX_INVITATION_LENGTH ||
-        (action.tripId === null ? getGroupContact(state, action.groupId) : getTripContact(state, action.groupId, action.tripId)).kind !==
-          'available'
+        (action.tripId === null
+          ? getGroupContact(state, action.groupId)
+          : getTripContact(state, action.groupId, action.tripId)
+        ).kind !== 'available'
       )
         return state;
       return {

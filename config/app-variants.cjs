@@ -19,25 +19,43 @@ const variants = {
 function getAppVariant(env) {
   const profile = env.EAS_BUILD_PROFILE;
   if (profile === 'production') {
-    throw new Error('Production is not configured. Choose development or preview.');
+    throw new Error(
+      'Production is not configured. Choose development or preview.',
+    );
   }
-  const variant = env.APP_VARIANT || profile || 'development';
-  if (!Object.hasOwn(variants, variant)) throw new Error('Unknown APP_VARIANT. Choose development or preview.');
-  if (profile && profile !== variant) throw new Error('APP_VARIANT must match the EAS build profile.');
+  const profileVariant = profile === 'performance' ? 'development' : profile;
+  const variant = env.APP_VARIANT || profileVariant || 'development';
+  if (!Object.hasOwn(variants, variant))
+    throw new Error('Unknown APP_VARIANT. Choose development or preview.');
+  if (profileVariant && profileVariant !== variant)
+    throw new Error('APP_VARIANT must match the EAS build profile.');
   return variant;
 }
 
 function assertBackendIsolation(variant, url) {
   if (!url?.trim()) return; // The welcome screen also works before configuration.
   let host;
-  try { host = new URL(url.trim()).hostname.toLowerCase(); } catch { throw new Error('Invalid Supabase URL.'); }
+  try {
+    host = new URL(url.trim()).hostname.toLowerCase();
+  } catch {
+    throw new Error('Invalid Supabase URL.');
+  }
   const isPreview = host === PREVIEW_PROJECT_REF + '.supabase.co';
   if (variant === 'development' && isPreview) {
-    throw new Error('Dev cannot use the Preview database. Configure a separate Supabase in .env.local.');
+    throw new Error(
+      'Dev cannot use the Preview database. Configure a separate Supabase in .env.local.',
+    );
   }
   if (variant === 'preview' && !isPreview) {
-    throw new Error('Preview must use its own Supabase project. Check the preview environment.');
+    throw new Error(
+      'Preview must use its own Supabase project. Check the preview environment.',
+    );
   }
 }
 
-module.exports = { variants, getAppVariant, assertBackendIsolation, PREVIEW_PROJECT_REF };
+module.exports = {
+  variants,
+  getAppVariant,
+  assertBackendIsolation,
+  PREVIEW_PROJECT_REF,
+};

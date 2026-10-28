@@ -1,5 +1,5 @@
-import { DEMO_LOCATIONS } from '../../data/mocks/locations.ts';
-import { POLISH_LOCALITIES } from '../../data/locations/polish-localities.ts';
+import { getLocalities } from '../../data/locations/polish-localities.ts';
+import { SUPPLEMENTARY_LOCATIONS } from '../../data/locations/supplementary.ts';
 import type { LocationOption } from '../../types/location';
 import type { TripMode, TripPlace } from '../../types/travel';
 
@@ -39,20 +39,20 @@ const normalizeRegion = (value: string) =>
 
 export const MAX_LOCATION_SUGGESTIONS = 10;
 export const MIN_LOCATION_QUERY_LENGTH = 2;
-const rows = POLISH_LOCALITIES.places;
-const rowById = new Map(rows.map((row) => [row[0], row]));
 const resolved = new Map<string, LocationOption>();
 const legacyIds = new Map([
   ['demo-location-chlapowo', 'pl-locality:4259'],
   ['demo-location-gdansk', 'pl-locality:8457'],
   ['demo-location-polska', 'country:PL'],
 ]);
-const supplementary: LocationOption[] = [
-  ...DEMO_LOCATIONS.filter((item) => !legacyIds.has(item.id)).map((item) => ({
-    ...item,
-    region: item.id === 'demo-location-kaszuby' ? 'pomorskie' : item.region,
-    source: 'demo' as const,
-  })),
+const baseSupplementary: LocationOption[] = [
+  ...SUPPLEMENTARY_LOCATIONS.filter((item) => !legacyIds.has(item.id)).map(
+    (item) => ({
+      ...item,
+      region: item.id === 'demo-location-kaszuby' ? 'pomorskie' : item.region,
+      source: 'demo' as const,
+    }),
+  ),
   {
     id: 'country:PL',
     name: 'Polska',
@@ -61,16 +61,45 @@ const supplementary: LocationOption[] = [
     kind: 'country',
     source: 'country',
   },
-  ...POLISH_LOCALITIES.provinces.map((province): LocationOption => ({
-    id: 'pl-region:' + province,
-    name: province[0].toLocaleUpperCase('pl-PL') + province.slice(1),
-    region: '',
-    country: 'Polska',
-    kind: 'region',
-    source: 'derived-region',
-  })),
 ];
-const supplementaryById = new Map(supplementary.map((item) => [item.id, item]));
+function createLocationIndex() {
+  const data = getLocalities();
+  const rows = data.places;
+  const rowById = new Map(rows.map((row) => [row[0], row]));
+  const supplementary: LocationOption[] = [
+    ...baseSupplementary,
+    ...data.provinces.map(
+      (province): LocationOption => ({
+        id: 'pl-region:' + province,
+        name: province[0].toLocaleUpperCase('pl-PL') + province.slice(1),
+        region: '',
+        country: 'Polska',
+        kind: 'region',
+        source: 'derived-region',
+      }),
+    ),
+  ];
+  const supplementaryById = new Map(
+    supplementary.map((item) => [item.id, item]),
+  );
+  return {
+    data,
+    rows,
+    rowById,
+    supplementary,
+    supplementaryById,
+    provinces: data.provinces.map(
+      (province) =>
+        normalize(province) + (province === 'pomorskie' ? ' pomorze' : ''),
+    ),
+    counties: data.districts.map(normalize),
+    communes: data.communes.map((commune) =>
+      normalize(commune.replace(/-gmina .+$/u, '')),
+    ),
+  };
+}
+let index: ReturnType<typeof createLocationIndex> | undefined;
+const locationIndex = () => (index ??= createLocationIndex());
 const collator = new Intl.Collator('pl', {
   sensitivity: 'base',
   numeric: true,
@@ -82,23 +111,16 @@ interface SearchEntry {
   priority: number;
 }
 const searchEntries = new Map<number, SearchEntry>();
-const provinces = POLISH_LOCALITIES.provinces.map(
-  (province) =>
-    normalize(province) + (province === 'pomorskie' ? ' pomorze' : ''),
-);
-const counties = POLISH_LOCALITIES.districts.map(normalize);
-const communes = POLISH_LOCALITIES.communes.map((commune) =>
-  normalize(commune.replace(/-gmina .+$/u, '')),
-);
-const supplementaryEntries: SearchEntry[] = supplementary.map((item) => ({
+const extraEntry = (item: LocationOption): SearchEntry => ({
   id: item.id,
   name: normalize(item.name),
   text: normalize(
     [item.name, item.region, item.country, ...(item.aliases ?? [])].join(' '),
   ),
   priority: item.kind === 'country' ? 2 : 1,
-}));
+});
 function entryForRow(index: number): SearchEntry {
+  const { rows, provinces, counties, communes } = locationIndex();
   const cached = searchEntries.get(index);
   if (cached) return cached;
   const row = rows[index];
@@ -115,6 +137,7 @@ function entryForRow(index: number): SearchEntry {
 export function findTripLocation(id?: string): LocationOption | undefined {
   if (!id) return undefined;
   const canonicalId = legacyIds.get(id) ?? id;
+  const { supplementaryById, rowById, data } = locationIndex();
   const extra = supplementaryById.get(canonicalId);
   if (extra) return extra;
   if (resolved.has(canonicalId)) return resolved.get(canonicalId);
@@ -126,9 +149,9 @@ export function findTripLocation(id?: string): LocationOption | undefined {
     id: canonicalId,
     name: row[1],
     kind: row[2] === 1 ? 'city' : 'village',
-    region: POLISH_LOCALITIES.provinces[row[3]],
-    county: POLISH_LOCALITIES.districts[row[4]],
-    commune: POLISH_LOCALITIES.communes[row[5]].replace(/-gmina .+$/u, ''),
+    region: data.provinces[row[3]],
+    county: data.districts[row[4]],
+    commune: data.communes[row[5]].replace(/-gmina .+$/u, ''),
     latitude: row[6],
     longitude: row[7],
     country: 'Polska',
@@ -142,6 +165,8 @@ export function searchTripLocations(
   query: string,
   mode: TripMode = 'flexible',
 ): LocationOption[] {
+  const { data, supplementary } = locationIndex();
+  const supplementaryEntries = supplementary.map(extraEntry);
   const value = normalize(query)
     .replace(/[,.;]+/gu, ' ')
     .replace(/\s+/gu, ' ')
@@ -164,7 +189,7 @@ export function searchTripLocations(
     .filter(
       (term) => term.length >= 2 && (term !== 'polska' || terms.length === 1),
     )
-    .map((term) => POLISH_LOCALITIES.prefixes[term.slice(0, 2)] ?? []);
+    .map((term) => data.prefixes[term.slice(0, 2)] ?? []);
   const candidates = buckets.length
     ? buckets.reduce((smallest, bucket) =>
         bucket.length < smallest.length ? bucket : smallest,
@@ -227,7 +252,7 @@ export function locationContext(location: LocationOption): string {
 export function tripLocationIdForPlace(place: TripPlace): string {
   const selected = findTripLocation(place.locationId);
   if (selected) return selected.id;
-  const old = DEMO_LOCATIONS.find(
+  const old = SUPPLEMENTARY_LOCATIONS.find(
     (location) =>
       normalize(location.name) === normalize(place.name) &&
       normalizeRegion(location.region) === normalizeRegion(place.region),

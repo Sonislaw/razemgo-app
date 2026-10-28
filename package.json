@@ -77,7 +77,14 @@
     "test:moderation": "node --test scripts/moderation-backend.test.mjs",
     "test:backend": "node --test scripts/backend.test.mjs",
     "test": "node --test scripts/*.test.mjs",
-    "test:web": "playwright test"
+    "test:web": "playwright test",
+    "types:database": "node scripts/generate-database-types.mjs",
+    "check:source": "node scripts/check-source-safety.mjs",
+    "test:local-backend": "node scripts/local-backend-check.mjs",
+    "benchmark:sql": "node scripts/benchmark-sql.mjs",
+    "benchmark:load": "node scripts/benchmark-load.mjs",
+    "test:edge": "npx --yes deno@2.9.6 test --config supabase/functions/deno.json --frozen --allow-env --allow-net --allow-sys --allow-read supabase/functions/_shared/monitoring.test.ts supabase/functions/_shared/monitoring-dev.test.ts supabase/functions/dispatch-push/handler.test.ts supabase/functions/monitor-push/handler.test.ts supabase/functions/delete-account/handler.test.ts",
+    "build:performance": "npx eas-cli@latest build --platform android --profile performance"
   },
   "private": true
 }

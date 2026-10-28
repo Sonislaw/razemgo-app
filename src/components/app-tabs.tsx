@@ -1,19 +1,20 @@
+import { TabBarGradient } from '@/components/ui/tab-bar-gradient';
+import { TAB_ITEMS } from '@/constants/navigation';
+import { TAB_ICONS } from '@/constants/tab-icons';
+import { BottomTabInset } from '@/constants/theme';
+import { useMessagingSelector } from '@/features/messaging/messaging-context';
+import { notificationCount } from '@/features/messaging/messaging-state';
+import { useTheme } from '@/hooks/use-theme';
 import { NativeTabs } from 'expo-router/native-tabs';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { TabBarGradient } from '@/components/ui/tab-bar-gradient';
-import { BottomTabInset } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
-import { TAB_ITEMS } from '@/constants/navigation';
-import { TAB_ICONS } from '@/constants/tab-icons';
-import { useMessaging } from '@/features/messaging/messaging-context';
-import { notificationCount } from '@/features/messaging/messaging-state';
 
 export default function AppTabs() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const { state } = useMessaging();
-  const notifications = notificationCount(state);
+  const notifications = useMessagingSelector((value) =>
+    notificationCount(value.state),
+  );
   return (
     <View style={{ flex: 1 }}>
       <NativeTabs

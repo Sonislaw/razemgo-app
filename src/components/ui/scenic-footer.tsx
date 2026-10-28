@@ -21,7 +21,7 @@ export function ScenicFooter({
       importantForAccessibility="no-hide-descendants"
     >
       <Image
-        source={require('@/assets/images/scenic-footer.png')}
+        source={require('@/assets/images/scenic-footer.webp')}
         style={styles.image}
         contentFit="contain"
         accessible={false}

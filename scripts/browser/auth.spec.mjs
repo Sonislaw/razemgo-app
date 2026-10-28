@@ -39,7 +39,13 @@ function session(id) {
   };
 }
 async function backend(context, existingState) {
-  await context.route('https://monitoring.razemgo.invalid/**',route=>route.fulfill({status:200,body:'{}',headers:{'access-control-allow-origin':'*'}}));
+  await context.route('https://monitoring.razemgo.invalid/**', (route) =>
+    route.fulfill({
+      status: 200,
+      body: '{}',
+      headers: { 'access-control-allow-origin': '*' },
+    }),
+  );
   const state = existingState ?? {
     profiles: new Map(),
     saveFail: false,
@@ -67,11 +73,46 @@ async function backend(context, existingState) {
       return route.fulfill({ status: 204, headers });
     const body = request.postDataJSON() ?? {};
     if (url.pathname === '/rest/v1/rpc/set_my_presence') {
-      if (state.stallPresence && body.is_online === false) return new Promise(() => {});
+      if (state.stallPresence && body.is_online === false)
+        return new Promise(() => {});
       return respond(null);
     }
     if (url.pathname === '/rest/v1/rpc/get_online_groups') return respond([]);
-    if (url.pathname === '/rest/v1/rpc/get_my_favorites') return respond({ group_ids: [], trip_ids: [] });
+    if (url.pathname === '/rest/v1/rpc/get_my_favorites')
+      return respond({ group_ids: [], trip_ids: [] });
+    if (url.pathname === '/rest/v1/rpc/get_my_sync_state')
+      return respond({
+        revision: 0,
+        unread_messages: 0,
+        pending_invitations: 0,
+        unread_notifications: 0,
+        active_trips: 0,
+        archived_trips: 0,
+      });
+    if (url.pathname === '/rest/v1/rpc/list_my_trip_page')
+      return respond({
+        items: [],
+        total_count: 0,
+        active_count: 0,
+        archived_count: 0,
+        has_more: false,
+        cursor: null,
+        latest_trip: null,
+      });
+    if (url.pathname === '/rest/v1/rpc/get_my_mailbox_page')
+      return respond({
+        invitations: [],
+        conversations: [],
+        contacts: [],
+        blocked_group_ids: [],
+        reports: [],
+        pages: Object.fromEntries(
+          ['conversations', 'received', 'sent'].map((kind) => [
+            kind,
+            { has_more: false, cursor: null },
+          ]),
+        ),
+      });
     let id = A;
     try {
       id = JSON.parse(
@@ -122,12 +163,19 @@ async function backend(context, existingState) {
     }
     if (url.pathname.endsWith('/logout')) {
       if (state.logoutFailure === 'offline') return route.abort('failed');
-      if (state.logoutFailure === 'server') return respond({ message: 'Unavailable' }, 503);
+      if (state.logoutFailure === 'server')
+        return respond({ message: 'Unavailable' }, 503);
       if (state.logoutFailure === 'stalled') return new Promise(() => {});
       return respond({});
     }
-    if (url.pathname === '/rest/v1/rpc/get_my_account_access') return respond({is_admin:false,suspended:false,hidden_trip_ids:[]});
-    if (url.pathname === '/rest/v1/rpc/get_my_group_visibility') return respond({ discoverable: true, about: '' });
+    if (url.pathname === '/rest/v1/rpc/get_my_account_access')
+      return respond({
+        is_admin: false,
+        suspended: false,
+        hidden_trip_ids: [],
+      });
+    if (url.pathname === '/rest/v1/rpc/get_my_group_visibility')
+      return respond({ discoverable: true, about: '' });
     if (url.pathname.endsWith('/user')) {
       if (state.deleted.includes(id))
         return respond(
@@ -137,12 +185,41 @@ async function backend(context, existingState) {
       if (request.method() === 'PUT') state.lastPassword = body.password;
       return respond(user(id));
     }
-    if (url.pathname === '/rest/v1/rpc/search_public_trips') return respond({items:[],total_count:0,has_more:false,cursor:null});
+    if (url.pathname === '/rest/v1/rpc/search_public_trips')
+      return respond({
+        items: [],
+        total_count: 0,
+        has_more: false,
+        cursor: null,
+      });
     if (url.pathname === '/rest/v1/rpc/count_public_trips') return respond(0);
-    if (url.pathname === '/rest/v1/rpc/get_discovery_trip') return respond(null);
-    if (url.pathname === '/rest/v1/trip_plans' || url.pathname === '/rest/v1/rpc/list_public_trips') return respond([]);
-    if (url.pathname === '/rest/v1/rpc/get_my_mailbox') return respond({invitations:[],conversations:[],contacts:[],blocked_group_ids:[],reports:[]});
-    if (url.pathname === '/rest/v1/rpc/get_my_notifications') return respond({items:[],unread_count:0,has_more:false,fetched_at:new Date().toISOString(),preferences:{push_messages:true,push_invitations:true,updated_at:null}});
+    if (url.pathname === '/rest/v1/rpc/get_discovery_trip')
+      return respond(null);
+    if (
+      url.pathname === '/rest/v1/trip_plans' ||
+      url.pathname === '/rest/v1/rpc/list_public_trips'
+    )
+      return respond([]);
+    if (url.pathname === '/rest/v1/rpc/get_my_mailbox')
+      return respond({
+        invitations: [],
+        conversations: [],
+        contacts: [],
+        blocked_group_ids: [],
+        reports: [],
+      });
+    if (url.pathname === '/rest/v1/rpc/get_my_notifications')
+      return respond({
+        items: [],
+        unread_count: 0,
+        has_more: false,
+        fetched_at: new Date().toISOString(),
+        preferences: {
+          push_messages: true,
+          push_invitations: true,
+          updated_at: null,
+        },
+      });
     if (url.pathname === '/rest/v1/travel_groups') {
       if (state.loadFail)
         return respond({ message: 'Temporarily unavailable' }, 503);
@@ -201,14 +278,20 @@ test('guest protection, registration validation and email confirmation', async (
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/profile');
-  await expect(
-    page.getByRole('button', { name: 'Nowe konto' }),
-  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Nowe konto' })).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Nazwa ekipy' })).toHaveCount(
     0,
   );
-  await page.getByTestId('welcome-featured-listing').screenshot({ path: '.expo/compatibility-welcome.png' });
-  await page.getByTestId('welcome-featured-listing').getByRole('button', { name: 'Dodaj wyjazd do ulubionych — załóż konto', exact: true }).click();
+  await page
+    .getByTestId('welcome-featured-listing')
+    .screenshot({ path: '.expo/compatibility-welcome.png' });
+  await page
+    .getByTestId('welcome-featured-listing')
+    .getByRole('button', {
+      name: 'Dodaj wyjazd do ulubionych — załóż konto',
+      exact: true,
+    })
+    .click();
   await expect(page).toHaveURL('http://localhost:8085/auth/sign-up');
   expect(state.calls).not.toContain('/rest/v1/rpc/set_my_trip_favorite');
   await page
@@ -243,7 +326,10 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
   test.setTimeout(120000);
   const state = await backend(context);
   await login(page);
-  const nameField = page.getByRole('textbox', { name: 'Nazwa ekipy', exact: true });
+  const nameField = page.getByRole('textbox', {
+    name: 'Nazwa ekipy',
+    exact: true,
+  });
   await expect(nameField).toHaveAttribute('maxlength', '20');
   await nameField.fill('a'.repeat(21));
   await expect(nameField).toHaveValue('a'.repeat(20));
@@ -251,12 +337,10 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
   await expect(page).toHaveURL('http://localhost:8085/');
   expect(state.profiles.size).toBe(1);
   // Another browser context has no shared session storage, simulating a second device.
-  const second = await context
-    .browser()
-    .newContext({
-      baseURL: 'http://localhost:8085',
-      viewport: { width: 390, height: 844 },
-    });
+  const second = await context.browser().newContext({
+    baseURL: 'http://localhost:8085',
+    viewport: { width: 390, height: 844 },
+  });
   try {
     await backend(second, state);
     const otherPage = await second.newPage();
@@ -269,21 +353,44 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
   }
   await page.goto('/profile');
   await expect(page.getByText('Ekipa A', { exact: true })).toBeVisible();
-  const matchingCard = page.getByRole('button', { name: 'Edytuj: Kogo chcę poznać?', exact: true });
+  const matchingCard = page.getByRole('button', {
+    name: 'Edytuj: Kogo chcę poznać?',
+    exact: true,
+  });
   await matchingCard.click();
-  await expect(page.getByRole('textbox', { name: 'Nazwa ekipy', exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Towarzystwo: Pary', exact: true }).click();
-  await page.getByRole('button', { name: 'Preferowany wiek dzieci: 7–9 lat', exact: true }).click();
-  await page.getByRole('textbox', { name: 'Kilka słów o towarzystwie', exact: true }).fill('Chcę poznać miłośników spokojnych wyjazdów.');
-  await page.getByRole('button', { name: 'Zapisz zmiany', exact: true }).click();
+  await expect(
+    page.getByRole('textbox', { name: 'Nazwa ekipy', exact: true }),
+  ).toHaveCount(0);
+  await page
+    .getByRole('button', { name: 'Towarzystwo: Pary', exact: true })
+    .click();
+  await page
+    .getByRole('button', {
+      name: 'Preferowany wiek dzieci: 7–9 lat',
+      exact: true,
+    })
+    .click();
+  await page
+    .getByRole('textbox', { name: 'Kilka słów o towarzystwie', exact: true })
+    .fill('Chcę poznać miłośników spokojnych wyjazdów.');
+  await page
+    .getByRole('button', { name: 'Zapisz zmiany', exact: true })
+    .click();
   await expect(page).toHaveURL('http://localhost:8085/profile');
-  await expect(matchingCard).toContainText('Chcę poznać miłośników spokojnych wyjazdów.');
+  await expect(matchingCard).toContainText(
+    'Chcę poznać miłośników spokojnych wyjazdów.',
+  );
   await expect(matchingCard).toContainText('Pary');
   await expect(matchingCard).toContainText('7–9 lat');
   await page
     .getByRole('button', { name: 'Edytuj profil', exact: true })
     .click();
-  await expect(page.getByRole('textbox', { name: 'Kilka słów o towarzystwie', exact: true })).toHaveCount(0);
+  await expect(
+    page.getByRole('textbox', {
+      name: 'Kilka słów o towarzystwie',
+      exact: true,
+    }),
+  ).toHaveCount(0);
   await expect(nameField).toHaveAttribute('maxlength', '20');
   await page
     .getByRole('textbox', { name: 'Nazwa ekipy', exact: true })
@@ -305,7 +412,9 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
   ).toBeVisible();
   expect(state.profiles.get(A).preferences.group_kinds).toContain('couple');
   expect(state.profiles.get(A).preferences.child_age_bands).toContain('7–9');
-  await expect(matchingCard).toContainText('Chcę poznać miłośników spokojnych wyjazdów.');
+  await expect(matchingCard).toContainText(
+    'Chcę poznać miłośników spokojnych wyjazdów.',
+  );
   state.loadFail = true;
   await page.reload();
   await expect(
@@ -319,9 +428,7 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
   await expect(page).toHaveURL('http://localhost:8085/');
   await page.goto('/settings');
   await page.getByRole('button', { name: 'Wyloguj się', exact: true }).click();
-  await expect(
-    page.getByRole('button', { name: 'Nowe konto' }),
-  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Nowe konto' })).toBeVisible();
   await login(page, 'b@example.com');
   await expect(page.getByRole('textbox', { name: 'Nazwa ekipy' })).toHaveValue(
     '',
@@ -333,29 +440,48 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
     0,
   );
   await page.goto('/trip-editor');
-  await expect(page.getByRole('heading', { name: 'Jaki masz plan?', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Jaki masz plan?', exact: true }),
+  ).toBeVisible();
   expect(state.profiles.size).toBe(2);
 });
 
 for (const failure of ['offline', 'server', 'stalled']) {
-  test(`logout succeeds with ${failure} Auth and stalled offline presence, persists after reload, and permits another account`, async ({ page, context }) => {
+  test(`logout succeeds with ${failure} Auth and stalled offline presence, persists after reload, and permits another account`, async ({
+    page,
+    context,
+  }) => {
     const state = await backend(context);
     await login(page);
     await createProfile(page, 'Ekipa A');
     await page.goto('/settings');
     state.logoutFailure = failure;
     state.stallPresence = true;
-    await page.getByRole('button', { name: 'Wyloguj się', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Nowe konto', exact: true })).toBeVisible({ timeout: 12000 });
-    expect(await page.evaluate(() => Object.keys(localStorage).filter(key => key.endsWith('.session')))).toEqual([]);
+    await page
+      .getByRole('button', { name: 'Wyloguj się', exact: true })
+      .click();
+    await expect(
+      page.getByRole('button', { name: 'Nowe konto', exact: true }),
+    ).toBeVisible({ timeout: 12000 });
+    expect(
+      await page.evaluate(() =>
+        Object.keys(localStorage).filter((key) => key.endsWith('.session')),
+      ),
+    ).toEqual([]);
     await page.reload();
-    await expect(page.getByRole('button', { name: 'Nowe konto', exact: true })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Nowe konto', exact: true }),
+    ).toBeVisible();
     await page.goto('/profile');
-    await expect(page.getByRole('button', { name: 'Nowe konto', exact: true })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Nowe konto', exact: true }),
+    ).toBeVisible();
     state.logoutFailure = null;
     state.stallPresence = false;
     await login(page, 'b@example.com');
-    await expect(page.getByRole('textbox', { name: 'Nazwa ekipy', exact: true })).toHaveValue('');
+    await expect(
+      page.getByRole('textbox', { name: 'Nazwa ekipy', exact: true }),
+    ).toHaveValue('');
     await createProfile(page, 'Ekipa B');
     await page.goto('/profile');
     await expect(page.getByText('Ekipa B', { exact: true })).toBeVisible();
@@ -404,9 +530,7 @@ test('Google PKCE callback, password recovery and confirmed account deletion', a
   await page
     .getByRole('button', { name: 'Potwierdzam — usuń konto', exact: true })
     .click();
-  await expect(
-    page.getByRole('button', { name: 'Nowe konto' }),
-  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Nowe konto' })).toBeVisible();
   expect(state.deleted).toEqual([A]);
   expect(state.profiles.size).toBe(0);
   // An already issued token on another device must not reopen onboarding for a deleted user.
@@ -414,9 +538,7 @@ test('Google PKCE callback, password recovery and confirmed account deletion', a
     for (const [key, value] of entries) window.localStorage.setItem(key, value);
   }, otherDeviceSession);
   await page.goto('/profile');
-  await expect(
-    page.getByRole('button', { name: 'Nowe konto' }),
-  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Nowe konto' })).toBeVisible();
 });
 
 test('expired recovery link keeps private screens protected and allows a fresh request', async ({
@@ -439,7 +561,5 @@ test('expired recovery link keeps private screens protected and allows a fresh r
     page.getByRole('heading', { name: 'Odzyskaj dostęp' }),
   ).toBeVisible();
   await page.goto('/profile');
-  await expect(
-    page.getByRole('button', { name: 'Nowe konto' }),
-  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Nowe konto' })).toBeVisible();
 });

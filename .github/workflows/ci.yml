@@ -4,6 +4,11 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      load_test:
+        description: Run the disposable local 10k/50k/500k load fixture up to 200 sessions
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -40,22 +45,57 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run check:source
       - run: npm test
       - uses: denoland/setup-deno@v2
         with:
-          deno-version: v2.x
+          deno-version: v2.9.6
       - name: Test Edge Functions with mocked transports
         run: >-
-          deno test --node-modules-dir=none --no-lock
+          deno test --config supabase/functions/deno.json --frozen
           --allow-env --allow-net --allow-sys --allow-read
           supabase/functions/_shared/monitoring.test.ts
           supabase/functions/_shared/monitoring-dev.test.ts
           supabase/functions/dispatch-push/handler.test.ts
           supabase/functions/monitor-push/handler.test.ts
+          supabase/functions/delete-account/handler.test.ts
       - run: npx expo install --check
       - run: npx --yes expo-doctor
       - run: npx expo export --platform android --output-dir .expo/ci-android
       - run: npx expo export --platform web --output-dir .expo/ci-web
+
+  local-supabase:
+    name: Local Auth, PostgreSQL contracts and schema types
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Start disposable local backend without Edge workers or mail
+        run: npx --yes supabase@2.122.0 start -x studio,imgproxy,inbucket,edge-runtime,logflare,vector,supavisor
+      - run: npx --yes supabase@2.122.0 db reset --local --no-seed
+      - run: npm run types:database -- --local --check
+      - run: npm run test:local-backend
+      - name: Optional full synthetic HTTP load (local only)
+        if: github.event_name == 'workflow_dispatch' && inputs.load_test
+        run: npm run benchmark:load -- --seed --strict
+      - name: Preserve failed checks and measured load results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-backend-results
+          path: .expo/hardening-http-load.json
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7
+      - if: always()
+        run: npx --yes supabase@2.122.0 stop --no-backup
 
   browser:
     name: Browser user flows

@@ -13,6 +13,20 @@
       },
       "android": { "buildType": "apk" }
     },
+    "performance": {
+      "extends": "development",
+      "environment": "development",
+      "developmentClient": false,
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "development",
+        "EXPO_PUBLIC_APP_ENV": "development",
+        "EXPO_PUBLIC_ENABLE_DEMO": "false",
+        "EXPO_PUBLIC_MONITORING_IN_DEV": "false",
+        "SENTRY_ALLOW_FAILURE": "true"
+      },
+      "android": { "buildType": "apk" }
+    },
     "preview": {
       "environment": "preview",
       "developmentClient": false,

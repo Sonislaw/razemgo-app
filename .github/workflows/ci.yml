@@ -1,0 +1,83 @@
+name: Checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Only test configuration. No Supabase, Firebase, EAS or Sentry credentials.
+env:
+  CI: '1'
+  APP_VARIANT: development
+  EXPO_NO_TELEMETRY: '1'
+  EXPO_PUBLIC_APP_ENV: development
+  EXPO_PUBLIC_ENABLE_DEMO: 'false'
+  EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+  EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_razemgo_browser_test_only
+  EXPO_PUBLIC_SENTRY_DSN: https://testonly@monitoring.razemgo.invalid/1
+  SENTRY_DISABLE_AUTO_UPLOAD: 'true'
+
+jobs:
+  code-and-bundles:
+    name: Code, database, Edge Functions and exports
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Test Edge Functions with mocked transports
+        run: >-
+          deno test --node-modules-dir=none --no-lock
+          --allow-env --allow-net --allow-sys --allow-read
+          supabase/functions/_shared/monitoring.test.ts
+          supabase/functions/_shared/monitoring-dev.test.ts
+          supabase/functions/dispatch-push/handler.test.ts
+          supabase/functions/monitor-push/handler.test.ts
+      - run: npx expo install --check
+      - run: npx --yes expo-doctor
+      - run: npx expo export --platform android --output-dir .expo/ci-android
+      - run: npx expo export --platform web --output-dir .expo/ci-web
+
+  browser:
+    name: Browser user flows
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:web
+      - name: Retain failed browser checks for seven days
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-failures
+          path: .expo/auth-web-results/
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7

@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 import {
   AppText,
@@ -16,14 +16,16 @@ import { GroupAvatar } from '@/features/messaging/messaging-ui';
 
 export default function MessagingSafetyScreen() {
   const { state, setBlock, contact, busy, actionError, error, refresh } = useMessaging();
+  const { from } = useLocalSearchParams<{ from?: string }>();
+  const fromSettings = from === 'settings';
   return (
     <Screen>
       <View style={{ gap: 12 }}>
         <HeaderRow>
           <IconButton
-            label="Wróć do Wiadomości"
+            label={fromSettings ? 'Wróć do ustawień' : 'Wróć do Wiadomości'}
             icon="back"
-            onPress={() => router.dismissTo('/messages')}
+            onPress={() => router.dismissTo(fromSettings ? '/settings' : '/messages')}
           />
           <AppText
             variant="heading"

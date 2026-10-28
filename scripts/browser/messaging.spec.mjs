@@ -110,8 +110,15 @@ test('history pagination and a lost send response never duplicate the committed 
   const store=seeded(),chat=accepted(store,65);
   await backend(context,store);await login(page);await page.goto('/chat/'+chat);
   await page.getByRole('button',{name:'Wczytaj starsze wiadomości',exact:true}).click();
-  await expect(page.getByText('Wiadomość numer 1',{exact:true})).toBeVisible();
   await expect(page.getByRole('button',{name:'Wczytaj starsze wiadomości',exact:true})).toHaveCount(0);
+  // Loading history preserves the reading anchor. The oldest newly loaded row
+  // can be outside FlatList's render window until the user scrolls further.
+  const list=page.getByTestId('chat-message-list');
+  await expect.poll(async()=>{
+    await list.evaluate(el=>{el.scrollTop=el.scrollHeight;});
+    return page.getByText('Wiadomość numer 1',{exact:true}).count();
+  }).toBe(1);
+  await expect(page.getByText('Wiadomość numer 1',{exact:true})).toBeVisible();
   store.failSend='after-commit';
   await page.getByRole('textbox',{name:'Treść wiadomości'}).fill('Jedna wiadomość mimo utraty odpowiedzi');
   await page.getByRole('button',{name:'Wyślij wiadomość',exact:true}).click();

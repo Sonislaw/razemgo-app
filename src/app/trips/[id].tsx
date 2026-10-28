@@ -223,7 +223,7 @@ export default function OwnTripDetailsScreen() {
                   value: searching ? (proposalCount ?? '—') : '—',
                 },
                 { label: 'Zaproszenia', value: pending.length },
-                { label: 'Ekipy', value: acceptedGroups.length },
+                { label: 'Kontakty', value: acceptedGroups.length },
               ].map((item) => (
                 <View
                   key={item.label}
@@ -245,7 +245,7 @@ export default function OwnTripDetailsScreen() {
             </View>
             <AppText variant="caption" color="textSecondary">
               Propozycje dobieramy według regionu,
-              wspólnych nocy i wybranego towarzystwa. Zaproszenia i ekipy
+              wspólnych nocy i wybranego towarzystwa. Zaproszenia i kontakty
               dotyczą wyłącznie tego wyjazdu.
             </AppText>
             {countError ? <>
@@ -280,7 +280,7 @@ export default function OwnTripDetailsScreen() {
           </Card>
           <Card style={{ gap: 12, backgroundColor: theme.positiveBackground }}>
             <AppText variant="label" accessibilityRole="header">
-              Zaakceptowane ekipy · {acceptedGroups.length}
+              Kontakty tego wyjazdu · {acceptedGroups.length}
             </AppText>
             {acceptedGroups.length ? (
               acceptedGroups.map((conversation) => (
@@ -309,8 +309,9 @@ export default function OwnTripDetailsScreen() {
                 color="textSecondary"
                 style={{ fontSize: 14, lineHeight: 21 }}
               >
-                Nie masz jeszcze umówionego spotkania z żadną ekipą. Po zaakceptowaniu
-                zaproszenia powiązanego z tym planem pojawi się ona tutaj.
+                Po zaakceptowaniu zaproszenia powiązanego z tym wyjazdem
+                zobaczysz tutaj kontakt do rozmowy. Akceptacja zaproszenia
+                nie oznacza potwierdzenia wspólnego wyjazdu.
               </AppText>
             )}
           </Card>

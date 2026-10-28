@@ -8,7 +8,7 @@ Deno.test({name:'Independent push monitor authenticates, filters payloads, repor
   Deno.env.set('APP_SUPABASE_SECRET_KEY','private-server-key');
   const originalFetch=globalThis.fetch,originalLog=console.log,originalError=console.error;
   const packets:string[]=[],logs:string[]=[],calls:{name:string;body:Record<string,unknown>}[]=[];
-  let incident=false,backendFailure=false,sentryStatus=200;
+  let incident=false,backendFailure=false,sentryStatus=200,proposalIncident=false,legacySnapshot=false;
   globalThis.fetch=async(input,init)=>{
     const url=typeof input==='string' ? input : input instanceof URL ? input.href : input.url;
     if (url.startsWith('https://monitoring.razemgo.invalid/')) {
@@ -20,8 +20,9 @@ Deno.test({name:'Independent push monitor authenticates, filters payloads, repor
       if (name==='get_push_health') return backendFailure ? Response.json({code:'XX000',message:'private-db-error'},{status:500}) : Response.json({
         pending:0,awaiting_receipts:0,in_flight:0,overdue:0,retrying:0,failed_recent:0,credential_errors:incident ? 1 : 0,
         dispatcher_schedule_ok:true,monitor_schedule_ok:true,dispatcher_tick_ok:true,private_field:'private-snapshot',
+        ...(!legacySnapshot ? {proposal_pending:0,proposal_overdue:proposalIncident ? 1 : 0,proposal_schedule_ok:true,proposal_tick_ok:true,last_proposal_tick:null} : {}),
       });
-      if (name==='claim_push_health_alerts') return Response.json(incident ? [{code:'PUSH_CREDENTIALS',lease}] : []);
+      if (name==='claim_push_health_alerts') return Response.json(incident ? [{code:'PUSH_CREDENTIALS',lease}] : proposalIncident ? [{code:'PROPOSAL_QUEUE_STALLED',lease}] : []);
       if (name==='finish_push_health_alert') return Response.json(null);
     }
     throw new Error('Monitor attempted unexpected network access');
@@ -58,6 +59,19 @@ Deno.test({name:'Independent push monitor authenticates, filters payloads, repor
       const saved=calls.find(call=>call.name==='finish_push_health_alert');
       assert(saved?.body.accepted===true && saved.body.claim_lease===lease,'Incorrect confirmation');
       incident=false;
+    });
+    await t.step('proposal incidents reach Sentry with the stable code and confirmed lease',async()=>{
+      proposalIncident=true;
+      const response=await invoke();const result=await response.json();
+      assert(response.status===200 && !result.healthy && result.reported===1,'Missing proposal incident');
+      assert(packets.some(packet=>packet.includes('PROPOSAL_QUEUE_STALLED')),'Proposal code was scrubbed');
+      assert(calls.some(call=>call.name==='finish_push_health_alert' && call.body.alert_code==='PROPOSAL_QUEUE_STALLED' && call.body.accepted===true),'Proposal lease not confirmed');
+      proposalIncident=false;
+    });
+    await t.step('a missing proposal migration is a failed check-in, never a healthy response',async()=>{
+      legacySnapshot=true;
+      const response=await invoke();assert(response.status===503,'Missing migration was hidden');
+      legacySnapshot=false;
     });
     await t.step('a rejected Sentry heartbeat cannot appear healthy',async()=>{
       sentryStatus=503;

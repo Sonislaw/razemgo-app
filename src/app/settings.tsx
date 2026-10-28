@@ -61,6 +61,7 @@ export default function SettingsScreen() {
   const { from } = useLocalSearchParams<{ from?: string }>();
   const fromHome = from === 'home';
   const back = () => router.dismissTo(fromHome ? '/' : '/profile');
+  const openSafety = () => router.push({ pathname: '/messaging-safety', params: { from: 'settings' } });
   return (
     <Screen>
       <View style={{ gap: 12 }}>
@@ -73,14 +74,22 @@ export default function SettingsScreen() {
           icon="sun"
           title="Wygląd aplikacji"
           status="Jasny"
-          description="Aplikacja używa jasnego motywu. Możliwość wyboru motywu pojawi się w kolejnej wersji."
+          description="Aplikacja używa jasnego motywu."
         />
-        <SettingsSection
-          icon="shield"
-          title="Prywatność"
-          status="Wkrótce"
-          description="Zarządzanie widocznością profilu i planów. Wiek dzieci pokazujemy w przybliżonych przedziałach."
-        />
+        <Card style={{ gap: 12 }}>
+          <View style={layout.row}>
+            <Icon name="shield" size={22} />
+            <AppText accessibilityRole="header" variant="label" style={{ fontSize: 16 }}>
+              Prywatność
+            </AppText>
+          </View>
+          <AppText variant="caption" color="textSecondary">
+            Zarządzaj widocznością profilu i blokadami. Widoczność konkretnego
+            wyjazdu zmienisz w jego edycji. Wiek dzieci pokazujemy w przedziałach.
+          </AppText>
+          <Button label="Widoczność profilu" icon="people" variant="secondary" onPress={() => router.push('/group-visibility')} />
+          <Button label="Zablokowane ekipy" icon="block" variant="secondary" onPress={openSafety} />
+        </Card>
         <PushPermissionCard />
         <NotificationPreferencesCard />
         <AccountSettings />
@@ -90,7 +99,7 @@ export default function SettingsScreen() {
           label="Bezpieczeństwo rozmów"
           icon="shield"
           variant="secondary"
-          onPress={() => router.push('/messaging-safety')}
+          onPress={openSafety}
         />
         {IS_DEMO_MODE ? (
           <View style={{ gap: 8 }}>

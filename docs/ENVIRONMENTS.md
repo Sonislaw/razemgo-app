@@ -22,11 +22,13 @@ Na prośbę użytkownika 26.10.2026 przygotowano **Preview 1.2.0**. Migracje `20
 
 27.10.2026 Dev otrzymał również `202610270002_background_proposals.sql` i nową wersję `dispatch-push`: **25 migracji**, automatyczne propozycje co minutę i zbiorcze push w oknach pięciominutowych. Preview nadal ma **23 migracje** i nie otrzymał tego wdrożenia. Szczegóły: [PROPOSAL_NOTIFICATIONS.md](PROPOSAL_NOTIFICATIONS.md).
 
+27.10.2026 w etapie 0 wdrożono na Dev `202610270003_proposal_health.sql` i nowy `monitor-push`: **26 migracji**. Monitor wykrywa także zatrzymanie procesora propozycji oraz zaległe zadania. Rzeczywisty odczyt potwierdził ograniczenie diagnostyki do roli serwerowej, aktywne harmonogramy, automatyczne wykonanie monitora i brak zaległości. Preview pozostaje przy **23 migracjach** i APK 1.2.0 (5). Etap 0 aktualizuje również sześć pakietów SDK 58, dlatego ma osobny build APK Dev; szczegóły w [STAGE_0.md](STAGE_0.md).
+
 ## Skonfigurowany Dev
 
 1. `.env.local` i środowisko EAS **development** mają URL oraz publiczny klucz nowego Dev. Dotychczasowe wartości zachowano w ignorowanym `.env.preview.local` i środowisku EAS **preview**. Nie wpisuj klucza administracyjnego do zmiennych `EXPO_PUBLIC_*`.
 2. Dev ma własną aplikację Android w Firebase, plik `google-services.development.json`, osobny klucz podpisujący APK i przypisany klucz FCM V1. Powiązanie Firebase Preview pozostało bez zmian. Obie aplikacje używają tego samego projektu Firebase i usługi Expo Push, lecz osobnych instalacji oraz kolejek i tokenów przechowywanych w swoich bazach.
-3. Wdrożono dwadzieścia trzy migracje: profil, wyjazdy, wiadomości, powiadomienia, moderację, Ekipy, zgodność, obecność, ulubione, reakcje na og?oszenia i wiadomo?ci, numery ekip, limit nazwy oraz migracje `202610260001`–`202610260003` dla wyszukiwania i stronicowania po stronie bazy. Dostępne są funkcje `delete-account`, `dispatch-push`, `monitor-push`. Główny katalog CLI jest powiązany wyłącznie z Dev. Kolejne zmiany wdrażaj jawnie:
+3. Zakres migracji różni się między środowiskami: Preview 1.2.0 ma 23 migracje, a Dev rozwija również reakcje na wiadomości, automatyczne propozycje i monitoring opisany w [STAGE_0.md](STAGE_0.md). Dostępne są funkcje `delete-account`, `dispatch-push`, `monitor-push`. Główny katalog CLI jest powiązany wyłącznie z Dev. Kolejne zmiany wdrażaj jawnie:
 
    ```powershell
    npm run backend:dev -- link
@@ -50,7 +52,7 @@ Na prośbę użytkownika 26.10.2026 przygotowano **Preview 1.2.0**. Migracje `20
    npm run start:dev
    ```
 
-Nowy pakiet i linki wymagają nowego APK Dev. Dotychczasowy development build używa tego samego pakietu co Preview i nie staje się odrębną aplikacją po samym odświeżeniu Metro. `start:dev` używa schematu `razemgo-dev`, aby QR otwierał właściwą aplikację. Preview działa samodzielnie; Dev wymaga uruchomionego Metro.
+APK Dev używa osobnego pakietu i instaluje się obok Preview. `start:dev` używa schematu `razemgo-dev`, aby QR otwierał właściwą aplikację. Preview działa samodzielnie; Dev wymaga uruchomionego Metro. Zmiana modułów natywnych, pakietu lub konfiguracji pluginów wymaga nowego APK Dev; samo odświeżenie Metro aktualizuje kod JavaScript.
 
 Rolę administratora nadaj po pierwszym zalogowaniu do Dev: `node scripts/manage-admin.mjs grant ADRES_POTWIERDZONEGO_KONTA`. Administratorzy nie są kopiowani między bazami.
 

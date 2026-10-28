@@ -12,6 +12,11 @@ W projekcie testowym działa osobna funkcja `monitor-push`, uruchamiana co 5 min
 | `PUSH_DELIVERY_FAILURES` | Dostawa zakończyła się błędem w ostatniej godzinie. Zwykłe wyrejestrowanie telefonu nie tworzy incydentu. |
 | `PUSH_SCHEDULE_INVALID` | Brakuje aktywnego zadania dispatchera co minutę albo monitora co 5 minut, lub ich harmonogram się zmienił. |
 | `PUSH_DISPATCH_STOPPED` | Brak udanego wykonania zadania dispatchera przez ponad 10 minut. Po instalacji jest 10 minut na pierwszy tick. |
+| `PROPOSAL_SCHEDULE_INVALID` | Dev: brak aktywnego `razemgo-proposals` co minutę albo zmieniony harmonogram. |
+| `PROPOSAL_PROCESSOR_STOPPED` | Dev: brak sukcesu procesora propozycji przez ponad 5 minut; po instalacji jest 5 minut na pierwszy sukces. |
+| `PROPOSAL_QUEUE_STALLED` | Dev: zadanie propozycji oczekuje ponad 10 minut według trwałego `first_queued_at`. |
+
+Trzy alarmy propozycji dodaje migracja `202610270003_proposal_health.sql` i nowy `monitor-push`, wyłącznie na Dev. Rozszerzenie nie tworzy dodatkowego harmonogramu: działa przy istniejącej kontroli co pięć minut, z tymi samymi rezerwacjami i limitami. Nowa funkcja wymaga nowych pól diagnostycznych, dlatego najpierw wdrażamy migrację. Preview zachowuje dotychczasowy monitoring sześciu kodów. Szczegóły, testy i wydanie APK Dev: [STAGE_0.md](STAGE_0.md).
 
 `due_at` uwzględnia już 15 minut oczekiwania przed pierwszym sprawdzeniem potwierdzenia oraz odstępy między ponowieniami. Samo oczekiwanie na przyszły termin nie jest zaległością. Wygasłe i niedopuszczone dostawy nie powodują alarmu o zaległej kolejce. Receipt oznacza przekazanie do dostawcy, a nie wyświetlenie na telefonie lub przeczytanie wiadomości.
 
@@ -40,7 +45,7 @@ RPC `get_push_health`, `claim_push_health_alerts` i `finish_push_health_alert` s
 
 Raporty błędów nadal przechodzą przez wspólny filtr monitoringu. Zawierają kod problemu i losowy identyfikator żądania. Heartbeat jest zbudowany z zamkniętej listy pól: identyfikator check-in, stała nazwa monitora, wynik, wersja, środowisko i harmonogram. Nie kopiuje kontekstu SDK, danych konta, rozmów, nazw ekip, identyfikatorów urządzeń, tokenów ani SQL. Odczyt harmonogramu nigdy nie zwraca treści poleceń cron.
 
-Sześć wierszy incydentów i jeden wiersz stanu mają stały rozmiar. Nocne zadanie `razemgo-push-health-cleanup` usuwa zakończone logi tych zadań cron starsze niż 7 dni; nie dotyka cudzych zadań ani danych rozmów. Dane historycznych dostaw otrzymują podczas migracji wcześniejszy czas zdarzenia, żeby wdrożenie nie przedstawiało dawnych awarii jako nowych.
+Preview przechowuje sześć rodzajów incydentów; Dev po etapie 0 dziewięć. Liczba wierszy stanu jest stała. Dotychczasowe nocne zadanie `razemgo-push-health-cleanup` usuwa zakończone logi harmonogramów wysyłki i kontroli starsze niż 7 dni; nie dotyka cudzych zadań ani danych rozmów. Dane historycznych dostaw otrzymują podczas migracji wcześniejszy czas zdarzenia, żeby wdrożenie nie przedstawiało dawnych awarii jako nowych.
 
 ## Wdrożenie i kontrole
 

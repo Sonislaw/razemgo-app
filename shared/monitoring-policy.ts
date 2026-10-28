@@ -1,5 +1,6 @@
 // Shared by the app and Edge Functions. Never forward arbitrary error objects.
-export const PUSH_HEALTH_CODES = ['PUSH_QUEUE_STALLED','PUSH_CREDENTIALS','PUSH_RETRIES','PUSH_DELIVERY_FAILURES','PUSH_SCHEDULE_INVALID','PUSH_DISPATCH_STOPPED'] as const;
+export const PUSH_HEALTH_CODES = ['PUSH_QUEUE_STALLED','PUSH_CREDENTIALS','PUSH_RETRIES','PUSH_DELIVERY_FAILURES','PUSH_SCHEDULE_INVALID','PUSH_DISPATCH_STOPPED',
+  'PROPOSAL_SCHEDULE_INVALID','PROPOSAL_PROCESSOR_STOPPED','PROPOSAL_QUEUE_STALLED'] as const;
 export type PushHealthCode = typeof PUSH_HEALTH_CODES[number];
 export const OPERATIONS = [
   'app.unhandled', 'app.render', 'monitoring.test',

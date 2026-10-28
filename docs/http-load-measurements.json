@@ -1,0 +1,781 @@
+{
+  "ciRun": "https://github.com/Sonislaw/razemgo-app/actions/runs/40688440868",
+  "schemaVersion": 2,
+  "engine": "Disposable local Supabase HTTP; synthetic read burst, not sustained app sessions",
+  "startedAt": "2026-10-28T12:33:54.355Z",
+  "fixture": {
+    "trips": 50000,
+    "messages": 500000,
+    "profiles": 10000,
+    "sessions": 200,
+    "pushEvents": 0,
+    "pushDevices": 0,
+    "proposalJobs": 0
+  },
+  "seedAndVerificationMs": 19906,
+  "environment": {
+    "commit": "7f565e56489fdd7316dbf8d2e1cd34d2bfbe124a",
+    "node": "v24.21.0",
+    "cpuModel": "AMD EPYC 9V74 80-Core Processor",
+    "logicalCpus": 4,
+    "availableCpus": 4,
+    "memoryBytes": 16766414848,
+    "database": {
+      "version": "17.11",
+      "workMem": "4MB",
+      "sharedBuffers": "128MB",
+      "maxConnections": "100",
+      "authenticatedStatementTimeout": "8s"
+    },
+    "postgrest": {
+      "image": "public.ecr.aws/supabase/postgrest:v16.5",
+      "explicitSettings": {
+        "PGRST_DB_MAX_ROWS": "1000"
+      }
+    }
+  },
+  "protocol": {
+    "requestTimeoutMs": 30000,
+    "requestsPerSession": 6,
+    "roundsPerBurst": 1,
+    "thinkTimeMs": 0,
+    "retries": 0,
+    "targets": {
+      "pageP95Ms": 800,
+      "rankingP95Ms": 1500,
+      "errorRateBelow": 0.01
+    },
+    "control": "Three sequential samples per endpoint, outside the concurrent stages; not a p95 capacity claim"
+  },
+  "controls": [
+    {
+      "id": "summary",
+      "ranking": false,
+      "metrics": {
+        "attempts": 3,
+        "successful": 3,
+        "failed": 0,
+        "errorRate": 0,
+        "p50Ms": 8,
+        "p95Ms": 66,
+        "maxMs": 66,
+        "successfulP95Ms": 66,
+        "responseBytes": 393,
+        "successfulResponseBytes": 393,
+        "failureStatuses": {},
+        "failureCodes": {}
+      }
+    },
+    {
+      "id": "trips",
+      "ranking": false,
+      "metrics": {
+        "attempts": 3,
+        "successful": 3,
+        "failed": 0,
+        "errorRate": 0,
+        "p50Ms": 276,
+        "p95Ms": 288,
+        "maxMs": 288,
+        "successfulP95Ms": 288,
+        "responseBytes": 17961,
+        "successfulResponseBytes": 17961,
+        "failureStatuses": {},
+        "failureCodes": {}
+      }
+    },
+    {
+      "id": "groups",
+      "ranking": false,
+      "metrics": {
+        "attempts": 3,
+        "successful": 3,
+        "failed": 0,
+        "errorRate": 0,
+        "p50Ms": 290,
+        "p95Ms": 297,
+        "maxMs": 297,
+        "successfulP95Ms": 297,
+        "responseBytes": 8361,
+        "successfulResponseBytes": 8361,
+        "failureStatuses": {},
+        "failureCodes": {}
+      }
+    },
+    {
+      "id": "mailbox",
+      "ranking": false,
+      "metrics": {
+        "attempts": 3,
+        "successful": 3,
+        "failed": 0,
+        "errorRate": 0,
+        "p50Ms": 45,
+        "p95Ms": 49,
+        "maxMs": 49,
+        "successfulP95Ms": 49,
+        "responseBytes": 21561,
+        "successfulResponseBytes": 21561,
+        "failureStatuses": {},
+        "failureCodes": {}
+      }
+    },
+    {
+      "id": "tripRanking",
+      "ranking": true,
+      "metrics": {
+        "attempts": 3,
+        "successful": 3,
+        "failed": 0,
+        "errorRate": 0,
+        "p50Ms": 2253,
+        "p95Ms": 2263,
+        "maxMs": 2263,
+        "successfulP95Ms": 2263,
+        "responseBytes": 18387,
+        "successfulResponseBytes": 18387,
+        "failureStatuses": {},
+        "failureCodes": {}
+      }
+    },
+    {
+      "id": "groupRanking",
+      "ranking": true,
+      "metrics": {
+        "attempts": 3,
+        "successful": 3,
+        "failed": 0,
+        "errorRate": 0,
+        "p50Ms": 443,
+        "p95Ms": 444,
+        "maxMs": 444,
+        "successfulP95Ms": 444,
+        "responseBytes": 9045,
+        "successfulResponseBytes": 9045,
+        "failureStatuses": {},
+        "failureCodes": {}
+      }
+    }
+  ],
+  "runs": [
+    {
+      "sessions": 10,
+      "durationMs": 12501,
+      "metrics": {
+        "attempts": 60,
+        "successful": 50,
+        "failed": 10,
+        "errorRate": 0.16666666666666666,
+        "p50Ms": 1077,
+        "p95Ms": 8056,
+        "maxMs": 8063,
+        "successfulP95Ms": 1894,
+        "responseBytes": 191177,
+        "successfulResponseBytes": 190177,
+        "failureStatuses": {
+          "500": 10
+        },
+        "failureCodes": {
+          "57014": 10
+        }
+      },
+      "operations": [
+        {
+          "id": "summary",
+          "ranking": false,
+          "metrics": {
+            "attempts": 10,
+            "successful": 10,
+            "failed": 0,
+            "errorRate": 0,
+            "p50Ms": 73,
+            "p95Ms": 82,
+            "maxMs": 82,
+            "successfulP95Ms": 82,
+            "responseBytes": 1310,
+            "successfulResponseBytes": 1310,
+            "failureStatuses": {},
+            "failureCodes": {}
+          }
+        },
+        {
+          "id": "trips",
+          "ranking": false,
+          "metrics": {
+            "attempts": 10,
+            "successful": 10,
+            "failed": 0,
+            "errorRate": 0,
+            "p50Ms": 1004,
+            "p95Ms": 1120,
+            "maxMs": 1120,
+            "successfulP95Ms": 1120,
+            "responseBytes": 60000,
+            "successfulResponseBytes": 60000,
+            "failureStatuses": {},
+            "failureCodes": {}
+          }
+        },
+        {
+          "id": "groups",
+          "ranking": false,
+          "metrics": {
+            "attempts": 10,
+            "successful": 10,
+            "failed": 0,
+            "errorRate": 0,
+            "p50Ms": 1252,
+            "p95Ms": 1345,
+            "maxMs": 1345,
+            "successfulP95Ms": 1345,
+            "responseBytes": 27691,
+            "successfulResponseBytes": 27691,
+            "failureStatuses": {},
+            "failureCodes": {}
+          }
+        },
+        {
+          "id": "mailbox",
+          "ranking": false,
+          "metrics": {
+            "attempts": 10,
+            "successful": 10,
+            "failed": 0,
+            "errorRate": 0,
+            "p50Ms": 172,
+            "p95Ms": 211,
+            "maxMs": 211,
+            "successfulP95Ms": 211,
+            "responseBytes": 71824,
+            "successfulResponseBytes": 71824,
+            "failureStatuses": {},
+            "failureCodes": {}
+          }
+        },
+        {
+          "id": "tripRanking",
+          "ranking": true,
+          "metrics": {
+            "attempts": 10,
+            "successful": 0,
+            "failed": 10,
+            "errorRate": 1,
+            "p50Ms": 8053,
+            "p95Ms": 8063,
+            "maxMs": 8063,
+            "successfulP95Ms": null,
+            "responseBytes": 1000,
+            "successfulResponseBytes": 0,
+            "failureStatuses": {
+              "500": 10
+            },
+            "failureCodes": {
+              "57014": 10
+            }
+          }
+        },
+        {
+          "id": "groupRanking",
+          "ranking": true,
+          "metrics": {
+            "attempts": 10,
+            "successful": 10,
+            "failed": 0,
+            "errorRate": 0,
+            "p50Ms": 1834,
+            "p95Ms": 2031,
+            "maxMs": 2031,
+            "successfulP95Ms": 2031,
+            "responseBytes": 29352,
+            "successfulResponseBytes": 29352,
+            "failureStatuses": {},
+            "failureCodes": {}
+          }
+        }
+      ],
+      "targetsMet": false
+    },
+    {
+      "sessions": 50,
+      "durationMs": 44536,
+      "metrics": {
+        "attempts": 300,
+        "successful": 209,
+        "failed": 91,
+        "errorRate": 0.30333333333333334,
+        "p50Ms": 4990,
+        "p95Ms": 11873,
+        "maxMs": 17450,
+        "successfulP95Ms": 9829,
+        "responseBytes": 776269,
+        "successfulResponseBytes": 766531,
+        "failureStatuses": {
+          "500": 33,
+          "504": 58
+        },
+        "failureCodes": {
+          "57014": 33,
+          "PGRST003": 58
+        }
+      },
+      "operations": [
+        {
+          "id": "summary",
+          "ranking": false,
+          "metrics": {
+            "attempts": 50,
+            "successful": 50,
+            "failed": 0,
+            "errorRate": 0,
+            "p50Ms": 63,
+            "p95Ms": 86,
+            "maxMs": 6616,
+            "successfulP95Ms": 86,
+            "responseBytes": 6550,
+            "successfulResponseBytes": 6550,
+            "failureStatuses": {},
+            "failureCodes": {}
+          }
+        },
+        {
+          "id": "trips",
+          "ranking": false,
+          "metrics": {
+            "attempts": 50,
+            "successful": 45,
+            "failed": 5,
+            "errorRate": 0.1,
+            "p50Ms": 3342,
+            "p95Ms": 10020,
+            "maxMs": 10942,
+            "successfulP95Ms": 7591,
+            "responseBytes": 270827,
+            "successfulResponseBytes": 270272,
+            "failureStatuses": {
+              "504": 5
+            },
+            "failureCodes": {
+              "PGRST003": 5
+            }
+          }
+        },
+        {
+          "id": "groups",
+          "ranking": false,
+          "metrics": {
+            "attempts": 50,
+            "successful": 40,
+            "failed": 10,
+            "errorRate": 0.2,
+            "p50Ms": 4323,
+            "p95Ms": 10004,
+            "maxMs": 10492,
+            "successfulP95Ms": 9574,
+            "responseBytes": 113045,
+            "successfulResponseBytes": 111935,
+            "failureStatuses": {
+              "504": 10
+            },
+            "failureCodes": {
+              "PGRST003": 10
+            }
+          }
+        },
+        {
+          "id": "mailbox",
+          "ranking": false,
+          "metrics": {
+            "attempts": 50,
+            "successful": 38,
+            "failed": 12,
+            "errorRate": 0.24,
+            "p50Ms": 4790,
+            "p95Ms": 10003,
+            "maxMs": 10003,
+            "successfulP95Ms": 9527,
+            "responseBytes": 274310,
+            "successfulResponseBytes": 272978,
+            "failureStatuses": {
+              "504": 12
+            },
+            "failureCodes": {
+              "PGRST003": 12
+            }
+          }
+        },
+        {
+          "id": "tripRanking",
+          "ranking": true,
+          "metrics": {
+            "attempts": 50,
+            "successful": 0,
+            "failed": 50,
+            "errorRate": 1,
+            "p50Ms": 10004,
+            "p95Ms": 17122,
+            "maxMs": 17450,
+            "successfulP95Ms": null,
+            "responseBytes": 5187,
+            "successfulResponseBytes": 0,
+            "failureStatuses": {
+              "500": 33,
+              "504": 17
+            },
+            "failureCodes": {
+              "57014": 33,
+              "PGRST003": 17
+            }
+          }
+        },
+        {
+          "id": "groupRanking",
+          "ranking": true,
+          "metrics": {
+            "attempts": 50,
+            "successful": 36,
+            "failed": 14,
+            "errorRate": 0.28,
+            "p50Ms": 8270,
+            "p95Ms": 11180,
+            "maxMs": 11458,
+            "successfulP95Ms": 11215,
+            "responseBytes": 106350,
+            "successfulResponseBytes": 104796,
+            "failureStatuses": {
+              "504": 14
+            },
+            "failureCodes": {
+              "PGRST003": 14
+            }
+          }
+        }
+      ],
+      "targetsMet": false
+    },
+    {
+      "sessions": 100,
+      "durationMs": 50920,
+      "metrics": {
+        "attempts": 600,
+        "successful": 327,
+        "failed": 273,
+        "errorRate": 0.455,
+        "p50Ms": 8856,
+        "p95Ms": 10205,
+        "maxMs": 17322,
+        "successfulP95Ms": 9994,
+        "responseBytes": 1103312,
+        "successfulResponseBytes": 1073317,
+        "failureStatuses": {
+          "500": 28,
+          "504": 245
+        },
+        "failureCodes": {
+          "57014": 28,
+          "PGRST003": 245
+        }
+      },
+      "operations": [
+        {
+          "id": "summary",
+          "ranking": false,
+          "metrics": {
+            "attempts": 100,
+            "successful": 97,
+            "failed": 3,
+            "errorRate": 0.03,
+            "p50Ms": 114,
+            "p95Ms": 897,
+            "maxMs": 10051,
+            "successfulP95Ms": 156,
+            "responseBytes": 13040,
+            "successfulResponseBytes": 12707,
+            "failureStatuses": {
+              "504": 3
+            },
+            "failureCodes": {
+              "PGRST003": 3
+            }
+          }
+        },
+        {
+          "id": "trips",
+          "ranking": false,
+          "metrics": {
+            "attempts": 100,
+            "successful": 67,
+            "failed": 33,
+            "errorRate": 0.33,
+            "p50Ms": 7174,
+            "p95Ms": 10063,
+            "maxMs": 11186,
+            "successfulP95Ms": 9994,
+            "responseBytes": 406080,
+            "successfulResponseBytes": 402417,
+            "failureStatuses": {
+              "504": 33
+            },
+            "failureCodes": {
+              "PGRST003": 33
+            }
+          }
+        },
+        {
+          "id": "groups",
+          "ranking": false,
+          "metrics": {
+            "attempts": 100,
+            "successful": 63,
+            "failed": 37,
+            "errorRate": 0.37,
+            "p50Ms": 7193,
+            "p95Ms": 10033,
+            "maxMs": 11099,
+            "successfulP95Ms": 10338,
+            "responseBytes": 179019,
+            "successfulResponseBytes": 174912,
+            "failureStatuses": {
+              "504": 37
+            },
+            "failureCodes": {
+              "PGRST003": 37
+            }
+          }
+        },
+        {
+          "id": "mailbox",
+          "ranking": false,
+          "metrics": {
+            "attempts": 100,
+            "successful": 44,
+            "failed": 56,
+            "errorRate": 0.56,
+            "p50Ms": 10002,
+            "p95Ms": 10005,
+            "maxMs": 10014,
+            "successfulP95Ms": 7956,
+            "responseBytes": 322384,
+            "successfulResponseBytes": 316168,
+            "failureStatuses": {
+              "504": 56
+            },
+            "failureCodes": {
+              "PGRST003": 56
+            }
+          }
+        },
+        {
+          "id": "tripRanking",
+          "ranking": true,
+          "metrics": {
+            "attempts": 100,
+            "successful": 1,
+            "failed": 99,
+            "errorRate": 0.99,
+            "p50Ms": 10003,
+            "p95Ms": 15202,
+            "maxMs": 17322,
+            "successfulP95Ms": 13124,
+            "responseBytes": 16807,
+            "successfulResponseBytes": 6126,
+            "failureStatuses": {
+              "500": 28,
+              "504": 71
+            },
+            "failureCodes": {
+              "57014": 28,
+              "PGRST003": 71
+            }
+          }
+        },
+        {
+          "id": "groupRanking",
+          "ranking": true,
+          "metrics": {
+            "attempts": 100,
+            "successful": 55,
+            "failed": 45,
+            "errorRate": 0.45,
+            "p50Ms": 10002,
+            "p95Ms": 10100,
+            "maxMs": 11763,
+            "successfulP95Ms": 11217,
+            "responseBytes": 165982,
+            "successfulResponseBytes": 160987,
+            "failureStatuses": {
+              "504": 45
+            },
+            "failureCodes": {
+              "PGRST003": 45
+            }
+          }
+        }
+      ],
+      "targetsMet": false
+    },
+    {
+      "sessions": 200,
+      "durationMs": 61402,
+      "metrics": {
+        "attempts": 1200,
+        "successful": 414,
+        "failed": 786,
+        "errorRate": 0.655,
+        "p50Ms": 10002,
+        "p95Ms": 10126,
+        "maxMs": 18031,
+        "successfulP95Ms": 10760,
+        "responseBytes": 1361150,
+        "successfulResponseBytes": 1274300,
+        "failureStatuses": {
+          "500": 36,
+          "504": 750
+        },
+        "failureCodes": {
+          "57014": 36,
+          "PGRST003": 750
+        }
+      },
+      "operations": [
+        {
+          "id": "summary",
+          "ranking": false,
+          "metrics": {
+            "attempts": 200,
+            "successful": 143,
+            "failed": 57,
+            "errorRate": 0.285,
+            "p50Ms": 1813,
+            "p95Ms": 10112,
+            "maxMs": 10126,
+            "successfulP95Ms": 6662,
+            "responseBytes": 25060,
+            "successfulResponseBytes": 18733,
+            "failureStatuses": {
+              "504": 57
+            },
+            "failureCodes": {
+              "PGRST003": 57
+            }
+          }
+        },
+        {
+          "id": "trips",
+          "ranking": false,
+          "metrics": {
+            "attempts": 200,
+            "successful": 95,
+            "failed": 105,
+            "errorRate": 0.525,
+            "p50Ms": 10002,
+            "p95Ms": 10062,
+            "maxMs": 11061,
+            "successfulP95Ms": 10512,
+            "responseBytes": 582002,
+            "successfulResponseBytes": 570347,
+            "failureStatuses": {
+              "504": 105
+            },
+            "failureCodes": {
+              "PGRST003": 105
+            }
+          }
+        },
+        {
+          "id": "groups",
+          "ranking": false,
+          "metrics": {
+            "attempts": 200,
+            "successful": 71,
+            "failed": 129,
+            "errorRate": 0.645,
+            "p50Ms": 10003,
+            "p95Ms": 10016,
+            "maxMs": 11051,
+            "successfulP95Ms": 10628,
+            "responseBytes": 212653,
+            "successfulResponseBytes": 198334,
+            "failureStatuses": {
+              "504": 129
+            },
+            "failureCodes": {
+              "PGRST003": 129
+            }
+          }
+        },
+        {
+          "id": "mailbox",
+          "ranking": false,
+          "metrics": {
+            "attempts": 200,
+            "successful": 42,
+            "failed": 158,
+            "errorRate": 0.79,
+            "p50Ms": 10003,
+            "p95Ms": 10006,
+            "maxMs": 10009,
+            "successfulP95Ms": 9467,
+            "responseBytes": 319342,
+            "successfulResponseBytes": 301804,
+            "failureStatuses": {
+              "504": 158
+            },
+            "failureCodes": {
+              "PGRST003": 158
+            }
+          }
+        },
+        {
+          "id": "tripRanking",
+          "ranking": true,
+          "metrics": {
+            "attempts": 200,
+            "successful": 0,
+            "failed": 200,
+            "errorRate": 1,
+            "p50Ms": 10003,
+            "p95Ms": 15419,
+            "maxMs": 18031,
+            "successfulP95Ms": null,
+            "responseBytes": 21804,
+            "successfulResponseBytes": 0,
+            "failureStatuses": {
+              "500": 36,
+              "504": 164
+            },
+            "failureCodes": {
+              "57014": 36,
+              "PGRST003": 164
+            }
+          }
+        },
+        {
+          "id": "groupRanking",
+          "ranking": true,
+          "metrics": {
+            "attempts": 200,
+            "successful": 63,
+            "failed": 137,
+            "errorRate": 0.685,
+            "p50Ms": 10003,
+            "p95Ms": 10992,
+            "maxMs": 11970,
+            "successfulP95Ms": 11632,
+            "responseBytes": 200289,
+            "successfulResponseBytes": 185082,
+            "failureStatuses": {
+              "504": 137
+            },
+            "failureCodes": {
+              "PGRST003": 137
+            }
+          }
+        }
+      ],
+      "targetsMet": false
+    }
+  ],
+  "complete": true,
+  "completedAt": "2026-10-28T12:36:54.122Z",
+  "targetsMet": false
+}

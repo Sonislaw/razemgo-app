@@ -34,6 +34,12 @@ Run lint and typecheck before declaring any task done.
 Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
 Docs: https://docs.expo.dev/eas/index.md
 
+## RazemGo release versions
+
+The installed application version and native build number are displayed at the bottom of Settings. Keep that information tied to the installed binary; the web uses the Expo config version.
+
+Before a new app release, increment the user-facing version with `npm run version:patch` (fixes), `npm run version:minor` (features), or `npm run version:major` (breaking releases). These commands synchronize app.json, package.json and package-lock.json without creating Git commits or tags. Do not increment the release version for a retry of the same unchanged release or for ordinary Metro edits. Run `npm run version:check` before building. EAS automatically increments the native build number for Dev/performance and Preview independently. Work on Dev unless the user explicitly authorizes publishing Preview.
+
 ## Rules
 
 - If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.

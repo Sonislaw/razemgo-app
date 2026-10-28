@@ -5,6 +5,7 @@
       "environment": "development",
       "developmentClient": true,
       "distribution": "internal",
+      "autoIncrement": true,
       "env": {
         "APP_VARIANT": "development",
         "EXPO_PUBLIC_APP_ENV": "development",
@@ -22,8 +23,7 @@
         "APP_VARIANT": "development",
         "EXPO_PUBLIC_APP_ENV": "development",
         "EXPO_PUBLIC_ENABLE_DEMO": "false",
-        "EXPO_PUBLIC_MONITORING_IN_DEV": "false",
-        "SENTRY_ALLOW_FAILURE": "true"
+        "EXPO_PUBLIC_MONITORING_IN_DEV": "false"
       },
       "android": { "buildType": "apk" }
     },

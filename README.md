@@ -64,6 +64,14 @@ GitHub Actions uruchamia te kontrole, testy Edge Functions i eksporty Androida o
 
 Dodatkowe kontrole: `npm run check:source`, `npm run test:edge` oraz `npm run types:database -- --check`. CI uruchamia też jednorazowy lokalny Supabase z rzeczywistym Auth/PostgREST i porównuje wygenerowany schemat. Opcjonalny ręczny przebieg `load_test` sprawdza wyłącznie lokalne dane syntetyczne. Szczegóły i ograniczenia: [raport techniczny](docs/ARCHITECTURE_HARDENING.md).
 
+Typy bazy generujemy przypiętym CLI z lokalnej bazy odtworzonej z migracji. `types:database` i jego `--check` wymagają działającego lokalnego Supabase; nie korzystają z hostowanego Dev. Wyniki rzeczywistych testów i poprawki świeżego CI: [LOCAL_BACKEND_VERIFICATION.md](docs/LOCAL_BACKEND_VERIFICATION.md).
+
+Wykonano również izolowaną próbę HTTP na 10 tys. profili, 50 tys. wyjazdów i 500 tys. wiadomości, do 200 sesji. Cele wydajnościowe pozostają niespełnione; wyniki i kolejność dalszej optymalizacji: [HTTP_LOAD_TESTS.md](docs/HTTP_LOAD_TESTS.md).
+
+Kolejna optymalizacja zachowuje dokładne wyniki i kursory, ogranicza składanie kart oraz powtarzane obliczenia zgodności. Porównanie SQL i HTTP, wariant z różnymi wejściami i aktualne ograniczenia: [DISCOVERY_SQL_OPTIMIZATION.md](docs/DISCOVERY_SQL_OPTIMIZATION.md).
+
+Osobny scenariusz `benchmark:sessions` sprawdza stopniowe dołączanie 200 sesji, powtarzane odczyty i zasoby bazy/API. Nie zastępuje oryginalnego testu nagłego ruchu. Protokół, uruchomienie i wyniki: [PACED_READ_LOAD.md](docs/PACED_READ_LOAD.md).
+
 Google, dostarczenie e-maila, klawiatura Androida i rzeczywiste push wymagają oddzielnej kontroli na telefonach. Eksport i test przeglądarkowy nie potwierdzają działania tych usług na urządzeniu.
 
 ## Wdrożenia

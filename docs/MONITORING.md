@@ -88,14 +88,16 @@ npx sentry-expo-upload-sourcemaps .expo/monitoring-web
 
 `app.config.js` dodaje plugin `@sentry/react-native/expo` tylko dla wariantu Development, z organizacją **`zgranago`**, projektem **`react-native`** i adresem `https://sentry.io/`. Wariant Preview nie otrzymał tej konfiguracji. Release ma postać `razemgo@<wersja>+<wariant>.<skrót źródeł>`; skrót obejmuje również niezacommitowane zmiany, ale nie pliki środowiska ani sekrety. Debug IDs pozostają w dozwolonym, oczyszczonym zdarzeniu.
 
-Użytkownik zdecydował dodać token później. Gdy będzie gotowy:
+Token dodano 28.10.2026. Odczyt metadanych EAS potwierdził obecność `SENTRY_AUTH_TOKEN` w środowisku **Development**, bez odczytywania ani wyświetlania jego wartości. Konfiguracja kolejnych tokenów:
 
 1. Utwórz token Sentry uprawniony do przesyłania map do tej organizacji i projektu.
 2. W projekcie Expo RazemGo dodaj `SENTRY_AUTH_TOKEN` jako zmienną **Secret**, wyłącznie dla środowiska **Development**. Nie wklejaj wartości do rozmowy.
 3. Zbuduj nowy APK `npm run build:performance` lub `npm run build:dev`. Token dodany po budowie nie prześle automatycznie wcześniejszych map.
 4. Sprawdź log uploadu, a następnie odczyt rzeczywistego kontrolowanego błędu z tego konkretnego APK w Sentry.
 
-Profil `performance` pozwala zbudować APK bez tokena (`SENTRY_ALLOW_FAILURE=true`). Nie wolno traktować powodzenia tego buildu jako potwierdzenia uploadu. Zwykły profil `development` nie ma tego wyjątku. Wysyłka map obecnego APK i końcowa symbolikacja **nie są potwierdzone**. Pełny raport zmian: [ARCHITECTURE_HARDENING.md](ARCHITECTURE_HARDENING.md).
+Po dodaniu tokena usunięto `SENTRY_ALLOW_FAILURE=true` z profilu `performance`: błędy przesyłania map nie są już pomijane. Wcześniejszy APK `8420c65d` zbudowano jeszcze z tym wyjątkiem; jego mapy nie zostały potwierdzone. Nowy [build Dev `b170e37a`](https://expo.dev/accounts/sonislaw/projects/razemgo/builds/b170e37a-3e7b-4f62-b534-e5a1db9327e6) uruchomiono w profilu `performance`, ze środowiskiem Development. **Przyjęcie paczki map przez Sentry jest potwierdzone**: zadanie `SentryUpload` zwróciło `File upload complete (processing pending on server)`, `Upload type: artifact bundle` oraz `Source Map Upload Report`, bez błędu uploadu lub autoryzacji. Przetworzenie po stronie Sentry i czytelność konkretnego kontrolowanego błędu z APK pozostają osobną weryfikacją; same logi uploadu ich nie potwierdzają. Preview nie zmieniono. Pełny raport zmian: [ARCHITECTURE_HARDENING.md](ARCHITECTURE_HARDENING.md).
+
+Build zakończył się `FINISHED` 28.10.2026 o 20:18 UTC. [APK Dev z przesłanymi mapami](https://expo.dev/artifacts/eas/b74DOoHiMdE915jOUmf4fE81c1OAzL3nfRao6iYRomU.apk). Metadane EAS: wersja `1.2.0`, kompilacja `1`, pakiet `pl.razemgo.app.development`. To samodzielny APK bez Metro. Kod wysłano przed dodaniem widocznej wersji w ustawieniach i włączeniem automatycznego numerowania Dev; te zmiany trafią do kolejnego APK. Nie wykonano jeszcze testu tego pliku na telefonie.
 
 Kontrole lokalne:
 

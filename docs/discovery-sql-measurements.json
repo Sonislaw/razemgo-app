@@ -1,0 +1,1529 @@
+{
+  "ciRun": "https://github.com/Sonislaw/razemgo-app/actions/runs/40700651531",
+  "baselineRun": "https://github.com/Sonislaw/razemgo-app/actions/runs/40688440868",
+  "baselineFile": "http-load-measurements.json",
+  "http": {
+    "schemaVersion": 2,
+    "engine": "Disposable local Supabase HTTP; synthetic read burst, not sustained app sessions",
+    "startedAt": "2026-10-28T13:56:51.204Z",
+    "fixture": {
+      "trips": 50000,
+      "messages": 500000,
+      "profiles": 10000,
+      "sessions": 200,
+      "pushEvents": 0,
+      "pushDevices": 0,
+      "proposalJobs": 0
+    },
+    "seedAndVerificationMs": 136,
+    "environment": {
+      "commit": "dc0aaded41ae7e0b1c1d7f3b593a8b46b4dc66a5",
+      "node": "v24.21.0",
+      "cpuModel": "AMD EPYC 7763 64-Core Processor",
+      "logicalCpus": 4,
+      "availableCpus": 4,
+      "memoryBytes": 16766414848,
+      "database": {
+        "version": "17.11",
+        "workMem": "4MB",
+        "sharedBuffers": "128MB",
+        "maxConnections": "100",
+        "authenticatedStatementTimeout": "8s"
+      },
+      "postgrest": {
+        "image": "ghcr.io/supabase/postgrest:v16.5",
+        "explicitSettings": {
+          "PGRST_DB_MAX_ROWS": "1000"
+        }
+      }
+    },
+    "protocol": {
+      "requestTimeoutMs": 30000,
+      "requestsPerSession": 6,
+      "roundsPerBurst": 1,
+      "thinkTimeMs": 0,
+      "retries": 0,
+      "targets": {
+        "pageP95Ms": 800,
+        "rankingP95Ms": 1500,
+        "errorRateBelow": 0.01
+      },
+      "control": "Three sequential samples per endpoint, outside the concurrent stages; not a p95 capacity claim"
+    },
+    "controls": [
+      {
+        "id": "summary",
+        "ranking": false,
+        "metrics": {
+          "attempts": 3,
+          "successful": 3,
+          "failed": 0,
+          "errorRate": 0,
+          "p50Ms": 7,
+          "p95Ms": 64,
+          "maxMs": 64,
+          "successfulP95Ms": 64,
+          "responseBytes": 393,
+          "successfulResponseBytes": 393,
+          "failureStatuses": {},
+          "failureCodes": {}
+        }
+      },
+      {
+        "id": "trips",
+        "ranking": false,
+        "metrics": {
+          "attempts": 3,
+          "successful": 3,
+          "failed": 0,
+          "errorRate": 0,
+          "p50Ms": 74,
+          "p95Ms": 87,
+          "maxMs": 87,
+          "successfulP95Ms": 87,
+          "responseBytes": 17961,
+          "successfulResponseBytes": 17961,
+          "failureStatuses": {},
+          "failureCodes": {}
+        }
+      },
+      {
+        "id": "groups",
+        "ranking": false,
+        "metrics": {
+          "attempts": 3,
+          "successful": 3,
+          "failed": 0,
+          "errorRate": 0,
+          "p50Ms": 32,
+          "p95Ms": 39,
+          "maxMs": 39,
+          "successfulP95Ms": 39,
+          "responseBytes": 8361,
+          "successfulResponseBytes": 8361,
+          "failureStatuses": {},
+          "failureCodes": {}
+        }
+      },
+      {
+        "id": "mailbox",
+        "ranking": false,
+        "metrics": {
+          "attempts": 3,
+          "successful": 3,
+          "failed": 0,
+          "errorRate": 0,
+          "p50Ms": 52,
+          "p95Ms": 56,
+          "maxMs": 56,
+          "successfulP95Ms": 56,
+          "responseBytes": 21561,
+          "successfulResponseBytes": 21561,
+          "failureStatuses": {},
+          "failureCodes": {}
+        }
+      },
+      {
+        "id": "tripRanking",
+        "ranking": true,
+        "metrics": {
+          "attempts": 3,
+          "successful": 3,
+          "failed": 0,
+          "errorRate": 0,
+          "p50Ms": 415,
+          "p95Ms": 425,
+          "maxMs": 425,
+          "successfulP95Ms": 425,
+          "responseBytes": 18387,
+          "successfulResponseBytes": 18387,
+          "failureStatuses": {},
+          "failureCodes": {}
+        }
+      },
+      {
+        "id": "groupRanking",
+        "ranking": true,
+        "metrics": {
+          "attempts": 3,
+          "successful": 3,
+          "failed": 0,
+          "errorRate": 0,
+          "p50Ms": 81,
+          "p95Ms": 84,
+          "maxMs": 84,
+          "successfulP95Ms": 84,
+          "responseBytes": 9045,
+          "successfulResponseBytes": 9045,
+          "failureStatuses": {},
+          "failureCodes": {}
+        }
+      }
+    ],
+    "runs": [
+      {
+        "sessions": 10,
+        "durationMs": 3023,
+        "metrics": {
+          "attempts": 60,
+          "successful": 60,
+          "failed": 0,
+          "errorRate": 0,
+          "p50Ms": 247,
+          "p95Ms": 1875,
+          "maxMs": 2100,
+          "successfulP95Ms": 1875,
+          "responseBytes": 251421,
+          "successfulResponseBytes": 251421,
+          "failureStatuses": {},
+          "failureCodes": {}
+        },
+        "operations": [
+          {
+            "id": "summary",
+            "ranking": false,
+            "metrics": {
+              "attempts": 10,
+              "successful": 10,
+              "failed": 0,
+              "errorRate": 0,
+              "p50Ms": 85,
+              "p95Ms": 107,
+              "maxMs": 107,
+              "successfulP95Ms": 107,
+              "responseBytes": 1310,
+              "successfulResponseBytes": 1310,
+              "failureStatuses": {},
+              "failureCodes": {}
+            }
+          },
+          {
+            "id": "trips",
+            "ranking": false,
+            "metrics": {
+              "attempts": 10,
+              "successful": 10,
+              "failed": 0,
+              "errorRate": 0,
+              "p50Ms": 331,
+              "p95Ms": 409,
+              "maxMs": 409,
+              "successfulP95Ms": 409,
+              "responseBytes": 60000,
+              "successfulResponseBytes": 60000,
+              "failureStatuses": {},
+              "failureCodes": {}
+            }
+          },
+          {
+            "id": "groups",
+            "ranking": false,
+            "metrics": {
+              "attempts": 10,
+              "successful": 10,
+              "failed": 0,
+              "errorRate": 0,
+              "p50Ms": 191,
+              "p95Ms": 264,
+              "maxMs": 264,
+              "successfulP95Ms": 264,
+              "responseBytes": 27691,
+              "successfulResponseBytes": 27691,
+              "failureStatuses": {},
+              "failureCodes": {}
+            }
+          },
+          {
+            "id": "mailbox",
+            "ranking": false,
+            "metrics": {
+              "attempts": 10,
+              "successful": 10,
+              "failed": 0,
+              "errorRate": 0,
+              "p50Ms": 217,
+              "p95Ms": 414,
+              "maxMs": 414,
+              "successfulP95Ms": 414,
+              "responseBytes": 71824,
+              "successfulResponseBytes": 71824,
+              "failureStatuses": {},
+              "failureCodes": {}
+            }
+          },
+          {
+            "id": "tripRanking",
+            "ranking": true,
+            "metrics": {
+              "attempts": 10,
+              "successful": 10,
+              "failed": 0,
+              "errorRate": 0,
+              "p50Ms": 1830,
+              "p95Ms": 2100,
+              "maxMs": 2100,
+              "successfulP95Ms": 2100,
+              "responseBytes": 61244,
+              "successfulResponseBytes": 61244,
+              "failureStatuses": {},
+              "failureCodes": {}
+            }
+          },
+          {
+            "id": "groupRanking",
+            "ranking": true,
+            "metrics": {
+              "attempts": 10,
+              "successful": 10,
+              "failed": 0,
+              "errorRate": 0,
+              "p50Ms": 225,
+              "p95Ms": 382,
+              "maxMs": 382,
+              "successfulP95Ms": 382,
+              "responseBytes": 29352,
+              "successfulResponseBytes": 29352,
+              "failureStatuses": {},
+              "failureCodes": {}
+            }
+          }
+        ],
+        "targetsMet": false
+      },
+      {
+        "sessions": 50,
+        "durationMs": 14771,
+        "metrics": {
+          "attempts": 300,
+          "successful": 300,
+          "failed": 0,
+          "errorRate": 0,
+          "p50Ms": 1158,
+          "p95Ms": 5532,
+          "maxMs": 9568,
+          "successfulP95Ms": 5532,
+          "responseBytes": 1258321,
+          "successfulResponseBytes": 1258321,
+          "failureStatuses": {},
+          "failureCodes": {}
+        },
+        "operations": [
+          {
+            "id": "summary",
+            "ranking": false,
+            "metrics": {
+              "attempts": 50,
+              "successful": 50,
+              "failed": 0,
+              "errorRate": 0,
+              "p50Ms": 93,
+              "p95Ms": 1576,
+              "maxMs": 9148,
+              "successfulP95Ms": 1576,
+              "responseBytes": 6550,
+              "successfulResponseBytes": 6550,
+              "failureStatuses": {},
+              "failureCodes": {}
+            }
+          },
+          {
+            "id": "trips",
+            "ranking": false,
+            "metrics": {
+              "attempts": 50,
+              "successful": 50,
+              "failed": 0,
+              "errorRate": 0,
+              "p50Ms": 799,
+              "p95Ms": 4790,
+              "maxMs": 5583,
+              "successfulP95Ms": 4790,
+              "responseBytes": 300282,
+              "successfulResponseBytes": 300282,
+              "failureStatuses": {},
+              "failureCodes": {}
+            }
+          },
+          {
+            "id": "groups",
+            "ranking": false,
+            "metrics": {
+              "attempts": 50,
+              "successful": 50,
+              "failed": 0,
+              "errorRate": 0,
+              "p50Ms": 741,
+              "p95Ms": 5532,
+              "maxMs": 7304,
+              "successfulP95Ms": 5532,
+              "responseBytes": 139667,
+              "successfulResponseBytes": 139667,
+              "failureStatuses": {},
+              "failureCodes": {}
+            }
+          },
+          {
+            "id": "mailbox",
+            "ranking": false,
+            "metrics": {
+              "attempts": 50,
+              "successful": 50,
+              "failed": 0,
+              "errorRate": 0,
+              "p50Ms": 1570,
+              "p95Ms": 5692,
+              "maxMs": 7305,
+              "successfulP95Ms": 5692,
+              "responseBytes": 359186,
+              "successfulResponseBytes": 359186,
+              "failureStatuses": {},
+              "failureCodes": {}
+            }
+          },
+          {
+            "id": "tripRanking",
+            "ranking": true,
+            "metrics": {
+              "attempts": 50,
+              "successful": 50,
+              "failed": 0,
+              "errorRate": 0,
+              "p50Ms": 2856,
+              "p95Ms": 6874,
+              "maxMs": 9568,
+              "successfulP95Ms": 6874,
+              "responseBytes": 306172,
+              "successfulResponseBytes": 306172,
+              "failureStatuses": {},
+              "failureCodes": {}
+            }
+          },
+          {
+            "id": "groupRanking",
+            "ranking": true,
+            "metrics": {
+              "attempts": 50,
+              "successful": 50,
+              "failed": 0,
+              "errorRate": 0,
+              "p50Ms": 1299,
+              "p95Ms": 4099,
+              "maxMs": 4988,
+              "successfulP95Ms": 4099,
+              "responseBytes": 146464,
+              "successfulResponseBytes": 146464,
+              "failureStatuses": {},
+              "failureCodes": {}
+            }
+          }
+        ],
+        "targetsMet": false
+      },
+      {
+        "sessions": 100,
+        "durationMs": 27323,
+        "metrics": {
+          "attempts": 600,
+          "successful": 561,
+          "failed": 39,
+          "errorRate": 0.065,
+          "p50Ms": 2335,
+          "p95Ms": 10003,
+          "maxMs": 11873,
+          "successfulP95Ms": 8446,
+          "responseBytes": 2336148,
+          "successfulResponseBytes": 2331819,
+          "failureStatuses": {
+            "504": 39
+          },
+          "failureCodes": {
+            "PGRST003": 39
+          }
+        },
+        "operations": [
+          {
+            "id": "summary",
+            "ranking": false,
+            "metrics": {
+              "attempts": 100,
+              "successful": 96,
+              "failed": 4,
+              "errorRate": 0.04,
+              "p50Ms": 124,
+              "p95Ms": 5497,
+              "maxMs": 10068,
+              "successfulP95Ms": 4325,
+              "responseBytes": 13020,
+              "successfulResponseBytes": 12576,
+              "failureStatuses": {
+                "504": 4
+              },
+              "failureCodes": {
+                "PGRST003": 4
+              }
+            }
+          },
+          {
+            "id": "trips",
+            "ranking": false,
+            "metrics": {
+              "attempts": 100,
+              "successful": 91,
+              "failed": 9,
+              "errorRate": 0.09,
+              "p50Ms": 1732,
+              "p95Ms": 10007,
+              "maxMs": 10043,
+              "successfulP95Ms": 8654,
+              "responseBytes": 547570,
+              "successfulResponseBytes": 546571,
+              "failureStatuses": {
+                "504": 9
+              },
+              "failureCodes": {
+                "PGRST003": 9
+              }
+            }
+          },
+          {
+            "id": "groups",
+            "ranking": false,
+            "metrics": {
+              "attempts": 100,
+              "successful": 95,
+              "failed": 5,
+              "errorRate": 0.05,
+              "p50Ms": 1861,
+              "p95Ms": 9301,
+              "maxMs": 10005,
+              "successfulP95Ms": 7848,
+              "responseBytes": 266374,
+              "successfulResponseBytes": 265819,
+              "failureStatuses": {
+                "504": 5
+              },
+              "failureCodes": {
+                "PGRST003": 5
+              }
+            }
+          },
+          {
+            "id": "mailbox",
+            "ranking": false,
+            "metrics": {
+              "attempts": 100,
+              "successful": 93,
+              "failed": 7,
+              "errorRate": 0.07,
+              "p50Ms": 2586,
+              "p95Ms": 10002,
+              "maxMs": 10006,
+              "successfulP95Ms": 8852,
+              "responseBytes": 669008,
+              "successfulResponseBytes": 668231,
+              "failureStatuses": {
+                "504": 7
+              },
+              "failureCodes": {
+                "PGRST003": 7
+              }
+            }
+          },
+          {
+            "id": "tripRanking",
+            "ranking": true,
+            "metrics": {
+              "attempts": 100,
+              "successful": 92,
+              "failed": 8,
+              "errorRate": 0.08,
+              "p50Ms": 4396,
+              "p95Ms": 10003,
+              "maxMs": 11873,
+              "successfulP95Ms": 9893,
+              "responseBytes": 564155,
+              "successfulResponseBytes": 563267,
+              "failureStatuses": {
+                "504": 8
+              },
+              "failureCodes": {
+                "PGRST003": 8
+              }
+            }
+          },
+          {
+            "id": "groupRanking",
+            "ranking": true,
+            "metrics": {
+              "attempts": 100,
+              "successful": 94,
+              "failed": 6,
+              "errorRate": 0.06,
+              "p50Ms": 2812,
+              "p95Ms": 10002,
+              "maxMs": 10251,
+              "successfulP95Ms": 7971,
+              "responseBytes": 276021,
+              "successfulResponseBytes": 275355,
+              "failureStatuses": {
+                "504": 6
+              },
+              "failureCodes": {
+                "PGRST003": 6
+              }
+            }
+          }
+        ],
+        "targetsMet": false
+      },
+      {
+        "sessions": 200,
+        "durationMs": 40862,
+        "metrics": {
+          "attempts": 1200,
+          "successful": 915,
+          "failed": 285,
+          "errorRate": 0.2375,
+          "p50Ms": 4047,
+          "p95Ms": 10006,
+          "maxMs": 11753,
+          "successfulP95Ms": 9362,
+          "responseBytes": 3645607,
+          "successfulResponseBytes": 3613972,
+          "failureStatuses": {
+            "504": 285
+          },
+          "failureCodes": {
+            "PGRST003": 285
+          }
+        },
+        "operations": [
+          {
+            "id": "summary",
+            "ranking": false,
+            "metrics": {
+              "attempts": 200,
+              "successful": 188,
+              "failed": 12,
+              "errorRate": 0.06,
+              "p50Ms": 206,
+              "p95Ms": 10090,
+              "maxMs": 10127,
+              "successfulP95Ms": 6310,
+              "responseBytes": 25960,
+              "successfulResponseBytes": 24628,
+              "failureStatuses": {
+                "504": 12
+              },
+              "failureCodes": {
+                "PGRST003": 12
+              }
+            }
+          },
+          {
+            "id": "trips",
+            "ranking": false,
+            "metrics": {
+              "attempts": 200,
+              "successful": 158,
+              "failed": 42,
+              "errorRate": 0.21,
+              "p50Ms": 3183,
+              "p95Ms": 10043,
+              "maxMs": 10117,
+              "successfulP95Ms": 8394,
+              "responseBytes": 953564,
+              "successfulResponseBytes": 948902,
+              "failureStatuses": {
+                "504": 42
+              },
+              "failureCodes": {
+                "PGRST003": 42
+              }
+            }
+          },
+          {
+            "id": "groups",
+            "ranking": false,
+            "metrics": {
+              "attempts": 200,
+              "successful": 144,
+              "failed": 56,
+              "errorRate": 0.28,
+              "p50Ms": 3942,
+              "p95Ms": 10005,
+              "maxMs": 10016,
+              "successfulP95Ms": 8190,
+              "responseBytes": 408207,
+              "successfulResponseBytes": 401991,
+              "failureStatuses": {
+                "504": 56
+              },
+              "failureCodes": {
+                "PGRST003": 56
+              }
+            }
+          },
+          {
+            "id": "mailbox",
+            "ranking": false,
+            "metrics": {
+              "attempts": 200,
+              "successful": 131,
+              "failed": 69,
+              "errorRate": 0.345,
+              "p50Ms": 5903,
+              "p95Ms": 10003,
+              "maxMs": 10033,
+              "successfulP95Ms": 9063,
+              "responseBytes": 949052,
+              "successfulResponseBytes": 941393,
+              "failureStatuses": {
+                "504": 69
+              },
+              "failureCodes": {
+                "PGRST003": 69
+              }
+            }
+          },
+          {
+            "id": "tripRanking",
+            "ranking": true,
+            "metrics": {
+              "attempts": 200,
+              "successful": 137,
+              "failed": 63,
+              "errorRate": 0.315,
+              "p50Ms": 8030,
+              "p95Ms": 10341,
+              "maxMs": 11753,
+              "successfulP95Ms": 10953,
+              "responseBytes": 845431,
+              "successfulResponseBytes": 838438,
+              "failureStatuses": {
+                "504": 63
+              },
+              "failureCodes": {
+                "PGRST003": 63
+              }
+            }
+          },
+          {
+            "id": "groupRanking",
+            "ranking": true,
+            "metrics": {
+              "attempts": 200,
+              "successful": 157,
+              "failed": 43,
+              "errorRate": 0.215,
+              "p50Ms": 4438,
+              "p95Ms": 10003,
+              "maxMs": 10264,
+              "successfulP95Ms": 8999,
+              "responseBytes": 463393,
+              "successfulResponseBytes": 458620,
+              "failureStatuses": {
+                "504": 43
+              },
+              "failureCodes": {
+                "PGRST003": 43
+              }
+            }
+          }
+        ],
+        "targetsMet": false
+      }
+    ],
+    "complete": true,
+    "completedAt": "2026-10-28T13:58:19.728Z",
+    "targetsMet": false
+  },
+  "profiledSql": {
+    "-legacy": [
+      {
+        "id": "trips",
+        "executionMs": 328.779,
+        "planningMs": 0.008,
+        "tempWrittenBlocks": 4073,
+        "tempReadBlocks": 4073,
+        "ctes": [
+          {
+            "name": "CTE eligible",
+            "node": "Function Scan",
+            "estimatedRows": 1000,
+            "rows": 49995,
+            "loops": 1
+          },
+          {
+            "name": "CTE preliminary",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE scored",
+            "node": "Nested Loop",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE page",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE visible",
+            "node": "Limit",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          }
+        ]
+      },
+      {
+        "id": "tripRanking",
+        "executionMs": 3220.511,
+        "planningMs": 0.007,
+        "tempWrittenBlocks": 13035,
+        "tempReadBlocks": 6335,
+        "ctes": [
+          {
+            "name": "CTE eligible",
+            "node": "Function Scan",
+            "estimatedRows": 1000,
+            "rows": 49995,
+            "loops": 1
+          },
+          {
+            "name": "CTE preliminary",
+            "node": "Sort",
+            "estimatedRows": 1000,
+            "rows": 49995,
+            "loops": 1
+          },
+          {
+            "name": "CTE scored",
+            "node": "Nested Loop",
+            "estimatedRows": 1000,
+            "rows": 49995,
+            "loops": 1
+          },
+          {
+            "name": "CTE page",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE visible",
+            "node": "Limit",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          }
+        ]
+      },
+      {
+        "id": "groups",
+        "executionMs": 463.015,
+        "planningMs": 0.008,
+        "tempWrittenBlocks": 920,
+        "tempReadBlocks": 460,
+        "ctes": [
+          {
+            "name": "CTE eligible",
+            "node": "Nested Loop",
+            "estimatedRows": 3333,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE ranked",
+            "node": "CTE Scan",
+            "estimatedRows": 3333,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE matched",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE page",
+            "node": "Limit",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          },
+          {
+            "name": "CTE projected",
+            "node": "CTE Scan",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          }
+        ]
+      },
+      {
+        "id": "groupRanking",
+        "executionMs": 773.909,
+        "planningMs": 0.007,
+        "tempWrittenBlocks": 1135,
+        "tempReadBlocks": 460,
+        "ctes": [
+          {
+            "name": "CTE eligible",
+            "node": "Nested Loop",
+            "estimatedRows": 3333,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE ranked",
+            "node": "CTE Scan",
+            "estimatedRows": 3333,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE matched",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE page",
+            "node": "Limit",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          },
+          {
+            "name": "CTE projected",
+            "node": "CTE Scan",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          }
+        ]
+      }
+    ],
+    "optimized": [
+      {
+        "id": "trips",
+        "executionMs": 92.006,
+        "planningMs": 0.038,
+        "tempWrittenBlocks": 0,
+        "tempReadBlocks": 0,
+        "ctes": [
+          {
+            "name": "CTE eligible",
+            "node": "Result",
+            "estimatedRows": 6249,
+            "rows": 49995,
+            "loops": 1
+          },
+          {
+            "name": "CTE page",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE visible",
+            "node": "Nested Loop",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          }
+        ]
+      },
+      {
+        "id": "tripRanking",
+        "executionMs": 436.899,
+        "planningMs": 0.039,
+        "tempWrittenBlocks": 953,
+        "tempReadBlocks": 1906,
+        "ctes": [
+          {
+            "name": "CTE source_values",
+            "node": "Function Scan",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          },
+          {
+            "name": "CTE sources",
+            "node": "CTE Scan",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          },
+          {
+            "name": "CTE requirements",
+            "node": "Aggregate",
+            "estimatedRows": 1,
+            "rows": 1,
+            "loops": 1
+          },
+          {
+            "name": "CTE eligible",
+            "node": "Result",
+            "estimatedRows": 6249,
+            "rows": 49995,
+            "loops": 1
+          },
+          {
+            "name": "CTE unique_targets",
+            "node": "Aggregate",
+            "estimatedRows": 200,
+            "rows": 120,
+            "loops": 1
+          },
+          {
+            "name": "CTE feature_scores",
+            "node": "CTE Scan",
+            "estimatedRows": 200,
+            "rows": 120,
+            "loops": 1
+          },
+          {
+            "name": "CTE page",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE visible",
+            "node": "Nested Loop",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          }
+        ]
+      },
+      {
+        "id": "groups",
+        "executionMs": 43.734,
+        "planningMs": 0.041,
+        "tempWrittenBlocks": 0,
+        "tempReadBlocks": 0,
+        "ctes": [
+          {
+            "name": "CTE eligible",
+            "node": "Hash Join",
+            "estimatedRows": 2500,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE targets",
+            "node": "Hash Join",
+            "estimatedRows": 2500,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE unique_targets",
+            "node": "Aggregate",
+            "estimatedRows": 1,
+            "rows": 0,
+            "loops": 1
+          },
+          {
+            "name": "CTE feature_scores",
+            "node": "Nested Loop",
+            "estimatedRows": 1,
+            "rows": 0,
+            "loops": 1
+          },
+          {
+            "name": "CTE matched",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE page",
+            "node": "Limit",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          },
+          {
+            "name": "CTE projected",
+            "node": "Nested Loop",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          }
+        ]
+      },
+      {
+        "id": "groupRanking",
+        "executionMs": 89.314,
+        "planningMs": 0.039,
+        "tempWrittenBlocks": 0,
+        "tempReadBlocks": 0,
+        "ctes": [
+          {
+            "name": "CTE eligible",
+            "node": "Hash Join",
+            "estimatedRows": 2500,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE targets",
+            "node": "Hash Join",
+            "estimatedRows": 2500,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE unique_targets",
+            "node": "Aggregate",
+            "estimatedRows": 200,
+            "rows": 4,
+            "loops": 1
+          },
+          {
+            "name": "CTE feature_scores",
+            "node": "Hash Join",
+            "estimatedRows": 200,
+            "rows": 4,
+            "loops": 1
+          },
+          {
+            "name": "CTE matched",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE page",
+            "node": "Limit",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          },
+          {
+            "name": "CTE projected",
+            "node": "Nested Loop",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          }
+        ]
+      }
+    ],
+    "-diverse-legacy": [
+      {
+        "id": "trips",
+        "executionMs": 360.447,
+        "planningMs": 0.008,
+        "tempWrittenBlocks": 4834,
+        "tempReadBlocks": 4834,
+        "ctes": [
+          {
+            "name": "CTE eligible",
+            "node": "Function Scan",
+            "estimatedRows": 1000,
+            "rows": 49995,
+            "loops": 1
+          },
+          {
+            "name": "CTE preliminary",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE scored",
+            "node": "Nested Loop",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE page",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE visible",
+            "node": "Limit",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          }
+        ]
+      },
+      {
+        "id": "tripRanking",
+        "executionMs": 7854.698,
+        "planningMs": 0.008,
+        "tempWrittenBlocks": 15572,
+        "tempReadBlocks": 7477,
+        "ctes": [
+          {
+            "name": "CTE eligible",
+            "node": "Function Scan",
+            "estimatedRows": 1000,
+            "rows": 49995,
+            "loops": 1
+          },
+          {
+            "name": "CTE preliminary",
+            "node": "Sort",
+            "estimatedRows": 1000,
+            "rows": 49995,
+            "loops": 1
+          },
+          {
+            "name": "CTE scored",
+            "node": "Nested Loop",
+            "estimatedRows": 1000,
+            "rows": 49995,
+            "loops": 1
+          },
+          {
+            "name": "CTE page",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE visible",
+            "node": "Limit",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          }
+        ]
+      },
+      {
+        "id": "groups",
+        "executionMs": 468.171,
+        "planningMs": 0.008,
+        "tempWrittenBlocks": 1188,
+        "tempReadBlocks": 594,
+        "ctes": [
+          {
+            "name": "CTE eligible",
+            "node": "Nested Loop",
+            "estimatedRows": 3333,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE ranked",
+            "node": "CTE Scan",
+            "estimatedRows": 3333,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE matched",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE page",
+            "node": "Limit",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          },
+          {
+            "name": "CTE projected",
+            "node": "CTE Scan",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          }
+        ]
+      },
+      {
+        "id": "groupRanking",
+        "executionMs": 766.817,
+        "planningMs": 0.008,
+        "tempWrittenBlocks": 1387,
+        "tempReadBlocks": 594,
+        "ctes": [
+          {
+            "name": "CTE eligible",
+            "node": "Nested Loop",
+            "estimatedRows": 3333,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE ranked",
+            "node": "CTE Scan",
+            "estimatedRows": 3333,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE matched",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE page",
+            "node": "Limit",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          },
+          {
+            "name": "CTE projected",
+            "node": "CTE Scan",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          }
+        ]
+      }
+    ],
+    "-diverse": [
+      {
+        "id": "trips",
+        "executionMs": 100.734,
+        "planningMs": 0.036,
+        "tempWrittenBlocks": 0,
+        "tempReadBlocks": 0,
+        "ctes": [
+          {
+            "name": "CTE eligible",
+            "node": "Result",
+            "estimatedRows": 6249,
+            "rows": 49995,
+            "loops": 1
+          },
+          {
+            "name": "CTE page",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE visible",
+            "node": "Nested Loop",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          }
+        ]
+      },
+      {
+        "id": "tripRanking",
+        "executionMs": 1332.513,
+        "planningMs": 0.039,
+        "tempWrittenBlocks": 7466,
+        "tempReadBlocks": 5433,
+        "ctes": [
+          {
+            "name": "CTE source_values",
+            "node": "Function Scan",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          },
+          {
+            "name": "CTE sources",
+            "node": "CTE Scan",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          },
+          {
+            "name": "CTE requirements",
+            "node": "Aggregate",
+            "estimatedRows": 1,
+            "rows": 1,
+            "loops": 1
+          },
+          {
+            "name": "CTE eligible",
+            "node": "Result",
+            "estimatedRows": 6249,
+            "rows": 49995,
+            "loops": 1
+          },
+          {
+            "name": "CTE unique_targets",
+            "node": "Aggregate",
+            "estimatedRows": 200,
+            "rows": 49995,
+            "loops": 1
+          },
+          {
+            "name": "CTE feature_scores",
+            "node": "CTE Scan",
+            "estimatedRows": 200,
+            "rows": 49995,
+            "loops": 1
+          },
+          {
+            "name": "CTE page",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE visible",
+            "node": "Nested Loop",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          }
+        ]
+      },
+      {
+        "id": "groups",
+        "executionMs": 44.071,
+        "planningMs": 0.038,
+        "tempWrittenBlocks": 0,
+        "tempReadBlocks": 0,
+        "ctes": [
+          {
+            "name": "CTE eligible",
+            "node": "Hash Join",
+            "estimatedRows": 2500,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE targets",
+            "node": "Hash Join",
+            "estimatedRows": 2500,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE unique_targets",
+            "node": "Aggregate",
+            "estimatedRows": 1,
+            "rows": 0,
+            "loops": 1
+          },
+          {
+            "name": "CTE feature_scores",
+            "node": "Nested Loop",
+            "estimatedRows": 1,
+            "rows": 0,
+            "loops": 1
+          },
+          {
+            "name": "CTE matched",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE page",
+            "node": "Limit",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          },
+          {
+            "name": "CTE projected",
+            "node": "Nested Loop",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          }
+        ]
+      },
+      {
+        "id": "groupRanking",
+        "executionMs": 682.145,
+        "planningMs": 0.04,
+        "tempWrittenBlocks": 1364,
+        "tempReadBlocks": 408,
+        "ctes": [
+          {
+            "name": "CTE eligible",
+            "node": "Hash Join",
+            "estimatedRows": 2500,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE targets",
+            "node": "Hash Join",
+            "estimatedRows": 2500,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE unique_targets",
+            "node": "Aggregate",
+            "estimatedRows": 200,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE feature_scores",
+            "node": "Hash Join",
+            "estimatedRows": 200,
+            "rows": 9999,
+            "loops": 1
+          },
+          {
+            "name": "CTE matched",
+            "node": "Limit",
+            "estimatedRows": 6,
+            "rows": 6,
+            "loops": 1
+          },
+          {
+            "name": "CTE page",
+            "node": "Limit",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          },
+          {
+            "name": "CTE projected",
+            "node": "Nested Loop",
+            "estimatedRows": 5,
+            "rows": 5,
+            "loops": 1
+          }
+        ]
+      }
+    ]
+  },
+  "planCacheExperiment": {
+    "engine": "PGlite; before pinning plan_cache_mode on the read RPCs; single samples",
+    "samples": []
+  }
+}

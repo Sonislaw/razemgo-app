@@ -2,6 +2,14 @@
 
 ## Zakres i stan
 
+Aktualizacja odbioru: rzeczywisty lokalny Supabase uruchomiono następnie w GitHub Actions, z pozytywnym wynikiem kontroli Auth/PostgREST i schematu. Naprawiono również problemy ujawnione przez świeży checkout. Szczegóły, źródło generowania typów i status dalszych pomiarów: [LOCAL_BACKEND_VERIFICATION.md](LOCAL_BACKEND_VERIFICATION.md). Opis poniżej zachowuje pomiary i stan pierwotnego przekazania paczki.
+
+Kolejna aktualizacja: wykonano natywną próbę HTTP do 200 sesji na danych 10k/50k/500k. Cele nie zostały osiągnięte; ranking wyjazdów i kolejka połączeń wymagają dalszej pracy. Pełny raport i kolejność optymalizacji: [HTTP_LOAD_TESTS.md](HTTP_LOAD_TESTS.md).
+
+Następnie wdrożono wyłącznie na Dev optymalizację dokładnego rankingu i list nową migracją 008 (34 migracje na Dev). Mediana kontrolnego HTTP rankingu wyjazdów spadła z 2253 do 415 ms; pełne cele 200 sesji nadal nie są osiągnięte. Regresja przeszła 493 testy Node/PGlite i 59 scenariuszy Playwright. Pomiary na tym samym runnerze, zakres wdrożenia i ograniczenia: [DISCOVERY_SQL_OPTIMIZATION.md](DISCOVERY_SQL_OPTIMIZATION.md).
+
+Kolejna paczka dodaje osobny, stopniowy scenariusz 200 sesji z diagnostyką zasobów i ochroną przed pozornie dobrym wynikiem przeciążonego generatora. Nie zmienia produktu ani hostowanych backendów: [PACED_READ_LOAD.md](PACED_READ_LOAD.md). Token Sentry dodano do Development; bieżący stan budowy i wysyłki map jest w [MONITORING.md](MONITORING.md). Poniższa sekcja APK opisuje wcześniejszy build bez potwierdzonego uploadu.
+
 Wprowadzono pięć paczek prac nad kontraktami, synchronizacją, odczytami bazy, startem i kontrolami bezpieczeństwa. Zachowano wygląd aplikacji, porcje po pięć w Odkrywaj i ogłoszeniach ekipy oraz powrót do miejsca na liście. Nie dodano funkcji produktu.
 
 Zmiany backendu wdrożono wyłącznie do **Dev `kswuakzcnoqgovnwejhb`**. Dev ma 33 migracje; Preview `tueqqnbdvuazdxoqtpvk`, jego aplikacja, konta i dane pozostały bez zmian. Starsze migracje i publiczne kontrakty RPC zachowano. Zmiany repozytorium nie zostały automatycznie zatwierdzone ani wysłane do GitHub.

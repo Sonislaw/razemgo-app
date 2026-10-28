@@ -32,13 +32,13 @@ export function localBackend() {
     throw Error('Disposable loopback Supabase required');
   return value;
 }
-export function localToken(config, user, session) {
+export function localToken(config, user, session, ttl = 3600) {
   const payload = {
     aud: 'authenticated',
     role: 'authenticated',
     sub: user,
     session_id: session,
-    exp: Math.floor(Date.now() / 1000) + 3600,
+    exp: Math.floor(Date.now() / 1000) + ttl,
   };
   const value = [
     Buffer.from('{"alg":"HS256","typ":"JWT"}').toString('base64url'),
@@ -53,6 +53,7 @@ export function localToken(config, user, session) {
 export async function localRpc(config, token, name, args = {}) {
   return fetch(config.API_URL + '/rest/v1/rpc/' + name, {
     method: 'POST',
+    redirect: 'error',
     headers: {
       apikey: config.ANON_KEY,
       Authorization: 'Bearer ' + token,
@@ -65,7 +66,8 @@ export async function localRpc(config, token, name, args = {}) {
 if (process.argv[1]?.endsWith('local-backend-check.mjs')) {
   const config = localBackend();
   const users = [],
-    tokens = [];
+    tokens = [],
+    groups = [];
   const adminHeaders = {
     apikey: config.SERVICE_ROLE_KEY,
     Authorization: 'Bearer ' + config.SERVICE_ROLE_KEY,
@@ -112,9 +114,52 @@ if (process.argv[1]?.endsWith('local-backend-check.mjs')) {
           matching: { group_kinds: [], child_age_bands: [], description: '' },
         },
       });
-      if (!saved.ok || (await saved.json()).group.owner_user_id !== user.id)
+      if (!saved.ok) throw Error('Local profile save failed');
+      const profile = (await saved.json()).group;
+      if (profile.owner_user_id !== user.id)
         throw Error('Local owner spoofing protection failed');
+      groups.push(profile.id);
     }
+    const rest = (token, path, options = {}) =>
+      fetch(config.API_URL + '/rest/v1/' + path, {
+        ...options,
+        headers: {
+          apikey: config.ANON_KEY,
+          Authorization: 'Bearer ' + token,
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+        signal: AbortSignal.timeout(30000),
+      });
+    const denied = async (response, label) => {
+      const result = await response.json();
+      if (![401, 403].includes(response.status) || result.code !== '42501')
+        throw Error(label + ': expected explicit permission denial');
+    };
+    for (const [table, key] of [
+      ['travel_groups', 'id'],
+      ['group_preferences', 'group_id'],
+    ]) {
+      const mine = await rest(
+        tokens[0],
+        table + '?' + key + '=eq.' + groups[0] + '&select=*',
+      );
+      if (!mine.ok || (await mine.json()).length !== 1)
+        throw Error('Own row is unavailable: ' + table);
+      const other = await rest(
+        tokens[0],
+        table + '?' + key + '=eq.' + groups[1] + '&select=*',
+      );
+      if (!other.ok || (await other.json()).length !== 0)
+        throw Error('Cross-account row leaked: ' + table);
+    }
+    await denied(
+      await rest(tokens[0], 'travel_groups?id=eq.' + groups[0], {
+        method: 'PATCH',
+        body: JSON.stringify({ owner_user_id: users[1].id }),
+      }),
+      'Direct owner change',
+    );
     if (!(await localRpc(config, tokens[0], 'get_my_sync_state')).ok)
       throw Error('Local summary failed');
     for (const name of [
@@ -124,11 +169,34 @@ if (process.argv[1]?.endsWith('local-backend-check.mjs')) {
       'admin_list_reports',
       'get_push_health',
     ]) {
-      if ((await localRpc(config, config.ANON_KEY, name)).ok)
-        throw Error('Anonymous RPC granted: ' + name);
+      await denied(
+        await localRpc(config, config.ANON_KEY, name),
+        'Anonymous RPC: ' + name,
+      );
     }
-    if ((await localRpc(config, tokens[0], 'admin_list_reports')).ok)
-      throw Error('Non-admin has moderation access');
+    for (const name of [
+      'admin_list_reports',
+      'get_push_health',
+      'claim_push_deliveries',
+    ])
+      await denied(
+        await localRpc(config, tokens[0], name),
+        'Non-admin RPC: ' + name,
+      );
+    await denied(
+      await localRpc(
+        config,
+        localToken(config, users[0].id, randomUUID()),
+        'get_my_sync_state',
+      ),
+      'Nonexistent session',
+    );
+    const expired = await localRpc(
+      config,
+      localToken(config, users[0].id, randomUUID(), -60),
+      'get_my_sync_state',
+    );
+    if (expired.status !== 401) throw Error('Expired JWT was not rejected');
     const trips = [];
     for (let n = 0; n < 6; n++) {
       const saved = await localRpc(config, tokens[1], 'save_my_trip', {
@@ -164,10 +232,11 @@ if (process.argv[1]?.endsWith('local-backend-check.mjs')) {
     if (!foreign.ok || (await foreign.json()) !== null)
       throw Error('Cross-account own trip leaked');
     const keys = Array.from({ length: 25 }, randomUUID);
+    const reportTargets = keys.map((_, index) => trips[index % trips.length]);
     const reports = await Promise.all(
-      keys.map((request_key) =>
+      keys.map((request_key, index) =>
         localRpc(config, tokens[0], 'report_trip', {
-          target_trip_id: trips[0],
+          target_trip_id: reportTargets[index],
           report_reason: 'Inny powód',
           request_key,
         }),
@@ -181,7 +250,8 @@ if (process.argv[1]?.endsWith('local-backend-check.mjs')) {
     if (
       !(
         await localRpc(config, tokens[0], 'report_trip', {
-          target_trip_id: trips[0],
+          target_trip_id:
+            reportTargets[reports.findIndex((response) => response.ok)],
           report_reason: 'Inny powód',
           request_key: keys[reports.findIndex((response) => response.ok)],
         })
@@ -199,6 +269,12 @@ if (process.argv[1]?.endsWith('local-backend-check.mjs')) {
     );
     if (invitations.filter((response) => response.ok).length !== 5)
       throw Error('Concurrent invitation limit failed');
+    for (const response of invitations.filter((response) => !response.ok))
+      if ((await response.json()).code !== '54000')
+        throw Error('Unexpected invitation rejection');
+    const recipient = await localRpc(config, tokens[1], 'get_my_sync_state');
+    if (!recipient.ok || (await recipient.json()).pending_invitations !== 5)
+      throw Error('Recipient summary did not preserve all invitations');
     console.log(
       'Local Auth/PostgREST, two-account isolation, owner spoofing, RPC roles, concurrent limits and idempotency passed.',
     );

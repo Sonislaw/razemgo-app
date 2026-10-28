@@ -7,6 +7,7 @@
     "@sentry/react-native": "~8.28.0",
     "@supabase/supabase-js": "^2.118.0",
     "expo": "~58.0.20",
+    "expo-application": "~58.1.2",
     "expo-auth-session": "~58.0.15",
     "expo-constants": "~58.0.13",
     "expo-crypto": "~58.0.7",
@@ -45,6 +46,14 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "version": "node scripts/sync-app-version.mjs",
+    "version:check": "node scripts/sync-app-version.mjs --check",
+    "version:patch": "npm version patch --no-git-tag-version",
+    "version:minor": "npm version minor --no-git-tag-version",
+    "version:major": "npm version major --no-git-tag-version",
+    "prebuild:dev": "npm run version:check",
+    "prebuild:performance": "npm run version:check",
+    "prebuild:preview": "npm run version:check",
     "locations:import": "node scripts/import-localities.mjs",
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -83,6 +92,7 @@
     "test:local-backend": "node scripts/local-backend-check.mjs",
     "benchmark:sql": "node scripts/benchmark-sql.mjs",
     "benchmark:load": "node scripts/benchmark-load.mjs",
+    "benchmark:sessions": "node scripts/benchmark-sessions.mjs",
     "test:edge": "npx --yes deno@2.9.6 test --config supabase/functions/deno.json --frozen --allow-env --allow-net --allow-sys --allow-read supabase/functions/_shared/monitoring.test.ts supabase/functions/_shared/monitoring-dev.test.ts supabase/functions/dispatch-push/handler.test.ts supabase/functions/monitor-push/handler.test.ts supabase/functions/delete-account/handler.test.ts",
     "build:performance": "npx eas-cli@latest build --platform android --profile performance"
   },

@@ -11,6 +11,7 @@ import {
 import { Icon, type IconName } from '@/components/ui/icon';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { ProfileSubpageHeader } from '@/features/profile/profile-ui';
+import { AppVersionFooter } from '@/features/profile/app-version-footer';
 import { AccountSettings } from '@/features/auth/account-settings';
 import { PushPermissionCard } from '@/features/notifications/push-permission-card';
 import { NotificationPreferencesCard } from '@/features/notifications/notification-ui';
@@ -110,6 +111,7 @@ export default function SettingsScreen() {
             </AppText>
           </View>
         ) : null}
+        <AppVersionFooter />
       </View>
     </Screen>
   );

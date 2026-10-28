@@ -52,7 +52,7 @@ import type { Database as GeneratedDatabase } from '../../types/database.generat
 type GeneratedFunctions = GeneratedDatabase['public']['Functions'];
 type JsonContracts = ClientDatabase['public']['Functions'];
 type UnknownRpc = Exclude<keyof JsonContracts, keyof GeneratedFunctions>;
-type ArgumentKeys<T> = T extends unknown ? keyof T : never;
+type ArgumentKeys<T> = T extends Record<PropertyKey, never> ? never : keyof T;
 type RpcArgumentMismatch = {
   [K in keyof JsonContracts & keyof GeneratedFunctions]:
     | Exclude<

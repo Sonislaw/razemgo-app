@@ -1,13 +1,27 @@
+import ts from 'typescript';
+
 // This annotation describes the PostgREST server, not the database schema.
 // Hosted and disposable local stacks can run different server patch versions.
 // Keep every table, column, function, relationship and helper type in the check.
 export function schemaTypeText(source) {
-  return source
+  const normalized = source
     .replaceAll('\r\n', '\n')
     .replace(
       /(?:^  \/\/[^\n]*\n)*^  __InternalSupabase: \{\n    PostgrestVersion: "[^"\n]+"\n  \}\n/gm,
       '',
     );
+  const file = ts.createSourceFile(
+    'database.generated.ts',
+    normalized,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  );
+  if (file.parseDiagnostics.length)
+    throw Error('Generated schema is not valid TypeScript');
+  return ts
+    .createPrinter({ newLine: ts.NewLineKind.LineFeed, removeComments: true })
+    .printFile(file);
 }
 
 export function firstTypeDifference(expected, actual) {

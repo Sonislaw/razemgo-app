@@ -49,6 +49,7 @@ import {
 type HistoryStatus = {
   loaded: boolean;
   loading: boolean;
+  requestPending?: boolean;
   hasMore: boolean;
   error: string | null;
 };
@@ -445,6 +446,7 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
         [id]: {
           loaded: h[id]?.loaded ?? false,
           loading: older || !h[id]?.loaded,
+          requestPending: true,
           hasMore: h[id]?.hasMore ?? false,
           error: null,
         },
@@ -457,7 +459,7 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
         const rows = await repository.fetchMessages(id, before, request.signal);
         if (!alive.current || request.signal.aborted) return;
         historyFailures.current.delete(id);
-      const conversation = current.current.conversations.find(
+        const conversation = current.current.conversations.find(
           (c) => c.id === id,
         );
         const gap =
@@ -516,6 +518,7 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
           [id]: {
             loaded: true,
             loading: false,
+            requestPending: true,
             hasMore:
               older || !h[id]?.loaded || gap
                 ? rows.length === 50
@@ -535,10 +538,14 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
           ],
           request.signal,
         );
-        if (!reactionsLoaded) { historyFailures.current.add(id); accountSync?.retryOnPoll('mailbox'); }
+        if (!reactionsLoaded) {
+          historyFailures.current.add(id);
+          accountSync?.retryOnPoll('mailbox');
+        }
       } catch {
         if (alive.current && !request.signal.aborted) {
-          historyFailures.current.add(id); accountSync?.retryOnPoll('mailbox');
+          historyFailures.current.add(id);
+          accountSync?.retryOnPoll('mailbox');
           setHistories((h) => ({
             ...h,
             [id]: {
@@ -552,9 +559,14 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
       } finally {
         activeHistories.current.delete(id);
         historyRequests.current.delete(id);
-        if (alive.current && request.signal.aborted)
+        if (alive.current)
           setHistories((h) =>
-            h[id] ? { ...h, [id]: { ...h[id], loading: false } } : h,
+            h[id]
+              ? {
+                  ...h,
+                  [id]: { ...h[id], loading: false, requestPending: false },
+                }
+              : h,
           );
       }
     },

@@ -343,7 +343,7 @@ export default function ChatScreen() {
                         : 'Wczytaj starsze wiadomości'
                     }
                     variant="secondary"
-                    disabled={history.loading}
+                    disabled={history.loading || history.requestPending}
                     onPress={() => {
                       scroll.current.readingOlder();
                       void loadHistory(id, true);

@@ -9,7 +9,7 @@ import { createResourceSampler, resourceCoverage, summarizeResources } from './l
 import { sessionDefaults } from './session-load.mjs';
 
 const args = process.argv.slice(2);
-if (args.some(arg => !['--seed', '--diverse', '--strict'].includes(arg))) throw Error('Unknown session benchmark argument');
+if (args.some(arg => !['--seed', '--diverse', '--strict', '--baseline'].includes(arg))) throw Error('Unknown session benchmark argument');
 const config = localBackend(); // Resolves CLI's disposable loopback stack only.
 const sql = source => localPostgres(config, source).stdout;
 if (args.includes('--seed')) sql(await readFile(new URL('./performance-fixture.sql', import.meta.url), 'utf8'));
@@ -25,8 +25,9 @@ if (fixture.profiles !== 10000 || fixture.trips !== 50000 || fixture.messages !=
   throw Error('Expected complete disposable synthetic fixture without outbound jobs');
 const projectId = (await readFile(new URL('../supabase/config.toml', import.meta.url), 'utf8')).match(/^project_id\s*=\s*"([\w-]+)"/m)?.[1];
 const sampler = await createResourceSampler(config, projectId ?? '');
-const output = '.expo/hardening-session-load' + (args.includes('--diverse') ? '-diverse' : '') + '.json';
+const output = '.expo/hardening-session-load' + (args.includes('--diverse') ? '-diverse' : '') + (args.includes('--baseline') ? '-baseline' : '') + '.json';
 const report = { schemaVersion: 1, complete: false, startedAt: new Date().toISOString(), fixture,
+  rankingVersion: args.includes('--baseline') ? 'migration 008' : 'migration 009',
   engine: 'Disposable local Supabase HTTP; paced synthetic read sessions, not full app or hosted capacity',
   environment: { commit: process.env.GITHUB_SHA ?? null, node: process.version, cpuModel: cpus()[0]?.model ?? null,
     logicalCpus: cpus().length, availableCpus: availableParallelism(), memoryBytes: totalmem(),

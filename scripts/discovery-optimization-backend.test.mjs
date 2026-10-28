@@ -16,16 +16,17 @@ test('optimized discovery retains complete legacy pages, scores, reasons and cur
   try {
     // Keep the actual previous implementation as an independent oracle. The
     // reference schema exists only inside this disposable test database.
-    await db.exec('create schema reference; grant usage on schema reference to authenticated');
-    for (const [file, name] of [
-      ['202610280006_score_batches.sql', 'search_public_trips'],
-      ['202610280001_technical_reads.sql', 'list_ranked_public_groups'],
+    await db.exec('create schema reference; create schema previous; grant usage on schema reference,previous to authenticated');
+    for (const [file, name, schema] of [
+      ['202610280006_score_batches.sql', 'search_public_trips', 'reference'],
+      ['202610280001_technical_reads.sql', 'list_ranked_public_groups', 'reference'],
+      ['202610280008_discovery_ranking_cost.sql', 'search_public_trips', 'previous'],
     ]) {
       const source = await readFile(new URL('../supabase/migrations/' + file, import.meta.url), 'utf8');
       const start = source.indexOf('create or replace function public.' + name + '(');
       const end = source.indexOf('end $$;', start) + 'end $$;'.length;
       assert.ok(start >= 0 && end > start);
-      await db.exec(source.slice(start, end).replace('function public.' + name, 'function reference.' + name));
+      await db.exec(source.slice(start, end).replace('function public.' + name, 'function ' + schema + '.' + name));
     }
     let fixture = await readFile(new URL('./performance-fixture.sql', import.meta.url), 'utf8');
     fixture = fixture.replace('generate_series(1,200) n;', 'generate_series(1,40) n;')
@@ -81,6 +82,8 @@ test('optimized discovery retains complete legacy pages, scores, reasons and cur
         const expected = await call('reference', name, args);
         const actual = await call('public', name, args);
         assert.deepEqual(actual, expected, `${name}/${sort}/${JSON.stringify(filters)} page ${count}`);
+        if (name === 'search_public_trips') assert.deepEqual(actual, await call('previous', name, args),
+          `migration 008 parity/${sort}/${JSON.stringify(filters)} page ${count}`);
         ids.push(...actual.items.map((item) => item.trip?.id ?? item.crew.id));
         cursor = actual.has_more ? actual.cursor : null;
         count++;
@@ -107,6 +110,31 @@ test('optimized discovery retains complete legacy pages, scores, reasons and cur
       ];
       for (const filter of filters) for (const sort of ['default', 'compatibility'])
         await compare('search_public_trips', filter, sort);
+    });
+    await t.test('location dictionaries retain ID precedence, normalized regions and source-specific scores', async () => {
+      await db.exec(`reset role; alter table public.trip_plans disable trigger user;
+        with variations as (select id,row_number() over(order by id)::int n from public.trip_plans)
+        update public.trip_plans p set
+          location_id=case when v.n%4=0 then 'shared:exact' else 'distinct:'||p.id::text end,
+          location_name=(array['Łąka','Laka','Chłapowo','Chlapowo'])[1+v.n%4],
+          location_region=(array['',' ','ŁÓDZKIE','lodzkie','POMORSKIE','pomorskie','obcy region'])[1+v.n%7],
+          start_date='2099-05-20'::date+v.n%11,end_date='2099-05-22'::date+v.n%11+v.n%7
+        from variations v where p.id=v.id;
+        alter table public.trip_plans enable trigger user`);
+      await asUser(db, user);
+      for (const filter of [{}, { source_trip_id: uuid('synthetic-trip-3') },
+        { start_date: '2099-05-23', end_date: '2099-05-30', tolerance_days: 7 }])
+        await compare('search_public_trips', filter, 'compatibility', { all: true, size: 20 });
+    });
+    await t.test('more than 64 own plans are considered without truncating a source dictionary', async () => {
+      await db.exec(`reset role; begin; alter table public.trip_plans disable trigger user;
+        update public.trip_plans set group_id=md5('synthetic-group-1')::uuid,status='published',visibility='public'
+          where id in(select id from public.trip_plans order by id limit 80);
+        alter table public.trip_plans enable trigger user`);
+      try {
+        await asUser(db, user);
+        await compare('search_public_trips', {}, 'compatibility', { all: true, size: 20 });
+      } finally { await db.exec('reset role; rollback'); await asUser(db, user); }
     });
     await t.test('group order, private-preference score and filters match complete legacy cards', async () => {
       const filters = [{}, { name: 'Łąka' }, { name: '#100006' }, { group_kinds: ['family'], child_age_bands: ['4–6'] },

@@ -3,11 +3,14 @@ import { createHash } from 'node:crypto';
 import { localBackend } from './local-backend-check.mjs';
 import { localPostgres } from './support/local-postgres.mjs';
 import { nestedPlans, sanitizePlan } from './query-plan-report.mjs';
+import { rankingDefinition } from './support/ranking-version.mjs';
 
 const config = localBackend();
 if (process.argv.includes('--seed')) localPostgres(config,
   await readFile(new URL('./performance-fixture.sql', import.meta.url), 'utf8'));
 const legacy = process.argv.includes('--legacy');
+const previous = process.argv.includes('--previous');
+if (legacy && previous) throw Error('Choose one baseline');
 const diverse = process.argv.includes('--diverse') || process.argv.includes('--make-diverse');
 if (process.argv.includes('--make-diverse')) {
   const count = Number(localPostgres(config, `select count(*) from public.trip_plans t
@@ -29,6 +32,7 @@ if (process.argv.includes('--make-diverse')) {
     alter table public.group_preferences enable trigger user;commit; analyze;`);
 }
 let previousDefinitions = '';
+if (previous) previousDefinitions = await rankingDefinition(true);
 if (legacy) {
   // Only inside each disposable profiling transaction, rolled back afterward.
   // Keep before/after on the same runner, rows, statistics and resource limits.
@@ -58,9 +62,9 @@ const queries = {
   groupRanking: "public.list_ranked_public_groups('{}','compatibility',null,5)",
 };
 const report = { commit: process.env.GITHUB_SHA ?? null, nestedMinDurationMs: 10,
-  timing: false, legacy, dataset: diverse ? 'unique locations and diverse profile preferences' : 'uniform fixture',
+  timing: false, legacy, previous, dataset: diverse ? 'unique locations and diverse profile preferences' : 'uniform fixture',
   source: 'Disposable synthetic SQL; legacy definitions rolled back; instrumentation overhead applies', operations: [] };
-const output = '.expo/hardening-query-plans' + (diverse ? '-diverse' : '') + (legacy ? '-legacy' : '') + '.json';
+const output = '.expo/hardening-query-plans' + (diverse ? '-diverse' : '') + (legacy ? '-legacy' : previous ? '-previous' : '') + '.json';
 await mkdir('.expo', { recursive: true });
 for (const [id, query] of Object.entries(queries)) {
   const result = localPostgres(config, `
@@ -73,7 +77,7 @@ for (const [id, query] of Object.entries(queries)) {
     set auto_explain.log_timing=off;
     set auto_explain.log_format=json;
     set auto_explain.log_parameter_max_length=0;
-    ${legacy ? 'begin;' : 'begin read only;'}
+    ${legacy || previous ? 'begin;' : 'begin read only;'}
     ${previousDefinitions}
     set local statement_timeout='60s';
     set local request.jwt.claims='${claims}';
@@ -86,5 +90,5 @@ for (const [id, query] of Object.entries(queries)) {
   report.operations.push({ id, executionMs: outer['Execution Time'],
     planningMs: outer['Planning Time'], outer: sanitizePlan(outer.Plan), nested });
   await writeFile(output, JSON.stringify(report, null, 2) + '\n');
-  console.log(JSON.stringify({ id, legacy, diverse, executionMs: outer['Execution Time'], nestedPlans: nested.length }));
+  console.log(JSON.stringify({ id, legacy, previous, diverse, executionMs: outer['Execution Time'], nestedPlans: nested.length }));
 }

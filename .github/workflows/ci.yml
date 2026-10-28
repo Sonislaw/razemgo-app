@@ -103,23 +103,27 @@ jobs:
         id: sql-profile
         if: github.event_name == 'workflow_dispatch' && (inputs.load_test || inputs.profile_only || inputs.session_test)
         run: |
-          node scripts/profile-discovery.mjs --seed --legacy
+          node scripts/profile-discovery.mjs --seed --previous
           node scripts/profile-discovery.mjs
       - name: Optional full synthetic HTTP load (local only)
         if: github.event_name == 'workflow_dispatch' && inputs.load_test
         run: npm run benchmark:load -- --strict
       - name: Optional paced synthetic read sessions (uniform, local only)
         if: ${{ !cancelled() && inputs.session_test && steps.sql-profile.outcome == 'success' }}
-        run: npm run benchmark:sessions -- --strict
+        run: |
+          node scripts/benchmark-ranking-baseline.mjs
+          npm run benchmark:sessions -- --strict
       - name: Optional high-diversity SQL profiles (local only)
         id: diverse-profile
         if: ${{ !cancelled() && steps.sql-profile.outcome == 'success' }}
         run: |
-          node scripts/profile-discovery.mjs --make-diverse --legacy
+          node scripts/profile-discovery.mjs --make-diverse --previous
           node scripts/profile-discovery.mjs --diverse
       - name: Optional paced synthetic read sessions (diverse, local only)
         if: ${{ !cancelled() && inputs.session_test && steps.diverse-profile.outcome == 'success' }}
-        run: npm run benchmark:sessions -- --diverse --strict
+        run: |
+          node scripts/benchmark-ranking-baseline.mjs --diverse
+          npm run benchmark:sessions -- --diverse --strict
       - name: Preserve failed checks and measured load results
         if: always()
         uses: actions/upload-artifact@v4

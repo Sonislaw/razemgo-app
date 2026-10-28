@@ -1,7 +1,8 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { parseEnv } from 'node:util';
+import { firstTypeDifference } from './database-type-comparison.mjs';
 
 const local = process.argv.includes('--local');
 const check = process.argv.includes('--check');
@@ -37,10 +38,17 @@ const header =
 const text = header + result.stdout.replaceAll('\r\n', '\n').trim() + '\n';
 const file = 'src/types/database.generated.ts';
 if (check) {
-  if (readFileSync(file, 'utf8').replaceAll('\r\n', '\n') !== text)
+  const difference = firstTypeDifference(readFileSync(file, 'utf8'), text);
+  if (local) {
+    mkdirSync('.expo', { recursive: true });
+    writeFileSync('.expo/database.generated.local.ts', text);
+  }
+  if (difference) {
+    console.error('First schema difference: ' + JSON.stringify(difference));
     throw Error(
       'Database types differ. Regenerate after migrating the local database.',
     );
+  }
   console.log('Database schema types match.');
 } else {
   writeFileSync(file, text);

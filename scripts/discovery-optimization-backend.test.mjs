@@ -21,6 +21,7 @@ test('optimized discovery retains complete legacy pages, scores, reasons and cur
       ['202610280006_score_batches.sql', 'search_public_trips', 'reference'],
       ['202610280001_technical_reads.sql', 'list_ranked_public_groups', 'reference'],
       ['202610280008_discovery_ranking_cost.sql', 'search_public_trips', 'previous'],
+      ['202610280008_discovery_ranking_cost.sql', 'list_ranked_public_groups', 'previous'],
     ]) {
       const source = await readFile(new URL('../supabase/migrations/' + file, import.meta.url), 'utf8');
       const start = source.indexOf('create or replace function public.' + name + '(');
@@ -82,7 +83,7 @@ test('optimized discovery retains complete legacy pages, scores, reasons and cur
         const expected = await call('reference', name, args);
         const actual = await call('public', name, args);
         assert.deepEqual(actual, expected, `${name}/${sort}/${JSON.stringify(filters)} page ${count}`);
-        if (name === 'search_public_trips') assert.deepEqual(actual, await call('previous', name, args),
+        assert.deepEqual(actual, await call('previous', name, args),
           `migration 008 parity/${sort}/${JSON.stringify(filters)} page ${count}`);
         ids.push(...actual.items.map((item) => item.trip?.id ?? item.crew.id));
         cursor = actual.has_more ? actual.cursor : null;
@@ -198,6 +199,20 @@ test('optimized discovery retains complete legacy pages, scores, reasons and cur
         delete from public.group_preferences where group_id=md5('synthetic-group-7')::uuid`);
       await asUser(db, user);
       for (const sort of ['alphabetical', 'compatibility']) await compare('list_ranked_public_groups', {}, sort, { all: true });
+    });
+    await t.test('numeric crew ranking retains unknown ages, missing preferences and null scores for different viewers', async () => {
+      await db.exec(`reset role; begin;
+        update public.travel_groups set child_count=1,child_age_bands='{}',interests='{}'
+          where id in(select md5('synthetic-group-'||n)::uuid from generate_series(1,20) n);
+        update public.group_preferences set group_kinds='{}',child_age_bands='{}'
+          where group_id in(select md5('synthetic-group-'||n)::uuid from generate_series(1,10) n)`);
+      try {
+        for (const viewer of [1, 2, 7, 20]) {
+          await asUser(db, uuid('synthetic-user-' + viewer));
+          for (const sort of ['alphabetical', 'compatibility'])
+            await compare('list_ranked_public_groups', {}, sort, { all: true });
+        }
+      } finally { await db.exec('reset role; rollback'); await asUser(db, user); }
     });
     await t.test('read RPCs keep their argument-aware plan even on a connection requesting generic plans', async () => {
       await db.exec('set plan_cache_mode=force_generic_plan');

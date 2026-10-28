@@ -937,7 +937,8 @@
     "arguments": "filters jsonb, sort_mode text, after_cursor jsonb, page_size integer",
     "definer": true,
     "settings": [
-      "search_path=\"\""
+      "search_path=\"\"",
+      "plan_cache_mode=force_custom_plan"
     ],
     "roles": [
       "authenticated"
@@ -1129,7 +1130,8 @@
     "arguments": "filters jsonb, sort_mode text, after_cursor jsonb, page_size integer",
     "definer": true,
     "settings": [
-      "search_path=\"\""
+      "search_path=\"\"",
+      "plan_cache_mode=force_custom_plan"
     ],
     "roles": [
       "authenticated"

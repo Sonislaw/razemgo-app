@@ -131,6 +131,31 @@ test('optimized discovery retains complete legacy pages, scores, reasons and cur
       await asUser(db, user);
       for (const sort of ['default', 'compatibility']) await compare('search_public_trips', {}, sort, { all: true });
     });
+    await t.test('diverse profile inputs and a missing preference row preserve global crew ranking', async () => {
+      await db.exec(`reset role;
+        with variations as (select id,row_number() over(order by id)::int n from public.travel_groups)
+        update public.travel_groups g set adult_count=1+v.n%8,interests=array(
+          select tag from unnest(array['Rowery','Plaża','Ognisko','Przyroda','Fotografia','Kajaki'])
+            with ordinality x(tag,position) where (v.n & (1<<(position::int-1)))<>0)
+        from variations v where v.id=g.id;
+        delete from public.group_preferences where group_id=md5('synthetic-group-7')::uuid`);
+      await asUser(db, user);
+      for (const sort of ['alphabetical', 'compatibility']) await compare('list_ranked_public_groups', {}, sort, { all: true });
+    });
+    await t.test('read RPCs keep their argument-aware plan even on a connection requesting generic plans', async () => {
+      await db.exec('set plan_cache_mode=force_generic_plan');
+      await compare('search_public_trips', {}, 'compatibility');
+      await compare('list_ranked_public_groups', {}, 'compatibility');
+      assert.equal((await db.query('show plan_cache_mode')).rows[0].plan_cache_mode, 'force_generic_plan');
+      await db.exec('reset role');
+      const { rows } = await db.query(`select proconfig from pg_proc where oid in(
+        'public.search_public_trips(jsonb,text,jsonb,integer)'::regprocedure,
+        'public.list_ranked_public_groups(jsonb,text,jsonb,integer)'::regprocedure)`);
+      assert.equal(rows.length, 2);
+      assert.ok(rows.every((row) => row.proconfig.includes('plan_cache_mode=force_custom_plan') && row.proconfig.includes('search_path=""')));
+      await db.exec('set plan_cache_mode=auto');
+      await asUser(db, user);
+    });
     await t.test('every constrained tag has a distinct bit; intersections equal the original array count', async () => {
       await db.exec('reset role');
       const nullability = await db.query(`select attnotnull from pg_attribute where

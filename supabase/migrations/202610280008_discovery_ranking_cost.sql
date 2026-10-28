@@ -46,17 +46,19 @@ create type discovery_private.score_target as (
 -- These primary-key/FK columns are NOT NULL, so NOT IN retains anti-join semantics.
 create or replace function discovery_private.candidates(f jsonb,me uuid) returns setof public.trip_plans
 language sql stable as $$
-  select t.* from public.trip_plans t join public.travel_groups g on g.id=t.group_id
+  select t.* from public.trip_plans t
   where t.group_id<>me and t.status='published' and t.visibility='public' and t.end_date>current_date
-    and g.id not in(select x.blocked_group_id from public.group_blocks x where x.blocker_group_id=me
+    and t.group_id not in(select x.blocked_group_id from public.group_blocks x where x.blocker_group_id=me
       union all select x.blocker_group_id from public.group_blocks x where x.blocked_group_id=me)
-    and g.owner_user_id not in(select s.user_id from moderation_private.suspended_accounts s)
+    and t.group_id not in(select g.id from public.travel_groups g join moderation_private.suspended_accounts s on s.user_id=g.owner_user_id)
     and not exists(select 1 from moderation_private.suspended_accounts s where s.user_id=(select owner_user_id from public.travel_groups where id=me))
     and t.id not in(select h.trip_id from moderation_private.hidden_trips h)
     and (not (f ? 'trip_modes') or t.mode in(select jsonb_array_elements_text(f->'trip_modes')))
     and (coalesce(jsonb_array_length(f->'landscapes'),0)=0 or t.landscape in(select jsonb_array_elements_text(f->'landscapes')))
-    and (coalesce(jsonb_array_length(f->'group_kinds'),0)=0 or g.kind in(select jsonb_array_elements_text(f->'group_kinds')))
-    and (coalesce(jsonb_array_length(f->'child_age_bands'),0)=0 or g.child_age_bands && array(select jsonb_array_elements_text(f->'child_age_bands')))
+    and ((coalesce(jsonb_array_length(f->'group_kinds'),0)=0 and coalesce(jsonb_array_length(f->'child_age_bands'),0)=0)
+      or exists(select 1 from public.travel_groups g where g.id=t.group_id
+        and (coalesce(jsonb_array_length(f->'group_kinds'),0)=0 or g.kind in(select jsonb_array_elements_text(f->'group_kinds')))
+        and (coalesce(jsonb_array_length(f->'child_age_bands'),0)=0 or g.child_age_bands && array(select jsonb_array_elements_text(f->'child_age_bands')))))
     and (coalesce(jsonb_array_length(f->'animal_kinds'),0)=0 or t.animal_kinds && array(select jsonb_array_elements_text(f->'animal_kinds')))
     and (not coalesce((f->>'favorites_only')::boolean,false) or exists(select 1 from favorites_private.trip_favorites x where x.owner_group_id=me and x.target_trip_id=t.id))
     and (f->>'start_date' is null or (t.start_date<(f->>'end_date')::date+coalesce((f->>'tolerance_days')::int,0)
@@ -199,6 +201,13 @@ begin
   return result;
 end $$;
 
+-- Profiles with the same matching inputs share a result within this request.
+-- Keep the business formula in group_compatibility_values, including its
+-- reasons and limited-data flags. Presentation/identity fields stay outside.
+create type messaging_private.group_score_target as (
+  kind text,child_count integer,child_age_bands text[],interests text[],travel_mode text,
+  group_kinds text[],wanted_child_age_bands text[]
+);
 create or replace function public.list_ranked_public_groups(filters jsonb default '{}'::jsonb,sort_mode text default 'compatibility',after_cursor jsonb default null,page_size integer default 20)
 returns jsonb language plpgsql stable security definer set search_path='' as $$
 declare me uuid:=messaging_private.my_group_id(); viewer public.travel_groups; viewer_preferences public.group_preferences; result jsonb;
@@ -259,9 +268,18 @@ begin
       and (not coalesce((filters->>'favorites_only')::boolean,false) or exists (
         select 1 from favorites_private.group_favorites f where f.owner_group_id=me and f.target_group_id=g.id
       ))
-  ), ranked as materialized (
-    select e.*,case when sort_mode='compatibility' then messaging_private.group_compatibility_values(viewer,g,viewer_preferences,gp) end as compatibility
+  ), targets as materialized (
+    select e.*,case when sort_mode='compatibility' then row(g.kind,case when g.child_count=0 then 0 else 1 end,
+      g.child_age_bands,g.interests,g.travel_mode,gp.group_kinds,gp.child_age_bands)::messaging_private.group_score_target end as features
     from eligible e join public.travel_groups g on g.id=e.id left join public.group_preferences gp on gp.group_id=e.id
+  ), unique_targets as materialized (
+    select features,min(id::text)::uuid as representative_id from targets where sort_mode='compatibility' group by features
+  ), feature_scores as materialized (
+    select features,messaging_private.group_compatibility_values(viewer,g,viewer_preferences,gp) as compatibility
+    from unique_targets u join public.travel_groups g on g.id=u.representative_id
+      left join public.group_preferences gp on gp.group_id=u.representative_id
+  ), ranked as not materialized (
+    select e.id,e.sort_name,s.compatibility from targets e left join feature_scores s on s.features=e.features
   ), ordered as (
     select r.*,case when sort_mode='compatibility' then coalesce((r.compatibility->>'score')::integer,-1) else 0 end as sort_score from ranked r
   ), matched as materialized (
@@ -285,5 +303,12 @@ begin
       from projected order by sort_score,sort_name desc,id desc limit 1)) into result;
   return result;
 end $$;
+
+-- The optional filters have radically different selectivity. A generic plan
+-- estimates too few candidates and can turn the score-key join into nested
+-- rescans after repeated calls. Replan these two bounded read RPCs using their
+-- actual arguments; the setting is local to function execution, not the pool.
+alter function public.search_public_trips(jsonb,text,jsonb,integer) set plan_cache_mode=force_custom_plan;
+alter function public.list_ranked_public_groups(jsonb,text,jsonb,integer) set plan_cache_mode=force_custom_plan;
 
 notify pgrst,'reload schema';

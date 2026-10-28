@@ -155,6 +155,10 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
   const refreshAgain = useRef(false);
   const historyCursor = useRef(new Map<string, number>());
   const activeHistories = useRef(new Set<string>());
+  const historyCompletions = useRef(
+    new Map<string, { done: Promise<void>; signal: AbortSignal }>(),
+  );
+  const queuedOlder = useRef(new Map<string, Promise<void>>());
   const pendingActions = useRef(new Set<string>());
   const reading = useRef(new Set<string>());
   const positions = useRef<MailboxPositions | null>(null);
@@ -412,14 +416,31 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
     [ready],
   );
   const loadHistory = useCallback(
-    async (id: string, older = false) => {
-      if (
-        USE_DEMO_DATA ||
-        !ready ||
-        !alive.current ||
-        activeHistories.current.has(id)
-      )
-        return;
+    async function load(id: string, older = false): Promise<void> {
+      if (USE_DEMO_DATA || !ready || !alive.current) return;
+      const queuePage = () => {
+        if (!older) return;
+        const queued = queuedOlder.current.get(id);
+        if (queued) return queued;
+        const pending = historyCompletions.current.get(id);
+        if (!pending) return;
+        const next = pending.done
+          .then(() => {
+            if (
+              alive.current &&
+              !pending.signal.aborted &&
+              activeConversation.current === id
+            )
+              return load(id, true);
+          })
+          .finally(() => {
+            if (queuedOlder.current.get(id) === next)
+              queuedOlder.current.delete(id);
+          });
+        queuedOlder.current.set(id, next);
+        return next;
+      };
+      if (activeHistories.current.has(id)) return queuePage();
       // A deep link can arrive before the mailbox. Never mark a history loaded
       // while its messages would still be dropped by the membership reducer.
       if (
@@ -430,23 +451,32 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
         await refresh();
       if (
         !alive.current ||
-        activeHistories.current.has(id) ||
         activeConversation.current !== id ||
         !current.current.conversations.some(
           (conversation) => conversation.id === id,
         )
       )
         return;
+      if (activeHistories.current.has(id)) return queuePage();
       activeHistories.current.add(id);
       const request = new AbortController();
       historyRequests.current.set(id, request);
+      let finish!: () => void;
+      const done = new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+      historyCompletions.current.set(id, { done, signal: request.signal });
+      // A background refresh keeps the page control usable. If pressed, its
+      // intent joins this flight and then appends one older page. First loads
+      // and explicit appends still wait through their reaction synchronization.
+      const blockPagination = older || !historyLru.current.includes(id);
       // A background sync must not insert a loading row above an already open chat.
       setHistories((h) => ({
         ...h,
         [id]: {
           loaded: h[id]?.loaded ?? false,
           loading: older || !h[id]?.loaded,
-          requestPending: true,
+          requestPending: blockPagination,
           hasMore: h[id]?.hasMore ?? false,
           error: null,
         },
@@ -518,7 +548,7 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
           [id]: {
             loaded: true,
             loading: false,
-            requestPending: true,
+            requestPending: blockPagination,
             hasMore:
               older || !h[id]?.loaded || gap
                 ? rows.length === 50
@@ -559,6 +589,8 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
       } finally {
         activeHistories.current.delete(id);
         historyRequests.current.delete(id);
+        historyCompletions.current.delete(id);
+        finish();
         if (alive.current)
           setHistories((h) =>
             h[id]

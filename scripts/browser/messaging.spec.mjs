@@ -364,3 +364,31 @@ test('history paging waits for pending reaction synchronization before accepting
     release();
   }
 });
+
+test('a background history refresh preserves a press requesting the older page', async ({ page, context }) => {
+  const store = seeded(), chat = accepted(store, 65);
+  await backend(context, store);
+  await login(page);
+  await page.goto('/chat/' + chat);
+  const older = page.getByRole('button', { name: 'Wczytaj starsze wiadomości', exact: true });
+  await expect(older).toBeEnabled();
+  let release, started, olderReads = 0;
+  const response = new Promise((resolve) => { release = resolve; });
+  const request = new Promise((resolve) => { started = resolve; });
+  await page.route('**/rest/v1/rpc/get_conversation_messages', async (route) => {
+    if (route.request().postDataJSON().before_sequence) olderReads++;
+    else { started(); await response; }
+    await route.fallback();
+  });
+  store.messages.push({ ...store.messages.at(-1), id: '00000000-0000-4000-9000-000000000066', sequence: 66, text: 'Nowa wiadomość w tle' });
+  try {
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+    await request;
+    await expect(older).toBeEnabled();
+    await older.click();
+    expect(olderReads).toBe(0);
+    release();
+    await expect(older).toHaveCount(0);
+    expect(olderReads).toBe(1);
+  } finally { release(); }
+});

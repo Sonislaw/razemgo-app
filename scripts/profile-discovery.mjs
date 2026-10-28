@@ -14,9 +14,19 @@ if (process.argv.includes('--make-diverse')) {
     where t.id in(select md5('synthetic-trip-'||n)::uuid from generate_series(1,50000) n);`).stdout);
   if (count !== 50000) throw Error('Complete synthetic fixture required for diversity profiling');
   localPostgres(config, `begin; alter table public.trip_plans disable trigger user;
+    alter table public.travel_groups disable trigger user;alter table public.group_preferences disable trigger user;
     update public.trip_plans t set location_id='diverse:'||t.id::text,location_name='Miejsce '||t.id::text
       where t.id in(select md5('synthetic-trip-'||n)::uuid from generate_series(1,50000) n);
-    alter table public.trip_plans enable trigger user; commit; analyze public.trip_plans;`);
+    with variations as (select md5('synthetic-group-'||n)::uuid id,n from generate_series(1,10000) n)
+    update public.travel_groups g set child_count=5,child_age_bands=array['0–3','4–6','7–9','10–12','13–17'],
+      interests=array(select tag from unnest(array['Rowery','Spokojny wypoczynek','Ognisko','Plaża','Przyroda','Wędrówki','Kajaki','Fotografia','Gry planszowe','Zwiedzanie'])
+        with ordinality v(tag,position) where (n%1024 & (1<<(position::int-1)))<>0)
+      from variations x where g.id=x.id;
+    with variations as (select md5('synthetic-group-'||n)::uuid id,n from generate_series(1,10000) n)
+    update public.group_preferences p set group_kinds=array(select tag from unnest(array['family','couple','solo','friends'])
+      with ordinality v(tag,position) where (n/1024 & (1<<(position::int-1)))<>0) from variations x where p.group_id=x.id;
+    alter table public.trip_plans enable trigger user;alter table public.travel_groups enable trigger user;
+    alter table public.group_preferences enable trigger user;commit; analyze;`);
 }
 let previousDefinitions = '';
 if (legacy) {
@@ -35,6 +45,8 @@ if (legacy) {
     if (start < 0 || end <= start) throw Error('Previous profiling definition missing');
     previousDefinitions += source.slice(start, end).replace(/^create function /, 'create or replace function ') + '\n';
   }
+  previousDefinitions += `alter function public.search_public_trips(jsonb,text,jsonb,integer) reset plan_cache_mode;
+    alter function public.list_ranked_public_groups(jsonb,text,jsonb,integer) reset plan_cache_mode;`;
 }
 const uuid = (value) => createHash('md5').update(value).digest('hex')
   .replace(/^(........)(....)(....)(....)(............)$/, '$1-$2-$3-$4-$5');
@@ -46,7 +58,7 @@ const queries = {
   groupRanking: "public.list_ranked_public_groups('{}','compatibility',null,5)",
 };
 const report = { commit: process.env.GITHUB_SHA ?? null, nestedMinDurationMs: 10,
-  timing: false, legacy, dataset: diverse ? 'unique locations' : 'uniform fixture',
+  timing: false, legacy, dataset: diverse ? 'unique locations and diverse profile preferences' : 'uniform fixture',
   source: 'Disposable synthetic SQL; legacy definitions rolled back; instrumentation overhead applies', operations: [] };
 const output = '.expo/hardening-query-plans' + (diverse ? '-diverse' : '') + (legacy ? '-legacy' : '') + '.json';
 await mkdir('.expo', { recursive: true });

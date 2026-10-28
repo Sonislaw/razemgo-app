@@ -36,7 +36,7 @@ for (const [id, query] of Object.entries(queries)) {
     set local role authenticated;
     explain (analyze,buffers,timing off,format json) select ${query};
     rollback;
-  `);
+  `, { profile: true });
   const [outer] = JSON.parse(result.stdout);
   const nested = nestedPlans(result.stderr);
   report.operations.push({ id, executionMs: outer['Execution Time'],

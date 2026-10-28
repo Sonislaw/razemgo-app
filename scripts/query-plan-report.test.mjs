@@ -15,7 +15,7 @@ test('query plan reports retain nested operator counters and remove SQL and data
 
 test('auto_explain parser handles braces/escaped quotes in discarded SQL without leaking it', () => {
   const log = 'LOG:  duration: 12.5 ms  plan:\n' + JSON.stringify({ 'Query Text': 'select "{private}\\"value"', Plan: { 'Node Type': 'Result', Output: ['private'], 'Actual Rows': 1 } }) +
-    '\nCONTEXT: sensitive context\nLOG:  duration: 65 ms  plan:\n' + JSON.stringify({ Plan: { 'Node Type': 'Aggregate' } });
+    '\nCONTEXT: sensitive context\nLOG:  00000: duration: 65 ms  plan:\n' + JSON.stringify({ Plan: { 'Node Type': 'Aggregate' } });
   const parsed = nestedPlans(log);
   assert.deepEqual(parsed, [{ durationMs: 12.5, plan: { 'Node Type': 'Result', 'Actual Rows': 1 } }, { durationMs: 65, plan: { 'Node Type': 'Aggregate' } }]);
   assert.ok(!JSON.stringify(parsed).includes('private'));

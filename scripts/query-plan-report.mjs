@@ -20,7 +20,7 @@ export function sanitizePlan(plan) {
 
 export function nestedPlans(stderr) {
   const results = [];
-  for (const chunk of stderr.split(/LOG:\s+duration:/).slice(1)) {
+  for (const chunk of stderr.split(/LOG:\s+(?:[0-9A-Z]{5}:\s+)?duration:/).slice(1)) {
     const duration = Number(chunk.match(/^\s*([\d.]+)\s+ms/)?.[1]);
     const start = chunk.indexOf('{');
     if (start < 0 || !Number.isFinite(duration)) continue;

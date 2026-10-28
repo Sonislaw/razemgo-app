@@ -123,8 +123,22 @@ test('optimized discovery retains complete legacy pages, scores, reasons and cur
       for (const filter of [{}, { start_date: '2099-05-21', end_date: '2099-05-24', tolerance_days: 7 }])
         for (const sort of ['default', 'compatibility']) await compare('search_public_trips', filter, sort);
     });
+    await t.test('score reuse preserves exact pages when every target has a different location key', async () => {
+      await db.exec(`reset role; alter table public.trip_plans disable trigger user;
+        update public.trip_plans set location_id='unique:'||id::text,location_name='Miejsce '||id::text,
+          status=case when group_id=md5('synthetic-group-1')::uuid then 'published' else status end;
+        alter table public.trip_plans enable trigger user`);
+      await asUser(db, user);
+      for (const sort of ['default', 'compatibility']) await compare('search_public_trips', {}, sort, { all: true });
+    });
     await t.test('every constrained tag has a distinct bit; intersections equal the original array count', async () => {
       await db.exec('reset role');
+      const nullability = await db.query(`select attnotnull from pg_attribute where
+        (attrelid='public.group_blocks'::regclass and attname in('blocker_group_id','blocked_group_id'))
+        or (attrelid='moderation_private.suspended_accounts'::regclass and attname='user_id')
+        or (attrelid='moderation_private.hidden_trips'::regclass and attname='trip_id')`);
+      assert.equal(nullability.rows.length, 4);
+      assert.ok(nullability.rows.every((row) => row.attnotnull), 'anti-join keys must remain NOT NULL');
       const domains = await db.query(`select distinct
           case when c.conname like '%interests%' then 'interest' when c.conname like '%animal_kinds%' then 'animal' else 'age' end family,
           match[1] tag

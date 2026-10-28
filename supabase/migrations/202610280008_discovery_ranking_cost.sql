@@ -33,6 +33,48 @@ language sql immutable as $$
 $$;
 revoke all on function discovery_private.tag_mask(text[],text) from public,anon,authenticated;
 
+-- Query-local score key. IDs, publication times, descriptions and campsite
+-- names do not affect matching. Equal keys can share exact arithmetic within
+-- one request; visibility and ordering still apply to every individual trip.
+create type discovery_private.score_target as (
+  start_date date,end_date date,location_id text,location_name text,location_region text,landscape text,
+  normalized_name text,normalized_region text,kind text,travel_mode text,
+  hobby_mask integer,age_mask integer,animal_mask integer,other_points numeric,other_weight integer
+);
+
+-- Reuse forbidden ID sets once rather than scanning them for each candidate.
+-- These primary-key/FK columns are NOT NULL, so NOT IN retains anti-join semantics.
+create or replace function discovery_private.candidates(f jsonb,me uuid) returns setof public.trip_plans
+language sql stable as $$
+  select t.* from public.trip_plans t join public.travel_groups g on g.id=t.group_id
+  where t.group_id<>me and t.status='published' and t.visibility='public' and t.end_date>current_date
+    and g.id not in(select x.blocked_group_id from public.group_blocks x where x.blocker_group_id=me
+      union all select x.blocker_group_id from public.group_blocks x where x.blocked_group_id=me)
+    and g.owner_user_id not in(select s.user_id from moderation_private.suspended_accounts s)
+    and not exists(select 1 from moderation_private.suspended_accounts s where s.user_id=(select owner_user_id from public.travel_groups where id=me))
+    and t.id not in(select h.trip_id from moderation_private.hidden_trips h)
+    and (not (f ? 'trip_modes') or t.mode in(select jsonb_array_elements_text(f->'trip_modes')))
+    and (coalesce(jsonb_array_length(f->'landscapes'),0)=0 or t.landscape in(select jsonb_array_elements_text(f->'landscapes')))
+    and (coalesce(jsonb_array_length(f->'group_kinds'),0)=0 or g.kind in(select jsonb_array_elements_text(f->'group_kinds')))
+    and (coalesce(jsonb_array_length(f->'child_age_bands'),0)=0 or g.child_age_bands && array(select jsonb_array_elements_text(f->'child_age_bands')))
+    and (coalesce(jsonb_array_length(f->'animal_kinds'),0)=0 or t.animal_kinds && array(select jsonb_array_elements_text(f->'animal_kinds')))
+    and (not coalesce((f->>'favorites_only')::boolean,false) or exists(select 1 from favorites_private.trip_favorites x where x.owner_group_id=me and x.target_trip_id=t.id))
+    and (f->>'start_date' is null or (t.start_date<(f->>'end_date')::date+coalesce((f->>'tolerance_days')::int,0)
+      and t.end_date>(f->>'start_date')::date-coalesce((f->>'tolerance_days')::int,0)))
+    and case when f->'location'->>'id' is null and btrim(coalesce(f->>'location_query',''))='' then true
+      when f->'location'->>'id' is not null then
+      case f->'location'->>'kind'
+        when 'country' then case
+          when f->'location'->>'id'='country:PL' then t.location_id like 'pl-%' or t.location_id='country:PL'
+            or t.location_id in('demo-location-chlapowo','demo-location-gdansk','demo-location-kaszuby','demo-location-polska')
+            or discovery_private.region_text(t.location_region) in('dolnoslaskie','kujawsko-pomorskie','lubelskie','lubuskie','lodzkie','malopolskie','mazowieckie','opolskie','podkarpackie','podlaskie','pomorskie','slaskie','swietokrzyskie','warminsko-mazurskie','wielkopolskie','zachodniopomorskie')
+          else t.location_id=f->'location'->>'id' end
+        when 'region' then t.location_id=f->'location'->>'id' or discovery_private.region_text(t.location_region)=discovery_private.region_text(f->'location'->>'name')
+        else t.location_id=f->'location'->>'id' end
+      else strpos(messaging_private.search_text(t.location_name||', '||t.location_region||case when discovery_private.region_text(t.location_region)='pomorskie' then ' Pomorze Pomorskie' else '' end),
+        messaging_private.search_text(btrim(coalesce(f->>'location_query',''))))>0 end;
+$$;
+
 create or replace function public.search_public_trips(filters jsonb default '{}'::jsonb,sort_mode text default 'default',after_cursor jsonb default null,page_size integer default 20)
 returns jsonb language plpgsql stable security definer set search_path='' as $$
 declare me uuid:=favorites_private.my_group_id(); f jsonb:=discovery_private.validate_filters(filters); ctx discovery_private.match_context;
@@ -89,35 +131,55 @@ begin
         +(case when cardinality(hobbies)>0 then 20 else 0 end)+(case when cardinality(ages)>0 then 15 else 0 end)
         +(case when cardinality(kinds)>0 then 10 else 0 end)+(case when cardinality(animals)>0 then 5 else 0 end)+5 as weight
     from source_values s
-  ), eligible as materialized(
-    select t.id,t.published_at,t.start_date,t.end_date,t.location_id,t.location_name,t.location_region,t.landscape,
-      messaging_private.search_text(t.location_name) as normalized_name,messaging_private.search_text(t.location_region) as normalized_region,
-      g.kind,coalesce(t.travel_mode,g.travel_mode) as travel_mode,
-      discovery_private.tag_mask(t.interests,'interest') as hobby_mask,
-      discovery_private.tag_mask(g.child_age_bands,'age') as age_mask,
-      discovery_private.tag_mask(t.animal_kinds,'animal') as animal_mask,
+  ), requirements as materialized(
+    select bool_or(has_plan) as place,bool_or(d1 is not null and d2>d1) as dates,
+      bool_or(hobby_count>0) as hobby,bool_or(age_count>0) as age,bool_or(animal_count>0) as animal,
+      bool_or(cardinality(kinds)>0) as kind from sources
+  ), target_values as not materialized(
+    -- Omit inputs no source uses from the score key. The typed composite's
+    -- equality/hash compares NULL fields consistently; no shared global cache.
+    select t.id,t.published_at,
+      case when r.dates then t.start_date end as start_date,case when r.dates then t.end_date end as end_date,
+      case when r.place then t.location_id else '' end as location_id,
+      case when r.place then t.location_name else '' end as location_name,
+      case when r.place then t.location_region else '' end as location_region,
+      case when r.place then t.landscape else '' end as landscape,
+      case when r.place then messaging_private.search_text(t.location_name) else '' end as normalized_name,
+      case when r.place then messaging_private.search_text(t.location_region) else '' end as normalized_region,
+      case when r.kind then g.kind else '' end as kind,coalesce(t.travel_mode,g.travel_mode) as travel_mode,
+      case when r.hobby then discovery_private.tag_mask(t.interests,'interest') else 0 end as hobby_mask,
+      case when r.age then discovery_private.tag_mask(g.child_age_bands,'age') else 0 end as age_mask,
+      case when r.animal then discovery_private.tag_mask(t.animal_kinds,'animal') else 0 end as animal_mask,
       coalesce((case when cardinality(t.matching_group_kinds)>0 then ((ctx.crew).kind=any(t.matching_group_kinds))::int*10 end),0)
         +coalesce((case when cardinality(t.matching_child_age_bands)>0 then
           bit_count((discovery_private.tag_mask(t.matching_child_age_bands,'age') & discovery_private.tag_mask((ctx.crew).child_age_bands,'age'))::bit(32))::numeric/cardinality(t.matching_child_age_bands)*10 end),0) as other_points,
       (case when cardinality(t.matching_group_kinds)>0 then 10 else 0 end)
         +(case when cardinality(t.matching_child_age_bands)>0 then 10 else 0 end) as other_weight
-    from discovery_private.candidates(f,me) t join public.travel_groups g on g.id=t.group_id
-  ), ranked as materialized(
-    select e.id,e.published_at,(select max(coalesce(round(100*(
+    from discovery_private.candidates(f,me) t join public.travel_groups g on g.id=t.group_id cross join requirements r
+  ), eligible as materialized(
+    select id,published_at,row(start_date,end_date,location_id,location_name,location_region,landscape,
+      normalized_name,normalized_region,kind,travel_mode,hobby_mask,age_mask,animal_mask,other_points,other_weight)::discovery_private.score_target as features
+    from target_values
+  ), unique_targets as materialized(
+    select distinct features from eligible
+  ), feature_scores as materialized(
+    select e.features,(select max(coalesce(round(100*(
       coalesce((case when s.d1 is not null and s.d2>s.d1 then
-        greatest(0,least(e.end_date-e.start_date,s.d2-s.d1,e.end_date-(s.d1-s.tolerance),(s.d2+s.tolerance)-e.start_date))::numeric/(s.d2-s.d1)*30 end),0)
+        greatest(0,least((e.features).end_date-(e.features).start_date,s.d2-s.d1,(e.features).end_date-(s.d1-s.tolerance),(s.d2+s.tolerance)-(e.features).start_date))::numeric/(s.d2-s.d1)*30 end),0)
       +case when s.has_plan then (case when
-        case when s.location_id<>'' and e.location_id<>'' then s.location_id=e.location_id else
-          s.location_name<>'' and e.location_name<>'' and s.normalized_name=e.normalized_name and s.normalized_region=e.normalized_region end
-        then 1 when s.location_region<>'' and e.location_region<>'' and s.normalized_region=e.normalized_region then 0.7 else 0 end)*20
-        +coalesce((s.landscape=e.landscape)::int*10,0) else 0 end
-      +coalesce((case when s.hobby_count>0 then bit_count((s.hobby_mask & e.hobby_mask)::bit(32))::numeric/s.hobby_count*20 end),0)
-      +coalesce((case when s.age_count>0 then bit_count((s.age_mask & e.age_mask)::bit(32))::numeric/s.age_count*15 end),0)
-      +coalesce((case when cardinality(s.kinds)>0 then (e.kind=any(s.kinds))::int*10 end),0)
-      +coalesce((e.travel_mode=s.travel_mode)::int*5,0)
-      +coalesce((case when s.animal_count>0 then bit_count((s.animal_mask & e.animal_mask)::bit(32))::numeric/s.animal_count*5 end),0)
-      +e.other_points)/nullif(s.weight+e.other_weight,0)),0)::integer) from sources s) as score
-    from eligible e
+        case when s.location_id<>'' and (e.features).location_id<>'' then s.location_id=(e.features).location_id else
+          s.location_name<>'' and (e.features).location_name<>'' and s.normalized_name=(e.features).normalized_name and s.normalized_region=(e.features).normalized_region end
+        then 1 when s.location_region<>'' and (e.features).location_region<>'' and s.normalized_region=(e.features).normalized_region then 0.7 else 0 end)*20
+        +coalesce((s.landscape=(e.features).landscape)::int*10,0) else 0 end
+      +coalesce((case when s.hobby_count>0 then bit_count((s.hobby_mask & (e.features).hobby_mask)::bit(32))::numeric/s.hobby_count*20 end),0)
+      +coalesce((case when s.age_count>0 then bit_count((s.age_mask & (e.features).age_mask)::bit(32))::numeric/s.age_count*15 end),0)
+      +coalesce((case when cardinality(s.kinds)>0 then ((e.features).kind=any(s.kinds))::int*10 end),0)
+      +coalesce(((e.features).travel_mode=s.travel_mode)::int*5,0)
+      +coalesce((case when s.animal_count>0 then bit_count((s.animal_mask & (e.features).animal_mask)::bit(32))::numeric/s.animal_count*5 end),0)
+      +(e.features).other_points)/nullif(s.weight+(e.features).other_weight,0)),0)::integer) from sources s) as score
+    from unique_targets e
+  ), ranked as not materialized(
+    select e.id,e.published_at,s.score from eligible e join feature_scores s on s.features=e.features
   ), page as materialized(
     select r.* from ranked r where after_id is null or r.score<after_score
       or (r.score=after_score and (r.published_at<after_at or (r.published_at=after_at and r.id>after_id)))
@@ -185,8 +247,9 @@ begin
     select g.id,messaging_private.search_text(g.name) as sort_name
     from public.travel_groups g join public.group_public_profiles p on p.group_id=g.id and p.discoverable
     where g.id<>me
-      and not exists(select 1 from public.group_blocks x where (x.blocker_group_id=me and x.blocked_group_id=g.id) or (x.blocker_group_id=g.id and x.blocked_group_id=me))
-      and not exists(select 1 from moderation_private.suspended_accounts s where s.user_id=g.owner_user_id)
+      and g.id not in(select x.blocked_group_id from public.group_blocks x where x.blocker_group_id=me
+        union all select x.blocker_group_id from public.group_blocks x where x.blocked_group_id=me)
+      and g.owner_user_id not in(select s.user_id from moderation_private.suspended_accounts s)
       and (btrim(coalesce(filters->>'name',''))='' or messaging_private.group_search_matches(g,filters->>'name'))
       and (cardinality(kinds)=0 or g.kind=any(kinds)) and (cardinality(ages)=0 or g.child_age_bands && ages)
       and (cardinality(modes)=0 or g.travel_mode=any(modes)) and (cardinality(hobbies)=0 or g.interests && hobbies)

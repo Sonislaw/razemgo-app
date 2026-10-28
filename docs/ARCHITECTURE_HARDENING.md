@@ -10,6 +10,8 @@ Następnie wdrożono wyłącznie na Dev optymalizację dokładnego rankingu i li
 
 Kolejna paczka dodaje osobny, stopniowy scenariusz 200 sesji z diagnostyką zasobów i ochroną przed pozornie dobrym wynikiem przeciążonego generatora. Nie zmienia produktu ani hostowanych backendów: [PACED_READ_LOAD.md](PACED_READ_LOAD.md). Token Sentry dodano do Development; bieżący stan budowy i wysyłki map jest w [MONITORING.md](MONITORING.md). Poniższa sekcja APK opisuje wcześniejszy build bez potwierdzonego uploadu.
 
+Następnie migracja 009 uporządkowała klucze dokładnej punktacji wyjazdów, odczyt pojedynczych kart i liczbowy ranking ekip. Wdrożono ją tylko na Dev (35 migracji). Końcowa sparowana próba na trzech zbiorach 10k/50k/500k i 200 sesjach spełniła cele odczytów: na najbardziej zróżnicowanym zbiorze p95 wyjazdów 2028 → 815 ms, ekip 872 → 94 ms. Przeszło 511 testów Node/PGlite oraz natywna kontrola PostgreSQL. Pełne wyniki, zachowany pierwszy niespełniony pomiar i granice tego potwierdzenia: [DIVERSE_RANKING_OPTIMIZATION.md](DIVERSE_RANKING_OPTIMIZATION.md).
+
 Wprowadzono pięć paczek prac nad kontraktami, synchronizacją, odczytami bazy, startem i kontrolami bezpieczeństwa. Zachowano wygląd aplikacji, porcje po pięć w Odkrywaj i ogłoszeniach ekipy oraz powrót do miejsca na liście. Nie dodano funkcji produktu.
 
 Zmiany backendu wdrożono wyłącznie do **Dev `kswuakzcnoqgovnwejhb`**. Dev ma 33 migracje; Preview `tueqqnbdvuazdxoqtpvk`, jego aplikacja, konta i dane pozostały bez zmian. Starsze migracje i publiczne kontrakty RPC zachowano. Zmiany repozytorium nie zostały automatycznie zatwierdzone ani wysłane do GitHub.

@@ -81,7 +81,9 @@ jobs:
   local-supabase:
     name: Local Auth, PostgreSQL contracts and schema types
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Six four-minute measurements plus backend startup, parity and SQL profiles.
+    # Endpoint deadlines and performance thresholds are unchanged.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
         with:
@@ -99,27 +101,54 @@ jobs:
       - run: npm run types:database -- --local --check
       - run: npm run test:local-backend
         if: ${{ !cancelled() && steps.local-reset.outcome == 'success' }}
+      - run: node --test scripts/discovery-optimization-backend.test.mjs
       - name: Optional synthetic SQL profiles (local only)
         id: sql-profile
         if: github.event_name == 'workflow_dispatch' && (inputs.load_test || inputs.profile_only || inputs.session_test)
         run: |
-          node scripts/profile-discovery.mjs --seed --legacy
+          node scripts/profile-discovery.mjs --seed --previous
           node scripts/profile-discovery.mjs
+          node scripts/verify-ranking-parity.mjs
+      - name: Preserve initial SQL plans before the long load comparison
+        if: ${{ !cancelled() && steps.sql-profile.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ranking-initial-plans
+          path: .expo/hardening-query-plans*.json
+          include-hidden-files: true
+          retention-days: 7
       - name: Optional full synthetic HTTP load (local only)
         if: github.event_name == 'workflow_dispatch' && inputs.load_test
         run: npm run benchmark:load -- --strict
       - name: Optional paced synthetic read sessions (uniform, local only)
         if: ${{ !cancelled() && inputs.session_test && steps.sql-profile.outcome == 'success' }}
-        run: npm run benchmark:sessions -- --strict
+        run: |
+          node scripts/benchmark-ranking-baseline.mjs
+          npm run benchmark:sessions -- --strict
       - name: Optional high-diversity SQL profiles (local only)
         id: diverse-profile
         if: ${{ !cancelled() && steps.sql-profile.outcome == 'success' }}
         run: |
-          node scripts/profile-discovery.mjs --make-diverse --legacy
+          node scripts/profile-discovery.mjs --make-diverse --previous
           node scripts/profile-discovery.mjs --diverse
+          node scripts/verify-ranking-parity.mjs
       - name: Optional paced synthetic read sessions (diverse, local only)
         if: ${{ !cancelled() && inputs.session_test && steps.diverse-profile.outcome == 'success' }}
-        run: npm run benchmark:sessions -- --diverse --strict
+        run: |
+          node scripts/benchmark-ranking-baseline.mjs --diverse
+          npm run benchmark:sessions -- --diverse --strict
+      - name: Optional varied scoring inputs and exact parity (local only)
+        id: varied-profile
+        if: ${{ !cancelled() && inputs.session_test && steps.diverse-profile.outcome == 'success' }}
+        run: |
+          node scripts/profile-discovery.mjs --make-varied --previous
+          node scripts/profile-discovery.mjs --varied
+          node scripts/verify-ranking-parity.mjs
+      - name: Optional paced synthetic read sessions (varied scoring inputs, local only)
+        if: ${{ !cancelled() && inputs.session_test && steps.varied-profile.outcome == 'success' }}
+        run: |
+          node scripts/benchmark-ranking-baseline.mjs --varied
+          npm run benchmark:sessions -- --varied --strict
       - name: Preserve failed checks and measured load results
         if: always()
         uses: actions/upload-artifact@v4

@@ -9,7 +9,7 @@ import { createResourceSampler, resourceCoverage, summarizeResources } from './l
 import { sessionDefaults } from './session-load.mjs';
 
 const args = process.argv.slice(2);
-if (args.some(arg => !['--seed', '--diverse', '--strict'].includes(arg))) throw Error('Unknown session benchmark argument');
+if (args.some(arg => !['--seed', '--diverse', '--varied', '--strict', '--baseline'].includes(arg))) throw Error('Unknown session benchmark argument');
 const config = localBackend(); // Resolves CLI's disposable loopback stack only.
 const sql = source => localPostgres(config, source).stdout;
 if (args.includes('--seed')) sql(await readFile(new URL('./performance-fixture.sql', import.meta.url), 'utf8'));
@@ -21,12 +21,14 @@ const fixture = JSON.parse(sql(`select jsonb_build_object(
   'distinctLocations',(select count(distinct location_id) from public.trip_plans));`));
 if (fixture.profiles !== 10000 || fixture.trips !== 50000 || fixture.messages !== 500000 ||
     fixture.sessions !== 200 || fixture.pushDevices !== 0 || fixture.pushEvents !== 0 || fixture.proposalJobs !== 0 ||
-    fixture.distinctLocations !== (args.includes('--diverse') ? 50000 : 1))
+    fixture.distinctLocations !== (args.includes('--diverse') || args.includes('--varied') ? 50000 : 1))
   throw Error('Expected complete disposable synthetic fixture without outbound jobs');
 const projectId = (await readFile(new URL('../supabase/config.toml', import.meta.url), 'utf8')).match(/^project_id\s*=\s*"([\w-]+)"/m)?.[1];
 const sampler = await createResourceSampler(config, projectId ?? '');
-const output = '.expo/hardening-session-load' + (args.includes('--diverse') ? '-diverse' : '') + '.json';
+const dataset = args.includes('--varied') ? 'varied' : args.includes('--diverse') ? 'diverse' : 'uniform';
+const output = '.expo/hardening-session-load' + (dataset === 'uniform' ? '' : '-' + dataset) + (args.includes('--baseline') ? '-baseline' : '') + '.json';
 const report = { schemaVersion: 1, complete: false, startedAt: new Date().toISOString(), fixture,
+  rankingVersion: args.includes('--baseline') ? 'migration 008' : 'migration 009',
   engine: 'Disposable local Supabase HTTP; paced synthetic read sessions, not full app or hosted capacity',
   environment: { commit: process.env.GITHUB_SHA ?? null, node: process.version, cpuModel: cpus()[0]?.model ?? null,
     logicalCpus: cpus().length, availableCpus: availableParallelism(), memoryBytes: totalmem(),
@@ -86,7 +88,7 @@ try {
   report.diagnosticsCoverage = resourceCoverage(report.resources, result.result.durationMs);
   report.diagnosticsAvailable = report.diagnosticsCoverage.sufficient;
   await save();
-  console.log(JSON.stringify({ phase: 'complete', dataset: args.includes('--diverse') ? 'diverse' : 'uniform',
+  console.log(JSON.stringify({ phase: 'complete', dataset,
     targetsMet: report.targetsMet, diagnosticsAvailable: report.diagnosticsAvailable,
     operations: result.result.steady.operations, generator: result.generator, resources: report.resourceSummary }));
   if (args.includes('--strict') && (!report.targetsMet || !report.diagnosticsAvailable)) process.exitCode = 1;

@@ -72,6 +72,8 @@ Kolejna optymalizacja zachowuje dokładne wyniki i kursory, ogranicza składanie
 
 Osobny scenariusz `benchmark:sessions` sprawdza stopniowe dołączanie 200 sesji, powtarzane odczyty i zasoby bazy/API. Nie zastępuje oryginalnego testu nagłego ruchu. Protokół, uruchomienie i wyniki: [PACED_READ_LOAD.md](docs/PACED_READ_LOAD.md).
 
+Kolejna optymalizacja rankingu na trzech zróżnicowanych zbiorach, z porównaniem przed/po i wdrożeniem wyłącznie na Dev: [DIVERSE_RANKING_OPTIMIZATION.md](docs/DIVERSE_RANKING_OPTIMIZATION.md). Zachowuje dokładne wyniki i strony po pięć; w końcowej próbie 200 sesji wszystkie warianty spełniły cele odczytów.
+
 Google, dostarczenie e-maila, klawiatura Androida i rzeczywiste push wymagają oddzielnej kontroli na telefonach. Eksport i test przeglądarkowy nie potwierdzają działania tych usług na urządzeniu.
 
 ## Wdrożenia

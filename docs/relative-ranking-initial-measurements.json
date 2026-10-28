@@ -1,0 +1,2921 @@
+{
+  "schemaVersion": 1,
+  "ci": {
+    "runId": 40770190005,
+    "url": "https://github.com/Sonislaw/razemgo-app/actions/runs/40770190005",
+    "commit": "9c556178a9849f71d3d1abd03a8b489edd8f3bff"
+  },
+  "variants": [
+    {
+      "complete": true,
+      "rankingVersion": "migration 008",
+      "startedAt": "2026-10-28T21:18:09.455Z",
+      "completedAt": "2026-10-28T21:22:16.689Z",
+      "fixture": {
+        "trips": 50000,
+        "messages": 500000,
+        "profiles": 10000,
+        "sessions": 200,
+        "pushEvents": 0,
+        "pushDevices": 0,
+        "proposalJobs": 0,
+        "distinctLocations": 1
+      },
+      "environment": {
+        "commit": "9c556178a9849f71d3d1abd03a8b489edd8f3bff",
+        "node": "v24.22.1",
+        "cpuModel": "AMD EPYC 7763 64-Core Processor",
+        "logicalCpus": 4,
+        "availableCpus": 4,
+        "memoryBytes": 16760344576,
+        "generatorIsolation": "Separate process on the same shared host; not a separate machine",
+        "postgrest": {
+          "poolMax": 10,
+          "poolAcquisitionTimeoutSeconds": 10,
+          "metricsEnabled": true
+        }
+      },
+      "protocol": {
+        "sessions": 200,
+        "rampMs": 60000,
+        "steadyMs": 180000,
+        "syncMs": 20000,
+        "actionMinMs": 10000,
+        "actionMaxMs": 20000,
+        "maxInFlightPerSession": 2,
+        "randomSeed": 4282026,
+        "minimumSamples": 50,
+        "actionWeights": {
+          "trips": 0.45,
+          "groups": 0.25,
+          "mailbox": 0.2,
+          "tripRanking": 0.05,
+          "groupRanking": 0.05
+        },
+        "pageSize": 5,
+        "requestTimeoutMs": 30000,
+        "retries": 0,
+        "resourceIntervalMs": 5000,
+        "targets": {
+          "pageP95Ms": 800,
+          "rankingP95Ms": 1500,
+          "errorRateBelow": 0.01,
+          "missedRateBelow": 0.01,
+          "schedulingP95Ms": 100,
+          "minimumSamplesPerOperation": 50
+        },
+        "exclusions": [
+          "Realtime",
+          "chat history",
+          "writes",
+          "push",
+          "real devices",
+          "WAN latency"
+        ]
+      },
+      "result": {
+        "durationMs": 240018,
+        "drainMs": 20,
+        "peakInFlight": 13,
+        "ramp": {
+          "operations": [
+            {
+              "id": "summary",
+              "ranking": false,
+              "scheduled": 401,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 401,
+                "successful": 401,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 3,
+                "p95Ms": 7,
+                "maxMs": 69,
+                "successfulP95Ms": 7,
+                "responseBytes": 52531,
+                "successfulResponseBytes": 52531,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "trips",
+              "ranking": false,
+              "scheduled": 217,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 217,
+                "successful": 217,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 82,
+                "p95Ms": 125,
+                "maxMs": 225,
+                "successfulP95Ms": 125,
+                "responseBytes": 1303434,
+                "successfulResponseBytes": 1303434,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groups",
+              "ranking": false,
+              "scheduled": 100,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 100,
+                "successful": 100,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 36,
+                "p95Ms": 60,
+                "maxMs": 172,
+                "successfulP95Ms": 60,
+                "responseBytes": 278340,
+                "successfulResponseBytes": 278340,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "mailbox",
+              "ranking": false,
+              "scheduled": 84,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 84,
+                "successful": 84,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 56,
+                "p95Ms": 94,
+                "maxMs": 127,
+                "successfulP95Ms": 94,
+                "responseBytes": 603572,
+                "successfulResponseBytes": 603572,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "tripRanking",
+              "ranking": true,
+              "scheduled": 14,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 14,
+                "successful": 14,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 466,
+                "p95Ms": 612,
+                "maxMs": 612,
+                "successfulP95Ms": 612,
+                "responseBytes": 85888,
+                "successfulResponseBytes": 85888,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groupRanking",
+              "ranking": true,
+              "scheduled": 12,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 12,
+                "successful": 12,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 84,
+                "p95Ms": 209,
+                "maxMs": 209,
+                "successfulP95Ms": 209,
+                "responseBytes": 35648,
+                "successfulResponseBytes": 35648,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            }
+          ],
+          "metrics": {
+            "attempts": 828,
+            "successful": 828,
+            "failed": 0,
+            "errorRate": 0,
+            "p50Ms": 33,
+            "p95Ms": 108,
+            "maxMs": 612,
+            "successfulP95Ms": 108,
+            "responseBytes": 2359413,
+            "successfulResponseBytes": 2359413,
+            "failureStatuses": {},
+            "failureCodes": {}
+          }
+        },
+        "steady": {
+          "operations": [
+            {
+              "id": "summary",
+              "ranking": false,
+              "scheduled": 1800,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 1800,
+                "successful": 1800,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 3,
+                "p95Ms": 7,
+                "maxMs": 68,
+                "successfulP95Ms": 7,
+                "responseBytes": 235800,
+                "successfulResponseBytes": 235800,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "trips",
+              "ranking": false,
+              "scheduled": 1081,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 1081,
+                "successful": 1081,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 84,
+                "p95Ms": 151,
+                "maxMs": 311,
+                "successfulP95Ms": 151,
+                "responseBytes": 6492809,
+                "successfulResponseBytes": 6492809,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groups",
+              "ranking": false,
+              "scheduled": 597,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 597,
+                "successful": 597,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 37,
+                "p95Ms": 79,
+                "maxMs": 189,
+                "successfulP95Ms": 79,
+                "responseBytes": 1666943,
+                "successfulResponseBytes": 1666943,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "mailbox",
+              "ranking": false,
+              "scheduled": 478,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 478,
+                "successful": 478,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 58,
+                "p95Ms": 102,
+                "maxMs": 267,
+                "successfulP95Ms": 102,
+                "responseBytes": 3435040,
+                "successfulResponseBytes": 3435040,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "tripRanking",
+              "ranking": true,
+              "scheduled": 124,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 124,
+                "successful": 124,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 506,
+                "p95Ms": 776,
+                "maxMs": 929,
+                "successfulP95Ms": 776,
+                "responseBytes": 759295,
+                "successfulResponseBytes": 759295,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groupRanking",
+              "ranking": true,
+              "scheduled": 128,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 128,
+                "successful": 128,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 88,
+                "p95Ms": 224,
+                "maxMs": 331,
+                "successfulP95Ms": 224,
+                "responseBytes": 375973,
+                "successfulResponseBytes": 375973,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            }
+          ],
+          "metrics": {
+            "attempts": 4208,
+            "successful": 4208,
+            "failed": 0,
+            "errorRate": 0,
+            "p50Ms": 38,
+            "p95Ms": 147,
+            "maxMs": 929,
+            "successfulP95Ms": 147,
+            "responseBytes": 12965860,
+            "successfulResponseBytes": 12965860,
+            "failureStatuses": {},
+            "failureCodes": {}
+          }
+        },
+        "targetsMet": true
+      },
+      "generator": {
+        "cpuCorePercent": 2.43,
+        "eventLoopUtilization": 0.021053880282952863,
+        "eventLoopP95Ms": 21,
+        "eventLoopMaxMs": 26,
+        "peakRssBytes": 191238144
+      },
+      "resourceSummary": {
+        "samples": 50,
+        "databaseSamples": 50,
+        "poolSamples": 50,
+        "maxSampleGapMs": 5002,
+        "peakActiveConnections": 8,
+        "peakLockWaiters": 0,
+        "peakIoWaiters": 1,
+        "peakPoolWaiting": 8,
+        "poolTimeoutsDelta": 0,
+        "databaseDeltas": {
+          "commits": 5346,
+          "rollbacks": 49,
+          "tempBytes": 1076292366,
+          "blocksRead": 3246,
+          "blocksHit": 41763794,
+          "deadlocks": 0
+        },
+        "services": {
+          "database": {
+            "samples": 50,
+            "peakCpuCorePercent": 232.01,
+            "peakMemoryBytes": 433376461,
+            "peakPids": 33
+          },
+          "postgrest": {
+            "samples": 50,
+            "peakCpuCorePercent": 2.37,
+            "peakMemoryBytes": 35389440,
+            "peakPids": 31
+          },
+          "gateway": {
+            "samples": 50,
+            "peakCpuCorePercent": 10.91,
+            "peakMemoryBytes": 143759770,
+            "peakPids": 2
+          },
+          "auth": {
+            "samples": 50,
+            "peakCpuCorePercent": 0,
+            "peakMemoryBytes": 10622075,
+            "peakPids": 10
+          }
+        }
+      },
+      "targetsMet": true,
+      "diagnosticsCoverage": {
+        "sampleCount": 50,
+        "expectedSampleCount": 49,
+        "database": 1,
+        "databaseContainer": 1,
+        "apiContainer": 1,
+        "pool": 1,
+        "sufficient": true
+      },
+      "diagnosticsAvailable": true,
+      "dataset": "uniform"
+    },
+    {
+      "complete": true,
+      "rankingVersion": "migration 008",
+      "startedAt": "2026-10-28T21:27:03.994Z",
+      "completedAt": "2026-10-28T21:31:11.274Z",
+      "fixture": {
+        "trips": 50000,
+        "messages": 500000,
+        "profiles": 10000,
+        "sessions": 200,
+        "pushEvents": 0,
+        "pushDevices": 0,
+        "proposalJobs": 0,
+        "distinctLocations": 50000
+      },
+      "environment": {
+        "commit": "9c556178a9849f71d3d1abd03a8b489edd8f3bff",
+        "node": "v24.22.1",
+        "cpuModel": "AMD EPYC 7763 64-Core Processor",
+        "logicalCpus": 4,
+        "availableCpus": 4,
+        "memoryBytes": 16760344576,
+        "generatorIsolation": "Separate process on the same shared host; not a separate machine",
+        "postgrest": {
+          "poolMax": 10,
+          "poolAcquisitionTimeoutSeconds": 10,
+          "metricsEnabled": true
+        }
+      },
+      "protocol": {
+        "sessions": 200,
+        "rampMs": 60000,
+        "steadyMs": 180000,
+        "syncMs": 20000,
+        "actionMinMs": 10000,
+        "actionMaxMs": 20000,
+        "maxInFlightPerSession": 2,
+        "randomSeed": 4282026,
+        "minimumSamples": 50,
+        "actionWeights": {
+          "trips": 0.45,
+          "groups": 0.25,
+          "mailbox": 0.2,
+          "tripRanking": 0.05,
+          "groupRanking": 0.05
+        },
+        "pageSize": 5,
+        "requestTimeoutMs": 30000,
+        "retries": 0,
+        "resourceIntervalMs": 5000,
+        "targets": {
+          "pageP95Ms": 800,
+          "rankingP95Ms": 1500,
+          "errorRateBelow": 0.01,
+          "missedRateBelow": 0.01,
+          "schedulingP95Ms": 100,
+          "minimumSamplesPerOperation": 50
+        },
+        "exclusions": [
+          "Realtime",
+          "chat history",
+          "writes",
+          "push",
+          "real devices",
+          "WAN latency"
+        ]
+      },
+      "result": {
+        "durationMs": 242601,
+        "drainMs": 2602,
+        "peakInFlight": 113,
+        "ramp": {
+          "operations": [
+            {
+              "id": "summary",
+              "ranking": false,
+              "scheduled": 401,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 401,
+                "successful": 401,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 3,
+                "p95Ms": 9,
+                "maxMs": 84,
+                "successfulP95Ms": 9,
+                "responseBytes": 52531,
+                "successfulResponseBytes": 52531,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "trips",
+              "ranking": false,
+              "scheduled": 217,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 217,
+                "successful": 217,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 90,
+                "p95Ms": 237,
+                "maxMs": 447,
+                "successfulP95Ms": 237,
+                "responseBytes": 1398984,
+                "successfulResponseBytes": 1398984,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groups",
+              "ranking": false,
+              "scheduled": 100,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 100,
+                "successful": 100,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 40,
+                "p95Ms": 110,
+                "maxMs": 184,
+                "successfulP95Ms": 110,
+                "responseBytes": 290681,
+                "successfulResponseBytes": 290681,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "mailbox",
+              "ranking": false,
+              "scheduled": 84,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 84,
+                "successful": 84,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 58,
+                "p95Ms": 150,
+                "maxMs": 310,
+                "successfulP95Ms": 150,
+                "responseBytes": 603572,
+                "successfulResponseBytes": 603572,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "tripRanking",
+              "ranking": true,
+              "scheduled": 14,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 14,
+                "successful": 14,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 1525,
+                "p95Ms": 3146,
+                "maxMs": 3146,
+                "successfulP95Ms": 3146,
+                "responseBytes": 93574,
+                "successfulResponseBytes": 93574,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groupRanking",
+              "ranking": true,
+              "scheduled": 12,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 12,
+                "successful": 12,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 762,
+                "p95Ms": 1411,
+                "maxMs": 1411,
+                "successfulP95Ms": 1411,
+                "responseBytes": 39503,
+                "successfulResponseBytes": 39503,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            }
+          ],
+          "metrics": {
+            "attempts": 828,
+            "successful": 828,
+            "failed": 0,
+            "errorRate": 0,
+            "p50Ms": 33,
+            "p95Ms": 184,
+            "maxMs": 3146,
+            "successfulP95Ms": 184,
+            "responseBytes": 2478845,
+            "successfulResponseBytes": 2478845,
+            "failureStatuses": {},
+            "failureCodes": {}
+          }
+        },
+        "steady": {
+          "operations": [
+            {
+              "id": "summary",
+              "ranking": false,
+              "scheduled": 1800,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 1800,
+                "successful": 1787,
+                "failed": 13,
+                "errorRate": 0.007222222222222222,
+                "p50Ms": 12,
+                "p95Ms": 4694,
+                "maxMs": 10007,
+                "successfulP95Ms": 4371,
+                "responseBytes": 235540,
+                "successfulResponseBytes": 234097,
+                "failureStatuses": {
+                  "504": 13
+                },
+                "failureCodes": {
+                  "PGRST003": 13
+                }
+              }
+            },
+            {
+              "id": "trips",
+              "ranking": false,
+              "scheduled": 1081,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 1081,
+                "successful": 1072,
+                "failed": 9,
+                "errorRate": 0.008325624421831638,
+                "p50Ms": 343,
+                "p95Ms": 4403,
+                "maxMs": 10359,
+                "successfulP95Ms": 3885,
+                "responseBytes": 6911513,
+                "successfulResponseBytes": 6910514,
+                "failureStatuses": {
+                  "504": 9
+                },
+                "failureCodes": {
+                  "PGRST003": 9
+                }
+              }
+            },
+            {
+              "id": "groups",
+              "ranking": false,
+              "scheduled": 597,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 597,
+                "successful": 590,
+                "failed": 7,
+                "errorRate": 0.011725293132328308,
+                "p50Ms": 178,
+                "p95Ms": 5661,
+                "maxMs": 10008,
+                "successfulP95Ms": 5086,
+                "responseBytes": 1716234,
+                "successfulResponseBytes": 1715457,
+                "failureStatuses": {
+                  "504": 7
+                },
+                "failureCodes": {
+                  "PGRST003": 7
+                }
+              }
+            },
+            {
+              "id": "mailbox",
+              "ranking": false,
+              "scheduled": 478,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 478,
+                "successful": 472,
+                "failed": 6,
+                "errorRate": 0.012552301255230125,
+                "p50Ms": 236,
+                "p95Ms": 4687,
+                "maxMs": 10004,
+                "successfulP95Ms": 4302,
+                "responseBytes": 3392588,
+                "successfulResponseBytes": 3391922,
+                "failureStatuses": {
+                  "504": 6
+                },
+                "failureCodes": {
+                  "PGRST003": 6
+                }
+              }
+            },
+            {
+              "id": "tripRanking",
+              "ranking": true,
+              "scheduled": 124,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 124,
+                "successful": 124,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 5405,
+                "p95Ms": 10268,
+                "maxMs": 13011,
+                "successfulP95Ms": 10268,
+                "responseBytes": 827331,
+                "successfulResponseBytes": 827331,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groupRanking",
+              "ranking": true,
+              "scheduled": 128,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 128,
+                "successful": 128,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 2269,
+                "p95Ms": 7113,
+                "maxMs": 10420,
+                "successfulP95Ms": 7113,
+                "responseBytes": 418624,
+                "successfulResponseBytes": 418624,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            }
+          ],
+          "metrics": {
+            "attempts": 4208,
+            "successful": 4173,
+            "failed": 35,
+            "errorRate": 0.008317490494296578,
+            "p50Ms": 227,
+            "p95Ms": 5754,
+            "maxMs": 13011,
+            "successfulP95Ms": 5316,
+            "responseBytes": 13501830,
+            "successfulResponseBytes": 13497945,
+            "failureStatuses": {
+              "504": 35
+            },
+            "failureCodes": {
+              "PGRST003": 35
+            }
+          }
+        },
+        "targetsMet": false
+      },
+      "generator": {
+        "cpuCorePercent": 2.47,
+        "eventLoopUtilization": 0.026003738226900015,
+        "eventLoopP95Ms": 21,
+        "eventLoopMaxMs": 29,
+        "peakRssBytes": 203661312
+      },
+      "resourceSummary": {
+        "samples": 50,
+        "databaseSamples": 50,
+        "poolSamples": 50,
+        "maxSampleGapMs": 5002,
+        "peakActiveConnections": 10,
+        "peakLockWaiters": 0,
+        "peakIoWaiters": 2,
+        "peakPoolWaiting": 110,
+        "poolTimeoutsDelta": 35,
+        "databaseDeltas": {
+          "commits": 5281,
+          "rollbacks": 49,
+          "tempBytes": 9411034366,
+          "blocksRead": 98,
+          "blocksHit": 63493204,
+          "deadlocks": 0
+        },
+        "services": {
+          "database": {
+            "samples": 50,
+            "peakCpuCorePercent": 392.42,
+            "peakMemoryBytes": 618345267,
+            "peakPids": 35
+          },
+          "postgrest": {
+            "samples": 50,
+            "peakCpuCorePercent": 12.81,
+            "peakMemoryBytes": 49167729,
+            "peakPids": 34
+          },
+          "gateway": {
+            "samples": 50,
+            "peakCpuCorePercent": 15.98,
+            "peakMemoryBytes": 182347366,
+            "peakPids": 2
+          },
+          "auth": {
+            "samples": 50,
+            "peakCpuCorePercent": 3.64,
+            "peakMemoryBytes": 10611589,
+            "peakPids": 10
+          }
+        }
+      },
+      "targetsMet": false,
+      "diagnosticsCoverage": {
+        "sampleCount": 50,
+        "expectedSampleCount": 49,
+        "database": 1,
+        "databaseContainer": 1,
+        "apiContainer": 1,
+        "pool": 1,
+        "sufficient": true
+      },
+      "diagnosticsAvailable": true,
+      "dataset": "diverse"
+    },
+    {
+      "complete": true,
+      "rankingVersion": "migration 009",
+      "startedAt": "2026-10-28T21:31:13.423Z",
+      "completedAt": "2026-10-28T21:35:20.689Z",
+      "fixture": {
+        "trips": 50000,
+        "messages": 500000,
+        "profiles": 10000,
+        "sessions": 200,
+        "pushEvents": 0,
+        "pushDevices": 0,
+        "proposalJobs": 0,
+        "distinctLocations": 50000
+      },
+      "environment": {
+        "commit": "9c556178a9849f71d3d1abd03a8b489edd8f3bff",
+        "node": "v24.22.1",
+        "cpuModel": "AMD EPYC 7763 64-Core Processor",
+        "logicalCpus": 4,
+        "availableCpus": 4,
+        "memoryBytes": 16760344576,
+        "generatorIsolation": "Separate process on the same shared host; not a separate machine",
+        "postgrest": {
+          "poolMax": 10,
+          "poolAcquisitionTimeoutSeconds": 10,
+          "metricsEnabled": true
+        }
+      },
+      "protocol": {
+        "sessions": 200,
+        "rampMs": 60000,
+        "steadyMs": 180000,
+        "syncMs": 20000,
+        "actionMinMs": 10000,
+        "actionMaxMs": 20000,
+        "maxInFlightPerSession": 2,
+        "randomSeed": 4282026,
+        "minimumSamples": 50,
+        "actionWeights": {
+          "trips": 0.45,
+          "groups": 0.25,
+          "mailbox": 0.2,
+          "tripRanking": 0.05,
+          "groupRanking": 0.05
+        },
+        "pageSize": 5,
+        "requestTimeoutMs": 30000,
+        "retries": 0,
+        "resourceIntervalMs": 5000,
+        "targets": {
+          "pageP95Ms": 800,
+          "rankingP95Ms": 1500,
+          "errorRateBelow": 0.01,
+          "missedRateBelow": 0.01,
+          "schedulingP95Ms": 100,
+          "minimumSamplesPerOperation": 50
+        },
+        "exclusions": [
+          "Realtime",
+          "chat history",
+          "writes",
+          "push",
+          "real devices",
+          "WAN latency"
+        ]
+      },
+      "result": {
+        "durationMs": 240297,
+        "drainMs": 297,
+        "peakInFlight": 20,
+        "ramp": {
+          "operations": [
+            {
+              "id": "summary",
+              "ranking": false,
+              "scheduled": 401,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 401,
+                "successful": 401,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 3,
+                "p95Ms": 9,
+                "maxMs": 73,
+                "successfulP95Ms": 9,
+                "responseBytes": 52531,
+                "successfulResponseBytes": 52531,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "trips",
+              "ranking": false,
+              "scheduled": 217,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 217,
+                "successful": 217,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 93,
+                "p95Ms": 164,
+                "maxMs": 268,
+                "successfulP95Ms": 164,
+                "responseBytes": 1398984,
+                "successfulResponseBytes": 1398984,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groups",
+              "ranking": false,
+              "scheduled": 100,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 100,
+                "successful": 100,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 37,
+                "p95Ms": 109,
+                "maxMs": 142,
+                "successfulP95Ms": 109,
+                "responseBytes": 290681,
+                "successfulResponseBytes": 290681,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "mailbox",
+              "ranking": false,
+              "scheduled": 84,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 84,
+                "successful": 84,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 55,
+                "p95Ms": 109,
+                "maxMs": 154,
+                "successfulP95Ms": 109,
+                "responseBytes": 603572,
+                "successfulResponseBytes": 603572,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "tripRanking",
+              "ranking": true,
+              "scheduled": 14,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 14,
+                "successful": 14,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 653,
+                "p95Ms": 1301,
+                "maxMs": 1301,
+                "successfulP95Ms": 1301,
+                "responseBytes": 93574,
+                "successfulResponseBytes": 93574,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groupRanking",
+              "ranking": true,
+              "scheduled": 12,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 12,
+                "successful": 12,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 779,
+                "p95Ms": 1083,
+                "maxMs": 1083,
+                "successfulP95Ms": 1083,
+                "responseBytes": 39503,
+                "successfulResponseBytes": 39503,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            }
+          ],
+          "metrics": {
+            "attempts": 828,
+            "successful": 828,
+            "failed": 0,
+            "errorRate": 0,
+            "p50Ms": 33,
+            "p95Ms": 148,
+            "maxMs": 1301,
+            "successfulP95Ms": 148,
+            "responseBytes": 2478845,
+            "successfulResponseBytes": 2478845,
+            "failureStatuses": {},
+            "failureCodes": {}
+          }
+        },
+        "steady": {
+          "operations": [
+            {
+              "id": "summary",
+              "ranking": false,
+              "scheduled": 1800,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 1800,
+                "successful": 1800,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 4,
+                "p95Ms": 16,
+                "maxMs": 1085,
+                "successfulP95Ms": 16,
+                "responseBytes": 235800,
+                "successfulResponseBytes": 235800,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "trips",
+              "ranking": false,
+              "scheduled": 1081,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 1081,
+                "successful": 1081,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 127,
+                "p95Ms": 372,
+                "maxMs": 803,
+                "successfulP95Ms": 372,
+                "responseBytes": 6968492,
+                "successfulResponseBytes": 6968492,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groups",
+              "ranking": false,
+              "scheduled": 597,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 597,
+                "successful": 597,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 57,
+                "p95Ms": 194,
+                "maxMs": 622,
+                "successfulP95Ms": 194,
+                "responseBytes": 1735644,
+                "successfulResponseBytes": 1735644,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "mailbox",
+              "ranking": false,
+              "scheduled": 478,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 478,
+                "successful": 478,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 82,
+                "p95Ms": 243,
+                "maxMs": 609,
+                "successfulP95Ms": 243,
+                "responseBytes": 3435040,
+                "successfulResponseBytes": 3435040,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "tripRanking",
+              "ranking": true,
+              "scheduled": 124,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 124,
+                "successful": 124,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 971,
+                "p95Ms": 1847,
+                "maxMs": 2873,
+                "successfulP95Ms": 1847,
+                "responseBytes": 827331,
+                "successfulResponseBytes": 827331,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groupRanking",
+              "ranking": true,
+              "scheduled": 128,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 128,
+                "successful": 128,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 1040,
+                "p95Ms": 2527,
+                "maxMs": 2893,
+                "successfulP95Ms": 2527,
+                "responseBytes": 418624,
+                "successfulResponseBytes": 418624,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            }
+          ],
+          "metrics": {
+            "attempts": 4208,
+            "successful": 4208,
+            "failed": 0,
+            "errorRate": 0,
+            "p50Ms": 55,
+            "p95Ms": 789,
+            "maxMs": 2893,
+            "successfulP95Ms": 789,
+            "responseBytes": 13620931,
+            "successfulResponseBytes": 13620931,
+            "failureStatuses": {},
+            "failureCodes": {}
+          }
+        },
+        "targetsMet": false
+      },
+      "generator": {
+        "cpuCorePercent": 2.54,
+        "eventLoopUtilization": 0.024704186206538286,
+        "eventLoopP95Ms": 21,
+        "eventLoopMaxMs": 28,
+        "peakRssBytes": 192819200
+      },
+      "resourceSummary": {
+        "samples": 50,
+        "databaseSamples": 50,
+        "poolSamples": 50,
+        "maxSampleGapMs": 5003,
+        "peakActiveConnections": 9,
+        "peakLockWaiters": 0,
+        "peakIoWaiters": 0,
+        "peakPoolWaiting": 10,
+        "poolTimeoutsDelta": 0,
+        "databaseDeltas": {
+          "commits": 5309,
+          "rollbacks": 49,
+          "tempBytes": 2354567864,
+          "blocksRead": 0,
+          "blocksHit": 63907433,
+          "deadlocks": 0
+        },
+        "services": {
+          "database": {
+            "samples": 50,
+            "peakCpuCorePercent": 385.33,
+            "peakMemoryBytes": 561302733,
+            "peakPids": 28
+          },
+          "postgrest": {
+            "samples": 50,
+            "peakCpuCorePercent": 3.42,
+            "peakMemoryBytes": 50635735,
+            "peakPids": 32
+          },
+          "gateway": {
+            "samples": 50,
+            "peakCpuCorePercent": 15.98,
+            "peakMemoryBytes": 182347366,
+            "peakPids": 3
+          },
+          "auth": {
+            "samples": 50,
+            "peakCpuCorePercent": 0.2,
+            "peakMemoryBytes": 10496246,
+            "peakPids": 10
+          }
+        }
+      },
+      "targetsMet": false,
+      "diagnosticsCoverage": {
+        "sampleCount": 50,
+        "expectedSampleCount": 49,
+        "database": 1,
+        "databaseContainer": 1,
+        "apiContainer": 1,
+        "pool": 1,
+        "sufficient": true
+      },
+      "diagnosticsAvailable": true,
+      "dataset": "diverse"
+    },
+    {
+      "complete": true,
+      "rankingVersion": "migration 008",
+      "startedAt": "2026-10-28T21:36:03.282Z",
+      "completedAt": "2026-10-28T21:40:15.558Z",
+      "fixture": {
+        "trips": 50000,
+        "messages": 500000,
+        "profiles": 10000,
+        "sessions": 200,
+        "pushEvents": 0,
+        "pushDevices": 0,
+        "proposalJobs": 0,
+        "distinctLocations": 50000
+      },
+      "environment": {
+        "commit": "9c556178a9849f71d3d1abd03a8b489edd8f3bff",
+        "node": "v24.22.1",
+        "cpuModel": "AMD EPYC 7763 64-Core Processor",
+        "logicalCpus": 4,
+        "availableCpus": 4,
+        "memoryBytes": 16760344576,
+        "generatorIsolation": "Separate process on the same shared host; not a separate machine",
+        "postgrest": {
+          "poolMax": 10,
+          "poolAcquisitionTimeoutSeconds": 10,
+          "metricsEnabled": true
+        }
+      },
+      "protocol": {
+        "sessions": 200,
+        "rampMs": 60000,
+        "steadyMs": 180000,
+        "syncMs": 20000,
+        "actionMinMs": 10000,
+        "actionMaxMs": 20000,
+        "maxInFlightPerSession": 2,
+        "randomSeed": 4282026,
+        "minimumSamples": 50,
+        "actionWeights": {
+          "trips": 0.45,
+          "groups": 0.25,
+          "mailbox": 0.2,
+          "tripRanking": 0.05,
+          "groupRanking": 0.05
+        },
+        "pageSize": 5,
+        "requestTimeoutMs": 30000,
+        "retries": 0,
+        "resourceIntervalMs": 5000,
+        "targets": {
+          "pageP95Ms": 800,
+          "rankingP95Ms": 1500,
+          "errorRateBelow": 0.01,
+          "missedRateBelow": 0.01,
+          "schedulingP95Ms": 100,
+          "minimumSamplesPerOperation": 50
+        },
+        "exclusions": [
+          "Realtime",
+          "chat history",
+          "writes",
+          "push",
+          "real devices",
+          "WAN latency"
+        ]
+      },
+      "result": {
+        "durationMs": 246667,
+        "drainMs": 6666,
+        "peakInFlight": 142,
+        "ramp": {
+          "operations": [
+            {
+              "id": "summary",
+              "ranking": false,
+              "scheduled": 401,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 401,
+                "successful": 401,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 4,
+                "p95Ms": 11,
+                "maxMs": 136,
+                "successfulP95Ms": 11,
+                "responseBytes": 52531,
+                "successfulResponseBytes": 52531,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "trips",
+              "ranking": false,
+              "scheduled": 217,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 217,
+                "successful": 217,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 115,
+                "p95Ms": 278,
+                "maxMs": 497,
+                "successfulP95Ms": 278,
+                "responseBytes": 1427862,
+                "successfulResponseBytes": 1427862,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groups",
+              "ranking": false,
+              "scheduled": 100,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 100,
+                "successful": 100,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 47,
+                "p95Ms": 138,
+                "maxMs": 150,
+                "successfulP95Ms": 138,
+                "responseBytes": 290681,
+                "successfulResponseBytes": 290681,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "mailbox",
+              "ranking": false,
+              "scheduled": 84,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 84,
+                "successful": 84,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 64,
+                "p95Ms": 188,
+                "maxMs": 276,
+                "successfulP95Ms": 188,
+                "responseBytes": 603572,
+                "successfulResponseBytes": 603572,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "tripRanking",
+              "ranking": true,
+              "scheduled": 14,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 14,
+                "successful": 14,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 1990,
+                "p95Ms": 3801,
+                "maxMs": 3801,
+                "successfulP95Ms": 3801,
+                "responseBytes": 115109,
+                "successfulResponseBytes": 115109,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groupRanking",
+              "ranking": true,
+              "scheduled": 12,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 12,
+                "successful": 12,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 876,
+                "p95Ms": 1436,
+                "maxMs": 1436,
+                "successfulP95Ms": 1436,
+                "responseBytes": 39503,
+                "successfulResponseBytes": 39503,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            }
+          ],
+          "metrics": {
+            "attempts": 828,
+            "successful": 828,
+            "failed": 0,
+            "errorRate": 0,
+            "p50Ms": 35,
+            "p95Ms": 233,
+            "maxMs": 3801,
+            "successfulP95Ms": 233,
+            "responseBytes": 2529258,
+            "successfulResponseBytes": 2529258,
+            "failureStatuses": {},
+            "failureCodes": {}
+          }
+        },
+        "steady": {
+          "operations": [
+            {
+              "id": "summary",
+              "ranking": false,
+              "scheduled": 1800,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 1800,
+                "successful": 1729,
+                "failed": 71,
+                "errorRate": 0.03944444444444444,
+                "p50Ms": 1006,
+                "p95Ms": 9081,
+                "maxMs": 10009,
+                "successfulP95Ms": 7423,
+                "responseBytes": 234380,
+                "successfulResponseBytes": 226499,
+                "failureStatuses": {
+                  "504": 71
+                },
+                "failureCodes": {
+                  "PGRST003": 71
+                }
+              }
+            },
+            {
+              "id": "trips",
+              "ranking": false,
+              "scheduled": 1081,
+              "missed": 1,
+              "missedRate": 0.0009250693802035153,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 1080,
+                "successful": 1037,
+                "failed": 43,
+                "errorRate": 0.03981481481481482,
+                "p50Ms": 1347,
+                "p95Ms": 9499,
+                "maxMs": 10388,
+                "successfulP95Ms": 7596,
+                "responseBytes": 6821298,
+                "successfulResponseBytes": 6816525,
+                "failureStatuses": {
+                  "504": 43
+                },
+                "failureCodes": {
+                  "PGRST003": 43
+                }
+              }
+            },
+            {
+              "id": "groups",
+              "ranking": false,
+              "scheduled": 597,
+              "missed": 1,
+              "missedRate": 0.0016750418760469012,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 596,
+                "successful": 571,
+                "failed": 25,
+                "errorRate": 0.04194630872483222,
+                "p50Ms": 1167,
+                "p95Ms": 9672,
+                "maxMs": 10150,
+                "successfulP95Ms": 8061,
+                "responseBytes": 1662853,
+                "successfulResponseBytes": 1660078,
+                "failureStatuses": {
+                  "504": 25
+                },
+                "failureCodes": {
+                  "PGRST003": 25
+                }
+              }
+            },
+            {
+              "id": "mailbox",
+              "ranking": false,
+              "scheduled": 478,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 478,
+                "successful": 461,
+                "failed": 17,
+                "errorRate": 0.03556485355648536,
+                "p50Ms": 1129,
+                "p95Ms": 9259,
+                "maxMs": 10142,
+                "successfulP95Ms": 7162,
+                "responseBytes": 3314774,
+                "successfulResponseBytes": 3312887,
+                "failureStatuses": {
+                  "504": 17
+                },
+                "failureCodes": {
+                  "PGRST003": 17
+                }
+              }
+            },
+            {
+              "id": "tripRanking",
+              "ranking": true,
+              "scheduled": 124,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 124,
+                "successful": 90,
+                "failed": 34,
+                "errorRate": 0.27419354838709675,
+                "p50Ms": 8648,
+                "p95Ms": 12898,
+                "maxMs": 17660,
+                "successfulP95Ms": 11993,
+                "responseBytes": 738918,
+                "successfulResponseBytes": 735441,
+                "failureStatuses": {
+                  "500": 27,
+                  "504": 7
+                },
+                "failureCodes": {
+                  "57014": 27,
+                  "PGRST003": 7
+                }
+              }
+            },
+            {
+              "id": "groupRanking",
+              "ranking": true,
+              "scheduled": 128,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 128,
+                "successful": 125,
+                "failed": 3,
+                "errorRate": 0.0234375,
+                "p50Ms": 3673,
+                "p95Ms": 9728,
+                "maxMs": 11568,
+                "successfulP95Ms": 8225,
+                "responseBytes": 408736,
+                "successfulResponseBytes": 408403,
+                "failureStatuses": {
+                  "504": 3
+                },
+                "failureCodes": {
+                  "PGRST003": 3
+                }
+              }
+            }
+          ],
+          "metrics": {
+            "attempts": 4206,
+            "successful": 4013,
+            "failed": 193,
+            "errorRate": 0.045886828340466,
+            "p50Ms": 1326,
+            "p95Ms": 9788,
+            "maxMs": 17660,
+            "successfulP95Ms": 7967,
+            "responseBytes": 13180959,
+            "successfulResponseBytes": 13159833,
+            "failureStatuses": {
+              "500": 27,
+              "504": 166
+            },
+            "failureCodes": {
+              "57014": 27,
+              "PGRST003": 166
+            }
+          }
+        },
+        "targetsMet": false
+      },
+      "generator": {
+        "cpuCorePercent": 2.99,
+        "eventLoopUtilization": 0.0314333481818691,
+        "eventLoopP95Ms": 21,
+        "eventLoopMaxMs": 29,
+        "peakRssBytes": 210567168
+      },
+      "resourceSummary": {
+        "samples": 51,
+        "databaseSamples": 51,
+        "poolSamples": 51,
+        "maxSampleGapMs": 5003,
+        "peakActiveConnections": 10,
+        "peakLockWaiters": 0,
+        "peakIoWaiters": 3,
+        "peakPoolWaiting": 140,
+        "poolTimeoutsDelta": 166,
+        "databaseDeltas": {
+          "commits": 5113,
+          "rollbacks": 77,
+          "tempBytes": 9278492922,
+          "blocksRead": 0,
+          "blocksHit": 72514676,
+          "deadlocks": 0
+        },
+        "services": {
+          "database": {
+            "samples": 51,
+            "peakCpuCorePercent": 390.82,
+            "peakMemoryBytes": 613941248,
+            "peakPids": 29
+          },
+          "postgrest": {
+            "samples": 51,
+            "peakCpuCorePercent": 11.57,
+            "peakMemoryBytes": 59066286,
+            "peakPids": 35
+          },
+          "gateway": {
+            "samples": 51,
+            "peakCpuCorePercent": 15.46,
+            "peakMemoryBytes": 184968806,
+            "peakPids": 2
+          },
+          "auth": {
+            "samples": 51,
+            "peakCpuCorePercent": 3.78,
+            "peakMemoryBytes": 10590618,
+            "peakPids": 10
+          }
+        }
+      },
+      "targetsMet": false,
+      "diagnosticsCoverage": {
+        "sampleCount": 51,
+        "expectedSampleCount": 50,
+        "database": 1,
+        "databaseContainer": 1,
+        "apiContainer": 1,
+        "pool": 1,
+        "sufficient": true
+      },
+      "diagnosticsAvailable": true,
+      "dataset": "varied"
+    },
+    {
+      "complete": true,
+      "rankingVersion": "migration 009",
+      "startedAt": "2026-10-28T21:40:17.813Z",
+      "completedAt": "2026-10-28T21:44:25.106Z",
+      "fixture": {
+        "trips": 50000,
+        "messages": 500000,
+        "profiles": 10000,
+        "sessions": 200,
+        "pushEvents": 0,
+        "pushDevices": 0,
+        "proposalJobs": 0,
+        "distinctLocations": 50000
+      },
+      "environment": {
+        "commit": "9c556178a9849f71d3d1abd03a8b489edd8f3bff",
+        "node": "v24.22.1",
+        "cpuModel": "AMD EPYC 7763 64-Core Processor",
+        "logicalCpus": 4,
+        "availableCpus": 4,
+        "memoryBytes": 16760344576,
+        "generatorIsolation": "Separate process on the same shared host; not a separate machine",
+        "postgrest": {
+          "poolMax": 10,
+          "poolAcquisitionTimeoutSeconds": 10,
+          "metricsEnabled": true
+        }
+      },
+      "protocol": {
+        "sessions": 200,
+        "rampMs": 60000,
+        "steadyMs": 180000,
+        "syncMs": 20000,
+        "actionMinMs": 10000,
+        "actionMaxMs": 20000,
+        "maxInFlightPerSession": 2,
+        "randomSeed": 4282026,
+        "minimumSamples": 50,
+        "actionWeights": {
+          "trips": 0.45,
+          "groups": 0.25,
+          "mailbox": 0.2,
+          "tripRanking": 0.05,
+          "groupRanking": 0.05
+        },
+        "pageSize": 5,
+        "requestTimeoutMs": 30000,
+        "retries": 0,
+        "resourceIntervalMs": 5000,
+        "targets": {
+          "pageP95Ms": 800,
+          "rankingP95Ms": 1500,
+          "errorRateBelow": 0.01,
+          "missedRateBelow": 0.01,
+          "schedulingP95Ms": 100,
+          "minimumSamplesPerOperation": 50
+        },
+        "exclusions": [
+          "Realtime",
+          "chat history",
+          "writes",
+          "push",
+          "real devices",
+          "WAN latency"
+        ]
+      },
+      "result": {
+        "durationMs": 241175,
+        "drainMs": 1176,
+        "peakInFlight": 58,
+        "ramp": {
+          "operations": [
+            {
+              "id": "summary",
+              "ranking": false,
+              "scheduled": 401,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 401,
+                "successful": 401,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 4,
+                "p95Ms": 10,
+                "maxMs": 85,
+                "successfulP95Ms": 10,
+                "responseBytes": 52531,
+                "successfulResponseBytes": 52531,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "trips",
+              "ranking": false,
+              "scheduled": 217,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 217,
+                "successful": 217,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 110,
+                "p95Ms": 208,
+                "maxMs": 471,
+                "successfulP95Ms": 208,
+                "responseBytes": 1427862,
+                "successfulResponseBytes": 1427862,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groups",
+              "ranking": false,
+              "scheduled": 100,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 100,
+                "successful": 100,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 43,
+                "p95Ms": 125,
+                "maxMs": 155,
+                "successfulP95Ms": 125,
+                "responseBytes": 290681,
+                "successfulResponseBytes": 290681,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "mailbox",
+              "ranking": false,
+              "scheduled": 84,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 84,
+                "successful": 84,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 59,
+                "p95Ms": 190,
+                "maxMs": 272,
+                "successfulP95Ms": 190,
+                "responseBytes": 603572,
+                "successfulResponseBytes": 603572,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "tripRanking",
+              "ranking": true,
+              "scheduled": 14,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 2,
+              "metrics": {
+                "attempts": 14,
+                "successful": 14,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 1099,
+                "p95Ms": 2424,
+                "maxMs": 2424,
+                "successfulP95Ms": 2424,
+                "responseBytes": 115109,
+                "successfulResponseBytes": 115109,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groupRanking",
+              "ranking": true,
+              "scheduled": 12,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 12,
+                "successful": 12,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 796,
+                "p95Ms": 1442,
+                "maxMs": 1442,
+                "successfulP95Ms": 1442,
+                "responseBytes": 39503,
+                "successfulResponseBytes": 39503,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            }
+          ],
+          "metrics": {
+            "attempts": 828,
+            "successful": 828,
+            "failed": 0,
+            "errorRate": 0,
+            "p50Ms": 34,
+            "p95Ms": 204,
+            "maxMs": 2424,
+            "successfulP95Ms": 204,
+            "responseBytes": 2529258,
+            "successfulResponseBytes": 2529258,
+            "failureStatuses": {},
+            "failureCodes": {}
+          }
+        },
+        "steady": {
+          "operations": [
+            {
+              "id": "summary",
+              "ranking": false,
+              "scheduled": 1800,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 1800,
+                "successful": 1800,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 7,
+                "p95Ms": 589,
+                "maxMs": 4684,
+                "successfulP95Ms": 589,
+                "responseBytes": 235800,
+                "successfulResponseBytes": 235800,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "trips",
+              "ranking": false,
+              "scheduled": 1081,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 1081,
+                "successful": 1081,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 224,
+                "p95Ms": 781,
+                "maxMs": 3876,
+                "successfulP95Ms": 781,
+                "responseBytes": 7104810,
+                "successfulResponseBytes": 7104810,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groups",
+              "ranking": false,
+              "scheduled": 597,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 597,
+                "successful": 597,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 106,
+                "p95Ms": 821,
+                "maxMs": 3193,
+                "successfulP95Ms": 821,
+                "responseBytes": 1735644,
+                "successfulResponseBytes": 1735644,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "mailbox",
+              "ranking": false,
+              "scheduled": 478,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 478,
+                "successful": 478,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 136,
+                "p95Ms": 684,
+                "maxMs": 4324,
+                "successfulP95Ms": 684,
+                "responseBytes": 3435040,
+                "successfulResponseBytes": 3435040,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "tripRanking",
+              "ranking": true,
+              "scheduled": 124,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 124,
+                "successful": 124,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 2249,
+                "p95Ms": 4787,
+                "maxMs": 7166,
+                "successfulP95Ms": 4787,
+                "responseBytes": 1012684,
+                "successfulResponseBytes": 1012684,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groupRanking",
+              "ranking": true,
+              "scheduled": 128,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 128,
+                "successful": 128,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 1483,
+                "p95Ms": 3199,
+                "maxMs": 4367,
+                "successfulP95Ms": 3199,
+                "responseBytes": 418624,
+                "successfulResponseBytes": 418624,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            }
+          ],
+          "metrics": {
+            "attempts": 4208,
+            "successful": 4208,
+            "failed": 0,
+            "errorRate": 0,
+            "p50Ms": 103,
+            "p95Ms": 1626,
+            "maxMs": 7166,
+            "successfulP95Ms": 1626,
+            "responseBytes": 13942602,
+            "successfulResponseBytes": 13942602,
+            "failureStatuses": {},
+            "failureCodes": {}
+          }
+        },
+        "targetsMet": false
+      },
+      "generator": {
+        "cpuCorePercent": 2.8,
+        "eventLoopUtilization": 0.029118162448540538,
+        "eventLoopP95Ms": 21,
+        "eventLoopMaxMs": 41,
+        "peakRssBytes": 205418496
+      },
+      "resourceSummary": {
+        "samples": 50,
+        "databaseSamples": 50,
+        "poolSamples": 50,
+        "maxSampleGapMs": 5003,
+        "peakActiveConnections": 10,
+        "peakLockWaiters": 0,
+        "peakIoWaiters": 1,
+        "peakPoolWaiting": 34,
+        "poolTimeoutsDelta": 0,
+        "databaseDeltas": {
+          "commits": 5318,
+          "rollbacks": 49,
+          "tempBytes": 2457144029,
+          "blocksRead": 0,
+          "blocksHit": 75680235,
+          "deadlocks": 0
+        },
+        "services": {
+          "database": {
+            "samples": 50,
+            "peakCpuCorePercent": 392.29,
+            "peakMemoryBytes": 554591846,
+            "peakPids": 28
+          },
+          "postgrest": {
+            "samples": 50,
+            "peakCpuCorePercent": 9.38,
+            "peakMemoryBytes": 58384712,
+            "peakPids": 33
+          },
+          "gateway": {
+            "samples": 50,
+            "peakCpuCorePercent": 15.65,
+            "peakMemoryBytes": 186961101,
+            "peakPids": 4
+          },
+          "auth": {
+            "samples": 50,
+            "peakCpuCorePercent": 3.72,
+            "peakMemoryBytes": 10517217,
+            "peakPids": 10
+          }
+        }
+      },
+      "targetsMet": false,
+      "diagnosticsCoverage": {
+        "sampleCount": 50,
+        "expectedSampleCount": 49,
+        "database": 1,
+        "databaseContainer": 1,
+        "apiContainer": 1,
+        "pool": 1,
+        "sufficient": true
+      },
+      "diagnosticsAvailable": true,
+      "dataset": "varied"
+    },
+    {
+      "complete": true,
+      "rankingVersion": "migration 009",
+      "startedAt": "2026-10-28T21:22:18.755Z",
+      "completedAt": "2026-10-28T21:26:25.988Z",
+      "fixture": {
+        "trips": 50000,
+        "messages": 500000,
+        "profiles": 10000,
+        "sessions": 200,
+        "pushEvents": 0,
+        "pushDevices": 0,
+        "proposalJobs": 0,
+        "distinctLocations": 1
+      },
+      "environment": {
+        "commit": "9c556178a9849f71d3d1abd03a8b489edd8f3bff",
+        "node": "v24.22.1",
+        "cpuModel": "AMD EPYC 7763 64-Core Processor",
+        "logicalCpus": 4,
+        "availableCpus": 4,
+        "memoryBytes": 16760344576,
+        "generatorIsolation": "Separate process on the same shared host; not a separate machine",
+        "postgrest": {
+          "poolMax": 10,
+          "poolAcquisitionTimeoutSeconds": 10,
+          "metricsEnabled": true
+        }
+      },
+      "protocol": {
+        "sessions": 200,
+        "rampMs": 60000,
+        "steadyMs": 180000,
+        "syncMs": 20000,
+        "actionMinMs": 10000,
+        "actionMaxMs": 20000,
+        "maxInFlightPerSession": 2,
+        "randomSeed": 4282026,
+        "minimumSamples": 50,
+        "actionWeights": {
+          "trips": 0.45,
+          "groups": 0.25,
+          "mailbox": 0.2,
+          "tripRanking": 0.05,
+          "groupRanking": 0.05
+        },
+        "pageSize": 5,
+        "requestTimeoutMs": 30000,
+        "retries": 0,
+        "resourceIntervalMs": 5000,
+        "targets": {
+          "pageP95Ms": 800,
+          "rankingP95Ms": 1500,
+          "errorRateBelow": 0.01,
+          "missedRateBelow": 0.01,
+          "schedulingP95Ms": 100,
+          "minimumSamplesPerOperation": 50
+        },
+        "exclusions": [
+          "Realtime",
+          "chat history",
+          "writes",
+          "push",
+          "real devices",
+          "WAN latency"
+        ]
+      },
+      "result": {
+        "durationMs": 240012,
+        "drainMs": 12,
+        "peakInFlight": 13,
+        "ramp": {
+          "operations": [
+            {
+              "id": "summary",
+              "ranking": false,
+              "scheduled": 401,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 401,
+                "successful": 401,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 3,
+                "p95Ms": 6,
+                "maxMs": 71,
+                "successfulP95Ms": 6,
+                "responseBytes": 52531,
+                "successfulResponseBytes": 52531,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "trips",
+              "ranking": false,
+              "scheduled": 217,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 0,
+              "metrics": {
+                "attempts": 217,
+                "successful": 217,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 79,
+                "p95Ms": 112,
+                "maxMs": 185,
+                "successfulP95Ms": 112,
+                "responseBytes": 1303434,
+                "successfulResponseBytes": 1303434,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groups",
+              "ranking": false,
+              "scheduled": 100,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 100,
+                "successful": 100,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 34,
+                "p95Ms": 60,
+                "maxMs": 161,
+                "successfulP95Ms": 60,
+                "responseBytes": 278340,
+                "successfulResponseBytes": 278340,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "mailbox",
+              "ranking": false,
+              "scheduled": 84,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 84,
+                "successful": 84,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 55,
+                "p95Ms": 84,
+                "maxMs": 150,
+                "successfulP95Ms": 84,
+                "responseBytes": 603572,
+                "successfulResponseBytes": 603572,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "tripRanking",
+              "ranking": true,
+              "scheduled": 14,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 14,
+                "successful": 14,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 448,
+                "p95Ms": 600,
+                "maxMs": 600,
+                "successfulP95Ms": 600,
+                "responseBytes": 85888,
+                "successfulResponseBytes": 85888,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groupRanking",
+              "ranking": true,
+              "scheduled": 12,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 12,
+                "successful": 12,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 82,
+                "p95Ms": 196,
+                "maxMs": 196,
+                "successfulP95Ms": 196,
+                "responseBytes": 35648,
+                "successfulResponseBytes": 35648,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            }
+          ],
+          "metrics": {
+            "attempts": 828,
+            "successful": 828,
+            "failed": 0,
+            "errorRate": 0,
+            "p50Ms": 32,
+            "p95Ms": 100,
+            "maxMs": 600,
+            "successfulP95Ms": 100,
+            "responseBytes": 2359413,
+            "successfulResponseBytes": 2359413,
+            "failureStatuses": {},
+            "failureCodes": {}
+          }
+        },
+        "steady": {
+          "operations": [
+            {
+              "id": "summary",
+              "ranking": false,
+              "scheduled": 1800,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 1800,
+                "successful": 1800,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 3,
+                "p95Ms": 7,
+                "maxMs": 148,
+                "successfulP95Ms": 7,
+                "responseBytes": 235800,
+                "successfulResponseBytes": 235800,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "trips",
+              "ranking": false,
+              "scheduled": 1081,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 1081,
+                "successful": 1081,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 81,
+                "p95Ms": 152,
+                "maxMs": 426,
+                "successfulP95Ms": 152,
+                "responseBytes": 6492809,
+                "successfulResponseBytes": 6492809,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groups",
+              "ranking": false,
+              "scheduled": 597,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 597,
+                "successful": 597,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 37,
+                "p95Ms": 80,
+                "maxMs": 215,
+                "successfulP95Ms": 80,
+                "responseBytes": 1666943,
+                "successfulResponseBytes": 1666943,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "mailbox",
+              "ranking": false,
+              "scheduled": 478,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 478,
+                "successful": 478,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 58,
+                "p95Ms": 99,
+                "maxMs": 286,
+                "successfulP95Ms": 99,
+                "responseBytes": 3435040,
+                "successfulResponseBytes": 3435040,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "tripRanking",
+              "ranking": true,
+              "scheduled": 124,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 124,
+                "successful": 124,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 501,
+                "p95Ms": 773,
+                "maxMs": 1120,
+                "successfulP95Ms": 773,
+                "responseBytes": 759295,
+                "successfulResponseBytes": 759295,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            },
+            {
+              "id": "groupRanking",
+              "ranking": true,
+              "scheduled": 128,
+              "missed": 0,
+              "missedRate": 0,
+              "schedulingP95Ms": 1,
+              "metrics": {
+                "attempts": 128,
+                "successful": 128,
+                "failed": 0,
+                "errorRate": 0,
+                "p50Ms": 85,
+                "p95Ms": 187,
+                "maxMs": 434,
+                "successfulP95Ms": 187,
+                "responseBytes": 375973,
+                "successfulResponseBytes": 375973,
+                "failureStatuses": {},
+                "failureCodes": {}
+              }
+            }
+          ],
+          "metrics": {
+            "attempts": 4208,
+            "successful": 4208,
+            "failed": 0,
+            "errorRate": 0,
+            "p50Ms": 38,
+            "p95Ms": 149,
+            "maxMs": 1120,
+            "successfulP95Ms": 149,
+            "responseBytes": 12965860,
+            "successfulResponseBytes": 12965860,
+            "failureStatuses": {},
+            "failureCodes": {}
+          }
+        },
+        "targetsMet": true
+      },
+      "generator": {
+        "cpuCorePercent": 2.28,
+        "eventLoopUtilization": 0.019670649981704456,
+        "eventLoopP95Ms": 21,
+        "eventLoopMaxMs": 28,
+        "peakRssBytes": 194326528
+      },
+      "resourceSummary": {
+        "samples": 50,
+        "databaseSamples": 50,
+        "poolSamples": 50,
+        "maxSampleGapMs": 5002,
+        "peakActiveConnections": 8,
+        "peakLockWaiters": 0,
+        "peakIoWaiters": 0,
+        "peakPoolWaiting": 8,
+        "poolTimeoutsDelta": 0,
+        "databaseDeltas": {
+          "commits": 5316,
+          "rollbacks": 49,
+          "tempBytes": 772722726,
+          "blocksRead": 0,
+          "blocksHit": 41695383,
+          "deadlocks": 0
+        },
+        "services": {
+          "database": {
+            "samples": 50,
+            "peakCpuCorePercent": 274.85,
+            "peakMemoryBytes": 432223027,
+            "peakPids": 28
+          },
+          "postgrest": {
+            "samples": 50,
+            "peakCpuCorePercent": 2.19,
+            "peakMemoryBytes": 36752589,
+            "peakPids": 30
+          },
+          "gateway": {
+            "samples": 50,
+            "peakCpuCorePercent": 10.12,
+            "peakMemoryBytes": 179725926,
+            "peakPids": 3
+          },
+          "auth": {
+            "samples": 50,
+            "peakCpuCorePercent": 4.13,
+            "peakMemoryBytes": 10726932,
+            "peakPids": 10
+          }
+        }
+      },
+      "targetsMet": true,
+      "diagnosticsCoverage": {
+        "sampleCount": 50,
+        "expectedSampleCount": 49,
+        "database": 1,
+        "databaseContainer": 1,
+        "apiContainer": 1,
+        "pool": 1,
+        "sufficient": true
+      },
+      "diagnosticsAvailable": true,
+      "dataset": "uniform"
+    }
+  ],
+  "sql": [
+    {
+      "dataset": "unique locations and diverse profile preferences",
+      "previous": true,
+      "operations": [
+        {
+          "id": "trips",
+          "executionMs": 98.356,
+          "planningMs": 0.007,
+          "tempReadBlocks": 0,
+          "tempWrittenBlocks": 0,
+          "stages": []
+        },
+        {
+          "id": "tripRanking",
+          "executionMs": 1359.501,
+          "planningMs": 0.01,
+          "tempReadBlocks": 5433,
+          "tempWrittenBlocks": 7466,
+          "stages": []
+        },
+        {
+          "id": "groups",
+          "executionMs": 46.886,
+          "planningMs": 0.007,
+          "tempReadBlocks": 0,
+          "tempWrittenBlocks": 0,
+          "stages": []
+        },
+        {
+          "id": "groupRanking",
+          "executionMs": 673.266,
+          "planningMs": 0.013,
+          "tempReadBlocks": 408,
+          "tempWrittenBlocks": 1364,
+          "stages": []
+        }
+      ]
+    },
+    {
+      "dataset": "unique locations and diverse profile preferences",
+      "previous": false,
+      "operations": [
+        {
+          "id": "trips",
+          "executionMs": 97.346,
+          "planningMs": 0.034,
+          "tempReadBlocks": 0,
+          "tempWrittenBlocks": 0,
+          "stages": []
+        },
+        {
+          "id": "tripRanking",
+          "executionMs": 626.347,
+          "planningMs": 0.034,
+          "tempReadBlocks": 1368,
+          "tempWrittenBlocks": 684,
+          "stages": []
+        },
+        {
+          "id": "groups",
+          "executionMs": 45.35,
+          "planningMs": 0.035,
+          "tempReadBlocks": 0,
+          "tempWrittenBlocks": 0,
+          "stages": []
+        },
+        {
+          "id": "groupRanking",
+          "executionMs": 689.442,
+          "planningMs": 0.036,
+          "tempReadBlocks": 408,
+          "tempWrittenBlocks": 1364,
+          "stages": []
+        }
+      ]
+    },
+    {
+      "dataset": "uniform fixture",
+      "previous": true,
+      "operations": [
+        {
+          "id": "trips",
+          "executionMs": 93.692,
+          "planningMs": 0.008,
+          "tempReadBlocks": 0,
+          "tempWrittenBlocks": 0,
+          "stages": []
+        },
+        {
+          "id": "tripRanking",
+          "executionMs": 436.685,
+          "planningMs": 0.011,
+          "tempReadBlocks": 1906,
+          "tempWrittenBlocks": 953,
+          "stages": []
+        },
+        {
+          "id": "groups",
+          "executionMs": 45.031,
+          "planningMs": 0.011,
+          "tempReadBlocks": 0,
+          "tempWrittenBlocks": 0,
+          "stages": []
+        },
+        {
+          "id": "groupRanking",
+          "executionMs": 91.044,
+          "planningMs": 0.01,
+          "tempReadBlocks": 0,
+          "tempWrittenBlocks": 0,
+          "stages": []
+        }
+      ]
+    },
+    {
+      "dataset": "varied dates, tags, travel modes and mutual preferences",
+      "previous": true,
+      "operations": [
+        {
+          "id": "trips",
+          "executionMs": 112.63,
+          "planningMs": 0.008,
+          "tempReadBlocks": 0,
+          "tempWrittenBlocks": 0,
+          "stages": []
+        },
+        {
+          "id": "tripRanking",
+          "executionMs": 1475.904,
+          "planningMs": 0.011,
+          "tempReadBlocks": 5521,
+          "tempWrittenBlocks": 7579,
+          "stages": []
+        },
+        {
+          "id": "groups",
+          "executionMs": 45.49,
+          "planningMs": 0.01,
+          "tempReadBlocks": 0,
+          "tempWrittenBlocks": 0,
+          "stages": []
+        },
+        {
+          "id": "groupRanking",
+          "executionMs": 698.783,
+          "planningMs": 0.01,
+          "tempReadBlocks": 408,
+          "tempWrittenBlocks": 1364,
+          "stages": []
+        }
+      ]
+    },
+    {
+      "dataset": "varied dates, tags, travel modes and mutual preferences",
+      "previous": false,
+      "operations": [
+        {
+          "id": "trips",
+          "executionMs": 107.585,
+          "planningMs": 0.034,
+          "tempReadBlocks": 0,
+          "tempWrittenBlocks": 0,
+          "stages": []
+        },
+        {
+          "id": "tripRanking",
+          "executionMs": 742.74,
+          "planningMs": 0.034,
+          "tempReadBlocks": 1428,
+          "tempWrittenBlocks": 714,
+          "stages": []
+        },
+        {
+          "id": "groups",
+          "executionMs": 52.183,
+          "planningMs": 0.036,
+          "tempReadBlocks": 0,
+          "tempWrittenBlocks": 0,
+          "stages": []
+        },
+        {
+          "id": "groupRanking",
+          "executionMs": 710.403,
+          "planningMs": 0.036,
+          "tempReadBlocks": 408,
+          "tempWrittenBlocks": 1364,
+          "stages": []
+        }
+      ]
+    },
+    {
+      "dataset": "uniform fixture",
+      "previous": false,
+      "operations": [
+        {
+          "id": "trips",
+          "executionMs": 92.423,
+          "planningMs": 0.033,
+          "tempReadBlocks": 0,
+          "tempWrittenBlocks": 0,
+          "stages": []
+        },
+        {
+          "id": "tripRanking",
+          "executionMs": 442.781,
+          "planningMs": 0.033,
+          "tempReadBlocks": 1368,
+          "tempWrittenBlocks": 684,
+          "stages": []
+        },
+        {
+          "id": "groups",
+          "executionMs": 47.194,
+          "planningMs": 0.036,
+          "tempReadBlocks": 0,
+          "tempWrittenBlocks": 0,
+          "stages": []
+        },
+        {
+          "id": "groupRanking",
+          "executionMs": 92.093,
+          "planningMs": 0.037,
+          "tempReadBlocks": 0,
+          "tempWrittenBlocks": 0,
+          "stages": []
+        }
+      ]
+    }
+  ],
+  "status": "Unreleased prototype; not applied to a hosted backend"
+}

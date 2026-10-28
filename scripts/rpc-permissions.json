@@ -4,9 +4,7 @@
     "name": "candidates",
     "arguments": "f jsonb, me uuid",
     "definer": false,
-    "settings": [
-      "search_path=\"\""
-    ],
+    "settings": [],
     "roles": []
   },
   {
@@ -63,6 +61,14 @@
     "schema": "discovery_private",
     "name": "score_rows",
     "arguments": "t trip_plans, g travel_groups, ctx discovery_private.match_context, f jsonb",
+    "definer": false,
+    "settings": [],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "tag_mask",
+    "arguments": "tags text[], family text",
     "definer": false,
     "settings": [],
     "roles": []
@@ -142,9 +148,7 @@
     "name": "group_search_matches",
     "arguments": "g travel_groups, query text",
     "definer": false,
-    "settings": [
-      "search_path=\"\""
-    ],
+    "settings": [],
     "roles": []
   },
   {
@@ -226,9 +230,7 @@
     "name": "search_text",
     "arguments": "value text",
     "definer": false,
-    "settings": [
-      "search_path=\"\""
-    ],
+    "settings": [],
     "roles": []
   },
   {

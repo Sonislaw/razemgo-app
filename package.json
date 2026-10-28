@@ -83,6 +83,7 @@
     "test:local-backend": "node scripts/local-backend-check.mjs",
     "benchmark:sql": "node scripts/benchmark-sql.mjs",
     "benchmark:load": "node scripts/benchmark-load.mjs",
+    "benchmark:sessions": "node scripts/benchmark-sessions.mjs",
     "test:edge": "npx --yes deno@2.9.6 test --config supabase/functions/deno.json --frozen --allow-env --allow-net --allow-sys --allow-read supabase/functions/_shared/monitoring.test.ts supabase/functions/_shared/monitoring-dev.test.ts supabase/functions/dispatch-push/handler.test.ts supabase/functions/monitor-push/handler.test.ts supabase/functions/delete-account/handler.test.ts",
     "build:performance": "npx eas-cli@latest build --platform android --profile performance"
   },

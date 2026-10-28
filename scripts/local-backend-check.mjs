@@ -53,6 +53,7 @@ export function localToken(config, user, session, ttl = 3600) {
 export async function localRpc(config, token, name, args = {}) {
   return fetch(config.API_URL + '/rest/v1/rpc/' + name, {
     method: 'POST',
+    redirect: 'error',
     headers: {
       apikey: config.ANON_KEY,
       Authorization: 'Bearer ' + token,

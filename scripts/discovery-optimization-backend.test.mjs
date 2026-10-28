@@ -136,6 +136,35 @@ test('optimized discovery retains complete legacy pages, scores, reasons and cur
         await compare('search_public_trips', {}, 'compatibility', { all: true, size: 20 });
       } finally { await db.exec('reset role; rollback'); await asUser(db, user); }
     });
+    await t.test('clipping dates preserves long, disjoint and boundary overlaps including shifted searches', async () => {
+      await db.exec(`reset role; begin; alter table public.trip_plans disable trigger user;
+        with variations as (select id,row_number() over(order by id)::int n from public.trip_plans)
+        update public.trip_plans p set
+          start_date=case when v.n%3=0 then '2098-01-01'::date when v.n%3=1 then '2100-01-01'::date else '2099-05-01'::date end,
+          end_date=case when v.n%3=0 then '2101-01-01'::date when v.n%3=1 then '2100-01-03'::date else '2099-05-02'::date end
+        from variations v where v.id=p.id and p.group_id<>md5('synthetic-group-1')::uuid;
+        alter table public.trip_plans enable trigger user`);
+      try {
+        await asUser(db, user);
+        for (const filter of [{}, { start_date: '2099-05-03', end_date: '2099-05-07', tolerance_days: 2 },
+          { start_date: '2099-05-03', end_date: '2099-05-07', tolerance_days: 7 }])
+          await compare('search_public_trips', filter, 'compatibility', { all: true, size: 20 });
+      } finally { await db.exec('reset role; rollback'); await asUser(db, user); }
+    });
+    await t.test('date envelope equals exhaustive shifted overlaps for 4,644 intervals and three source windows', async () => {
+      const { rows } = await db.query(`with sources(a,b,tolerance) as(values(0,3,0),(4,6,2),(10,17,7)),
+        envelope as(select min(a-tolerance) lo,max(b+tolerance) hi from sources),
+        intervals as(select a,b from generate_series(-30,65) a cross join generate_series(-29,66) b where b>a),
+        compared as(select
+          greatest(0,least(least(e.hi,greatest(e.lo,t.b))-least(e.hi,greatest(e.lo,t.a)),s.b-s.a,
+            least(e.hi,greatest(e.lo,t.b))-(s.a-s.tolerance),s.b+s.tolerance-least(e.hi,greatest(e.lo,t.a)))) clipped,
+          (select greatest(0,max(least(t.b,s.b+delta)-greatest(t.a,s.a+delta)))
+            from generate_series(-s.tolerance,s.tolerance) delta) original
+          from intervals t cross join sources s cross join envelope e)
+        select count(*)::int checked,count(*) filter(where clipped<>original)::int differences from compared`);
+      assert.equal(rows[0].differences, 0);
+      assert.ok(rows[0].checked > 13000);
+    });
     await t.test('group order, private-preference score and filters match complete legacy cards', async () => {
       const filters = [{}, { name: 'Łąka' }, { name: '#100006' }, { group_kinds: ['family'], child_age_bands: ['4–6'] },
         { travel_modes: ['Przyczepa', 'Kamper'], interests: ['Rowery'], animal_kinds: ['cat'] },

@@ -6,6 +6,10 @@
 -- Keep raw-region presence separately: empty and whitespace-only regions can
 -- normalize equally but only nonempty regions contribute the region term.
 -- No global cache, candidate limit, approximate match or scoring rule change.
+-- Dates are intersected with the envelope of all source windows (including
+-- search tolerance). Every shifted source interval lies inside that envelope,
+-- so clipping a target to it preserves every possible overlap exactly. Targets
+-- wholly before/after it become zero-length intervals at its boundary.
 create type discovery_private.relative_score_target as (
   start_date date,end_date date,place_id integer,place_name integer,place_region integer,has_region boolean,
   landscape text,kind text,travel_mode text,hobby_mask integer,age_mask integer,animal_mask integer,
@@ -80,12 +84,15 @@ begin
   ), requirements as materialized(
     select bool_or(has_plan) as place,bool_or(d1 is not null and d2>d1) as dates,
       bool_or(hobby_count>0) as hobby,bool_or(age_count>0) as age,bool_or(animal_count>0) as animal,
-      bool_or(cardinality(kinds)>0) as kind from sources
+      bool_or(cardinality(kinds)>0) as kind,
+      min(d1-tolerance) filter(where d1 is not null and d2>d1) as window_start,
+      max(d2+tolerance) filter(where d1 is not null and d2>d1) as window_end from sources
   ), target_values as not materialized(
     -- Omit inputs no source uses from the score key. The typed composite's
     -- equality/hash compares NULL fields consistently; no shared global cache.
     select t.id,t.published_at,
-      case when r.dates then t.start_date end as start_date,case when r.dates then t.end_date end as end_date,
+      case when r.dates then least(r.window_end,greatest(r.window_start,t.start_date)) end as start_date,
+      case when r.dates then least(r.window_end,greatest(r.window_start,t.end_date)) end as end_date,
       case when not r.place or t.location_id='' then 0 else coalesce(array_position(l.ids,t.location_id),-1) end as place_id,
       case when not r.place or t.location_name='' then 0 else coalesce(array_position(l.names,messaging_private.search_text(t.location_name)),-1) end as place_name,
       case when r.place then coalesce(array_position(l.regions,messaging_private.search_text(t.location_region)),-1) else 0 end as place_region,

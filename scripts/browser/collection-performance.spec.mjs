@@ -248,20 +248,8 @@ test('50 crew profiles, 50 crew listings and 50 own trips each keep a bounded re
     .toBeLessThan(4);
   await page.goto('/trips');
   const ownScreen = page.getByTestId('own-trips-screen');
-  await expectLoaded(ownScreen, 20);
-  for (const [index, expected] of [
-    [19, 40],
-    [39, 50],
-  ]) {
-    await scrollToRow(
-      ownScreen,
-      ownScreen.getByTestId('own-trip-' + own[index].id),
-    );
-    await ownScreen.evaluate((el) => {
-      el.scrollTop += 800;
-    });
-    await expectLoaded(ownScreen, expected);
-  }
+  await expectLoaded(ownScreen, 5);
+  await loadAll(ownScreen, 'Pokaż więcej wyjazdów');
   const lastOwn = ownScreen.getByTestId('own-trip-' + own[49].id);
   await scrollToRow(ownScreen, lastOwn);
   const ownMounted = await bounded(ownScreen, 'own-trip-', 50);

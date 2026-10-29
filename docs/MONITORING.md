@@ -84,16 +84,18 @@ npx sentry-expo-upload-sourcemaps .expo/monitoring-web
 
 `SENTRY_AUTH_TOKEN` służy wyłącznie do przesyłania map przez narzędzia deweloperskie. Nie zapisuj go w `EXPO_PUBLIC_*`, `app.json`, plikach śledzonych przez Git ani aplikacji. Map nie publikuj jako ogólnodostępnych plików hostingu. Sam poprawny test `monitoring.test` nie dowodzi poprawnej symbolikacji wydania.
 
-### Przygotowana konfiguracja EAS Dev — 28.10.2026
+### Konfiguracja EAS Dev i Preview — 28.10.2026
 
-`app.config.js` dodaje plugin `@sentry/react-native/expo` tylko dla wariantu Development, z organizacją **`zgranago`**, projektem **`react-native`** i adresem `https://sentry.io/`. Wariant Preview nie otrzymał tej konfiguracji. Release ma postać `razemgo@<wersja>+<wariant>.<skrót źródeł>`; skrót obejmuje również niezacommitowane zmiany, ale nie pliki środowiska ani sekrety. Debug IDs pozostają w dozwolonym, oczyszczonym zdarzeniu.
+Od wydania 1.3.0 `app.config.js` dodaje plugin `@sentry/react-native/expo` dla **Development i Preview**, z organizacją **`zgranago`**, projektem **`react-native`** i adresem `https://sentry.io/`. Release ma postać `razemgo@<wersja>+<wariant>.<skrót źródeł>`; skrót obejmuje również niezacommitowane zmiany, ale nie pliki środowiska ani sekrety. Debug IDs pozostają w dozwolonym, oczyszczonym zdarzeniu. Wyłączenie automatycznego raportowania natywnego i filtrowanie danych JS pozostają zachowane.
 
-Token dodano 28.10.2026. Odczyt metadanych EAS potwierdził obecność `SENTRY_AUTH_TOKEN` w środowisku **Development**, bez odczytywania ani wyświetlania jego wartości. Konfiguracja kolejnych tokenów:
+Token dodano 28.10.2026. Podczas przygotowania 1.3.0 zmieniono jego widoczność z publicznej na **Secret** oraz dodano zakres **Preview**, zachowując **Development**. Pobranie konfiguracji EAS potwierdziło, że token nie jest pobierany do lokalnych plików środowiska. Konfiguracja kolejnych tokenów:
 
 1. Utwórz token Sentry uprawniony do przesyłania map do tej organizacji i projektu.
-2. W projekcie Expo RazemGo dodaj `SENTRY_AUTH_TOKEN` jako zmienną **Secret**, wyłącznie dla środowiska **Development**. Nie wklejaj wartości do rozmowy.
-3. Zbuduj nowy APK `npm run build:performance` lub `npm run build:dev`. Token dodany po budowie nie prześle automatycznie wcześniejszych map.
+2. W projekcie Expo RazemGo dodaj `SENTRY_AUTH_TOKEN` jako zmienną **Secret** dla środowisk **Development i Preview**. Nie wklejaj wartości do rozmowy.
+3. Zbuduj nowy APK przez `npm run build:dev`, `npm run build:performance` albo `npm run build:preview`. Token dodany po budowie nie prześle automatycznie wcześniejszych map.
 4. Sprawdź log uploadu, a następnie odczyt rzeczywistego kontrolowanego błędu z tego konkretnego APK w Sentry.
+
+**Wydanie 1.3.0:** build Preview `4c353a24` zakończył się `FINISHED`; zadanie `SentryUpload` potwierdziło przyjęcie map bez błędu autoryzacji ani uploadu. Inspekcja APK potwierdziła `io.sentry.auto-init=false` i brak prywatnego tokena w bundlu. Dev `e6a27459` jest debugowym development client i nie wykonuje produkcyjnego zadania uploadu bundla aplikacji. Poniżej zachowano wyniki wcześniejszego samodzielnego buildu Dev; aktualne APK i szczegóły są w [RELEASE_1.3.0.md](RELEASE_1.3.0.md).
 
 Po dodaniu tokena usunięto `SENTRY_ALLOW_FAILURE=true` z profilu `performance`: błędy przesyłania map nie są już pomijane. Wcześniejszy APK `8420c65d` zbudowano jeszcze z tym wyjątkiem; jego mapy nie zostały potwierdzone. Nowy [build Dev `b170e37a`](https://expo.dev/accounts/sonislaw/projects/razemgo/builds/b170e37a-3e7b-4f62-b534-e5a1db9327e6) uruchomiono w profilu `performance`, ze środowiskiem Development. **Przyjęcie paczki map przez Sentry jest potwierdzone**: zadanie `SentryUpload` zwróciło `File upload complete (processing pending on server)`, `Upload type: artifact bundle` oraz `Source Map Upload Report`, bez błędu uploadu lub autoryzacji. Przetworzenie po stronie Sentry i czytelność konkretnego kontrolowanego błędu z APK pozostają osobną weryfikacją; same logi uploadu ich nie potwierdzają. Preview nie zmieniono. Pełny raport zmian: [ARCHITECTURE_HARDENING.md](ARCHITECTURE_HARDENING.md).
 

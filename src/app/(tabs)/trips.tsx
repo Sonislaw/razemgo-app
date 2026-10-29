@@ -23,7 +23,7 @@ import { useTheme } from '@/hooks/use-theme';
 import type { OwnTripFilters } from '@/types/owned-trip';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 
 export default function TripsScreen() {
   const { state } = useOwnTrips();
@@ -49,7 +49,9 @@ function TripsContent() {
     activeCount,
     archivedCount: archiveCount,
     totalCount,
+    hasMore,
     status,
+    loadingMore,
     error,
     refresh,
     retry,
@@ -67,19 +69,33 @@ function TripsContent() {
         key={noticeId ?? 'initial'}
         testID="own-trips-screen"
         data={trips}
-        onEndReached={() => {
-          void loadMore();
-        }}
         afterList={
-          error && trips.length ? (
-            <DataStatus
-              status="error"
-              error={error}
-              onRetry={() => {
-                void retry();
-              }}
-            />
-          ) : undefined
+          <>
+            {error && trips.length ? (
+              <DataStatus
+                status="error"
+                error={error}
+                onRetry={() => {
+                  void retry();
+                }}
+              />
+            ) : null}
+            {hasMore ? (
+              <Button
+                label={loadingMore ? 'Wczytywanie ogłoszeń' : 'Pokaż więcej wyjazdów'}
+                leading={loadingMore ? (
+                  <ActivityIndicator
+                    size="small"
+                    color={theme.primaryStrong}
+                    accessibilityLabel="Wczytywanie kolejnych ogłoszeń"
+                  />
+                ) : undefined}
+                variant="secondary"
+                disabled={status === 'loading'}
+                onPress={() => { void loadMore(); }}
+              />
+            ) : null}
+          </>
         }
         keyExtractor={(trip) => trip.id}
         renderItem={({ item: trip }) => (

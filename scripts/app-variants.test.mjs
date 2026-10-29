@@ -33,6 +33,23 @@ test('local development and EAS cannot silently select different app variants', 
   assert.throws(() => getAppVariant({ APP_VARIANT: 'unknown' }));
 });
 
+test('both published variants configure source-map uploads without embedding credentials', () => {
+  const previous = { ...process.env };
+  try {
+    for (const variant of ['development', 'preview']) {
+      process.env = { APP_VARIANT: variant };
+      const config = require('../app.config.js')({ config: { version: '1.3.0' } });
+      const plugins = config.plugins.filter(plugin => Array.isArray(plugin) && plugin[0] === '@sentry/react-native/expo');
+      assert.equal(plugins.length, 1);
+      assert.deepEqual(plugins[0][1], { organization: 'zgranago', project: 'react-native', url: 'https://sentry.io/' });
+      assert.equal(config.android.package, variants[variant].package);
+      assert.equal(config.scheme, variants[variant].scheme);
+    }
+  } finally {
+    process.env = previous;
+  }
+});
+
 test('Dev is blocked from Preview; Preview is blocked from any other backend', () => {
   const preview = `https://${PREVIEW_PROJECT_REF}.supabase.co`;
   assert.doesNotThrow(() => assertBackendIsolation('preview', preview));

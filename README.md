@@ -14,7 +14,7 @@ Aplikacja do poznawania osób podróżujących kamperem, przyczepą, kampervanem
 
 Pracujemy w Dev. Preview ma własne konta, dane i samodzielny APK dla testerów. Zmiana kodu lub wdrożenie do Dev nie aktualizuje Preview. Procedura wydawania: [ENVIRONMENTS.md](docs/ENVIRONMENTS.md).
 
-Aktualna paczka techniczna Dev: [architektura, wydajność i bezpieczeństwo](docs/ARCHITECTURE_HARDENING.md). Raport zawiera wdrożone migracje, wyniki porównawcze, profil APK `performance` i wyraźnie oddzielone testy wymagające telefonu lub Dockera.
+Aktualne wydanie: [Preview 1.3.0 i Dev 1.3.0](docs/RELEASE_1.3.0.md). Preview działa samodzielnie, a Dev wraca do klienta deweloperskiego z Metro. Oba backendy mają 35 migracji; kolejne zmiany rozwijamy wyłącznie w Dev. Raport techniczny: [architektura, wydajność i bezpieczeństwo](docs/ARCHITECTURE_HARDENING.md).
 
 ## Uruchomienie
 
@@ -43,7 +43,7 @@ Do `EXPO_PUBLIC_*` trafiają wyłącznie publiczne dane konfiguracji. Sekrety Go
 - **Moderacja:** panel `/admin` dla uprawnionego konta, zgłoszenia, zachowane dowody, ukrywanie ogłoszeń, zawieszanie kont i audyt decyzji. [MODERATION.md](docs/MODERATION.md).
 - **Monitoring:** Sentry aplikacji i backendu z ograniczeniem raportowanych pól; niezależny monitor push i heartbeat Sentry Crons. [MONITORING.md](docs/MONITORING.md), [PUSH_HEALTH.md](docs/PUSH_HEALTH.md).
 
-Wyłącznie kod i backend Dev zawierają obecnie reakcje na wiadomości i automatyczne propozycje tworzone co minutę, ze zbiorczymi push co pięć minut. Etap 0 rozszerza monitoring i aktualizuje narzędzia. Preview 1.2.0 pozostaje osobnym wydaniem. [Reakcje wiadomości](docs/CHAT_REACTIONS.md), [propozycje](docs/PROPOSAL_NOTIFICATIONS.md), [etap 0](docs/STAGE_0.md).
+Preview 1.3.0 zawiera również reakcje na wiadomości, automatyczne propozycje tworzone co minutę, zbiorcze push co pięć minut oraz rozszerzony monitoring. [Reakcje wiadomości](docs/CHAT_REACTIONS.md), [propozycje](docs/PROPOSAL_NOTIFICATIONS.md), [etap 0](docs/STAGE_0.md).
 
 W bazie obowiązują RLS i serwerowa kontrola uprawnień. Zapis jest potwierdzany po odpowiedzi backendu. Prywatne preferencje nie są udostępniane innym kontom; jawne dane zwracają osobne funkcje wyszukiwania. Nowe konta zaczynają bez własnych przykładowych wyjazdów i rozmów.
 

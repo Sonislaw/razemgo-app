@@ -112,6 +112,44 @@ test('technical read contracts retain privacy, complete pagination and legacy ra
       },
     );
     await t.test(
+      'archived pages cover completed and cancelled trips in fives with separate cursors and full counts',
+      async () => {
+        const archivedIds = [];
+        for (let index = 0; index < 13; index++) {
+          const saved = await rpc('save_my_trip', [
+            { ...trip, description: `Archiwalny wyjazd ${index}. ${index >= 11 ? 'Wybrany' : 'Spokojny'} odpoczynek nad morzem.` },
+            null, false, randomUUID(),
+          ]);
+          archivedIds.push(saved.id);
+          await rpc('change_my_trip_status', [saved.id, index % 2 ? 'cancelled' : 'completed']);
+        }
+        let cursor = null;
+        const found = [], sizes = [];
+        do {
+          const page = await rpc('list_my_trip_page', [true, {}, cursor, 5]);
+          sizes.push(page.items.length);
+          assert.equal(page.active_count, 43);
+          assert.equal(page.archived_count, 13);
+          assert.equal(page.total_count, 13);
+          assert.ok(page.items.every(row => ['completed', 'cancelled'].includes(row.status)));
+          found.push(...page.items.map(row => row.id));
+          cursor = page.has_more ? page.cursor : null;
+        } while (cursor);
+        assert.deepEqual(sizes, [5, 5, 3]);
+        assert.equal(found.length, 13);
+        assert.deepEqual(new Set(found), new Set(archivedIds));
+        const filtered = await rpc('list_my_trip_page', [true, {query: 'wybrany'}, null, 5]);
+        assert.equal(filtered.total_count, 2);
+        assert.equal(filtered.items.length, 2);
+        assert.equal(filtered.has_more, false);
+        const active = await rpc('list_my_trip_page', [false, {}, null, 5]);
+        await assert.rejects(
+          rpc('list_my_trip_page', [true, {}, active.cursor, 5]),
+          error => error.code === '22023',
+        );
+      },
+    );
+    await t.test(
       'new mailbox pages retain their empty shape and deny foreign context probes',
       async () => {
         const page = await rpc('get_my_mailbox_page');

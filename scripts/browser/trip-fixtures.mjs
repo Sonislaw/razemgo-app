@@ -231,6 +231,7 @@ async function backend(context, store) {
           : null,
       );
     if (endpoint === 'list_my_trip_page') {
+      (store.ownTripPageCalls ??= []).push(body);
       if (store.failLoad) return respond({ message: 'Offline' }, 503);
       const own = [...store.trips.values()].filter(
           (t) => t.group_id === groupId(id),

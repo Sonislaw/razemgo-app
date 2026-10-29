@@ -16,7 +16,11 @@ import {
 import { useOwnTrips } from './own-trips-context';
 import { isArchivedTrip, selectOwnTrips, todayDate } from './own-trips-state';
 import { tripFromRow } from './trip-mapper';
-import { fetchOwnTrip, fetchOwnTripPage } from './trip-repository';
+import {
+  fetchOwnTrip,
+  fetchOwnTripPage,
+  OWN_TRIP_PAGE_SIZE,
+} from './trip-repository';
 
 export function useOwnTrip(id?: string) {
   const { state, cacheTrips, forgetTrip } = useOwnTrips();
@@ -82,7 +86,7 @@ export function useOwnTripListing(filters: OwnTripFilters, archived: boolean) {
             const offset = cursor
                 ? all.findIndex((item) => item.id === cursor.id) + 1
                 : 0,
-              items = all.slice(offset, offset + 20);
+              items = all.slice(offset, offset + OWN_TRIP_PAGE_SIZE);
             return {
               items,
               totalCount: all.length,
@@ -159,6 +163,7 @@ export function useOwnTripListing(filters: OwnTripFilters, archived: boolean) {
     activeCount: snapshot.page?.activeCount ?? 0,
     archivedCount: snapshot.page?.archivedCount ?? 0,
     totalCount: snapshot.page?.totalCount ?? 0,
+    hasMore: snapshot.page?.hasMore ?? false,
     refresh: store.refresh,
     loadMore: store.more,
     retry: store.retry,

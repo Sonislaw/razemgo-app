@@ -2,6 +2,8 @@
 
 Dwie aplikacje mają osobne identyfikatory, schematy linków logowania i konfiguracje Firebase. Można zainstalować je obok siebie. Współdzielą kod źródłowy i projekt EAS; każda ma osobny profil budowania i środowisko zmiennych EAS. Zmiana kodu ani uruchomienie Metro nie aktualizują samodzielnego APK Preview u testerów.
 
+**Stan po wydaniu 1.3.0:** oba backendy mają **35 migracji**, przez `202610280009_relative_ranking_keys.sql`. Preview otrzymało 12 brakujących migracji i aktualne trzy Edge Functions, z zachowaniem danych testerów. Dev używa profilu `development` z `developmentClient=true` i Metro na porcie 8081. Preview pozostaje samodzielnym APK. Linki i kontrole wydania: [RELEASE_1.3.0.md](RELEASE_1.3.0.md). Niżej zachowano historię wcześniejszych wdrożeń.
+
 | | Dev | Preview |
 | --- | --- | --- |
 | Nazwa nowego APK | RazemGo Dev | RazemGo Preview |
@@ -26,11 +28,11 @@ Na prośbę użytkownika 26.10.2026 przygotowano **Preview 1.2.0**. Migracje `20
 
 ## Skonfigurowany Dev
 
-28.10.2026 wdrożono wyłącznie na Dev siedem migracji `202610280001`–`202610280007` i aktualne trzy Edge Functions: **33 migracje**. Zmiany dodają lekkie podsumowania, strony skrzynki i własnych wyjazdów, kontrolę cache, optymalizację rankingu i blokady limitów zapisów. Preview zachowuje 23 migracje i APK 1.2.0. Profil EAS **`performance`** tworzy samodzielny release APK z backendem Development i pakietem Dev; nie jest nowym środowiskiem ani wydaniem Preview. [Raport techniczny](ARCHITECTURE_HARDENING.md).
+28.10.2026 Dev otrzymał migracje `202610280001`–`202610280009` i aktualne trzy Edge Functions: **35 migracji**. Zmiany dodają lekkie podsumowania, strony skrzynki i własnych wyjazdów, kontrolę cache, optymalizację rankingu i blokady limitów zapisów. Następnie przeniesiono je do Preview 1.3.0. Profil EAS **`performance`** nadal tworzy samodzielny release APK z backendem Development i pakietem Dev; do bieżącej pracy używaj **`development`** i `npm run start:dev`. [Raport techniczny](ARCHITECTURE_HARDENING.md).
 
 1. `.env.local` i środowisko EAS **development** mają URL oraz publiczny klucz nowego Dev. Dotychczasowe wartości zachowano w ignorowanym `.env.preview.local` i środowisku EAS **preview**. Nie wpisuj klucza administracyjnego do zmiennych `EXPO_PUBLIC_*`.
 2. Dev ma własną aplikację Android w Firebase, plik `google-services.development.json`, osobny klucz podpisujący APK i przypisany klucz FCM V1. Powiązanie Firebase Preview pozostało bez zmian. Obie aplikacje używają tego samego projektu Firebase i usługi Expo Push, lecz osobnych instalacji oraz kolejek i tokenów przechowywanych w swoich bazach.
-3. Zakres migracji różni się między środowiskami: Preview 1.2.0 ma 23 migracje, a Dev rozwija również reakcje na wiadomości, automatyczne propozycje i monitoring opisany w [STAGE_0.md](STAGE_0.md). Dostępne są funkcje `delete-account`, `dispatch-push`, `monitor-push`. Główny katalog CLI jest powiązany wyłącznie z Dev. Kolejne zmiany wdrażaj jawnie:
+3. Na moment wydania 1.3.0 oba środowiska mają po 35 migracji, w tym reakcje na wiadomości, automatyczne propozycje i monitoring opisany w [STAGE_0.md](STAGE_0.md). Dostępne są funkcje `delete-account`, `dispatch-push`, `monitor-push`. Główny katalog CLI jest powiązany wyłącznie z Dev. Kolejne zmiany wdrażaj jawnie:
 
    ```powershell
    npm run backend:dev -- link

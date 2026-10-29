@@ -19,7 +19,7 @@ module.exports = ({ config }) => {
     android: { ...config.android, package: settings.package, ...(googleServicesFile ? { googleServicesFile } : {}) },
     extra: { ...config.extra, appVariant: variant, authScheme: settings.scheme,
       monitoringRelease: monitoringRelease(__dirname, config.version ?? 'unknown', variant) },
-    plugins: [...(config.plugins ?? []), ...(variant === 'development' ? [['@sentry/react-native/expo', {
+    plugins: [...(config.plugins ?? []), ...(['development', 'preview'].includes(variant) ? [['@sentry/react-native/expo', {
       organization: 'zgranago', project: 'react-native', url: 'https://sentry.io/',
     }]] : [])],
   };

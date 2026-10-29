@@ -6,6 +6,8 @@ import { getSupabase } from '@/lib/supabase';
 import type { OwnTripFilters, TripForm, TripStatus } from '@/types/owned-trip';
 import { tripFromRow, tripToPayload } from './trip-mapper';
 
+export const OWN_TRIP_PAGE_SIZE = 5;
+
 export async function fetchOwnTrips() {
   const page = await fetchOwnTripPage();
   return [
@@ -36,7 +38,7 @@ export async function fetchOwnTripPage(
             today: referenceDay,
           },
           after_cursor: cursor ?? null,
-          page_size: 20,
+          page_size: OWN_TRIP_PAGE_SIZE,
         })
         .abortSignal(signal),
     'trips.load',
@@ -46,7 +48,7 @@ export async function fetchOwnTripPage(
   const row = object(data);
   if (
     !Array.isArray(row.items) ||
-    row.items.length > 20 ||
+    row.items.length > OWN_TRIP_PAGE_SIZE ||
     typeof row.has_more !== 'boolean' ||
     (row.has_more && !row.cursor)
   )

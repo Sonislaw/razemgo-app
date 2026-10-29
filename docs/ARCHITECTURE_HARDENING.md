@@ -2,6 +2,8 @@
 
 ## Zakres i stan
 
+Pakiet wraz z końcowymi optymalizacjami rankingu przeniesiono następnie do **Preview 1.3.0**. Dev wrócił do development client z Metro. Aktualne linki, numery buildów i wyniki kontroli są w [RELEASE_1.3.0.md](RELEASE_1.3.0.md); opisy wcześniejszych APK i oczekiwania na token poniżej dokumentują stan pierwotnego przekazania.
+
 Aktualizacja odbioru: rzeczywisty lokalny Supabase uruchomiono następnie w GitHub Actions, z pozytywnym wynikiem kontroli Auth/PostgREST i schematu. Naprawiono również problemy ujawnione przez świeży checkout. Szczegóły, źródło generowania typów i status dalszych pomiarów: [LOCAL_BACKEND_VERIFICATION.md](LOCAL_BACKEND_VERIFICATION.md). Opis poniżej zachowuje pomiary i stan pierwotnego przekazania paczki.
 
 Kolejna aktualizacja: wykonano natywną próbę HTTP do 200 sesji na danych 10k/50k/500k. Cele nie zostały osiągnięte; ranking wyjazdów i kolejka połączeń wymagają dalszej pracy. Pełny raport i kolejność optymalizacji: [HTTP_LOAD_TESTS.md](HTTP_LOAD_TESTS.md).

@@ -95,13 +95,13 @@ test('actual PostgreSQL migration enforces ownership, validation, atomic saves a
       },
     );
     await t.test(
-      'invalid preferences roll back the group edit in the same transaction',
+      'invalid profile data rolls back the edit in the same transaction',
       async () => {
         await assert.rejects(
           save({
             ...profile,
             name: 'Nie zapisuj',
-            matching: { ...profile.matching, description: 'x'.repeat(241) },
+            animal_kinds: ['other'],
           }),
         );
         assert.equal(
@@ -122,7 +122,6 @@ test('actual PostgreSQL migration enforces ownership, validation, atomic saves a
           { animal_kinds: ['other'] },
           { travel_mode: 'Motor' },
           { avatar_id: '../image.png' },
-          { matching: { group_kinds: ['unknown'] } },
         ])
           await assert.rejects(save({ ...profile, ...patch }));
       },

@@ -83,7 +83,7 @@ test('optimized discovery retains complete legacy pages, scores, reasons and cur
         const expected = await call('reference', name, args);
         const actual = await call('public', name, args);
         assert.deepEqual(actual, expected, `${name}/${sort}/${JSON.stringify(filters)} page ${count}`);
-        assert.deepEqual(actual, await call('previous', name, args),
+        if (name !== 'list_ranked_public_groups') assert.deepEqual(actual, await call('previous', name, args),
           `migration 008 parity/${sort}/${JSON.stringify(filters)} page ${count}`);
         ids.push(...actual.items.map((item) => item.trip?.id ?? item.crew.id));
         cursor = actual.has_more ? actual.cursor : null;

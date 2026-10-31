@@ -1,15 +1,8 @@
-import type { ChildAgeBand, TravelGroup } from './travel';
-
-export interface MatchingPreferences {
-  groupKinds: TravelGroup['kind'][];
-  childAgeBands: ChildAgeBand[];
-  description: string;
-}
+import type { TravelGroup } from './travel';
 
 export interface TravelerProfile {
   group: TravelGroup;
-  matching: MatchingPreferences;
 }
 
 export type ProfileSection =
-  'crew' | 'travel' | 'interests' | 'matching' | 'animals';
+  'crew' | 'travel' | 'interests' | 'animals';

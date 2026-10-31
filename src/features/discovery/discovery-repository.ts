@@ -1,4 +1,3 @@
-import { integer, object, strings } from '@/data/contracts/validate';
 import {
   proposalFromRow,
   type PublicTripRow,
@@ -6,7 +5,7 @@ import {
 import { backendRequest } from '@/lib/backend-request';
 import { getSupabase } from '@/lib/supabase';
 import type { DiscoveryFilters } from '@/types/travel';
-import type { Compatibility } from './compatibility';
+import { parseRecommendation, type Recommendation } from '../recommendations/recommendation';
 import {
   discoveryFiltersPayload,
   TRIP_SEARCH_PAGE_SIZE,
@@ -24,7 +23,7 @@ async function accountToken(userId: string) {
     throw Object.assign(new Error(), { name: 'AbortError' });
   return session.access_token;
 }
-export type RankedTripRow = PublicTripRow & { compatibility: Compatibility };
+export type RankedTripRow = PublicTripRow & { recommendation: Recommendation };
 export interface TripSearchPageRow {
   items: RankedTripRow[];
   total_count: number;
@@ -32,10 +31,7 @@ export interface TripSearchPageRow {
   cursor: TripSearchCursor | null;
 }
 const ranked = (row: RankedTripRow): RankedTripProposal => {
-  const matching = object(row.compatibility);
-  integer(matching.score, 0, 100);
-  strings(matching.reasons, 30);
-  return { ...proposalFromRow(row), compatibility: row.compatibility };
+  return { ...proposalFromRow(row), recommendation: parseRecommendation(row.recommendation) };
 };
 export async function fetchTripPage(
   userId: string,
@@ -49,7 +45,7 @@ export async function fetchTripPage(
   const { data, error } = await backendRequest(
     (signal) =>
       getSupabase()
-        .rpc('search_public_trips', {
+        .rpc('search_public_trips_v2', {
           filters: discoveryFiltersPayload(filters),
           sort_mode: sort,
           after_cursor: cursor ?? null,
@@ -110,7 +106,7 @@ export async function fetchDiscoveryTrip(
   const { data, error } = await backendRequest(
     (signal) =>
       getSupabase()
-        .rpc('get_discovery_trip', {
+        .rpc('get_discovery_trip_v2', {
           target_trip_id: id,
           filters: discoveryFiltersPayload(filters),
         })
@@ -134,7 +130,7 @@ export async function refreshTripResults(
     const { data, error } = await backendRequest(
       (signal) =>
         getSupabase()
-          .rpc('refresh_public_trip_results', {
+          .rpc('refresh_public_trip_results_v2', {
             trip_ids: ids.slice(offset, offset + 100),
             filters: discoveryFiltersPayload(filters),
           })

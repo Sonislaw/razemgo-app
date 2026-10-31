@@ -9,6 +9,16 @@
   },
   {
     "schema": "discovery_private",
+    "name": "group_recommendation",
+    "arguments": "a travel_groups, b travel_groups",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
     "name": "matching_context",
     "arguments": "me uuid, f jsonb",
     "definer": false,
@@ -25,6 +35,42 @@
     "settings": [
       "search_path=\"\""
     ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "plan_signals",
+    "arguments": "t trip_plans, o trip_plans, f jsonb",
+    "definer": false,
+    "settings": [],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "recommend_group_page",
+    "arguments": "data jsonb, me uuid",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "recommendation_context",
+    "arguments": "me uuid, f jsonb",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "recommendation_rank",
+    "arguments": "t trip_plans, g travel_groups, ctx discovery_private.match_context, f jsonb",
+    "definer": false,
+    "settings": [],
     "roles": []
   },
   {
@@ -75,6 +121,16 @@
   },
   {
     "schema": "discovery_private",
+    "name": "trip_recommendation",
+    "arguments": "t trip_plans, g travel_groups, ctx discovery_private.match_context, f jsonb, source_order integer",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
     "name": "validate_filters",
     "arguments": "f jsonb",
     "definer": false,
@@ -108,6 +164,16 @@
     "name": "my_group_id",
     "arguments": "",
     "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "messaging_private",
+    "name": "discard_legacy_group_preferences",
+    "arguments": "",
+    "definer": false,
     "settings": [
       "search_path=\"\""
     ],
@@ -661,6 +727,18 @@
   },
   {
     "schema": "public",
+    "name": "get_discovery_trip_v2",
+    "arguments": "target_trip_id uuid, filters jsonb",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
     "name": "get_message_reactions",
     "arguments": "conversation_id uuid, message_ids uuid[]",
     "definer": true,
@@ -853,6 +931,18 @@
   },
   {
     "schema": "public",
+    "name": "get_public_group_v2",
+    "arguments": "target_group_id uuid, after_cursor jsonb, page_size integer",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
     "name": "get_push_health",
     "arguments": "",
     "definer": true,
@@ -946,6 +1036,18 @@
   },
   {
     "schema": "public",
+    "name": "list_ranked_public_groups_v2",
+    "arguments": "filters jsonb, sort_mode text, after_cursor jsonb, page_size integer",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
     "name": "mark_conversation_read",
     "arguments": "conversation_id uuid, through_message_id uuid",
     "definer": true,
@@ -1006,7 +1108,31 @@
   },
   {
     "schema": "public",
+    "name": "refresh_public_group_results_v2",
+    "arguments": "group_ids uuid[], filters jsonb",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
     "name": "refresh_public_trip_results",
+    "arguments": "trip_ids uuid[], filters jsonb",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "refresh_public_trip_results_v2",
     "arguments": "trip_ids uuid[], filters jsonb",
     "definer": true,
     "settings": [
@@ -1127,6 +1253,19 @@
   {
     "schema": "public",
     "name": "search_public_trips",
+    "arguments": "filters jsonb, sort_mode text, after_cursor jsonb, page_size integer",
+    "definer": true,
+    "settings": [
+      "search_path=\"\"",
+      "plan_cache_mode=force_custom_plan"
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "search_public_trips_v2",
     "arguments": "filters jsonb, sort_mode text, after_cursor jsonb, page_size integer",
     "definer": true,
     "settings": [

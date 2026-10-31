@@ -1,5 +1,7 @@
 # Wyszukiwanie wyjazdów po stronie Supabase
 
+**Aktualizacja Dev 31.10.2026:** aplikacja korzysta z odczytów V2 i opisowych rekomendacji, bez procentów. Termin i kierunek mają pierwszeństwo w polecanych; szczegóły kontraktów, kontekstu oraz testów opisano w [RECOMMENDATIONS.md](RECOMMENDATIONS.md). Poniższy opis liczbowego rankingu i API V1 pozostaje aktualny dla Preview i starszych klientów.
+
 Funkcja działa w **RazemGo Dev** (`kswuakzcnoqgovnwejhb`) oraz od wydania **Preview 1.2.0** w backendzie testerów (`tueqqnbdvuazdxoqtpvk`). Migracja `202610260001_trip_discovery.sql` jest wdrożona do obu projektów. Zachowano starsze API i dane testerów. Kontrolę wydania opisano w [RELEASE_1.2.0.md](RELEASE_1.2.0.md).
 
 ## Zachowanie aplikacji
@@ -22,7 +24,7 @@ Kursor jest oparty na wyniku, czasie publikacji i ID oraz powiązany z zalogowan
 
 Lokalizacja zachowuje ID wybranej miejscowości. Region obejmuje wyjazdy w województwie, a kraje odpowiadają obecnemu katalogowi miejsc w aplikacji: Polska i przykładowa Słowenia. Obsłużono starsze nazwy „Pomorze” i „Dolny Śląsk”. Swobodne wyszukiwanie tekstu pomija polskie znaki i traktuje `%` oraz `_` dosłownie.
 
-Wszystkie endpointy wymagają aktywnej sesji i profilu. Uwzględniają obustronne blokady, zawieszenia kont, moderację oraz publikację, widoczność i termin planu. Ukrycie samego profilu nie ukrywa jego publicznych wyjazdów. Prywatne preferencje są używane w obliczeniu na serwerze, ale nie są zwracane klientowi. Pomocniki w `discovery_private` są niedostępne dla `anon` i `authenticated`. Starszy `list_public_trips` pozostaje zgodny z dotychczasowymi klientami.
+Wszystkie endpointy wymagają aktywnej sesji i profilu. Uwzględniają obustronne blokady, zawieszenia kont, moderację oraz publikację, widoczność i termin planu. Ukrycie samego profilu nie ukrywa jego publicznych wyjazdów. Na Dev preferencje dawnej sekcji profilu „Kogo chcę poznać?” są wycofane. Kryteria wyszukiwania pochodzą z filtrów lub konkretnego własnego wyjazdu. Pomocniki w `discovery_private` są niedostępne dla `anon` i `authenticated`. Starszy `list_public_trips` pozostaje zgodny z dotychczasowymi klientami.
 
 Żądania aplikacji są przypinane do tokenu konkretnego konta. Zmiana konta, filtrów lub ekranu unieważnia spóźnione odpowiedzi. Podgląd demonstracyjny nadal filtruje lokalnie; zwykły Dev korzysta z nowych RPC, bez automatycznego powrotu do pobierania całego katalogu.
 

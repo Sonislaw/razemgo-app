@@ -35,8 +35,8 @@ export default function PublicGroupScreen() {
     {status === 'ready' && (!data || blocked) ? <EmptyState title="Ten profil jest niedostępny"
       description="Ekipa mogła wyłączyć widoczność, usunąć konto lub ograniczyć kontakt."
       action={<Button label="Wróć do Odkrywaj" onPress={() => router.dismissTo('/explore')} />} /> : data && !blocked ? <>
-      <GroupProfileCard group={data.group} about={data.about} expanded />
-      {data.compatibility ? <Card><GroupCompatibilitySummary match={data.compatibility} detailed testID="profile-group-compatibility" /></Card> : null}
+      <GroupProfileCard group={data.group} about={data.about} recommendation={data.recommendation} expanded />
+      {data.recommendation ? <Card><GroupCompatibilitySummary recommendation={data.recommendation} detailed testID="profile-group-compatibility" /></Card> : null}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <FavoriteButton kind="group" targetId={data.group.id} />
         <View style={{ flex: 1, minWidth: 0 }}>

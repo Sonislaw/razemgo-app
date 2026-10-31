@@ -1,6 +1,5 @@
 import { createPagedResource } from '../../lib/paged-resource.ts';
-import type { TripProposal } from '../../types/travel';
-import type { GroupTripCursor, PublicGroupPage } from './group-data';
+import type { GroupTripCursor, PublicGroupPage, PublicGroupDetail } from './group-data';
 import { groupDirectoryError } from './group-data.ts';
 
 export function createGroupProfileStore(
@@ -9,9 +8,9 @@ export function createGroupProfileStore(
     signal?: AbortSignal,
   ) => Promise<PublicGroupPage | null>,
   refreshItems?: (
-    items: TripProposal[],
+    items: PublicGroupDetail['trips'],
     signal: AbortSignal,
-  ) => Promise<TripProposal[]>,
+  ) => Promise<PublicGroupDetail['trips']>,
 ) {
   const resource = createPagedResource({
     load: async (cursor: GroupTripCursor | undefined, signal: AbortSignal) => {
@@ -20,7 +19,7 @@ export function createGroupProfileStore(
         ? { ...page, items: page.trips, totalCount: page.activeTripCount }
         : null;
     },
-    key: (item: TripProposal) => item.trip.id,
+    key: (item: PublicGroupDetail['trips'][number]) => item.trip.id,
     error: (error, phase) =>
       phase === 'more'
         ? 'Nie udało się pobrać ogłoszeń. Sprawdź połączenie i spróbuj ponownie.'

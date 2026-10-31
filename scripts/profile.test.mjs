@@ -1,3 +1,5 @@
+import { profileToPayload } from '../src/features/profile/profile-mapper.ts';
+import { newTripForm } from '../src/features/trips/own-trips-state.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { MY_GROUP } from '../src/data/mocks/travel.ts';
@@ -7,7 +9,6 @@ import {
   normalizeProfile,
   validateProfile,
   formatGroupSize,
-  getPreferredChildAges,
 } from '../src/features/profile/profile-data.ts';
 import {
   DEFAULT_PROFILE_AVATAR_ID,
@@ -53,8 +54,6 @@ test('editing a draft does not mutate the current profile or mock arrays', () =>
   draft.group.childAgeBands.push('10–12');
   draft.group.interests.length = 0;
   draft.group.travelModes.push('Kamper');
-  draft.matching.childAgeBands.push('4–6');
-  draft.matching.groupKinds.push('couple');
   assert.equal(JSON.stringify(example), before);
 });
 
@@ -83,14 +82,14 @@ test('travel mode is required and exclusive; legacy profiles retain their first 
   assert.deepEqual(validateProfile(draft), []);
 });
 
-test('normalizing an adult-only profile clears old ages without changing matching preferences', () => {
+test('normalizing an adult-only profile clears old ages and discards retired preferences', () => {
   const draft = cloneProfile(example);
   draft.group.childCount = 0;
   draft.group.adultCount = 1;
   draft.group.name = '  Nasza ekipa  ';
   const result = normalizeProfile(draft);
   assert.deepEqual(result.group.childAgeBands, []);
-  assert.deepEqual(result.matching.childAgeBands, ['7–9']);
+  assert.equal(Object.hasOwn(result, 'matching'), false);
   assert.equal(result.group.kind, example.group.kind);
   assert.equal(result.group.name, 'Nasza ekipa');
   assert.equal(formatGroupSize(1, 0), '1 dorosły · bez dzieci');
@@ -143,11 +142,12 @@ test('a new profile saves without a home location and older residence data is di
   assert.equal(legacy.group.homeLocation, 'Okolice Gdańska');
 });
 
-test('matching preferences are independent of own children and explicit discovery filters take precedence', () => {
-  const draft = cloneProfile(example);
-  draft.matching.childAgeBands = ['13–17'];
-  assert.deepEqual(getPreferredChildAges(draft), ['13–17']);
-  assert.deepEqual(getPreferredChildAges(draft, ['0–3']), ['0–3']);
-  draft.matching.childAgeBands = [];
-  assert.deepEqual(getPreferredChildAges(draft), MY_GROUP.childAgeBands);
+test('legacy profile preferences are discarded by normalization and never saved or inherited by a new trip', () => {
+  const draft = normalizeProfile(example);
+  assert.equal(Object.hasOwn(draft, 'matching'), false);
+  assert.equal(Object.hasOwn(profileToPayload(example), 'matching'), false);
+  const form = newTripForm(example);
+  assert.equal(Object.hasOwn(form, 'groupKinds'), false);
+  assert.equal(Object.hasOwn(form, 'childAgeBands'), false);
+  assert.deepEqual(validateProfile({ ...example, matching: { description: 'x'.repeat(300) } }), []);
 });

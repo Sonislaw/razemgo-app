@@ -30,8 +30,6 @@ export interface TripForm {
   interests: string[];
   description: string;
   landscape: LandscapeKind;
-  groupKinds: TravelGroup['kind'][];
-  childAgeBands: ChildAgeBand[];
   visibility: TripVisibility;
   animals: TripAnimals;
 }

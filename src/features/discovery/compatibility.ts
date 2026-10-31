@@ -40,10 +40,10 @@ function calculate(proposal: TripProposal, profile: TravelerProfile, filters: Di
   const interests = source?.interests.length ? source.interests : profile.group.interests;
   if (interests.length) add(overlap(interests, proposal.trip.interests), 20, 'Wspólne zainteresowania');
   const ages = filters.childAgeBands.length ? filters.childAgeBands
-    : source ? source.matching.childAgeBands : profile.matching.childAgeBands;
+    : source ? source.matching.childAgeBands : [];
   if (ages.length) add(overlap(ages, proposal.group.childAgeBands), 15, 'Pasujący wiek dzieci');
   const kinds = filters.groupKinds?.length ? filters.groupKinds
-    : source ? source.matching.groupKinds : profile.matching.groupKinds;
+    : source ? source.matching.groupKinds : [];
   if (kinds.length) add(kinds.includes(proposal.group.kind) ? 1 : 0, 10, 'Preferowany rodzaj ekipy');
   const theirPreferences = proposal.trip.matching;
   if (theirPreferences?.groupKinds.length)

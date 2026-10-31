@@ -39,7 +39,6 @@ const titles: Record<ProfileSection, string> = {
   crew: 'Moja ekipa',
   travel: 'Jak podróżuję',
   interests: 'Co lubię',
-  matching: 'Kogo chcę poznać?',
   animals: 'Zwierzęta w mojej ekipie',
 };
 const toggle = <T,>(values: T[], value: T): T[] =>
@@ -49,7 +48,7 @@ const toggle = <T,>(values: T[], value: T): T[] =>
 function isProfileSection(value: unknown): value is ProfileSection {
   return (
     typeof value === 'string' &&
-    ['crew', 'travel', 'interests', 'matching', 'animals'].includes(value)
+    ['crew', 'travel', 'interests', 'animals'].includes(value)
   );
 }
 
@@ -74,7 +73,7 @@ export default function ProfileEditor({
       ? ['crew', 'travel'].includes(name)
       : sectionName
         ? sectionName === name
-        : name !== 'matching';
+        : true;
   const back = () => {
     Keyboard.dismiss();
     router.dismissTo(from === 'home' ? '/' : '/profile');
@@ -93,7 +92,7 @@ export default function ProfileEditor({
         <>
           <PageHeader title="Poznajmy Twoją ekipę" />
           <AppText color="textSecondary">
-            Uzupełnij podstawy. Zainteresowania i preferencje możesz dodać
+            Uzupełnij podstawy. Zainteresowania i zwierzęta możesz dodać
             później w profilu.
           </AppText>
         </>
@@ -263,76 +262,6 @@ export default function ProfileEditor({
               />
             ))}
           </View>
-        </Card>
-      ) : null}
-      {show('matching') ? (
-        <Card>
-          <SectionTitle title="Kogo chcę poznać?" />
-          <FieldLabel>Towarzystwo na wyjazd</FieldLabel>
-          <View style={layout.wrap}>
-            {GROUP_KIND_OPTIONS.map((option) => (
-              <Chip
-                key={option.value}
-                label={option.label}
-                accessibilityLabel={'Towarzystwo: ' + option.label}
-                selected={draft.matching.groupKinds.includes(option.value)}
-                onPress={() =>
-                  setDraft((current) => ({
-                    ...current,
-                    matching: {
-                      ...current.matching,
-                      groupKinds: toggle(
-                        current.matching.groupKinds,
-                        option.value,
-                      ),
-                    },
-                  }))
-                }
-              />
-            ))}
-          </View>
-          <AppText variant="caption" color="textSecondary">
-            Brak wyboru oznacza otwartość na wszystkich podróżników.
-          </AppText>
-          <FieldLabel>Preferowany wiek dzieci</FieldLabel>
-          <View style={layout.wrap}>
-            {CHILD_AGE_BANDS.map((band) => (
-              <Chip
-                key={band}
-                label={band + ' lat'}
-                accessibilityLabel={'Preferowany wiek dzieci: ' + band + ' lat'}
-                selected={draft.matching.childAgeBands.includes(band)}
-                onPress={() =>
-                  setDraft((current) => ({
-                    ...current,
-                    matching: {
-                      ...current.matching,
-                      childAgeBands: toggle(
-                        current.matching.childAgeBands,
-                        band,
-                      ),
-                    },
-                  }))
-                }
-              />
-            ))}
-          </View>
-          <AppText variant="caption" color="textSecondary">
-            To preferencja dotycząca towarzystwa, niezależna od wieku Twoich
-            dzieci.
-          </AppText>
-          <ProfileTextField
-            label="Kilka słów o towarzystwie"
-            value={draft.matching.description}
-            maxLength={240}
-            multiline
-            onChangeText={(description) =>
-              setDraft((current) => ({
-                ...current,
-                matching: { ...current.matching, description },
-              }))
-            }
-          />
         </Card>
       ) : null}
       {errors.length ? (

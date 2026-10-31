@@ -4,13 +4,9 @@ import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
 import { ChipRow } from '@/components/ui/chip-row';
 import { Icon } from '@/components/ui/icon';
 import { AppText, Chip, FieldLabel, layout } from '@/components/ui/primitives';
-import { CHILD_AGE_BANDS } from '@/constants/travel';
 import { TripAnimalFields } from '@/features/animals/animal-fields';
 import { ProfileTextField } from '@/features/profile/profile-form-fields';
-import {
-  GROUP_KIND_OPTIONS,
-  INTEREST_OPTIONS,
-} from '@/features/profile/profile-options';
+import { INTEREST_OPTIONS } from '@/features/profile/profile-options';
 import { TravelModePicker } from '@/features/profile/travel-mode-ui';
 import {
   MAX_TRIP_DESCRIPTION_LENGTH,
@@ -214,7 +210,7 @@ export function TripDestinationStep({
     </>
   );
 }
-export function TripCompanyStep({
+export function TripPublicationFields({
   form,
   update,
   previousStatus,
@@ -231,40 +227,6 @@ export function TripCompanyStep({
 }) {
   return (
     <>
-      <View style={{ gap: 8 }}>
-        <FieldLabel>Towarzystwo na wyjazd</FieldLabel>
-        <AppText variant="caption" color="textSecondary">
-          Możesz wybrać kilka grup. Brak wyboru oznacza dowolne towarzystwo.
-        </AppText>
-        <ChipRow horizontal label="Towarzystwo na wyjazd">
-          {GROUP_KIND_OPTIONS.map((option) => (
-            <Chip
-              key={option.value}
-              label={option.label}
-              selected={form.groupKinds.includes(option.value)}
-              onPress={() =>
-                update('groupKinds', toggle(form.groupKinds, option.value))
-              }
-            />
-          ))}
-        </ChipRow>
-      </View>
-      <View style={{ gap: 8 }}>
-        <FieldLabel>Preferowany wiek dzieci</FieldLabel>
-        <ChipRow horizontal label="Preferowany wiek dzieci">
-          {CHILD_AGE_BANDS.map((band) => (
-            <Chip
-              key={band}
-              label={band + ' lat'}
-              accessibilityLabel={'Preferowany wiek: ' + band + ' lat'}
-              selected={form.childAgeBands.includes(band)}
-              onPress={() =>
-                update('childAgeBands', toggle(form.childAgeBands, band))
-              }
-            />
-          ))}
-        </ChipRow>
-      </View>
       <View style={{ gap: 8 }}>
         <FieldLabel>Widoczność planu</FieldLabel>
         <ChipRow horizontal label="Widoczność planu">
@@ -309,17 +271,6 @@ export function TripCompanyStep({
               {form.visibility === 'private'
                 ? 'Prywatny plan'
                 : 'Dla społeczności'}
-              {' · '}
-              {GROUP_KIND_OPTIONS.filter((item) =>
-                form.groupKinds.includes(item.value),
-              )
-                .map((item) => item.label)
-                .join(', ') || 'Dowolne towarzystwo'}
-              {form.childAgeBands.length
-                ? ' · preferowany wiek dzieci ' +
-                  form.childAgeBands.join(', ') +
-                  ' lat'
-                : ''}
             </AppText>
           }
         >

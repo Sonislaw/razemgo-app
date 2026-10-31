@@ -6,6 +6,7 @@ test('real API flow: create, failed save, reload, second device, discovery, life
   const store=state();await backend(context,store);
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await login(page);await page.goto('/trip-editor');
+  await expect(page.getByText('Krok 1 z 2',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Wybierz zakres dat',exact:true}).click();
   await page.getByLabel(/^25 października 2026/).click();
   await page.getByLabel(/^28 października 2026/).click();
@@ -16,7 +17,10 @@ test('real API flow: create, failed save, reload, second device, discovery, life
   await page.getByRole('textbox',{name:'Nazwa kempingu',exact:true}).fill('Kemping Testowy');
   const description='Spokojny wyjazd nad morze, rowery i wspolne ognisko.';
   await page.getByRole('textbox',{name:'Opis wyjazdu',exact:true}).fill(description);
-  await page.getByRole('button',{name:'Dalej',exact:true}).click();
+  await expect(page.getByText('Krok 2 z 2',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Dalej',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('heading',{name:'Kogo chcesz poznać?',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('textbox',{name:'Opis wyjazdu',exact:true})).toBeVisible();
   await expect(page.getByTestId('trip-editor-preview')).toContainText('Kemping Testowy');
   store.failSave=true;
   await page.getByRole('button',{name:'Opublikuj wyjazd',exact:true}).click();
@@ -44,7 +48,8 @@ test('real API flow: create, failed save, reload, second device, discovery, life
     await login(b,'b@example.com');await b.goto('/explore');
     const card=b.getByTestId('discovery-trip-'+trip.id);
     await expect(card).toContainText('Ekipa A');await expect(card).toContainText('Kemping Testowy');
-    await expect(card).toContainText(/\d+% zgodności/);
+    await expect(card).not.toContainText(/\d+%/);
+    await expect(card).toContainText('Podobny wiek dzieci');
     await b.setViewportSize({width:320,height:800});
     await card.screenshot({path:'.expo/compatibility-trip-small.png'});
     await b.setViewportSize({width:390,height:844});
@@ -55,11 +60,11 @@ test('real API flow: create, failed save, reload, second device, discovery, life
     await b.getByRole('button',{name:'Wybierz daty',exact:true}).click();
     await b.getByRole('button',{name:/^Pokaż wyniki/}).click();await expect(card).toBeVisible();
     await b.getByRole('button',{name:'Sortowanie: Domyślnie',exact:true}).click();
-    await b.getByRole('radio',{name:'Najwyższa zgodność',exact:true}).click();
-    await expect(b.getByRole('button',{name:'Sortowanie: Najwyższa zgodność',exact:true})).toBeVisible();
+    await b.getByRole('radio',{name:'Polecane',exact:true}).click();
+    await expect(b.getByRole('button',{name:'Sortowanie: Polecane',exact:true})).toBeVisible();
     await b.getByRole('button',{name:'Wyczyść filtry',exact:true}).click();
     await card.getByRole('button',{name:'Zobacz wyjazd',exact:true}).click();
-    await expect(b).toHaveURL('http://localhost:8085/trip/'+trip.id);
+    await expect(b).toHaveURL('http://localhost:8085/trip/'+trip.id+'?recommendationScope=search');
     await expect(b.getByRole('button',{name:'Zaproś do kontaktu',exact:true})).toBeEnabled();
     await b.goto('/trip-editor?id='+trip.id);await expect(b.getByRole('heading',{name:'Ten wyjazd nie jest dostępny'})).toBeVisible();
     await own.getByRole('button',{name:/^Opcje wyjazdu:/}).click();
@@ -70,8 +75,7 @@ test('real API flow: create, failed save, reload, second device, discovery, life
     await page.getByRole('button',{name:'Duplikuj jako szkic',exact:true}).click();
     const copied=[...store.trips.values()].find(item=>item.id!==trip.id);
     expect(copied.status).toBe('draft');expect(copied.visibility).toBe('private');
-    await page.getByRole('button',{name:'Dalej',exact:true}).click();await page.getByText('Krok 2 z 3',{exact:true}).waitFor();
-    await page.getByRole('button',{name:'Dalej',exact:true}).click();await page.getByText('Krok 3 z 3',{exact:true}).waitFor();
+    await page.getByRole('button',{name:'Dalej',exact:true}).click();await page.getByText('Krok 2 z 2',{exact:true}).waitFor();
     await page.getByRole('button',{name:'Zapisz plan prywatny',exact:true}).click();await expect(page).toHaveURL('http://localhost:8085/trips');
     await own.getByRole('button',{name:/^Opcje wyjazdu:/}).click();
     await page.getByRole('button',{name:'Wznów poszukiwania',exact:true}).click();
@@ -86,6 +90,48 @@ test('real API flow: create, failed save, reload, second device, discovery, life
     expect(store.trips.has(copied.id)).toBe(true);
     expect(errors).toEqual([]);
   }finally{await device.close();await other.close();}
+});
+
+test('flexible trips publish and edit in two steps with visibility and preview in the final step', async ({page,context}) => {
+  const store=state();await backend(context,store);await login(page);
+  await page.goto('/trip-editor');
+  await page.getByRole('radio',{name:'Szukam pomysłu',exact:true}).click();
+  await expect(page.getByText('Krok 1 z 2',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Wybierz zakres dat',exact:true}).click();
+  await page.getByLabel(/^25 października 2026/).click();
+  await page.getByLabel(/^28 października 2026/).click();
+  await page.getByRole('button',{name:'Wybierz daty',exact:true}).click();
+  await page.getByRole('button',{name:'Dalej',exact:true}).click();
+  await expect(page.getByText('Krok 2 z 2',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Dalej',exact:true})).toHaveCount(0);
+  await expect(page.getByText('Towarzystwo na wyjazd',{exact:true})).toHaveCount(0);
+  await expect(page.getByText('Preferowany wiek dzieci',{exact:true})).toHaveCount(0);
+  await page.getByRole('button',{name:'Opublikuj wyjazd',exact:true}).click();
+  await expect(page.getByRole('alert')).toContainText('Wybierz');
+  await page.getByRole('textbox',{name:'Preferowany obszar wyjazdu',exact:true}).fill('Chłapowo pomorskie');
+  await page.getByRole('button',{name:/^Wybierz lokalizację: Chłapowo,/}).first().click();
+  await page.getByRole('textbox',{name:'Opis wyjazdu',exact:true}).fill('Szukam inspiracji na wspólny wyjazd nad morze.');
+  await page.getByRole('button',{name:'Tylko dla nas',exact:true}).click();
+  await expect(page.getByTestId('trip-editor-preview')).toContainText('Prywatny plan');
+  await page.getByRole('button',{name:'Zapisz plan prywatny',exact:true}).click();
+  await expect(page).toHaveURL('http://localhost:8085/trips');
+  const trip=[...store.trips.values()][0];
+  expect(trip.mode).toBe('flexible');expect(trip.visibility).toBe('private');
+  expect(trip.matching_group_kinds).toEqual([]);expect(trip.matching_child_age_bands).toEqual([]);
+  // An older trip can still be edited; hidden fields cannot preserve its old preferences.
+  trip.matching_group_kinds=['solo'];trip.matching_child_age_bands=['13–17'];
+  await page.goto('/trip-editor?id='+trip.id);
+  await expect(page.getByRole('heading',{name:'Edytuj wyjazd',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Dalej',exact:true}).click();
+  await expect(page.getByText('Krok 2 z 2',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Poprzedni krok',exact:true}).click();
+  await expect(page.getByText('Krok 1 z 2',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Dalej',exact:true}).click();
+  await page.getByRole('textbox',{name:'Opis wyjazdu',exact:true}).fill('Zmieniony pomysł na wspólną przygodę nad morzem.');
+  await page.getByRole('button',{name:'Zapisz zmiany',exact:true}).click();
+  await expect(page).toHaveURL('http://localhost:8085/trips');
+  expect(store.trips.get(trip.id).matching_group_kinds).toEqual([]);
+  expect(store.trips.get(trip.id).matching_child_age_bands).toEqual([]);
 });
 test('load failures offer retry and never masquerade as an empty collection or onboarding',async({page,context})=>{
   const store=state();await backend(context,store);await login(page);

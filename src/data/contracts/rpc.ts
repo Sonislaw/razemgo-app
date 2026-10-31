@@ -1,3 +1,4 @@
+import type { PreferencesRow } from './profile';
 import type {
   GroupCursor,
   GroupSort,
@@ -26,7 +27,6 @@ import type {
 } from '../../features/notifications/notification-types';
 import type {
   GroupRow,
-  PreferencesRow,
   profileToPayload,
 } from '../../features/profile/profile-mapper';
 import type {
@@ -124,7 +124,7 @@ export interface ClientDatabase {
         };
         Returns: MailboxPage;
       };
-      refresh_public_trip_results: {
+      refresh_public_trip_results_v2: {
         Args: {
           trip_ids: string[];
           filters?: ReturnType<
@@ -133,7 +133,7 @@ export interface ClientDatabase {
         };
         Returns: import('../../features/discovery/discovery-repository').RankedTripRow[];
       };
-      refresh_public_group_results: {
+      refresh_public_group_results_v2: {
         Args: {
           group_ids: string[];
           filters?: ReturnType<typeof groupFiltersPayload>;
@@ -193,7 +193,7 @@ export interface ClientDatabase {
           cursor: GroupCursor | null;
         };
       };
-      list_ranked_public_groups: {
+      list_ranked_public_groups_v2: {
         Args: {
           filters?: ReturnType<typeof groupFiltersPayload>;
           sort_mode?: GroupSort;
@@ -211,7 +211,7 @@ export interface ClientDatabase {
         Args: { filters?: ReturnType<typeof groupFiltersPayload> };
         Returns: number;
       };
-      get_public_group: {
+      get_public_group_v2: {
         Args: {
           target_group_id: string;
           after_cursor?: GroupTripCursor | null;
@@ -219,7 +219,7 @@ export interface ClientDatabase {
         };
         Returns:
           | (PublicGroupRow & {
-              trips: PublicTripRow[];
+              trips: import('../../features/discovery/discovery-repository').RankedTripRow[];
               has_more: boolean;
               cursor: GroupTripCursor | null;
             })
@@ -386,7 +386,7 @@ export interface ClientDatabase {
         Args: { requested_trip_id?: string | null };
         Returns: PublicTripRow[];
       };
-      search_public_trips: {
+      search_public_trips_v2: {
         Args: {
           filters?: ReturnType<
             typeof import('../../features/discovery/discovery-data').discoveryFiltersPayload
@@ -407,7 +407,7 @@ export interface ClientDatabase {
         };
         Returns: number;
       };
-      get_discovery_trip: {
+      get_discovery_trip_v2: {
         Args: {
           target_trip_id: string;
           filters?: ReturnType<

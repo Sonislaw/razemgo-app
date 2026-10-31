@@ -3,7 +3,6 @@ import type { ReactionKind } from '../../features/reactions/reaction-data';
 
 export type WelcomeListing = TripPlan & {
   group: TravelGroup;
-  exampleCompatibility: number;
   exampleReactions: Partial<Record<ReactionKind, number>>;
 };
 
@@ -12,7 +11,6 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
   {
     id: 'welcome-coast',
     groupId: 'welcome-crew-coast',
-    exampleCompatibility: 89,
     exampleReactions: { love: 12, curious: 7, envy: 4 },
     group: {
       id: 'welcome-crew-coast',
@@ -41,7 +39,6 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
   {
     id: 'welcome-lake',
     groupId: 'welcome-crew-lake',
-    exampleCompatibility: 92,
     exampleReactions: { adventure: 8, love: 5, applause: 3 },
     group: {
       id: 'welcome-crew-lake',
@@ -70,7 +67,6 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
   {
     id: 'welcome-mountain',
     groupId: 'welcome-crew-mountain',
-    exampleCompatibility: 86,
     exampleReactions: { adventure: 11, envy: 8, curious: 5 },
     group: {
       id: 'welcome-crew-mountain',
@@ -98,7 +94,6 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
   {
     id: 'welcome-forest',
     groupId: 'welcome-crew-forest',
-    exampleCompatibility: 94,
     exampleReactions: { love: 9, applause: 6, curious: 3 },
     group: {
       id: 'welcome-crew-forest',
@@ -127,7 +122,6 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
   {
     id: 'welcome-idea',
     groupId: 'welcome-crew-idea',
-    exampleCompatibility: 90,
     exampleReactions: { curious: 9, applause: 4, love: 3 },
     group: {
       id: 'welcome-crew-idea',

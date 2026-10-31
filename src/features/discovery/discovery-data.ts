@@ -3,6 +3,7 @@ import type { Compatibility } from './compatibility';
 import type { DiscoverySort } from './sort-proposals';
 import { resolveDiscoveryRange } from './filter-trips.ts';
 import { findTripLocation } from '../trips/trip-locations.ts';
+import type { Recommendation } from '../recommendations/recommendation';
 
 export const TRIP_SEARCH_PAGE_SIZE = 5;
 
@@ -12,8 +13,14 @@ export interface TripSearchCursor {
   score: number;
   sort: DiscoverySort;
   query_key: string;
+  rank?: number;
+  version?: 2;
 }
-export interface RankedTripProposal extends TripProposal { compatibility: Compatibility }
+export interface RankedTripProposal extends TripProposal {
+  // Only the demonstration adapter retains the legacy arithmetic for sorting.
+  compatibility?: Compatibility;
+  recommendation?: Recommendation;
+}
 export interface TripSearchPage {
   items: RankedTripProposal[];
   totalCount: number;

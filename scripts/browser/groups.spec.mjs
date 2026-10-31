@@ -7,6 +7,7 @@ import {
   state,
   backend,
   login,
+  recommendCrew,
 } from './trip-fixtures.mjs';
 
 async function groupBackend(context, store) {
@@ -24,10 +25,10 @@ async function groupBackend(context, store) {
       if (
         ![
           'list_public_groups',
-          'list_ranked_public_groups',
-          'refresh_public_group_results',
+          'list_ranked_public_groups_v2',
+          'refresh_public_group_results_v2',
           'count_public_groups',
-          'get_public_group',
+          'get_public_group_v2',
           'get_my_group_visibility',
           'save_my_group_visibility',
           'send_profile_invitation',
@@ -61,6 +62,7 @@ async function groupBackend(context, store) {
         trips: [],
         has_more: false,
         cursor: null,
+        recommendation: store.groupRecommendation ?? recommendCrew(otherCrew, id),
         compatibility: store.groupMatch ?? {
           score: 100,
           reasons: ['Pasujący rodzaj ekipy', 'Pasujący wiek dzieci', 'Rowery'],
@@ -68,11 +70,11 @@ async function groupBackend(context, store) {
           evaluated_weight: 100,
         },
       });
-      if (name === 'refresh_public_group_results')
+      if (name === 'refresh_public_group_results_v2')
         return respond(body.group_ids.includes(other) ? [info()] : []);
       if (
         name === 'list_public_groups' ||
-        name === 'list_ranked_public_groups' ||
+        name === 'list_ranked_public_groups_v2' ||
         name === 'count_public_groups'
       ) {
         if (name !== 'count_public_groups') {
@@ -120,7 +122,7 @@ async function groupBackend(context, store) {
           cursor: null,
         });
       }
-      if (name === 'get_public_group') {
+      if (name === 'get_public_group_v2') {
         if (store.failGroupDetail) return respond({ code: '503' }, 503);
         if (target !== other || store.blocks.has(me) || store.blocks.has(other))
           return respond(null);
@@ -845,104 +847,38 @@ test('unavailable migration and failed requests are retryable and distinct from 
   ).toBeVisible();
 });
 
-test('profile scores, explanations, sort selection and incomplete data are clear on mobile', async ({
-  page,
-  context,
-}) => {
+test('positive profile explanations, sort selection and sparse data stay readable on mobile', async ({page, context}) => {
   const store = state();
   await groupBackend(context, store);
   await login(page);
-  await page.setViewportSize({ width: 320, height: 800 });
+  await page.setViewportSize({width:320,height:800});
   await page.goto('/explore');
-  await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
-  const card = page.getByTestId('public-group-' + groupId(B));
-  await expect(card).toContainText('100% zgodności profili');
-  await expect(card).toContainText('Pasujący wiek dzieci');
-  await page
-    .getByLabel('100% zgodności profili', { exact: true })
-    .screenshot({ path: '.expo/compatibility-100.png' });
-  await page.screenshot({
-    path: '.expo/groups-discovery-controls-small.png',
-    fullPage: true,
-  });
+  await page.getByRole('tab',{name:'Ekipy',exact:true}).click();
+  const card=page.getByTestId('public-group-'+groupId(B));
+  await expect(card).toContainText('Wspólne zainteresowania');
+  await expect(card).not.toContainText(/\d+%/);
+  await card.screenshot({path:'.expo/recommendation-group-small.png'});
   expect(store.lastGroupSort).toBe('compatibility');
-  await page
-    .getByRole('button', {
-      name: 'Sortowanie ekip: Najwyższa zgodność',
-      exact: true,
-    })
-    .click();
-  await page.getByRole('radio', { name: 'Alfabetycznie', exact: true }).click();
+  await page.getByRole('button',{name:'Sortowanie ekip: Polecane',exact:true}).click();
+  await page.getByRole('radio',{name:'Alfabetycznie',exact:true}).click();
   await expect(card).toBeVisible();
   expect(store.lastGroupSort).toBe('alphabetical');
   await card.click();
-  await expect(page.getByTestId('profile-group-compatibility')).toContainText(
-    '100% zgodności profili',
-  );
-  await expect(page.getByTestId('profile-group-compatibility')).toContainText(
-    'preferencje obu ekip',
-  );
-  store.groupMatch = {
-    score: 0,
-    reasons: [],
-    limited_data: false,
-    evaluated_weight: 100,
-  };
+  const explanation=page.getByTestId('profile-group-compatibility');
+  await expect(explanation).toContainText('Co Cię łączy z tą ekipą?');
+  await expect(explanation).toContainText('Rowery');
+  store.groupMatch={score:0,reasons:[],limited_data:false,evaluated_weight:100};
   await page.reload();
-  await expect(page.getByTestId('profile-group-compatibility')).toContainText(
-    '0% zgodności profili',
-  );
-  await page
-    .getByLabel('0% zgodności profili', { exact: true })
-    .screenshot({ path: '.expo/compatibility-0.png' });
-  store.groupMatch = {
-    score: null,
-    reasons: ['Podobny sposób podróżowania'],
-    limited_data: true,
-    evaluated_weight: 10,
-  };
+  await expect(explanation).toContainText('Rowery');
+  await expect(explanation).not.toContainText(/\d+%|Niska zgodność|Za mało danych/);
+  store.groupMatch={score:null,reasons:[],limited_data:true,evaluated_weight:10};
+  store.groupRecommendation={version:2,label:null,reasons:[],context:{kind:'profile'}};
   await page.reload();
-  await expect(page.getByTestId('profile-group-compatibility')).toContainText(
-    'Za mało danych do oceny',
-  );
-  await expect(
-    page
-      .getByTestId('profile-group-compatibility')
-      .getByText(/% zgodności profili/),
-  ).toHaveCount(0);
-  store.groupMatch = {
-    score: 85,
-    reasons: ['Rowery'],
-    limited_data: true,
-    evaluated_weight: 70,
-  };
-  await page.reload();
-  await expect(page.getByTestId('profile-group-compatibility')).toContainText(
-    '85% zgodności profili',
-  );
-  await expect(page.getByTestId('profile-group-compatibility')).toContainText(
-    'Ograniczone dane',
-  );
-  store.groupMatch = {
-    score: 41,
-    reasons: ['Rowery'],
-    limited_data: false,
-    evaluated_weight: 100,
-  };
-  await page.reload();
-  await expect(page.getByTestId('profile-group-compatibility')).toContainText(
-    '41% zgodności profili',
-  );
-  await page
-    .getByLabel('41% zgodności profili', { exact: true })
-    .screenshot({ path: '.expo/compatibility-41.png' });
-  await page.screenshot({
-    path: '.expo/compatibility-profile-small.png',
-    fullPage: true,
-  });
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth,
-    ),
-  ).toBe(true);
+  await expect(explanation).toContainText('Poznaj ekipę i sprawdź jej plany.');
+  await expect(explanation).not.toContainText(/\d+%|Za mało danych|Ograniczone dane/);
+  await page.goto('/explore');
+  await page.getByRole('tab',{name:'Ekipy',exact:true}).click();
+  await expect(card).toBeVisible();
+  await expect(card.getByTestId('group-compatibility-'+groupId(B))).toHaveCount(0);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
 });

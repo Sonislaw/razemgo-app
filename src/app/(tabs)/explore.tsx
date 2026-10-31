@@ -23,8 +23,6 @@ import { DiscoveryFilterBar, DiscoveryResultsHeader } from '@/features/discovery
 import { useTripSearch } from '@/features/discovery/use-trip-search';
 import { TRIP_SEARCH_PAGE_SIZE } from '@/features/discovery/discovery-data';
 import { useTheme } from '@/hooks/use-theme';
-import { useProfile } from '@/features/profile/profile-context';
-import { getPreferredChildAges } from '@/features/profile/profile-data';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
 import { getTripHeadline } from '@/features/trips/trip-headline';
@@ -38,12 +36,11 @@ export default function ExploreScreen() {
   const theme = useTheme();
   const { filters, setFilters, sort, setSort } = useDiscovery();
   const { items: proposals, totalCount, hasMore, status, loadingMore, error, refresh, retry, loadMore, preserveOnReturn } = useTripSearch(filters, sort, TRIP_SEARCH_PAGE_SIZE, view === 'trips');
-  const { profile } = useProfile();
   const { state: ownTrips } = useOwnTrips();
   const sourceTrip = ownTrips.trips.find(
     (trip) => trip.id === filters.sourceTripId,
   );
-  const preferredAges = getPreferredChildAges(profile, filters.childAgeBands);
+  const preferredAges = filters.childAgeBands;
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
   const dateRange = resolveDiscoveryRange(filters);
@@ -128,7 +125,7 @@ export default function ExploreScreen() {
       keyExtractor={proposal => proposal.trip.id}
       renderItem={({ item: proposal }) => <DiscoveryTripCard {...proposal}
         facts={{ ageBands: proposal.group.childAgeBands, matchingAgeBands: proposal.group.childAgeBands.filter(band => preferredAges.includes(band)) }}
-        score={proposal.compatibility.score} onNavigate={preserveOnReturn} />}
+        recommendation={proposal.recommendation} recommendationScope="search" onNavigate={preserveOnReturn} />}
       beforeList={<>
       {switcher}
       <DataStatus status={status === 'loading' && proposals.length ? 'ready' : status} error={error} onRetry={() => { void retry(); }} label="Wczytywanie ogłoszeń" />
@@ -156,8 +153,8 @@ export default function ExploreScreen() {
           onOpen={() => setShowFilters(true)} onClear={reset} onRefresh={() => void refresh()} />
       </View>
         <DiscoveryResultsHeader title={totalCount === null ? 'Propozycje' : 'Propozycje · ' + totalCount}
-          sortLabel={sort === 'compatibility' ? 'Zgodność' : 'Domyślnie'}
-          sortAccessibilityLabel={'Sortowanie: ' + (sort === 'compatibility' ? 'Najwyższa zgodność' : 'Domyślnie')}
+          sortLabel={sort === 'compatibility' ? 'Polecane' : 'Domyślnie'}
+          sortAccessibilityLabel={'Sortowanie: ' + (sort === 'compatibility' ? 'Polecane' : 'Domyślnie')}
           onSort={() => setShowSort(true)} />
       </>}
       empty={status === 'ready' ? (

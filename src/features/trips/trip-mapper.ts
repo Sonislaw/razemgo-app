@@ -30,8 +30,9 @@ export function tripToPayload(form: TripForm) {
     landscape: form.landscape,
     interests: [...form.interests],
     animal_kinds: form.animals.animals.map(({ kind }) => kind),
-    matching_group_kinds: [...form.groupKinds],
-    matching_child_age_bands: [...form.childAgeBands],
+    // Legacy API fields remain neutral after removing companion preferences.
+    matching_group_kinds: [],
+    matching_child_age_bands: [],
   };
 }
 export function tripFromRow(value: unknown): OwnedTrip {

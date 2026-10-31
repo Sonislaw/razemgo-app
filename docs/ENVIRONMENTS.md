@@ -1,5 +1,7 @@
 # RazemGo Dev i Preview
 
+31.10.2026 wyłącznie Dev otrzymał `202610310001_recommendations.sql` i `202610310002_remove_profile_preferences.sql`: **37 migracji**, opisowe rekomendacje ogłoszeń i ekip oraz nowe odczyty V2. Preview zachowuje **35 migracji** i APK 1.3.0. Zmiana nie wymaga nowych modułów natywnych; Dev korzysta z Metro. [Reguły i weryfikacja rekomendacji](RECOMMENDATIONS.md).
+
 Dwie aplikacje mają osobne identyfikatory, schematy linków logowania i konfiguracje Firebase. Można zainstalować je obok siebie. Współdzielą kod źródłowy i projekt EAS; każda ma osobny profil budowania i środowisko zmiennych EAS. Zmiana kodu ani uruchomienie Metro nie aktualizują samodzielnego APK Preview u testerów.
 
 **Stan po wydaniu 1.3.0:** oba backendy mają **35 migracji**, przez `202610280009_relative_ranking_keys.sql`. Preview otrzymało 12 brakujących migracji i aktualne trzy Edge Functions, z zachowaniem danych testerów. Dev używa profilu `development` z `developmentClient=true` i Metro na porcie 8081. Preview pozostaje samodzielnym APK. Linki i kontrole wydania: [RELEASE_1.3.0.md](RELEASE_1.3.0.md). Niżej zachowano historię wcześniejszych wdrożeń.

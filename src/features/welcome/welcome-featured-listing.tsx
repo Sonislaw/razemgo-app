@@ -31,11 +31,11 @@ export function WelcomeFeaturedListing() {
         nativeID={trip.id}
         trip={trip}
         group={trip.group}
-        score={trip.exampleCompatibility}
+        exampleRecommendation
         compatibilityTestID="welcome-example-compatibility"
         favoriteAction={<FavoriteIconButton compact translucent label="Dodaj wyjazd do ulubionych — załóż konto"
           testID="welcome-favorite" onPress={() => router.push('/auth/sign-up')} />}
-        accessibilityLabel={'Przykładowe ogłoszenie: ' + getTripHeadline(trip) + ', ' + trip.exampleCompatibility + '% przykładowej zgodności'}
+        accessibilityLabel={'Przykładowe ogłoszenie: ' + getTripHeadline(trip)}
         accessibilityHint="Załóż konto, aby poznawać podróżników z podobnymi planami."
         onPress={() => router.push('/auth/sign-up')}
         footer={

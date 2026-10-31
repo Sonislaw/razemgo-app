@@ -1,5 +1,4 @@
 import type { TravelerProfile } from '../../types/profile';
-import type { ChildAgeBand } from '../../types/travel';
 import {
   DEFAULT_PROFILE_AVATAR_ID,
   getProfileAvatar,
@@ -26,18 +25,7 @@ export function createEmptyProfile(): TravelerProfile {
       interests: [],
       animals: emptyAnimals(),
     },
-    matching: { groupKinds: [], childAgeBands: [], description: '' },
   };
-}
-
-export function getPreferredChildAges(
-  profile: TravelerProfile,
-  selectedBands: ChildAgeBand[] = [],
-): ChildAgeBand[] {
-  if (selectedBands.length) return selectedBands;
-  return profile.matching.childAgeBands.length
-    ? profile.matching.childAgeBands
-    : profile.group.childAgeBands;
 }
 
 export function cloneProfile(profile: TravelerProfile): TravelerProfile {
@@ -55,25 +43,19 @@ export function cloneProfile(profile: TravelerProfile): TravelerProfile {
       interests: [...profile.group.interests],
       animals: cloneAnimals(profile.group.animals),
     },
-    matching: {
-      ...profile.matching,
-      childAgeBands: [...profile.matching.childAgeBands],
-      groupKinds: [...profile.matching.groupKinds],
-    },
   };
 }
 
 export function normalizeProfile(profile: TravelerProfile): TravelerProfile {
   const normalized = cloneProfile(profile);
   normalized.group.name = normalized.group.name.trim();
-  normalized.matching.description = normalized.matching.description.trim();
   if (normalized.group.childCount === 0) normalized.group.childAgeBands = [];
   return normalized;
 }
 
 export function validateProfile(profile: TravelerProfile): string[] {
   const errors: string[] = [];
-  const { group, matching } = profile;
+  const { group } = profile;
   errors.push(...validateAnimals(group.animals.animals));
   if (
     group.name.trim().length < 2 ||
@@ -98,8 +80,6 @@ export function validateProfile(profile: TravelerProfile): string[] {
     );
   if (group.travelModes.length !== 1)
     errors.push('Wybierz jeden sposób podróżowania.');
-  if (matching.description.trim().length > 240)
-    errors.push('Opis preferencji może mieć maksymalnie 240 znaków.');
   return errors;
 }
 

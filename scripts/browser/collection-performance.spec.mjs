@@ -1,3 +1,4 @@
+import { recommendCrew, recommendTrip } from './trip-fixtures.mjs';
 import { test, expect } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
 import {
@@ -157,9 +158,9 @@ test('50 crew profiles, 50 crew listings and 50 own trips each keep a bounded re
       limited_data: false,
       evaluated_weight: 100,
     },
-  }));
+  })).map(row => ({...row, recommendation: recommendCrew(row.crew)}));
   await page.route(
-    '**/rest/v1/rpc/list_ranked_public_groups',
+    '**/rest/v1/rpc/list_ranked_public_groups_v2',
     async (route) => {
       if (route.request().method() === 'OPTIONS') return route.fallback();
       const body = route.request().postDataJSON();
@@ -186,7 +187,7 @@ test('50 crew profiles, 50 crew listings and 50 own trips each keep a bounded re
       });
     },
   );
-  await page.route('**/rest/v1/rpc/get_public_group', async (route) => {
+  await page.route('**/rest/v1/rpc/get_public_group_v2', async (route) => {
     if (route.request().method() === 'OPTIONS') return route.fallback();
     const body = route.request().postDataJSON();
     const offset = body.after_cursor
@@ -197,7 +198,7 @@ test('50 crew profiles, 50 crew listings and 50 own trips each keep a bounded re
     return route.fulfill({
       json: {
         ...rows[49],
-        trips: items.map((trip) => ({ trip, crew: profile(B).group })),
+        trips: items.map((trip) => ({ trip, crew: profile(B).group, recommendation: recommendTrip(trip, profile(B).group, store) })),
         has_more: offset + items.length < 50,
         cursor: last
           ? { id: last.id, published_at: last.published_at, query_key: 'crew' }

@@ -22,7 +22,6 @@ import { GroupAvatar } from '@/features/messaging/messaging-ui';
 import { useTripContactCounts } from '@/features/messaging/use-trip-contact-counts';
 import { useAccountAccess } from '@/features/moderation/account-access-context';
 import { useProfile } from '@/features/profile/profile-context';
-import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 import { TripReactionsButton } from '@/features/reactions/trip-reactions';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
@@ -272,19 +271,6 @@ export default function OwnTripDetailsScreen() {
             <AppText variant="heading" accessibilityRole="header">
               Towarzystwo na wyjazd
             </AppText>
-            <AppText variant="label">
-              {GROUP_KIND_OPTIONS.filter((option) =>
-                trip.matching.groupKinds.includes(option.value),
-              )
-                .map((option) => option.label)
-                .join(', ') || 'Dowolne towarzystwo'}
-            </AppText>
-            {trip.matching.childAgeBands.length ? (
-              <AppText variant="caption" color="textSecondary">
-                Preferowany wiek dzieci:{' '}
-                {trip.matching.childAgeBands.join(', ')} lat
-              </AppText>
-            ) : null}
             <View
               style={{
                 flexDirection: 'row',

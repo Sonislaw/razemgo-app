@@ -7,6 +7,7 @@ import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 import { AnimalBadge } from '@/features/animals/animal-portrait';
 import type { TravelGroup } from '@/types/travel';
 import { crewNumberText } from '@/features/profile/crew-number';
+import { cardReasons, type Recommendation } from '@/features/recommendations/recommendation';
 
 interface GroupCardContentProps {
   group: TravelGroup;
@@ -16,20 +17,24 @@ interface GroupCardContentProps {
   afterIdentity?: ReactNode;
   expanded?: boolean;
   showCrewNumber?: boolean;
+  recommendation?: Recommendation;
 }
 
-export function GroupProfileCard({ group, about, avatarTestID, headerAction, expanded = false }: GroupCardContentProps & {
+export function GroupProfileCard({ group, about, avatarTestID, headerAction, expanded = false, recommendation }: GroupCardContentProps & {
   headerAction?: ReactNode;
 }) {
   return (
     <Card testID="group-profile-card" style={groupCardStyles.frame}>
       {headerAction}
-      <GroupCardContent group={group} about={about} avatarTestID={avatarTestID} expanded={expanded} showCrewNumber />
+      <GroupCardContent group={group} about={about} avatarTestID={avatarTestID} expanded={expanded} showCrewNumber recommendation={recommendation} />
     </Card>
   );
 }
 
-export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar = false, afterIdentity, expanded = false, showCrewNumber = false }: GroupCardContentProps) {
+export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar = false, afterIdentity, expanded = false, showCrewNumber = false, recommendation }: GroupCardContentProps) {
+  const shown = expanded && recommendation ? recommendation.reasons : cardReasons(recommendation);
+  const interests = group.interests.filter(interest => !shown.some(reason => reason.code === 'interest' && reason.value === interest));
+  const ages = group.childAgeBands.filter(age => !shown.some(reason => reason.code === 'child_age' && reason.value === age));
   return (
     <>
       <View style={layout.row}>
@@ -52,9 +57,9 @@ export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar 
       {afterIdentity}
       {about ? <AppText color="textSecondary" numberOfLines={expanded ? undefined : 3}>{about}</AppText> : null}
       <View style={layout.wrap}>
-        {group.childAgeBands.length ? <Chip label={'Dzieci ' + group.childAgeBands.join(', ') + ' lat'} /> : null}
+        {ages.length ? <Chip label={'Dzieci ' + ages.join(', ') + ' lat'} /> : null}
         {group.animals.animals.map(animal => <AnimalBadge key={animal.kind} kind={animal.kind} />)}
-        {(expanded ? group.interests : group.interests.slice(0, 3)).map(interest => <Chip key={interest} label={interest} />)}
+        {(expanded ? interests : interests.slice(0, 3)).map(interest => <Chip key={interest} label={interest} />)}
       </View>
     </>
   );

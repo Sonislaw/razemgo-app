@@ -185,7 +185,7 @@ async function backend(context, existingState) {
       if (request.method() === 'PUT') state.lastPassword = body.password;
       return respond(user(id));
     }
-    if (url.pathname === '/rest/v1/rpc/search_public_trips')
+    if (url.pathname === '/rest/v1/rpc/search_public_trips_v2')
       return respond({
         items: [],
         total_count: 0,
@@ -193,7 +193,7 @@ async function backend(context, existingState) {
         cursor: null,
       });
     if (url.pathname === '/rest/v1/rpc/count_public_trips') return respond(0);
-    if (url.pathname === '/rest/v1/rpc/get_discovery_trip')
+    if (url.pathname === '/rest/v1/rpc/get_discovery_trip_v2')
       return respond(null);
     if (
       url.pathname === '/rest/v1/trip_plans' ||
@@ -232,10 +232,10 @@ async function backend(context, existingState) {
     if (url.pathname === '/rest/v1/rpc/save_my_profile') {
       if (state.saveFail)
         return respond({ message: 'Temporarily unavailable' }, 503);
-      const { matching, ...group } = body.profile_data;
+      const group = body.profile_data;
       const saved = {
         group: { ...group, id: 'group-' + id, owner_user_id: id },
-        preferences: { ...matching, group_id: 'group-' + id },
+        preferences: { group_kinds: [], child_age_bands: [], description: '', group_id: 'group-' + id },
       };
       state.profiles.set(id, saved);
       return respond(saved);
@@ -353,35 +353,8 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
   }
   await page.goto('/profile');
   await expect(page.getByText('Ekipa A', { exact: true })).toBeVisible();
-  const matchingCard = page.getByRole('button', {
-    name: 'Edytuj: Kogo chcę poznać?',
-    exact: true,
-  });
-  await matchingCard.click();
-  await expect(
-    page.getByRole('textbox', { name: 'Nazwa ekipy', exact: true }),
-  ).toHaveCount(0);
-  await page
-    .getByRole('button', { name: 'Towarzystwo: Pary', exact: true })
-    .click();
-  await page
-    .getByRole('button', {
-      name: 'Preferowany wiek dzieci: 7–9 lat',
-      exact: true,
-    })
-    .click();
-  await page
-    .getByRole('textbox', { name: 'Kilka słów o towarzystwie', exact: true })
-    .fill('Chcę poznać miłośników spokojnych wyjazdów.');
-  await page
-    .getByRole('button', { name: 'Zapisz zmiany', exact: true })
-    .click();
-  await expect(page).toHaveURL('http://localhost:8085/profile');
-  await expect(matchingCard).toContainText(
-    'Chcę poznać miłośników spokojnych wyjazdów.',
-  );
-  await expect(matchingCard).toContainText('Pary');
-  await expect(matchingCard).toContainText('7–9 lat');
+  await expect(page.getByRole('button', { name: 'Edytuj: Kogo chcę poznać?', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Edytuj: Profil publiczny', exact: true })).toBeVisible();
   await page
     .getByRole('button', { name: 'Edytuj profil', exact: true })
     .click();
@@ -410,11 +383,7 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
   await expect(
     page.getByText('Ekipa po zmianie', { exact: true }),
   ).toBeVisible();
-  expect(state.profiles.get(A).preferences.group_kinds).toContain('couple');
-  expect(state.profiles.get(A).preferences.child_age_bands).toContain('7–9');
-  await expect(matchingCard).toContainText(
-    'Chcę poznać miłośników spokojnych wyjazdów.',
-  );
+  expect(state.profiles.get(A).group.matching).toBeUndefined();
   state.loadFail = true;
   await page.reload();
   await expect(

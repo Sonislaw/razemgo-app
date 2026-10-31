@@ -1,5 +1,6 @@
 import { proposalFromRow } from '@/features/trips/trip-mapper';
 import { backendRequest } from '@/lib/backend-request';
+import { parseRecommendation } from '@/features/recommendations/recommendation';
 import { getSupabase } from '@/lib/supabase';
 import {
   GROUP_SEARCH_PAGE_SIZE,
@@ -26,7 +27,7 @@ export async function fetchPublicGroups(
   const { data, error } = await backendRequest(
     (signal) =>
       getSupabase()
-        .rpc('list_ranked_public_groups', {
+        .rpc('list_ranked_public_groups_v2', {
           filters: groupFiltersPayload(filters),
           sort_mode: sort,
           after_cursor: cursor ?? null,
@@ -47,7 +48,7 @@ export async function fetchPublicGroups(
   )
     throw new Error('Missing group directory');
   return {
-    items: (data.items as PublicGroupRow[]).map(publicGroupFromRow),
+    items: (data.items as PublicGroupRow[]).map(row => { parseRecommendation(row.recommendation); return publicGroupFromRow(row); }),
     totalCount: data.total_count,
     hasMore: data.has_more,
     cursor: data.cursor,
@@ -86,7 +87,7 @@ export async function fetchPublicGroup(
   const { data, error } = await backendRequest(
     (signal) =>
       getSupabase()
-        .rpc('get_public_group', {
+        .rpc('get_public_group_v2', {
           target_group_id: id,
           after_cursor: cursor ?? null,
           page_size: GROUP_TRIP_PAGE_SIZE,
@@ -98,6 +99,7 @@ export async function fetchPublicGroup(
   );
   if (error) throw error;
   if (!data) return null;
+  parseRecommendation(data.recommendation);
   if (
     !Array.isArray(data.trips) ||
     data.trips.length > GROUP_TRIP_PAGE_SIZE ||
@@ -109,7 +111,7 @@ export async function fetchPublicGroup(
     throw new Error('Invalid crew trip page');
   return {
     ...publicGroupFromRow(data),
-    trips: data.trips.map(proposalFromRow),
+    trips: data.trips.map(row => ({ ...proposalFromRow(row), recommendation: parseRecommendation(row.recommendation) })),
     hasMore: data.has_more,
     cursor: data.cursor,
   };
@@ -124,7 +126,7 @@ export async function refreshGroupResults(
     const { data, error } = await backendRequest(
       (signal) =>
         getSupabase()
-          .rpc('refresh_public_group_results', {
+          .rpc('refresh_public_group_results_v2', {
             group_ids: ids.slice(offset, offset + 100),
             filters: groupFiltersPayload(filters),
           })
@@ -135,7 +137,7 @@ export async function refreshGroupResults(
     if (error) throw error;
     if (!Array.isArray(data) || data.length > 100)
       throw new Error('Invalid cached groups');
-    items.push(...data.map(publicGroupFromRow));
+    items.push(...data.map(row => { parseRecommendation(row.recommendation); return publicGroupFromRow(row); }));
   }
   return items;
 }

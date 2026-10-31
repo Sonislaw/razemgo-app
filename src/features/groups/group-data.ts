@@ -13,6 +13,7 @@ import type {
   TripProposal,
 } from '../../types/travel';
 import { matchesCrewSearch } from '../profile/crew-number.ts';
+import { parseRecommendation, type Recommendation } from '../recommendations/recommendation.ts';
 import type {
   GroupCompatibility,
   GroupCompatibilityRow,
@@ -23,14 +24,16 @@ export interface PublicGroup {
   about: string;
   activeTripCount: number;
   compatibility?: GroupCompatibility;
+  recommendation?: Recommendation;
 }
 export interface PublicGroupDetail extends PublicGroup {
-  trips: TripProposal[];
+  trips: (TripProposal & { recommendation?: Recommendation })[];
 }
 export type GroupTripCursor = {
   id: string;
   published_at: string;
   query_key: string;
+  version?: 2;
 };
 export interface PublicGroupPage extends PublicGroupDetail {
   hasMore: boolean;
@@ -57,6 +60,8 @@ export type GroupSort = 'compatibility' | 'alphabetical';
 export type RankedGroupCursor = GroupCursor & {
   score: number | null;
   sort: GroupSort;
+  version?: 2;
+  query_key?: string;
 };
 export const GROUP_SEARCH_PAGE_SIZE = 5;
 export interface GroupPage {
@@ -93,6 +98,7 @@ export type PublicGroupRow = {
   about: string;
   active_trip_count: number;
   compatibility?: GroupCompatibilityRow;
+  recommendation?: Recommendation;
 };
 export function publicGroupFromRow(row: PublicGroupRow): PublicGroup {
   const value = object(row);
@@ -124,6 +130,7 @@ export function publicGroupFromRow(row: PublicGroupRow): PublicGroup {
     },
     about: row.about,
     activeTripCount: row.active_trip_count,
+    ...(row.recommendation ? { recommendation: parseRecommendation(row.recommendation) } : {}),
     ...(row.compatibility
       ? {
           compatibility: {

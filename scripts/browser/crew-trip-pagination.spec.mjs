@@ -1,3 +1,4 @@
+import { recommendCrew, recommendTrip } from './trip-fixtures.mjs';
 import { test, expect } from '@playwright/test';
 import {
   B,
@@ -51,7 +52,7 @@ test('crew listings fetch 5/10/13 with a spinner, retry and restore the listing 
   const pending = new Promise((resolve) => {
     release = resolve;
   });
-  await page.route('**/rest/v1/rpc/get_public_group', async (route) => {
+  await page.route('**/rest/v1/rpc/get_public_group_v2', async (route) => {
     if (route.request().method() === 'OPTIONS') return route.fallback();
     const body = route.request().postDataJSON();
     calls.push(body);
@@ -74,9 +75,10 @@ test('crew listings fetch 5/10/13 with a spinner, retry and restore the listing 
       last = items.at(-1);
     return respond({
       crew: profile(B).group,
+      recommendation: recommendCrew(profile(B).group),
       about: 'Wspólne wyjazdy bez pośpiechu.',
       active_trip_count: 13,
-      trips: items.map((trip) => ({ trip, crew: profile(B).group })),
+      trips: items.map((trip) => ({ trip, crew: profile(B).group, recommendation: recommendTrip(trip, profile(B).group, store) })),
       has_more: offset + items.length < trips.length,
       cursor: last
         ? {

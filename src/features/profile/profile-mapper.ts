@@ -1,17 +1,10 @@
-import {
-  parseGroupRow,
-  parsePreferencesRow,
-} from '../../data/contracts/validate.ts';
+import { parseGroupRow } from '../../data/contracts/validate.ts';
 import type { TravelerProfile } from '../../types/profile';
 
-export type { GroupRow, PreferencesRow } from '../../data/contracts/profile';
+export type { GroupRow } from '../../data/contracts/profile';
 
-export function profileFromRows(
-  groupInput: unknown,
-  preferencesInput: unknown,
-): TravelerProfile {
+export function profileFromRows(groupInput: unknown): TravelerProfile {
   const group = parseGroupRow(groupInput);
-  const preferences = parsePreferencesRow(preferencesInput);
   return {
     group: {
       id: group.id,
@@ -26,11 +19,6 @@ export function profileFromRows(
       interests: [...group.interests],
       animals: { animals: group.animal_kinds.map((kind) => ({ kind })) },
     },
-    matching: {
-      groupKinds: [...preferences.group_kinds],
-      childAgeBands: [...preferences.child_age_bands],
-      description: preferences.description,
-    },
   };
 }
 export function profileToPayload(profile: TravelerProfile) {
@@ -44,10 +32,5 @@ export function profileToPayload(profile: TravelerProfile) {
     travel_mode: profile.group.travelModes[0],
     interests: [...profile.group.interests],
     animal_kinds: profile.group.animals.animals.map((animal) => animal.kind),
-    matching: {
-      group_kinds: [...profile.matching.groupKinds],
-      child_age_bands: [...profile.matching.childAgeBands],
-      description: profile.matching.description.trim(),
-    },
   };
 }

@@ -127,7 +127,6 @@ test('profile mapping stores a scalar travel mode and cannot submit ownership or
   assert.ok(!('id' in payload));
   const loaded = profileFromRows(
     { ...payload, id: 'server-group', owner_user_id: 'server-user' },
-    { ...payload.matching, group_id: 'server-group' },
   );
   assert.equal(loaded.group.id, 'server-group');
   assert.deepEqual(loaded.group.travelModes, ['Kamper']);

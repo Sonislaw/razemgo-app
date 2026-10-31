@@ -240,7 +240,7 @@ test('clearing dates preserves other filters and removes the date restriction', 
   );
 });
 
-test('compatibility sorting uses the scores displayed on cards, highest first', () => {
+test('compatibility sorting uses the supplied internal ranking keys, highest first', () => {
   const source = Object.freeze([...DEMO_PROPOSALS]);
   const snapshot = JSON.stringify(source);
   const results = sortDiscoveryProposals(

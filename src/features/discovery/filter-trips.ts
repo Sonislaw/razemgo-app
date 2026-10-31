@@ -421,14 +421,10 @@ export function selectHomeRecommendations(
       .slice(0, 3);
   };
   if (tailored.length) return unique(tailored.sort(compare));
-  const preferredAges = profile.matching.childAgeBands.length
-    ? profile.matching.childAgeBands
-    : profile.group.childAgeBands;
+  const preferredAges = profile.group.childAgeBands;
   const fromProfile = candidates
     .filter(
       ({ group, trip }) =>
-        (!profile.matching.groupKinds.length ||
-          profile.matching.groupKinds.includes(group.kind)) &&
         (!preferredAges.length ||
           group.childAgeBands.some((age) => preferredAges.includes(age))) &&
         trip.interests.some((interest) =>

@@ -1,4 +1,4 @@
-// Fixed presentation examples, not a matching algorithm or a live ranking.
+// Legacy sorting inputs for regression tests; never displayed as public grades.
 export const DEMO_COMPATIBILITY_SCORES: Readonly<
   Record<string, number | undefined>
 > = {

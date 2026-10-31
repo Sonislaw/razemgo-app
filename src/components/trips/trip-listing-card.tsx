@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { AppText, layout } from '@/components/ui/primitives';
-import { CompatibilityBadge } from '@/components/ui/compatibility-badge';
+import { RecommendationBadge, RecommendationReasons } from '@/components/ui/recommendation';
+import { cardReasons, type Recommendation } from '@/features/recommendations/recommendation';
 import { tripAnimalSummary } from '@/features/animals/animal-data';
 import { AnimalPortrait } from '@/features/animals/animal-portrait';
 import { formatTripDates, getTripLocation } from '@/features/discovery/filter-trips';
@@ -32,7 +33,8 @@ interface TripListingCardProps {
   group?: TravelGroup;
   ageBands?: ChildAgeBand[];
   travelModes?: string[];
-  score?: number;
+  recommendation?: Recommendation;
+  exampleRecommendation?: boolean;
   rightBadge?: ReactNode;
   footer?: ReactNode;
   children?: ReactNode;
@@ -53,7 +55,8 @@ export function TripListingCard({
   group,
   ageBands = group?.childAgeBands ?? [],
   travelModes = group?.travelModes ?? [],
-  score,
+  recommendation,
+  exampleRecommendation,
   rightBadge,
   footer,
   children,
@@ -72,13 +75,17 @@ export function TripListingCard({
   const { fontScale } = useWindowDimensions();
   const travelMode = travelModes[0];
   const online = useGroupOnline(group?.id);
+  const shownReasons = cardReasons(recommendation);
+  const shownInterests = new Set(shownReasons.filter(reason => reason.code === 'interest').map(reason => reason.value));
+  const shownAges = new Set(shownReasons.filter(reason => reason.code === 'child_age').map(reason => reason.value));
+  const remainingAges = ageBands.filter(age => !shownAges.has(age));
   const content = (
     <>
       <View style={styles.hero}>
         <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
           <LandscapePhoto
             kind={trip.landscape}
-            style={[styles.photo, { minHeight: (favoriteAction && score !== undefined ? 104 : 80) * fontScale }]}
+            style={[styles.photo, { minHeight: (favoriteAction && (recommendation?.label || exampleRecommendation) ? 104 : 80) * fontScale }]}
             contentPosition={trip.landscape === 'coast' ? { top: '35%', left: '50%' } : undefined}
           />
         </View>
@@ -95,9 +102,9 @@ export function TripListingCard({
             </View>
           ) : null}
         </View>
-        {!rightBadge && score !== undefined ? (
+        {!rightBadge && (recommendation?.label || exampleRecommendation) ? (
           <View style={styles.compatibility}>
-            <CompatibilityBadge score={score} compact testID={compatibilityTestID} />
+            <RecommendationBadge recommendation={recommendation} example={exampleRecommendation} testID={compatibilityTestID} />
           </View>
         ) : null}
       </View>
@@ -129,13 +136,14 @@ export function TripListingCard({
           </View>
         </View>
         <TripTimeline trip={trip} />
+        <RecommendationReasons recommendation={recommendation} />
         {ageBands.length || group?.childCount || trip.animals.animals.length || trip.interests.length ? (
           <View style={styles.facts}>
-            {ageBands.length || group?.childCount ? (
+            {remainingAges.length || (!ageBands.length && group?.childCount) ? (
               <View style={[styles.fact, { backgroundColor: theme.muted }]}>
                 <Icon name="people" size={18} />
                 <AppText variant="caption" style={styles.shrink}>
-                  {ageBands.length ? 'Dzieci ' + ageBands.join(', ') + ' lat' : 'Wiek dzieci niepodany'}
+                  {remainingAges.length ? 'Dzieci ' + remainingAges.join(', ') + ' lat' : 'Wiek dzieci niepodany'}
                 </AppText>
               </View>
             ) : null}
@@ -147,7 +155,7 @@ export function TripListingCard({
                 <AppText variant="caption" style={styles.shrink}>{tripAnimalSummary(trip.animals)}</AppText>
               </View>
             ) : null}
-            {trip.interests.map((interest) => (
+            {trip.interests.filter(interest => !shownInterests.has(interest)).map((interest) => (
               <View key={interest} style={[styles.fact, { backgroundColor: theme.muted }]}>
                 <Icon name={INTEREST_ICONS[interest] ?? 'compass'} size={18} />
                 <AppText variant="caption" style={styles.shrink}>{interest}</AppText>

@@ -1,5 +1,7 @@
 # Wyszukiwanie ekip
 
+**Aktualizacja Dev 31.10.2026:** odczyty V2 prezentują wspólne zainteresowania i wiek dzieci bez procentowej oceny i komunikatów o brakujących danych. Ranking ekip porównuje faktyczne cechy profili; prywatna sekcja „Kogo chcę poznać?” została wycofana na Dev. [Kontrakty i weryfikacja](RECOMMENDATIONS.md). API V1 nadal obsługuje Preview i starszych klientów.
+
 Funkcja działa w **RazemGo Dev** na osobnym backendzie **`kswuakzcnoqgovnwejhb`** oraz w **Preview 1.2.0** na `tueqqnbdvuazdxoqtpvk`. Migracje `202610260002_group_pagination.sql` i `202610260003_group_trip_pagination.sql` dodają stronicowanie katalogu ekip oraz ogłoszeń w profilu i są wdrożone do obu projektów. Dane testerów zachowano. Szczegóły aktualizacji są w [RELEASE_1.2.0.md](RELEASE_1.2.0.md).
 
 ## Praca na prawdziwych kontach Dev
@@ -19,7 +21,7 @@ Podgląd `start:demo` nie jest zwykłym trybem pracy nad aplikacją. Po podłąc
 ## Zawartość etapu
 
 - Odkrywaj ma widoki **Wyjazdy / Ekipy**. Kryteria tych widoków są niezależne. Wyszukiwanie ekip zaczyna się z wyzerowanymi filtrami i obejmuje wszystkie rodzaje ekip.
-- Wyszukiwanie po nazwie pomija różnice w polskich znakach. Filtry obejmują rodzaj ekipy, wiek dzieci, sposób podróżowania, zainteresowania, psa/kota i aktywne ogłoszenia. Opcje jednej kategorii łączymy jako „lub”, kategorie jako „i”. Domyślna kolejność to najwyższa zgodność profili; można wybrać alfabetyczną. Lista pobiera po 5 profili. „Pokaż więcej ekip” pobiera kolejną piątkę, a podczas żądania pokazuje „Wczytywanie ekip” i kręciołek oraz blokuje ponowne kliknięcie. Błąd zachowuje wcześniejsze profile i pozwala ponowić tę samą stronę, bez duplikatów.
+- Wyszukiwanie po nazwie pomija różnice w polskich znakach. Filtry obejmują rodzaj ekipy, wiek dzieci, sposób podróżowania, zainteresowania, psa/kota i aktywne ogłoszenia. Opcje jednej kategorii łączymy jako „lub”, kategorie jako „i”. Domyślna kolejność to „Polecane”; można wybrać alfabetyczną. Lista pobiera po 5 profili. „Pokaż więcej ekip” pobiera kolejną piątkę, a podczas żądania pokazuje „Wczytywanie ekip” i kręciołek oraz blokuje ponowne kliknięcie. Błąd zachowuje wcześniejsze profile i pozwala ponowić tę samą stronę, bez duplikatów.
 - `list_ranked_public_groups(filters, sort_mode, after_cursor, page_size)` obsługuje strony 1–20 i zwraca `items`, `total_count`, `has_more`, `cursor`. Aplikacja jawnie wybiera 5; starsze wywołania bez `page_size` zachowują domyślną wartość 20. Nagłówek pokazuje pełną liczbę dopasowań. Filtry i ranking są stosowane przed limitem strony.
 - Powrót z innej zakładki zaczyna listę od pierwszych 5 profili. Filtry i sortowanie pozostają zachowane, także po przełączeniu Wyjazdy / Ekipy. Wejście w profil z karty lub przycisku „Profil” zapamiętuje bieżącą listę; powrót odświeża wszystkie wcześniej wczytane porcje i zachowuje pozycję przewinięcia, również po obejrzeniu ogłoszenia w profilu.
 - Nazwa ekipy jest wpisywana w panelu filtrów. Przycisk „Pokaż wyniki · N” aktualizuje liczbę podczas zmieniania kryteriów, po 250 ms przerwy. RPC `count_public_groups` zlicza wszystkie pasujące profile, z tymi samymi zasadami widoczności, blokad i zawieszenia kont co lista. Nie ogranicza licznika do wczytanych profili i nie pobiera ich danych. Podczas liczenia pojawia się „…”, a błąd pozwala ponowić zliczanie lub zastosować filtry. Opóźnione odpowiedzi dla poprzednich ustawień są ignorowane.
@@ -32,22 +34,13 @@ Podgląd `start:demo` nie jest zwykłym trybem pracy nad aplikacją. Po podłąc
 - Kontakt z profilu nie wymaga wyjazdu. Pierwsza wiadomość trafia do **Zaproszeń**; dopiero akceptacja tworzy rozmowę. Istniejące zaproszenia i rozmowy z daną ekipą są wykorzystywane ponownie. Historia kontaktu nie zmienia się w fikcyjny wyjazd.
 - Blokady obu stron i zawieszenie konta obowiązują w wyszukiwarce, profilach i czacie. Zgłoszenia profilu trafiają do istniejącego panelu moderacji z kopią publicznego opisu. Zaproszenia i wiadomości korzystają z obecnej kolejki powiadomień oraz push; ten etap nie zmienia wdrożonych funkcji wysyłki.
 
-## Zgodność profili
+## Rekomendacje ekip
 
-Karty ekip i profil szczegółowy pokazują procent zgodności oraz krótkie powody. Obliczenie uwzględnia **obie strony** i odbywa się w bazie; aplikacja nie otrzymuje prywatnych tablic preferencji ani ich opisu.
+Dev pokazuje etykiety „Wspólne zainteresowania” lub „Podobny wiek dzieci” oraz konkretne powody. Nie pokazuje procentów ani ocen brakujących danych. Etykiety opierają się na rzeczywistych cechach profili i nie blokują kontaktu.
 
-| Kryterium | Waga |
-| --- | --- |
-| Preferowany rodzaj ekipy | 35 |
-| Preferowany wiek dzieci | 30 |
-| Wspólne zainteresowania | 25 |
-| Sposób podróżowania | 10 |
+Sekcja „Kogo chcę poznać?” została usunięta z profilu i edycji. Rodzaj poszukiwanej ekipy oraz wiek dzieci wybiera się w filtrach. Ranking „Polecane” porównuje rzeczywisty rodzaj ekipy (waga 35), wiek dzieci obu ekip, jeśli jest podany (30), wspólne zainteresowania (25) i sposób podróżowania (10). Zwierzęta nie wykluczają kontaktu. Ranking zachowuje stronicowanie i kolejność przed pobraniem strony; przy remisie decydują nazwa i ID. Pełne uzasadnienia powstają tylko dla zwracanej strony.
 
-Rodzaj i wiek oceniamy w obu kierunkach, po połowie wagi. Puste preferencje oznaczają dowolność; kategorię uwzględniamy, gdy przynajmniej jedna ekipa podała preferencję. Niepodany wiek dzieci pomijamy jako brak danych. Zainteresowania porównujemy symetrycznie: `2 × liczba wspólnych / łączna liczba zainteresowań obu ekip`. Zwierzęta, ogłoszenia, daty i lokalizacje nie wpływają na tę ocenę.
-
-Wynik to suma punktów podzielona przez sumę wag ocenionych kryteriów. Procent pokazujemy dopiero przy co najmniej **60 punktach dostępnej wagi**. W przeciwnym razie widnieje „Za mało danych do oceny”. Jeżeli brakuje części potrzebnych kryteriów, wynik ma dopisek „Ograniczone dane”. Kategoria wieku jest potrzebna tylko wtedy, gdy któraś ekipa podała preferowany wiek. Procent opisuje zgodność dostępnych kryteriów, nie prawdopodobieństwo udanej znajomości.
-
-Nowe RPC `list_ranked_public_groups` sortuje wszystkie pasujące, dostępne profile **przed** pobraniem strony. Przy remisie obowiązuje nazwa i ID; profile bez oceny są na końcu, także za prawidłowym wynikiem 0%. Niska zgodność nie wyklucza profilu. Kursor zawiera wynik i tryb sortowania. Dotychczasowe alfabetyczne RPC `list_public_groups` zachowano dla zgodności. `get_public_group` zwraca ten sam wynik co lista. Lokalny model służy wyłącznie podglądowi demonstracyjnemu; testy sprawdzają zgodność jego wyników z rzeczywistym SQL.
+Starsze API pozostaje dostępne ze zgodnym kształtem odpowiedzi. Wycofane wartości `group_preferences` są czyszczone i nie sterują odczytami Dev. [Kontrakty, kontekst i testy](RECOMMENDATIONS.md).
 
 ## Sprawdzenie
 

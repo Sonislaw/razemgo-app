@@ -57,7 +57,7 @@ test('trip favorites survive restart, match the filter count and stay independen
   await card
     .getByRole('button', { name: 'Zobacz wyjazd', exact: true })
     .click();
-  await expect(page).toHaveURL('http://localhost:8085/trip/' + tripId);
+  await expect(page).toHaveURL('http://localhost:8085/trip/' + tripId + '?recommendationScope=search');
   await expect(
     page.getByRole('button', { name: 'Wróć do listy wyjazdów', exact: true }),
   ).toBeVisible();

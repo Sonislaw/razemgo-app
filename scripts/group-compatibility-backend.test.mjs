@@ -6,7 +6,7 @@ import { PGlite } from '@electric-sql/pglite';
 import { groupCompatibility } from '../src/features/groups/group-compatibility.ts';
 import { profileFromRows } from '../src/features/profile/profile-mapper.ts';
 
-test('profile ranking: server parity, bilateral private preferences, global pagination and access', async t => {
+test('profile ranking: server parity, actual shared characteristics, global pagination and access', async t => {
   const db = new PGlite(); const users = [], profiles = [];
   const base = { name: 'Viewer', avatar_id: 'camp-bear', kind: 'family', adult_count: 2, child_count: 1,
     child_age_bands: ['4–6'], travel_mode: 'Kamper', interests: ['Rowery','Ognisko'], animal_kinds: [],
@@ -29,7 +29,7 @@ test('profile ranking: server parity, bilateral private preferences, global pagi
     const list = (filters={},sort='compatibility',cursor=null) => rpc('list_ranked_public_groups',[filters,sort,cursor]);
     const count = (filters={}) => rpc('count_public_groups',[filters]);
     await create(base); await create({...base,name:'Zeta best match'});
-    await t.test('SQL and local model agree for matches, both preference directions and missing data', async()=>{
+    await t.test('SQL and local model agree for matches, retired preferences and missing data', async()=>{
       const cases = [
         base,
         {...base,matching:{...base.matching,group_kinds:['couple']}},
@@ -59,7 +59,7 @@ test('profile ranking: server parity, bilateral private preferences, global pagi
       assert.equal((await db.query('select * from public.group_preferences')).rows.length,1);
     });
     await t.test('empty profiles do not get an invented score and genuine zero remains ranked above missing data',async()=>{
-      await create({...base,name:'AAA insufficient',interests:[],matching:{group_kinds:[],child_age_bands:[],description:''}});
+      await create({...base,name:'AAA insufficient',interests:[],child_age_bands:[],matching:{group_kinds:[],child_age_bands:[],description:''}});
       await save(0,{...base,interests:[],matching:{group_kinds:[],child_age_bands:[],description:''}});
       await as(0); assert.equal((await detail(2)).compatibility.score,null);
       await save(0,base);

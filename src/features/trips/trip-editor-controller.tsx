@@ -25,7 +25,7 @@ import {
   validateTripForm,
 } from '@/features/trips/own-trips-state';
 import {
-  TripCompanyStep,
+  TripPublicationFields,
   TripDestinationStep,
   TripTimingStep,
 } from '@/features/trips/trip-editor-steps';
@@ -63,9 +63,8 @@ export function TripEditorScreen() {
     form.mode === 'flexible'
       ? 'Jaki kierunek Cię interesuje?'
       : 'Dokąd i jak podróżujesz?',
-    'Kogo chcesz poznać?',
   ];
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2>(1);
   const [errors, setErrors] = useState<string[]>([]);
   const [confirmExit, setConfirmExit] = useState(false);
   const [showDates, setShowDates] = useState(false);
@@ -146,7 +145,7 @@ export function TripEditorScreen() {
       formScroll.current?.scrollTo({ y: 0, animated: true });
     if (!validation.length) {
       Keyboard.dismiss();
-      setStep(step === 1 ? 2 : 3);
+      setStep(2);
     }
   };
   return (
@@ -182,7 +181,7 @@ export function TripEditorScreen() {
                   if (step === 1) close();
                   else {
                     setErrors([]);
-                    setStep(step === 3 ? 2 : 1);
+                    setStep(1);
                     Keyboard.dismiss();
                   }
                 }}
@@ -209,7 +208,7 @@ export function TripEditorScreen() {
                 }}
               >
                 <AppText variant="caption" color="text" numberOfLines={1}>
-                  Krok {step} z 3
+                  Krok {step} z 2
                 </AppText>
               </View>
               <View
@@ -240,10 +239,10 @@ export function TripEditorScreen() {
             </View>
             <View
               accessible
-              accessibilityLabel={`Krok ${step} z 3`}
+              accessibilityLabel={`Krok ${step} z 2`}
               style={{ flexDirection: 'row', gap: 6 }}
             >
-              {[1, 2, 3].map((value) => (
+              {[1, 2].map((value) => (
                 <View
                   key={value}
                   style={{
@@ -309,24 +308,25 @@ export function TripEditorScreen() {
                   setShowDates(true);
                 }}
               />
-            ) : step === 2 ? (
-              <TripDestinationStep
-                form={form}
-                update={update}
-                onLocationChange={(id) => {
-                  setForm((current) => changeTripLocation(current, id));
-                  setErrors([]);
-                }}
-              />
             ) : (
-              <TripCompanyStep
-                form={form}
-                update={update}
-                previousStatus={previousStatus}
-                preview={preview}
-                previewStatus={previewStatus}
-                profile={profile}
-              />
+              <>
+                <TripDestinationStep
+                  form={form}
+                  update={update}
+                  onLocationChange={(id) => {
+                    setForm((current) => changeTripLocation(current, id));
+                    setErrors([]);
+                  }}
+                />
+                <TripPublicationFields
+                  form={form}
+                  update={update}
+                  previousStatus={previousStatus}
+                  preview={preview}
+                  previewStatus={previewStatus}
+                  profile={profile}
+                />
+              </>
             )}
             <TripDemoNote />
           </View>
@@ -369,7 +369,7 @@ export function TripEditorScreen() {
             <View style={{ flex: 1, minWidth: 140 }}>
               <Button
                 label={
-                  step < 3
+                  step < 2
                     ? 'Dalej'
                     : existing && previousStatus !== 'draft'
                       ? 'Zapisz zmiany'
@@ -378,8 +378,8 @@ export function TripEditorScreen() {
                         : 'Opublikuj wyjazd'
                 }
                 disabled={saving}
-                icon={step < 3 ? 'arrow' : 'check'}
-                onPress={() => (step < 3 ? next() : save(false))}
+                icon={step < 2 ? 'arrow' : 'check'}
+                onPress={() => (step < 2 ? next() : save(false))}
               />
             </View>
           </View>

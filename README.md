@@ -14,7 +14,7 @@ Aplikacja do poznawania osób podróżujących kamperem, przyczepą, kampervanem
 
 Pracujemy w Dev. Preview ma własne konta, dane i samodzielny APK dla testerów. Zmiana kodu lub wdrożenie do Dev nie aktualizuje Preview. Procedura wydawania: [ENVIRONMENTS.md](docs/ENVIRONMENTS.md).
 
-Aktualne wydanie: [Preview 1.3.0 i Dev 1.3.0](docs/RELEASE_1.3.0.md). Preview działa samodzielnie, a Dev wraca do klienta deweloperskiego z Metro. Oba backendy mają 35 migracji; kolejne zmiany rozwijamy wyłącznie w Dev. Raport techniczny: [architektura, wydajność i bezpieczeństwo](docs/ARCHITECTURE_HARDENING.md).
+Aktualne wydanie: [Preview 1.3.0 i Dev 1.3.0](docs/RELEASE_1.3.0.md). Preview działa samodzielnie, a Dev korzysta z klienta deweloperskiego z Metro. Dev ma 37 migracji, Preview zachowuje 35. Najnowsze zmiany Dev to [rekomendacje bez procentowej oceny i wycofanie prywatnych preferencji profilu](docs/RECOMMENDATIONS.md). Raport techniczny: [architektura, wydajność i bezpieczeństwo](docs/ARCHITECTURE_HARDENING.md).
 
 ## Uruchomienie
 
@@ -36,7 +36,7 @@ Do `EXPO_PUBLIC_*` trafiają wyłącznie publiczne dane konfiguracji. Sekrety Go
 - **Konto i profil:** Google lub e-mail/hasło, potwierdzenie adresu, reset hasła, onboarding, trwała sesja, wylogowanie i usuwanie konta. Jedno konto zarządza jedną ekipą. Profile mają ilustrowany avatar, nazwę do 20 znaków i numer widoczny w szczegółach profilu.
 - **Start:** dwa główne skróty, najnowsze dostępne ogłoszenie i dzwonek. „Znajdź ekipę” otwiera Odkrywaj z wyzerowanymi filtrami.
 - **Wyjazdy:** „Mam plan” i „Szukam pomysłu”, szkice, publikacja, edycja, pauza, wznowienie, zakończenie, anulowanie, duplikowanie i usuwanie. Nagłówek powstaje z opisu. Tolerancja dat występuje wyłącznie w wyszukiwaniu. Mapa i oś czasu uzupełniają szczegóły.
-- **Odkrywaj:** aktualne wyjazdy i widoczne ekipy. Filtry, zgodność i liczniki oblicza Supabase. Listy pobierają po pięć elementów, są wirtualizowane i zachowują miejsce po powrocie ze szczegółów. [Wyjazdy](docs/TRIP_DISCOVERY.md), [ekipy](docs/GROUPS.md), [wydajność list](docs/LIST_PERFORMANCE.md).
+- **Odkrywaj:** aktualne wyjazdy i widoczne ekipy. Filtry, ranking i liczniki oblicza Supabase. Na Dev rekomendacje wskazują wspólne plany, zainteresowania lub wiek dzieci, bez procentowej oceny. Listy pobierają po pięć elementów, są wirtualizowane i zachowują miejsce po powrocie ze szczegółów. [Wyjazdy](docs/TRIP_DISCOVERY.md), [ekipy](docs/GROUPS.md), [wydajność list](docs/LIST_PERFORMANCE.md).
 - **Społeczność:** obecność online, ulubione ekipy i wyjazdy, pozytywne reakcje na ogłoszenia. Zwierzęta są zwykłą preferencją, bez automatycznego wykluczania ekip. [Obecność](docs/PRESENCE.md), [ulubione](docs/FAVORITES.md), [reakcje](docs/REACTIONS.md).
 - **Kontakt:** zaproszenia z wyjazdu lub profilu, rozmowa po akceptacji, historia, odczyty, ponawianie wysyłki, blokady i zgłoszenia. Kontakty w szczegółach wyjazdu oznaczają zaakceptowane rozmowy, nie potwierdzone uczestnictwo.
 - **Powiadomienia:** trwała historia, synchronizacja odczytu i ustawień, push o wiadomościach, zaproszeniach, reakcjach i ogłoszeniach ulubionych ekip. Dostarczanie ma kolejkę, rezerwacje, retry i kontrolę receipts. [Instrukcja push](supabase/PUSH.md).

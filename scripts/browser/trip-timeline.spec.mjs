@@ -1,3 +1,4 @@
+import { recommendCrew, recommendTrip } from './trip-fixtures.mjs';
 import {test,expect} from '@playwright/test';
 import {A,B,groupId,profile,state,backend,login} from './trip-fixtures.mjs';
 
@@ -24,9 +25,9 @@ test('one timeline is shared by Start, discovery, crew listings, own plans, deta
     text:'Do zobaczenia na wyjeździe!',status:'accepted',created_at:'2026-10-26T10:00:00Z'});
   store.conversations.push({id:conversation,invitation_id:invitation,sender_group_id:groupId(A),recipient_group_id:groupId(B),updated_at:'2026-10-26T10:00:00Z'});
   await backend(context,store);
-  await page.route('**/rest/v1/rpc/get_public_group',async route=>{
+  await page.route('**/rest/v1/rpc/get_public_group_v2',async route=>{
     if(route.request().method()==='OPTIONS')return route.fallback();
-    return route.fulfill({json:{crew:profile(B).group,about:'Czas na wspólne przygody.',active_trip_count:1,trips:[{trip:upcoming,crew:profile(B).group}],has_more:false,cursor:null},
+    return route.fulfill({json:{crew:profile(B).group,recommendation:recommendCrew(profile(B).group),about:'Czas na wspólne przygody.',active_trip_count:1,trips:[{trip:upcoming,crew:profile(B).group,recommendation:recommendTrip(upcoming,profile(B).group,store)}],has_more:false,cursor:null},
       headers:{'access-control-allow-origin':'http://localhost:8085'}});
   });
   await login(page);await date(page,'2026-10-26T12:00:00Z');

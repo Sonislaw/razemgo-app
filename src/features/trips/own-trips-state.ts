@@ -86,8 +86,8 @@ export function discoveryFiltersForTrip(trip: OwnedTrip): DiscoveryFilters {
       : undefined,
     location: place.region || place.name,
     dateFlexibilityDays: 0,
-    groupKinds: [...trip.matching.groupKinds],
-    childAgeBands: [...trip.matching.childAgeBands],
+    groupKinds: [],
+    childAgeBands: [],
   };
 }
 export function toTripForm(trip: OwnedTrip): TripForm {
@@ -104,8 +104,6 @@ export function toTripForm(trip: OwnedTrip): TripForm {
     interests: [...trip.interests],
     description: trip.description,
     landscape: trip.landscape,
-    groupKinds: [...trip.matching.groupKinds],
-    childAgeBands: [...trip.matching.childAgeBands],
     visibility: trip.visibility,
     animals: cloneAnimals(trip.animals),
   };
@@ -122,8 +120,6 @@ export function newTripForm(profile: TravelerProfile): TripForm {
     interests: [],
     description: '',
     landscape: 'coast',
-    groupKinds: [...profile.matching.groupKinds],
-    childAgeBands: [...profile.matching.childAgeBands],
     visibility: 'public',
     animals: cloneAnimals(profile.group.animals),
   };
@@ -155,7 +151,7 @@ export function changeTripMode(form: TripForm, mode: TripMode): TripForm {
   );
 }
 
-export function validateTripForm(form: TripForm, step?: 1 | 2 | 3): string[] {
+export function validateTripForm(form: TripForm, step?: 1 | 2): string[] {
   const errors: string[] = [];
   if (!step || step === 1) {
     if (!isValidDate(form.startDate) || !isValidDate(form.endDate))
@@ -229,8 +225,8 @@ export function tripFromForm(
     status,
     animals: cloneAnimals(form.animals),
     matching: {
-      groupKinds: [...form.groupKinds],
-      childAgeBands: [...form.childAgeBands],
+      groupKinds: [],
+      childAgeBands: [],
     },
   };
   const place = {

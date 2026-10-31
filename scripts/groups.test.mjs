@@ -27,32 +27,34 @@ test('group filters start unfiltered, support Polish names and match categories 
 function matchingProfile() {
   return { group: publicGroupFromRow(row).group, matching: { groupKinds: ['family'], childAgeBands: ['4–6'], description: '' } };
 }
-test('profile compatibility checks both directions, weights preferences and ignores animals', () => {
+test('profile ranking uses actual shared characteristics, ignores retired preferences and animals', () => {
   const a = matchingProfile(), b = matchingProfile();
   assert.equal(groupCompatibility(a, b).score, 100);
-  b.matching.groupKinds = ['couple'];
-  assert.equal(groupCompatibility(a, b).score, 83);
+  b.matching = { groupKinds: ['solo'], childAgeBands: ['13–17'], description: 'unused' };
+  assert.equal(groupCompatibility(a, b).score, 100);
+  b.group.kind = 'couple';
+  assert.equal(groupCompatibility(a, b).score, 65);
+  b.group.childAgeBands = ['10–12'];
+  assert.equal(groupCompatibility(a, b).score, 35);
   assert.deepEqual(groupCompatibility(a, b), groupCompatibility(b, a));
-  b.matching.groupKinds = ['family']; b.matching.childAgeBands = ['10–12'];
-  assert.equal(groupCompatibility(a, b).score, 85);
   const before = groupCompatibility(a, b);
   b.group.animals.animals = [{ kind: 'cat' }];
   assert.deepEqual(groupCompatibility(a, b), before);
 });
-test('insufficient data never produces a percentage, and missing child ages are not a mismatch', () => {
+
+test('missing child ages stay unknown and adult-only profiles are not treated as an age mismatch', () => {
   const a = matchingProfile(), b = matchingProfile();
-  a.matching = { groupKinds: [], childAgeBands: [], description: '' };
-  b.matching = { groupKinds: [], childAgeBands: [], description: '' };
-  const sparse = groupCompatibility(a, b);
-  assert.equal(sparse.score, null); assert.equal(sparse.evaluatedWeight, 35); assert.equal(sparse.limitedData, true);
-  a.matching.groupKinds = ['family']; a.matching.childAgeBands = ['4–6'];
   b.group.childAgeBands = [];
-  const unknownAges = groupCompatibility(a, b);
-  assert.equal(unknownAges.evaluatedWeight, 70); assert.equal(unknownAges.limitedData, true);
-  assert.equal(unknownAges.reasons.includes('Pasujący wiek dzieci'), false);
+  const unknown = groupCompatibility(a, b);
+  assert.equal(unknown.score, 100); assert.equal(unknown.evaluatedWeight, 70); assert.equal(unknown.limitedData, true);
+  assert.equal(unknown.reasons.includes('Podobny wiek dzieci'), false);
   b.group.childCount = 0;
-  assert.ok(groupCompatibility(a, b).score < unknownAges.score);
+  assert.equal(groupCompatibility(a, b).score, 100);
+  a.group.interests = []; b.group.interests = [];
+  const sparse = groupCompatibility(a, b);
+  assert.equal(sparse.score, null); assert.equal(sparse.evaluatedWeight, 45);
 });
+
 test('group mapping and sorting preserve zero, put unscored last, and break ties alphabetically', () => {
   const scored = (id, name, score) => publicGroupFromRow({ ...row, crew: { ...row.crew, id, name },
     compatibility: { score, reasons: [], evaluated_weight: score === null ? 10 : 100, limited_data: score === null } });

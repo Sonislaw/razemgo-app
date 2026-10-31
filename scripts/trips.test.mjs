@@ -32,6 +32,7 @@ import {
   sharedNights,
 } from '../src/features/discovery/filter-trips.ts';
 import { getTripHeadline } from '../src/features/trips/trip-headline.ts';
+import { tripToPayload } from '../src/features/trips/trip-mapper.ts';
 import {
   searchTripLocations,
   TRIP_LOCATION_REQUIRED_ERROR,
@@ -55,6 +56,25 @@ const fixture = MY_TRIPS.map((trip) => ({
 }));
 const initial = () => createOwnTripsState(fixture);
 const form = () => toTripForm(initial().trips[0]);
+
+test('trip creation, editing, duplication and companion search do not restore retired companion preferences', () => {
+  for (const original of fixture) {
+    const snapshot = JSON.stringify(original);
+    const values = toTripForm(original);
+    assert.equal(Object.hasOwn(values, 'groupKinds'), false);
+    assert.equal(Object.hasOwn(values, 'childAgeBands'), false);
+    const legacy = { ...values, groupKinds: ['solo'], childAgeBands: ['13–17'] };
+    const saved = tripFromForm(legacy, original.id, original.groupId, original.status);
+    assert.deepEqual(saved.matching, { groupKinds: [], childAgeBands: [] });
+    const payload = tripToPayload(legacy);
+    assert.deepEqual(payload.matching_group_kinds, []);
+    assert.deepEqual(payload.matching_child_age_bands, []);
+    const filters = discoveryFiltersForTrip(original);
+    assert.deepEqual(filters.groupKinds, []);
+    assert.deepEqual(filters.childAgeBands, []);
+    assert.equal(JSON.stringify(original), snapshot);
+  }
+});
 const save = (state, draft, id, values = form()) =>
   reduce(state, {
     type: 'save',
@@ -339,7 +359,7 @@ test('publishing and editing use the description without a name and ignore legac
   assert.equal(updated.trips.at(-1).id, trip.id);
 });
 
-test('both modes require a real minimum description before step 3, publication, editing or resuming', () => {
+test('both modes require a real minimum description in the final step, publication, editing or resuming', () => {
   for (const mode of ['planned', 'flexible']) {
     for (const description of [
       '',
@@ -579,7 +599,7 @@ test('duplicate and draft editing clone nested fields rather than mutating the o
   copy.matching.childAgeBands.length = 0;
   copy.destination.name = 'Inne miejsce';
   assert.equal(state.trips[0].destination.name, 'Chłapowo');
-  assert.equal(state.trips[0].matching.childAgeBands.length, 2);
+  assert.deepEqual(state.trips[0].matching.childAgeBands, []);
   assert.equal(JSON.stringify(fixture), before);
   const draft = toTripForm(state.trips[0]);
   draft.travelModes.length = 0;
@@ -633,7 +653,7 @@ test('search joins place and date filters, handles Polish letters, sorts upcomin
   );
 });
 
-test('finding company passes exact trip dates and preferences; tolerance is set only in search filters', () => {
+test('finding company passes exact trip dates; companion preferences are set only in search filters', () => {
   const trip = initial().trips[0];
   const filters = discoveryFiltersForTrip(trip);
   assert.equal(filters.sourceTripId, trip.id);

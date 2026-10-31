@@ -20,9 +20,10 @@ export function GroupCard({ item, onNavigate }: { item: PublicGroup; onNavigate?
     onPress={open} style={({ pressed }) => ({ gap: 12, opacity: pressed ? 0.75 : 1 })}>
     <GroupCardContent
       group={group}
+      recommendation={item.recommendation}
       about={about}
       decorativeAvatar
-      afterIdentity={<GroupCompatibilitySummary match={item.compatibility} testID={'group-compatibility-' + group.id} />}
+      afterIdentity={<GroupCompatibilitySummary recommendation={item.recommendation} testID={'group-compatibility-' + group.id} />}
     />
     </Pressable>
     <View style={[layout.row, { borderTopWidth: 1, borderColor: theme.border, paddingTop: 10 }]}>

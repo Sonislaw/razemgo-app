@@ -263,8 +263,6 @@ test('blocked groups, self, expired plans and duplicate crews do not enter the t
 test('generic results are deterministic and bounded', () => {
   const changed = cloneProfile(profile);
   changed.group.interests = [];
-  changed.matching.groupKinds = [];
-  changed.matching.childAgeBands = [];
   changed.group.childAgeBands = [];
   const first = selectHomeRecommendations(DEMO_PROPOSALS, changed, [], today);
   assert.equal(first.length, 3);

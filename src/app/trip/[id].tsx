@@ -1,5 +1,5 @@
 import { DataStatus } from '@/components/ui/data-status';
-import { CompatibilityBadge } from '@/components/ui/compatibility-badge';
+import { RecommendationDetails } from '@/components/ui/recommendation';
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useDiscoveryTrip } from '@/features/discovery/use-trip-search';
@@ -24,14 +24,12 @@ import { TripMapCard } from '@/components/trips/trip-map-card';
 import { AVAILABLE_PROPOSALS } from '@/data/proposals';
 import {
   formatTripDates,
-  getMatchFacts,
   getTripLocation,
+  INITIAL_FILTERS,
 } from '@/features/discovery/filter-trips';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { useProfile } from '@/features/profile/profile-context';
-import { getPreferredChildAges } from '@/features/profile/profile-data';
 import { TripContactAction } from '@/features/messaging/trip-contact-action';
 import { AnimalInformation } from '@/features/animals/animal-ui';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
@@ -45,10 +43,9 @@ export function generateStaticParams() {
 }
 
 export default function TripDetailsScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, recommendationScope } = useLocalSearchParams<{ id: string; recommendationScope?: string }>();
   const { filters } = useDiscovery();
-  const { item: proposal, status, error, refresh } = useDiscoveryTrip(id, filters);
-  const { profile } = useProfile();
+  const { item: proposal, status, error, refresh } = useDiscoveryTrip(id, recommendationScope === 'search' ? filters : INITIAL_FILTERS);
   const theme = useTheme();
   const back = () =>
     router.canGoBack() ? router.back() : router.replace('/explore');
@@ -71,14 +68,8 @@ export default function TripDetailsScreen() {
       </Screen>
     );
   const { trip, group } = proposal;
-  const facts = getMatchFacts(
-    proposal,
-    profile.group,
-    [],
-    undefined,
-    getPreferredChildAges(profile, filters.childAgeBands),
-  );
-  const score = proposal.compatibility.score;
+  const recommendedInterests = new Set(proposal.recommendation?.reasons.filter(reason => reason.code === 'interest').map(reason => reason.value));
+  const remainingInterests = trip.interests.filter(interest => !recommendedInterests.has(interest));
   return (
     <Screen>
       <HeaderRow>
@@ -126,8 +117,8 @@ export default function TripDetailsScreen() {
         <SectionTitle title="Pomysł na wspólny czas" />
         <AppText color="textSecondary">{trip.description}</AppText>
         <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} compact />
-        {trip.interests.length ? <View style={layout.wrap}>
-          {trip.interests.map((interest) => (
+        {remainingInterests.length ? <View style={layout.wrap}>
+          {remainingInterests.map((interest) => (
             <Chip key={interest} label={interest} />
           ))}
         </View> : null}
@@ -135,35 +126,9 @@ export default function TripDetailsScreen() {
       <Card>
         <AnimalInformation animals={trip.animals} />
       </Card>
-      <Card
-        style={{
-          backgroundColor: theme.positiveBackground,
-        }}
-      >
-        {score !== undefined ? <CompatibilityBadge score={score} /> : (
-          <AppText variant="heading" accessibilityRole="header" color="positive">Co Cię łączy z tą ekipą?</AppText>
-        )}
-        <AppText variant="caption" color="textSecondary">Wynik uwzględnia dostępne dane planów i preferencji.</AppText>
-        <View style={layout.wrap}>
-          {proposal.compatibility.reasons.map(reason => <Chip key={reason} label={reason} />)}
-        </View>
-        <AppText variant="label">
-          {facts.matchingAgeBands.length
-            ? 'Podobny wiek dzieci: ' +
-              facts.matchingAgeBands.join(', ') +
-              ' lat'
-            : group.childAgeBands.length
-              ? 'Inne przedziały wieku dzieci niż w Twoich preferencjach.'
-              : 'Grupa podróżuje bez dzieci.'}
-        </AppText>
-        <AppText variant="label">
-          {facts.commonInterests.length
-            ? 'Wspólne zainteresowania: ' +
-              facts.commonInterests.join(', ') +
-              '.'
-            : 'Warto porozmawiać o wspólnych zainteresowaniach.'}
-        </AppText>
-      </Card>
+      {proposal.recommendation ? <Card style={{ backgroundColor: theme.positiveBackground }}>
+        <RecommendationDetails recommendation={proposal.recommendation} kind="trip" />
+      </Card> : null}
       <Card>
         <View style={layout.row}>
           <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={56} />

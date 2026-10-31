@@ -5,12 +5,13 @@ import { FavoriteButton } from '@/features/favorites/favorite-button';
 import type { TravelGroup, TripPlan } from '@/types/travel';
 import { View } from 'react-native';
 import { TripReactionsButton } from '@/features/reactions/trip-reactions';
+import type { Recommendation } from '@/features/recommendations/recommendation';
 
-export function HomeLatestListing({ trip, group, travelModes, score, isOwn, onPress }: {
+export function HomeLatestListing({ trip, group, travelModes, recommendation, isOwn, onPress }: {
   trip: TripPlan;
   group?: TravelGroup;
   travelModes?: string[];
-  score?: number;
+  recommendation?: Recommendation;
   isOwn: boolean;
   onPress: () => void;
 }) {
@@ -20,7 +21,7 @@ export function HomeLatestListing({ trip, group, travelModes, score, isOwn, onPr
       trip={trip}
       group={group}
       travelModes={travelModes}
-      score={score}
+      recommendation={recommendation}
       favoriteAction={!isOwn ? <FavoriteButton kind="trip" targetId={trip.id} compact translucent /> : undefined}
       accessibilityLabel={'Ostatnio dodane ogłoszenie: ' + getTripHeadline(trip)}
       accessibilityHint={getTripLocation(trip) + ', ' + formatTripDates(trip) + '. Otwórz szczegóły wyjazdu.'}

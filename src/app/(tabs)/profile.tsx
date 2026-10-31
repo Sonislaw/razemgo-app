@@ -5,18 +5,15 @@ import {
   AppText,
   Button,
   Card,
-  Chip,
   DemoBadge,
   IconButton,
   Screen,
-  layout,
 } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import { IS_DEMO_MODE, USE_DEMO_DATA } from '@/constants/app';
 import { useProfile } from '@/features/profile/profile-context';
 import { ProfileSectionCard } from '@/features/profile/profile-ui';
-import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import { GroupProfileCard } from '@/features/groups/group-profile-card';
 import { fetchGroupVisibility } from '@/features/groups/group-repository';
 import { DataStatus } from '@/components/ui/data-status';
@@ -24,8 +21,7 @@ import type { TravelGroup } from '@/types/travel';
 
 export default function ProfileScreen() {
   const { profile, hasProfile } = useProfile();
-  const { group, matching } = profile;
-  const preferredGroups = GROUP_KIND_OPTIONS.filter(option => matching.groupKinds.includes(option.value));
+  const { group } = profile;
   const edit = () => router.push('/edit-profile');
   const header = (
     <IllustratedPageHeader
@@ -58,21 +54,6 @@ export default function ProfileScreen() {
     <Screen header={header}>
       <View style={styles.content}>
         <OwnProfileSummary key={group.id} group={group} onEdit={edit} />
-        <ProfileSectionCard
-          title="Kogo chcę poznać?"
-          icon="heart"
-          onPress={() => router.push({ pathname: '/edit-profile', params: { section: 'matching' } })}
-        >
-          {matching.description ? <AppText color="textSecondary">{matching.description}</AppText> : null}
-          <View style={layout.wrap}>
-            {preferredGroups.length
-              ? preferredGroups.map(option => <Chip key={option.value} label={option.label} />)
-              : <Chip label="Wszyscy podróżnicy" />}
-          </View>
-          <AppText variant="caption" color="textSecondary">
-            Preferowany wiek dzieci: {matching.childAgeBands.length ? matching.childAgeBands.join(', ') + ' lat' : 'bez preferencji'}.
-          </AppText>
-        </ProfileSectionCard>
         <ProfileSectionCard
           title="Profil publiczny"
           icon="people"

@@ -48,7 +48,7 @@ const EMPTY_PAGE: GroupPage = {
 };
 
 const SORT_OPTIONS: { value: GroupSort; label: string }[] = [
-  { value: 'compatibility', label: 'Najwyższa zgodność' },
+  { value: 'compatibility', label: 'Polecane' },
   { value: 'alphabetical', label: 'Alfabetycznie' },
 ];
 
@@ -384,11 +384,11 @@ export function GroupsDiscovery({
           />
           <DiscoveryResultsHeader
             title={hasLoaded ? 'Ekipy · ' + page.totalCount : 'Ekipy'}
-            sortLabel={sort === 'compatibility' ? 'Zgodność' : 'Alfabetycznie'}
+            sortLabel={sort === 'compatibility' ? 'Polecane' : 'Alfabetycznie'}
             sortAccessibilityLabel={
               'Sortowanie ekip: ' +
               (sort === 'compatibility'
-                ? 'Najwyższa zgodność'
+                ? 'Polecane'
                 : 'Alfabetycznie')
             }
             onSort={() => setShowSort(true)}
@@ -452,7 +452,7 @@ export function GroupsDiscovery({
           title="Sortowanie ekip"
           value={sort}
           options={SORT_OPTIONS}
-          caption="Przy sortowaniu po zgodności profile bez wystarczających danych są na końcu. Niska zgodność nie ukrywa ekipy."
+          caption="Kolejność uwzględnia zainteresowania i preferencje obu ekip. Wyróżnienia wskazują konkretne wspólne cechy."
           onClose={() => setShowSort(false)}
           onSelect={(value) => {
             setSort(value);

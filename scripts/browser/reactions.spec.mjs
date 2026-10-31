@@ -21,7 +21,7 @@ test('reactions work on Start, Discover and details, persist on reload and keep 
   await card.getByTestId('trip-reactions-'+TRIP).click();await page.getByRole('button',{name:'Zazdroszczę!',exact:true}).click();
   expect(store.reactions.get(TRIP+':'+groupId(A)).kind).toBe('envy');expect(store.notifications).toHaveLength(1);
   await card.getByRole('button',{name:'Zobacz wyjazd',exact:true}).click();
-  await expect(page).toHaveURL('http://localhost:8085/trip/'+TRIP);
+  await expect(page).toHaveURL('http://localhost:8085/trip/'+TRIP+'?recommendationScope=search');
   await expect(reaction).toHaveAttribute('aria-label',/Twoja reakcja: Zazdroszczę!/);
   await page.reload();await expect(reaction).toHaveAttribute('aria-label',/Twoja reakcja: Zazdroszczę!/);
   await reaction.click();await page.getByRole('button',{name:'Cofnij reakcję',exact:true}).click();

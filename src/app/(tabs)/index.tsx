@@ -104,12 +104,12 @@ export default function HomeScreen() {
               travelModes={
                 latestOwnTrip?.travelModes ?? latestListing.trip.travelModes
               }
-              score={
+              recommendation={
                 latestListing.own
                   ? undefined
                   : availableProposals.find(
                       (p) => p.trip.id === latestListing.trip.id,
-                    )?.compatibility.score
+                    )?.recommendation
               }
               isOwn={latestListing.own}
               onPress={() =>

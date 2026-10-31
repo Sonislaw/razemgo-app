@@ -1,3 +1,4 @@
+import { recommendCrew, recommendTrip } from './trip-fixtures.mjs';
 import { test, expect } from '@playwright/test';
 import {
   B,
@@ -57,7 +58,7 @@ test('crew pages load five at a time, show progress, retry and restore profile s
       limited_data: false,
       evaluated_weight: 100,
     },
-  }));
+  })).map(row => ({...row, recommendation: recommendCrew(row.crew)}));
   const calls = [];
   let failMore = false,
     releaseMore;
@@ -68,10 +69,10 @@ test('crew pages load five at a time, show progress, retry and restore profile s
     const name = new URL(route.request().url()).pathname.split('/').at(-1);
     if (
       ![
-        'list_ranked_public_groups',
-        'refresh_public_group_results',
+        'list_ranked_public_groups_v2',
+        'refresh_public_group_results_v2',
         'count_public_groups',
-        'get_public_group',
+        'get_public_group_v2',
       ].includes(name)
     )
       return route.fallback();
@@ -83,17 +84,17 @@ test('crew pages load five at a time, show progress, retry and restore profile s
         status,
         headers: { 'access-control-allow-origin': 'http://localhost:8085' },
       });
-    if (name === 'get_public_group') {
+    if (name === 'get_public_group_v2') {
       const row = rows.find((row) => row.crew.id === body.target_group_id);
       return respond({
         ...row,
         trips:
-          body.target_group_id === groupId(B) ? [{ trip, crew: row.crew }] : [],
+          body.target_group_id === groupId(B) ? [{ trip, crew: row.crew, recommendation: recommendTrip(trip, row.crew, store) }] : [],
         has_more: false,
         cursor: null,
       });
     }
-    if (name === 'refresh_public_group_results')
+    if (name === 'refresh_public_group_results_v2')
       return respond(
         rows.filter((row) => body.group_ids.includes(row.crew.id)),
       );
@@ -218,7 +219,7 @@ test('crew pages load five at a time, show progress, retry and restore profile s
   await expect(cards).toHaveCount(5);
   await page
     .getByRole('button', {
-      name: 'Sortowanie ekip: Najwyższa zgodność',
+      name: 'Sortowanie ekip: Polecane',
       exact: true,
     })
     .click();

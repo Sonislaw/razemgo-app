@@ -16,7 +16,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { AppState, Platform } from 'react-native';
-import { tripCompatibility } from './compatibility';
+import { tripRecommendation } from '../recommendations/trip-recommendation';
 import { useDiscovery } from './discovery-context';
 import {
   discoveryError,
@@ -48,7 +48,7 @@ export function useTripSearch(
   const demoFavoriteIds = USE_DEMO_DATA ? favorites.tripIds : null;
   const { revision } = useDiscovery();
   const userId = session?.user.id ?? '';
-  const key = JSON.stringify(discoveryFiltersPayload(filters));
+  const key = 'recommendations:2:' + JSON.stringify(discoveryFiltersPayload(filters));
   const ready =
     USE_DEMO_DATA || (!!userId && hasProfile && profileStatus === 'ready');
   const store = useMemo(
@@ -71,7 +71,7 @@ export function useTripSearch(
             favorites.tripIds,
           ).map((proposal) => ({
             ...proposal,
-            compatibility: tripCompatibility(
+            ...tripRecommendation(
               proposal,
               profile,
               ownTrips.trips,
@@ -83,7 +83,7 @@ export function useTripSearch(
             items,
             sort,
             Object.fromEntries(
-              items.map((p) => [p.trip.id, p.compatibility.score]),
+              items.map((p) => [p.trip.id, p.rank]),
             ),
           ) as RankedTripProposal[];
           const offset = cursor
@@ -99,7 +99,9 @@ export function useTripSearch(
               ? {
                   id: last.trip.id,
                   published_at: last.trip.publishedAt ?? '',
-                  score: last.compatibility.score,
+                  score: last.compatibility?.score ?? 0,
+                  rank: items.find(item => item.trip.id === last.trip.id)!.rank,
+                  version: 2,
                   sort,
                   query_key: key,
                 }
@@ -179,7 +181,7 @@ export function useTripResultCount(filters: DiscoveryFilters, enabled = true) {
   const { profile, hasProfile, status } = useProfile();
   const { revision } = useDiscovery();
   const favorites = useFavorites();
-  const key = JSON.stringify(discoveryFiltersPayload(filters));
+  const key = 'recommendations:2:' + JSON.stringify(discoveryFiltersPayload(filters));
   const userId = session?.user.id ?? '';
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<{
@@ -247,7 +249,7 @@ export function useDiscoveryTrip(id: string, filters: DiscoveryFilters) {
   const { state: ownTrips } = useOwnTrips();
   const { revision } = useDiscovery();
   const userId = session?.user.id ?? '';
-  const key = userId + id + JSON.stringify(discoveryFiltersPayload(filters));
+  const key = 'recommendations:2:' + userId + id + JSON.stringify(discoveryFiltersPayload(filters));
   const [result, setResult] = useState<{
     key: string;
     item: RankedTripProposal | null;
@@ -267,7 +269,7 @@ export function useDiscoveryTrip(id: string, filters: DiscoveryFilters) {
             demo
               ? {
                   ...demo,
-                  compatibility: tripCompatibility(
+                  ...tripRecommendation(
                     demo,
                     profile,
                     ownTrips.trips,

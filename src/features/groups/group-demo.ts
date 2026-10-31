@@ -2,11 +2,10 @@ import { DEMO_PROPOSALS } from '@/data/mocks/travel';
 import type { PublicGroupDetail } from './group-data';
 import type { TravelerProfile } from '@/types/profile';
 import { groupCompatibility } from './group-compatibility';
+import { groupRecommendation } from '../recommendations/recommendation';
 
 export function withDemoGroupCompatibility(item: PublicGroupDetail, viewer: TravelerProfile): PublicGroupDetail {
-  return { ...item, compatibility: groupCompatibility(viewer, { group: item.group, matching: {
-    groupKinds: [item.group.kind], childAgeBands: item.group.childAgeBands, description: '',
-  } }) };
+  return { ...item, recommendation: groupRecommendation(viewer.group, item.group), compatibility: groupCompatibility(viewer, { group: item.group }) };
 }
 
 export const DEMO_PUBLIC_GROUPS: PublicGroupDetail[] = [

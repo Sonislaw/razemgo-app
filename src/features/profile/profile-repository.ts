@@ -4,8 +4,6 @@ import type { TravelerProfile } from '@/types/profile';
 import {
   profileFromRows,
   profileToPayload,
-  type GroupRow,
-  type PreferencesRow,
 } from './profile-mapper';
 
 export async function fetchProfile(
@@ -19,13 +17,7 @@ export async function fetchProfile(
     .abortSignal(signal).maybeSingle(), 'profile.load');
   if (error) throw error;
   if (!data) return null;
-  const preferences = await backendRequest(signal => client
-    .from('group_preferences')
-    .select('*')
-    .eq('group_id', data.id)
-    .abortSignal(signal).single(), 'profile.preferences');
-  if (preferences.error) throw preferences.error;
-  return profileFromRows(data as GroupRow, preferences.data as PreferencesRow);
+  return profileFromRows(data);
 }
 export async function persistProfile(
   profile: TravelerProfile,
@@ -34,7 +26,7 @@ export async function persistProfile(
     profile_data: profileToPayload(profile),
   }).abortSignal(signal), 'profile.save');
   if (error) throw error;
-  if (!data?.group || !data?.preferences)
+  if (!data?.group)
     throw new Error('Niepełna odpowiedź serwera.');
-  return profileFromRows(data.group, data.preferences);
+  return profileFromRows(data.group);
 }

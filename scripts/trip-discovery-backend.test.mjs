@@ -5,7 +5,7 @@ import {test} from 'node:test';
 import {PGlite} from '@electric-sql/pglite';
 import {tripCompatibility} from './support/legacy-matching/trip-compatibility.ts';
 import {profileFromRows} from '../src/features/profile/profile-mapper.ts';
-import {proposalFromRow,tripFromRow} from '../src/features/trips/trip-mapper.ts';
+import {proposalFromRow,tripFromRow} from './support/legacy-matching/legacy-trip-mapper.ts';
 import {INITIAL_FILTERS} from '../src/features/discovery/filter-trips.ts';
 import {discoveryFiltersPayload} from './support/legacy-matching/discovery-payload.ts';
 

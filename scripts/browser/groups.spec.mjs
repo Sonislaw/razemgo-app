@@ -240,6 +240,18 @@ test('crew numbers appear only on profiles and support exact live-count search',
   await expect(
     page.locator('[data-testid="crew-number-' + groupId(B) + '"]:visible'),
   ).toHaveText('Ekipa #104828');
+  await expect(page.getByRole('button', { name: 'Zgłoś profil', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Opcje profilu', exact: true }).click();
+  await page.getByRole('button', { name: 'Zgłoś profil', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Zgłoś profil', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Zamknij panel', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Zgłoś profil', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Zablokuj ekipę', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Opcje profilu', exact: true }).click();
+  await page.getByRole('button', { name: 'Zablokuj ekipę', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Zablokować ekipę?', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Zamknij panel', exact: true }).click();
+  expect(store.blocks.size).toBe(0);
   await page.goto('/chat/' + chat);
   await expect(page.getByTestId('chat-screen')).toBeVisible();
   await expect(page.getByTestId('chat-screen')).not.toContainText(

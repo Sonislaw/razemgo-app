@@ -64,6 +64,7 @@ export default function TripDetailsScreen() {
           Wyjazd
         </AppText>
         <DemoBadge />
+        <TripReportAction key={trip.id} tripId={trip.id} />
       </HeaderRow>
       <FavoritesNotice />
       <DataStatus status={status} error={error} onRetry={() => { void refresh(); }} label="Odświeżanie wyjazdu" />
@@ -99,7 +100,6 @@ export default function TripDetailsScreen() {
         <Button label="Zobacz profil ekipy" variant="secondary" onPress={() => router.push({ pathname: '/crew/[id]', params: { id: group.id } })} />
       </Card>
       <TripContactAction proposal={proposal} />
-      <TripReportAction key={trip.id} tripId={trip.id} />
     </Screen>
   );
 }

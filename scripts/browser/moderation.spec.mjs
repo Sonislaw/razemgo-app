@@ -88,8 +88,11 @@ test('reporting a trip supports cancellation, retry and an accessible success co
     return route.fulfill({status:requests.length===1?503:200,headers,body:JSON.stringify(requests.length===1?{code:'XX000'}:reportId)});
   });
   await login(page);await page.goto('/trip/'+trip);
+  await expect(page.getByRole('button',{name:'Zgłoś ogłoszenie',exact:true})).toHaveCount(0);
+  await page.getByRole('button',{name:'Opcje wyjazdu',exact:true}).click();
   await page.getByRole('button',{name:'Zgłoś ogłoszenie',exact:true}).click();
   await page.getByRole('button',{name:'Zamknij panel',exact:true}).click();expect(requests).toHaveLength(0);
+  await page.getByRole('button',{name:'Opcje wyjazdu',exact:true}).click();
   await page.getByRole('button',{name:'Zgłoś ogłoszenie',exact:true}).click();
   await page.getByRole('button',{name:'Niewłaściwe treści',exact:true}).click();
   await page.getByRole('button',{name:'Wyślij zgłoszenie',exact:true}).click();

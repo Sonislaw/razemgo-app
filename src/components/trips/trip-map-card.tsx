@@ -45,12 +45,6 @@ function TripMapContent({ target }: { target: TripMapTarget }) {
   return (
     <View testID="trip-map-card" style={layout.stack}>
       <SectionTitle title="Lokalizacja wyjazdu" />
-      <AppText variant="label">{target.label}</AppText>
-      <AppText variant="caption" color="textSecondary">
-        {approximate
-          ? 'Przybliżony obszar wyjazdu. Dokładne miejsce spotkania jest jeszcze do ustalenia.'
-          : 'Wyszukiwanie kempingu lub adresu w Google Maps.'}
-      </AppText>
       <ScreenFullWidth>
         <View
           testID="trip-google-map"
@@ -123,12 +117,6 @@ function TripMapContent({ target }: { target: TripMapTarget }) {
           ) : null}
         </View>
       </ScreenFullWidth>
-      {approximate && target.area ? (
-        <AppText variant="caption" color="textSecondary">
-          Zaznaczony krąg wskazuje orientacyjną okolicę, a nie granice
-          miejscowości lub regionu.
-        </AppText>
-      ) : null}
       <Button
         label="Otwórz w Google Maps"
         icon="arrow"

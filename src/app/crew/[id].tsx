@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { AppText, Button, Card, EmptyState, SectionTitle } from '@/components/ui/primitives';
 import { CollectionScreen } from '@/components/ui/collection-screen';
@@ -9,7 +8,6 @@ import { GroupContactAction } from '@/features/messaging/trip-contact-action';
 import { GroupReportAction } from '@/features/moderation/trip-report-action';
 import { useMessaging } from '@/features/messaging/messaging-context';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
-import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { useGroupProfile } from '@/features/groups/use-group-profile';
 import { GroupProfileCard } from '@/features/groups/group-profile-card';
 import { FavoriteButton, FavoritesNotice } from '@/features/favorites/favorite-button';
@@ -18,7 +16,6 @@ import { View } from 'react-native';
 export default function PublicGroupScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, status, error, loadingMore, retry, loadMore, preserveOnReturn } = useGroupProfile(id);
-  const [blocking, setBlocking] = useState(false);
   const { setBlock, busy, actionError, state } = useMessaging();
   const blocked = state.blockedGroupIds.includes(id);
   const back = () => router.canGoBack() ? router.back() : router.replace('/explore');
@@ -27,7 +24,12 @@ export default function PublicGroupScreen() {
     keyExtractor={item => item.trip.id}
     renderItem={({ item }) => <DiscoveryTripCard {...item} onNavigate={preserveOnReturn} />}
     beforeList={<>
-    <ProfileSubpageHeader title="Profil ekipy" backLabel="Wróć" onBack={back} />
+    <ProfileSubpageHeader title="Profil ekipy" backLabel="Wróć" onBack={back}
+      actions={available ? <GroupReportAction key={id} groupId={id} blockAction={{
+        busy,
+        error: actionError,
+        onConfirm: async () => { if (await setBlock(id, true)) back(); },
+      }} /> : null} />
     <FavoritesNotice />
     {!data ? <DataStatus status={status} error={error} label="Wczytywanie profilu ekipy" onRetry={() => void retry()} /> : null}
     {status === 'ready' && (!data || blocked) ? <EmptyState title="Ten profil jest niedostępny"
@@ -49,14 +51,6 @@ export default function PublicGroupScreen() {
       {data.hasMore ? <LoadMoreButton label="Pokaż więcej wyjazdów" loadingLabel="Wczytywanie ogłoszeń"
         loadingAccessibilityLabel="Wczytywanie kolejnych ogłoszeń" loading={loadingMore} disabled={status === 'loading'}
         onPress={() => void loadMore()} /> : null}
-      <GroupReportAction groupId={id} />
-      <Button label="Zablokuj ekipę" variant="secondary" icon="block" onPress={() => setBlocking(true)} />
     </> : null}
-  >
-      {blocking ? <BottomSheet title="Zablokować ekipę?" onClose={() => { if (!busy) setBlocking(false); }}>
-        <AppText>Ekipa zniknie z Twoich propozycji i wyszukiwania. Obie strony stracą możliwość wysyłania wiadomości. Blokadę możesz usunąć w ustawieniach bezpieczeństwa.</AppText>
-        {actionError ? <AppText accessibilityRole="alert">{actionError}</AppText> : null}
-        <Button label={busy ? 'Blokowanie…' : 'Zablokuj ekipę'} disabled={busy} onPress={async () => { if (await setBlock(id, true)) { setBlocking(false); back(); } }} />
-      </BottomSheet> : null}
-  </CollectionScreen>;
+  />;
 }

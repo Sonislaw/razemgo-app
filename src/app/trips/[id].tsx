@@ -1,4 +1,4 @@
-import { TripParticipantsSummary } from '@/features/trips/trip-participants-fields';
+import { TripParticipantsSummary } from '@/components/trips/trip-participants-summary';
 import { Landscape } from '@/components/trips/landscape';
 import { TripMapCard } from '@/components/trips/trip-map-card';
 import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
@@ -230,13 +230,16 @@ export default function OwnTripDetailsScreen() {
           <Card><SectionTitle title="Skład wyjazdu" /><TripParticipantsSummary value={trip.participants} /></Card>
           <Card>
             <View style={layout.row}>
-              <GroupAvatar groupId={trip.groupId} size={56} />
+              <GroupAvatar groupId={trip.groupId} size={48} />
               <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
                 <AppText variant="caption" color="textSecondary">
                   Organizator wyjazdu
                 </AppText>
-                <AppText variant="heading">{profile.group.name}</AppText>
+                <AppText variant="heading" numberOfLines={2} style={{ fontSize: 16, lineHeight: 22 }}>
+                  {profile.group.name}
+                </AppText>
               </View>
+              <TravelModeBadges modes={trip.travelModes} />
             </View>
           </Card>
           <Card style={{ gap: 12 }}>
@@ -252,13 +255,11 @@ export default function OwnTripDetailsScreen() {
               ownerGroupId={trip.groupId}
               compact
             />
-            {trip.travelModes.length ? (
-              <TravelModeBadges modes={trip.travelModes} />
-            ) : (
+            {!trip.travelModes.length ? (
               <AppText variant="label">
                 Sposób podróżowania do uzupełnienia
               </AppText>
-            )}
+            ) : null}
             {trip.interests.length ? (
               <View style={layout.wrap}>
                 {trip.interests.map((value) => (
@@ -315,9 +316,8 @@ export default function OwnTripDetailsScreen() {
               ))}
             </View>
             <AppText variant="caption" color="textSecondary">
-              Propozycje dobieramy według regionu, wspólnych nocy i wybranego
-              towarzystwa. Zaproszenia i kontakty dotyczą wyłącznie tego
-              wyjazdu.
+              Propozycje dobieramy na podstawie terminu i kierunku wyjazdu.
+              Zaproszenia i kontakty dotyczą wyłącznie tego wyjazdu.
             </AppText>
             {countError ? (
               <>
@@ -359,7 +359,7 @@ export default function OwnTripDetailsScreen() {
           </Card>
           <Card style={{ gap: 12, backgroundColor: theme.positiveBackground }}>
             <AppText variant="label" accessibilityRole="header">
-              Kontakty tego wyjazdu · {acceptedGroups.length}
+              Rozmowy o tym wyjeździe · {acceptedGroups.length}
             </AppText>
             {acceptedGroups.length ? (
               acceptedGroups.map((conversation) => (

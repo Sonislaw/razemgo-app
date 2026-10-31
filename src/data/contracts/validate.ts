@@ -1,6 +1,6 @@
-import { validateTripParticipants } from '../../lib/trip-participants.ts';
+import { MAX_TRIP_PARTICIPANTS, validateTripParticipants } from '../../lib/trip-participants.ts';
 import type { MailboxRow, MessageRow } from './messaging';
-import type { GroupRow, PreferencesRow } from './profile';
+import type { GroupRow } from './profile';
 import type { PublicTripRow, TripRow } from './trip';
 
 export function object(value: unknown): Record<string, unknown> {
@@ -52,20 +52,21 @@ export function parseGroupRow(value: unknown, publicOnly = false): GroupRow {
   row.animal_kinds.forEach((kind) => oneOf(kind, ['dog', 'cat']));
   return value as GroupRow;
 }
-export function parsePreferencesRow(value: unknown): PreferencesRow {
-  const row = object(value);
-  text(row.group_id, 128);
-  text(row.description, 240);
-  strings(row.group_kinds, 4);
-  strings(row.child_age_bands, 5);
-  return value as PreferencesRow;
-}
 export function parseTripRow(value: unknown): TripRow {
   const row = object(value);
   if (row.adult_count != null || row.child_count != null) {
-    integer(row.adult_count, 1, 20); integer(row.child_count, 0, 20); strings(row.child_age_bands, 5);
-    if (validateTripParticipants({ adultCount: row.adult_count, childCount: row.child_count, childAgeBands: row.child_age_bands as NonNullable<TripRow['child_age_bands']> }).length &&
-      !(row.status === 'draft' && row.child_count > 0 && row.child_age_bands.length === 0)) throw Error('Invalid trip participants');
+    integer(row.adult_count, 1, MAX_TRIP_PARTICIPANTS);
+    integer(row.child_count, 0, MAX_TRIP_PARTICIPANTS);
+    strings(row.child_age_bands, 5);
+    const errors = validateTripParticipants({
+      adultCount: row.adult_count,
+      childCount: row.child_count,
+      childAgeBands: row.child_age_bands as NonNullable<TripRow['child_age_bands']>,
+    }, { allowMissingChildAges: row.status === 'draft' });
+    if (errors.length) throw Error('Invalid trip participants');
+  } else if (row.child_age_bands !== undefined) {
+    // Older APIs may omit participant fields. Unknown counts cannot carry ages.
+    strings(row.child_age_bands, 0);
   }
   for (const key of [
     'id',

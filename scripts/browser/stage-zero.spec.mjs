@@ -24,14 +24,14 @@ test('own-trip contacts explain invitation acceptance and keep access to an acce
     travel_mode:'Kamper',description:'Spokojny wyjazd nad morze, rowery i wspólne ognisko.',landscape:'coast',interests:[],animal_kinds:[],
     matching_group_kinds:[],matching_child_age_bands:[],published_at:'2026-10-24T10:00:00Z'};
   store.trips.set(id,trip);await backend(context,store);await login(page);await page.goto('/trips/'+id);
-  await expect(page.getByRole('heading',{name:'Kontakty tego wyjazdu · 0',exact:true})).toBeAttached();
+  await expect(page.getByRole('heading',{name:'Rozmowy o tym wyjeździe · 0',exact:true})).toBeAttached();
   await expect(page.getByText(/Akceptacja zaproszenia nie oznacza potwierdzenia wspólnego wyjazdu/)).toBeAttached();
   await expect(page.getByText(/umówionego spotkania/)).toHaveCount(0);
   const invitation={id:'00000000-0000-4000-8000-000000000902',sender_group_id:groupId(B),recipient_group_id:groupId(A),trip_id:id,
     trip_reference:id,trip_snapshot:trip,source_trip_id:null,source_trip_snapshot:null,text:'Porozmawiajmy o wyjeździe.',status:'accepted',created_at:'2026-10-24T10:00:00Z'};
   const chat={id:'00000000-0000-4000-8000-000000000903',invitation_id:invitation.id,sender_group_id:groupId(B),recipient_group_id:groupId(A),updated_at:invitation.created_at};
   store.invitations.push(invitation);store.conversations.push(chat);await page.reload();
-  await expect(page.getByRole('heading',{name:'Kontakty tego wyjazdu · 1',exact:true})).toBeAttached();
+  await expect(page.getByRole('heading',{name:'Rozmowy o tym wyjeździe · 1',exact:true})).toBeAttached();
   await expect(page.getByText('Zaakceptowane ekipy',{exact:false})).toHaveCount(0);
   await page.getByRole('button',{name:'Przejdź do rozmowy',exact:true}).click();
   await expect(page).toHaveURL('http://localhost:8085/chat/'+chat.id);

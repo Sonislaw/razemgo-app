@@ -8,11 +8,17 @@ Nowy wyjazd otrzymuje niezależną kopię bieżącego składu profilu. Można do
 
 Wspólny komponent kart pokazuje dorosłych, dzieci i ich wiek z wyjazdu. Dotyczy to Start, Odkrywaj, własnych wyjazdów, ogłoszeń ekipy, podglądu formularza i statycznych przykładów powitania. Szczegóły cudzego i własnego wyjazdu mają sekcję „Skład wyjazdu”; dane profilu organizatora nie zastępują uczestników. Sam profil ekipy zachowuje swój skład. Przy zerze dzieci nie pokazujemy tagu „bez dzieci”.
 
+W „Moje wyjazdy” skład uczestników jest tagiem, bez osobnego podpisu pod osią czasu. Karty opublikowanych wyjazdów nie pokazują etykiety „Szukam towarzystwa”; oznaczenia szkicu, wstrzymania i archiwizacji pozostają widoczne. Status i dostępność przycisku „Znajdź towarzystwo” reagują na zmianę dnia razem z osią czasu. Szczegóły wyjazdu używają osobnego komponentu podsumowania uczestników, bez importowania kontrolek formularza.
+
 ## Baza i kontrakty
 
 Migracja `202610310003_trip_participants.sql` dodaje `trip_plans.adult_count`, `child_count` i `child_age_bands`. Nie zmienia poprzednich migracji ani danych Preview. Istniejące liczniki pozostają NULL, wiek jest pustą tablicą. Migracja `202610310004_trip_participant_guards.sql` doprecyzowuje ochronę bezpośrednich edycji starych rekordów. API mapuje taki rekord na `participants: null`; nie używa profilu jako zastępstwa.
 
 CHECK ogranicza liczniki, dozwolone i unikalne przedziały wieku oraz spójność danych. Publikacja i edycja kompletnego planu wymagają składu także w RPC i bezpośrednich zapisach. Niepełne szkice mogą mieć brak składu albo brak przedziałów wieku; publikacja wymaga uzupełnienia. Stare nieuzupełnione plany mogą pozostać opublikowane i można je wstrzymać; edycja lub ponowna publikacja wymaga składu.
+
+Walidacja odpowiedzi API zachowuje zgodność ze starymi odczytami pomijającymi pola uczestników. Brak liczników może towarzyszyć wyłącznie pustym lub pominiętym przedziałom wieku. Wyjątek dla szkicu dopuszcza brak wieku dzieci, ale nie wyłącza kontroli liczników ani poprawności innych wartości.
+
+31.10.2026 uzupełniono brakujący skład w 183 istniejących ogłoszeniach Dev losowymi danymi testowymi. Nie jest to część migracji ani wartości domyślne dla rzeczywistych ogłoszeń. Pozostałe pola wyjazdów i dane Preview zachowano.
 
 Odczyty list, szczegółów, odświeżenia oraz kopie kontekstu zaproszeń przenoszą skład wyjazdu. RLS, właściciel, uprawnienia RPC, limity zapisów i idempotencja pozostają zachowane. Generowane pola schematu wyprowadzono z katalogu lokalnego PostgreSQL PGlite; pełna kontrola generatorem CLI wymaga lokalnego Supabase/Dockera.
 

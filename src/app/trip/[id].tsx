@@ -1,4 +1,4 @@
-import { TripParticipantsSummary } from '@/features/trips/trip-participants-fields';
+import { TripParticipantsSummary } from '@/components/trips/trip-participants-summary';
 import { DataStatus } from '@/components/ui/data-status';
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -125,17 +125,17 @@ export default function TripDetailsScreen() {
       </Card>
       <Card>
         <View style={layout.row}>
-          <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={56} />
-          <View style={[styles.flex, { gap: 4 }]}>
+          <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={48} />
+          <View style={styles.organizerDetails}>
             <AppText variant="caption" color="textSecondary">
               Organizator wyjazdu
             </AppText>
-            <AppText variant="heading" accessibilityRole="header">
+            <AppText variant="heading" accessibilityRole="header" numberOfLines={2} style={styles.organizerName}>
               {group.name}
             </AppText>
           </View>
+          <TravelModeBadges modes={trip.travelModes ?? group.travelModes} />
         </View>
-        <TravelModeBadges modes={trip.travelModes ?? group.travelModes} />
         <Button label="Zobacz profil ekipy" variant="secondary" onPress={() => router.push({ pathname: '/crew/[id]', params: { id: group.id } })} />
       </Card>
       <TripContactAction proposal={proposal} />
@@ -145,6 +145,8 @@ export default function TripDetailsScreen() {
 }
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  organizerDetails: { flex: 1, minWidth: 0, gap: 4 },
+  organizerName: { fontSize: 16, lineHeight: 22 },
   illustration: { borderRadius: Radius.card, overflow: 'hidden' },
   favoriteAction: { position: 'absolute', top: 8, right: 8 },
 });

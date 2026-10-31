@@ -32,7 +32,7 @@ export function WelcomeFeaturedListing() {
         trip={trip}
         group={trip.group}
         exampleRecommendation
-        compatibilityTestID="welcome-example-compatibility"
+        recommendationTestID="welcome-example-compatibility"
         favoriteAction={<FavoriteIconButton compact translucent label="Dodaj wyjazd do ulubionych — załóż konto"
           testID="welcome-favorite" onPress={() => router.push('/auth/sign-up')} />}
         accessibilityLabel={'Przykładowe ogłoszenie: ' + getTripHeadline(trip)}

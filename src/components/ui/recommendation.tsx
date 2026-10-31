@@ -19,8 +19,8 @@ export function RecommendationBadge({ recommendation, example = false, testID }:
     </AppText>
   </View>;
 }
-export function RecommendationReasons({ recommendation, detailed = false }: { recommendation?: Recommendation; detailed?: boolean }) {
-  const reasons = detailed ? recommendation?.reasons ?? [] : cardReasons(recommendation);
+export function RecommendationReasons({ recommendation }: { recommendation?: Recommendation }) {
+  const reasons = cardReasons(recommendation);
   if (!reasons.length) return null;
   return <AppText variant="caption" color="textSecondary">{reasons.map(reasonText).join(' · ')}</AppText>;
 }

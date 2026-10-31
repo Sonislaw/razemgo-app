@@ -20,19 +20,26 @@ interface GroupCardContentProps {
   recommendation?: Recommendation;
 }
 
-export function GroupProfileCard({ group, about, avatarTestID, headerAction, expanded = false, recommendation }: GroupCardContentProps & {
+type GroupProfileCardProps = Pick<
+  GroupCardContentProps,
+  'group' | 'about' | 'avatarTestID' | 'expanded'
+> & {
   headerAction?: ReactNode;
-}) {
+};
+
+export function GroupProfileCard({
+  group, about, avatarTestID, headerAction, expanded = false,
+}: GroupProfileCardProps) {
   return (
     <Card testID="group-profile-card" style={groupCardStyles.frame}>
       {headerAction}
-      <GroupCardContent group={group} about={about} avatarTestID={avatarTestID} expanded={expanded} showCrewNumber recommendation={recommendation} />
+      <GroupCardContent group={group} about={about} avatarTestID={avatarTestID} expanded={expanded} showCrewNumber />
     </Card>
   );
 }
 
 export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar = false, afterIdentity, expanded = false, showCrewNumber = false, recommendation }: GroupCardContentProps) {
-  const shown = expanded && recommendation ? recommendation.reasons : cardReasons(recommendation);
+  const shown = cardReasons(recommendation);
   const interests = group.interests.filter(interest => !shown.some(reason => reason.code === 'interest' && reason.value === interest));
   const ages = group.childAgeBands.filter(age => !shown.some(reason => reason.code === 'child_age' && reason.value === age));
   return (

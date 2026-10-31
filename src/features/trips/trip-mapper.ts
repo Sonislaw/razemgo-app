@@ -41,7 +41,11 @@ export function tripToPayload(form: TripForm) {
 export function tripFromRow(value: unknown): OwnedTrip {
   const row = parseTripRow(value);
   const base = {
-    participants: row.adult_count != null && row.child_count != null ? { adultCount: row.adult_count, childCount: row.child_count, childAgeBands: [...(row.child_age_bands ?? [])] } : null,
+    participants: row.adult_count != null && row.child_count != null ? {
+      adultCount: row.adult_count,
+      childCount: row.child_count,
+      childAgeBands: [...(row.child_age_bands ?? [])],
+    } : null,
     id: row.id,
     groupId: row.group_id,
     ...(row.published_at ? { publishedAt: row.published_at } : {}),

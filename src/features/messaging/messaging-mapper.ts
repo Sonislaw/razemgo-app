@@ -33,7 +33,11 @@ export type MailboxData = {
 };
 function snapshotToTrip(row: TripSnapshot): TripPlan {
   const base = {
-    participants: row.adult_count != null && row.child_count != null ? { adultCount: row.adult_count, childCount: row.child_count, childAgeBands: [...(row.child_age_bands ?? [])] } : null,
+    participants: row.adult_count != null && row.child_count != null ? {
+      adultCount: row.adult_count,
+      childCount: row.child_count,
+      childAgeBands: [...(row.child_age_bands ?? [])],
+    } : null,
     id: row.id,
     groupId: row.group_id,
     startDate: row.start_date,

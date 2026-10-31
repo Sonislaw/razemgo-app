@@ -53,7 +53,16 @@ test('one timeline is shared by Start, discovery, crew listings, own plans, deta
   await page.getByRole('button',{name:'Zobacz profil ekipy',exact:true}).click();
   await expect(page.getByTestId('discovery-trip-'+upcoming.id).last().getByTestId('trip-timeline')).toContainText('Za 193 dni');
   await page.goto('/trips');
-  await expect(page.getByTestId('own-trip-'+own.id).getByTestId('trip-timeline')).toContainText('Za 193 dni');
+  const ownCard=page.getByTestId('own-trip-'+own.id);
+  await expect(ownCard.getByTestId('trip-timeline')).toContainText('Za 193 dni');
+  await expect(ownCard).not.toContainText('Szukam towarzystwa');
+  await expect(ownCard.getByRole('button',{name:'Znajdź towarzystwo',exact:true})).toBeEnabled();
+  await date(page,'2027-05-10T12:00:00Z');
+  await expect(ownCard).toContainText('Zakończony');
+  await expect(ownCard.getByRole('button',{name:'Znajdź towarzystwo',exact:true})).toBeDisabled();
+  await date(page,'2026-10-26T12:00:00Z');
+  await expect(ownCard).not.toContainText('Zakończony');
+  await expect(ownCard.getByRole('button',{name:'Znajdź towarzystwo',exact:true})).toBeEnabled();
   await expect(page.getByTestId('own-trip-'+draft.id).getByTestId('trip-timeline')).toHaveCount(0);
   await page.goto('/trips/'+own.id);await expect(page.getByTestId('trip-timeline')).toContainText('Za 193 dni');
   await page.goto('/trips/'+past.id);await expect(page.getByTestId('trip-timeline')).toContainText('Zakończony 16 dni temu');

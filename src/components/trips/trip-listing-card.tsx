@@ -46,7 +46,7 @@ interface TripListingCardProps {
   accessibilityHint?: string;
   testID?: string;
   nativeID?: string;
-  compatibilityTestID?: string;
+  recommendationTestID?: string;
   favoriteAction?: ReactNode;
 }
 
@@ -67,13 +67,16 @@ export function TripListingCard({
   accessibilityHint,
   testID,
   nativeID,
-  compatibilityTestID,
+  recommendationTestID,
   favoriteAction,
 }: TripListingCardProps) {
   const theme = useTheme();
   const { fontScale } = useWindowDimensions();
   const travelMode = travelModes[0];
   const ageBands = trip.participants?.childCount ? trip.participants.childAgeBands : [];
+  const hasChildren = (trip.participants?.childCount ?? 0) > 0;
+  const hasFacts = !group || hasChildren || trip.animals.animals.length > 0 || trip.interests.length > 0;
+  const participantsSummary = tripParticipantsSummary(trip.participants);
   const online = useGroupOnline(group?.id);
   const content = (
     <>
@@ -100,7 +103,7 @@ export function TripListingCard({
         </View>
         {!rightBadge && (recommendation?.label || exampleRecommendation) ? (
           <View style={styles.compatibility}>
-            <RecommendationBadge recommendation={recommendation} example={exampleRecommendation} testID={compatibilityTestID} />
+            <RecommendationBadge recommendation={recommendation} example={exampleRecommendation} testID={recommendationTestID} />
           </View>
         ) : null}
       </View>
@@ -132,15 +135,15 @@ export function TripListingCard({
           </View>
         </View>
         <TripTimeline trip={trip} />
-        {!group || ageBands.length || trip.participants?.childCount || trip.animals.animals.length || trip.interests.length ? (
+        {hasFacts ? (
           <View style={styles.facts}>
             {!group ? (
               <View style={[styles.fact, { backgroundColor: theme.muted }]}>
                 <Icon name="people" size={18} />
-                <AppText variant="caption" style={styles.shrink}>{tripParticipantsSummary(trip.participants)}</AppText>
+                <AppText variant="caption" style={styles.shrink}>{participantsSummary}</AppText>
               </View>
             ) : null}
-            {ageBands.length || trip.participants?.childCount ? (
+            {hasChildren ? (
               <View style={[styles.fact, { backgroundColor: theme.muted }]}>
                 <Icon name="people" size={18} />
                 <AppText variant="caption" style={styles.shrink}>
@@ -172,7 +175,7 @@ export function TripListingCard({
             <View style={styles.flex}>
               <AppText variant="label">{group.name}</AppText>
               <AppText variant="caption" color="textSecondary">
-                {tripParticipantsSummary(trip.participants)}
+                {participantsSummary}
                 {travelMode ? ' · ' + (travelMode === 'Van' ? 'Kampervan' : travelMode) : ''}
               </AppText>
             </View>

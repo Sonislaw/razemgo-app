@@ -11,6 +11,7 @@ import {
 import { TripListingAction, TripListingCard } from '@/components/trips/trip-listing-card';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { useTheme } from '@/hooks/use-theme';
+import { useCurrentDate } from '@/hooks/use-current-date';
 import type { OwnedTrip, TripStatus } from '@/types/owned-trip';
 import { formatTripDates } from '@/features/discovery/filter-trips';
 import { useDiscovery } from '@/features/discovery/discovery-context';
@@ -21,7 +22,6 @@ import {
   getTripStatus,
   isSearchingTrip,
   isValidDate,
-  todayDate,
   TRIP_STATUS_LABELS,
 } from './own-trips-state';
 
@@ -99,9 +99,10 @@ export function OwnTripCard({ trip, onMenu }: {
 }) {
   const { setFilters } = useDiscovery();
   const { hidden_trip_ids } = useAccountAccess();
+  const today = useCurrentDate();
   const hidden = hidden_trip_ids.includes(trip.id);
-  const searching = !hidden && isSearchingTrip(trip, todayDate());
-  const status = getTripStatus(trip, todayDate());
+  const searching = !hidden && isSearchingTrip(trip, today);
+  const status = getTripStatus(trip, today);
   return (
     <TripListingCard
       testID={'own-trip-' + trip.id}

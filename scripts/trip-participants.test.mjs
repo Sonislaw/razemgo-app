@@ -6,6 +6,7 @@ import { createEmptyProfile } from '../src/features/profile/profile-data.ts';
 import { newTripForm, toTripForm, tripFromForm, validateTripForm } from '../src/features/trips/own-trips-state.ts';
 import { tripFromRow, tripToPayload } from '../src/features/trips/trip-mapper.ts';
 import { validateTripParticipants, tripParticipantsSummary } from '../src/lib/trip-participants.ts';
+import { parseTripRow } from '../src/data/contracts/validate.ts';
 
 test('trip participants are an independent snapshot, with required counts and ages only when children travel', () => {
   const owner = createEmptyProfile();
@@ -28,6 +29,26 @@ test('trip participants are an independent snapshot, with required counts and ag
   assert.deepEqual(validateTripParticipants({ adultCount: 12, childCount: 3, childAgeBands: ['7–9'] }), []);
   form.participants = null;
   assert.ok(validateTripForm(form, 2).some(error => error.includes('skład')));
+});
+
+test('trip participant contracts distinguish unknown legacy data from incomplete drafts and malformed responses', () => {
+  const row = { ...trip, id: 'trip', group_id: 'group', status: 'published', published_at: null };
+  const legacy = { ...row };
+  delete legacy.adult_count;
+  delete legacy.child_count;
+  delete legacy.child_age_bands;
+  assert.equal(tripFromRow(legacy).participants, null);
+  assert.equal(tripFromRow({ ...legacy, adult_count: null, child_count: null, child_age_bands: [] }).participants, null);
+  assert.throws(() => parseTripRow({ ...legacy, child_age_bands: ['4–6'] }));
+  assert.throws(() => parseTripRow({ ...legacy, child_age_bands: null }));
+  for (const patch of [{ adult_count: null }, { child_count: null }, { child_age_bands: ['4–6', '4–6'] },
+    { child_age_bands: ['unknown'] }, { child_count: 0 }, { child_age_bands: [] }])
+    assert.throws(() => parseTripRow({ ...row, ...patch }));
+  const draft = { ...row, status: 'draft', child_age_bands: [] };
+  assert.equal(tripFromRow(draft).participants.childCount, 1);
+  assert.throws(() => parseTripRow({ ...draft, adult_count: 0 }));
+  assert.throws(() => parseTripRow({ ...draft, child_count: 21 }));
+  assert.throws(() => parseTripRow({ ...draft, child_age_bands: ['unknown'] }));
 });
 
 test('trip participant SQL: required publication, draft completion, ownership, filters and independent profile changes', async t => {

@@ -45,7 +45,7 @@ test('bounded trip pages, load-more retry, full filter counts, global sorting an
   await page.getByRole('button',{name:'Otwórz filtry',exact:true}).click();await page.getByRole('checkbox',{name:'Klimat wyjazdu: Morze',exact:true}).click();
   await expect(page.getByRole('button',{name:'Pokaż wyniki · 1',exact:true})).toBeVisible();await page.getByRole('button',{name:'Pokaż wyniki · 1',exact:true}).click();
   await expect(page.getByText('Propozycje · 1',{exact:true})).toBeVisible();await expect(cards).toHaveCount(1);
-  await page.goto('/trip/'+uuid(8012));await expect(page.getByRole('heading',{name:'Kontrolny wyjazd do lasu numer 12.',exact:true})).toBeVisible();
+  await page.goto('/trip/'+uuid(8012));await expect(page.getByText('Kontrolny wyjazd do lasu numer 12.',{exact:true}).filter({visible:true})).toBeVisible();
   expect(store.tripSearchCalls.some(c=>c.endpoint==='get_discovery_trip_v3'&&c.target_trip_id===uuid(8012))).toBe(true);
 });
 test('returning from a listing or its crew restores all viewed pages and the scroll position',async({page,context})=>{

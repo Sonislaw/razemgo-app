@@ -1,8 +1,7 @@
 import { TripParticipantsSummary } from '@/components/trips/trip-participants-summary';
-import { Landscape } from '@/components/trips/landscape';
+import { TripCover } from '@/components/trips/trip-cover';
 import { TripMapCard } from '@/components/trips/trip-map-card';
-import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
-import { TripTimeline } from '@/components/trips/trip-timeline';
+import { TripLocationSummary } from '@/components/trips/trip-location-summary';
 import { DataStatus } from '@/components/ui/data-status';
 import {
   AppText,
@@ -34,7 +33,6 @@ import {
   todayDate,
 } from '@/features/trips/own-trips-state';
 import { TripActions } from '@/features/trips/trip-actions';
-import { getTripHeadline } from '@/features/trips/trip-headline';
 import {
   ownTripDates,
   ownTripPlace,
@@ -192,39 +190,37 @@ export default function OwnTripDetailsScreen() {
               </AppText>
             </Card>
           ) : null}
-          <View style={{ borderRadius: 20, overflow: 'hidden' }}>
-            <Landscape kind={trip.landscape} />
-          </View>
+          <TripCover trip={trip} variant="details" datesLabel={ownTripDates(trip)} />
           <View style={{ gap: 12 }}>
             <TripStatusBadge status={status} />
-            <AppText
-              accessibilityRole="header"
-              variant="title"
-              style={{ fontSize: 26, lineHeight: 32 }}
-            >
-              {getTripHeadline(trip)}
-            </AppText>
-            <AppText variant="caption" color="primaryStrong">
-              {trip.mode === 'planned'
-                ? 'Mam plan · konkretny cel'
-                : 'Szukam pomysłu · cel do ustalenia'}
-              {trip.visibility === 'private' ? ' · plan prywatny' : ''}
-            </AppText>
-            <View style={layout.row}>
-              <TripPlanningIcon kind={trip.mode} size={24} framed={false} />
-              <AppText style={{ flex: 1 }}>{ownTripPlace(trip)}</AppText>
-            </View>
-            {trip.mode === 'planned' && trip.campgroundName ? (
-              <AppText>Kemping: {trip.campgroundName}</AppText>
-            ) : null}
-            {trip.mode === 'planned' && trip.campgroundAddress ? (
-              <AppText>{trip.campgroundAddress}</AppText>
-            ) : null}
-            <View style={layout.row}>
-              <TripPlanningIcon kind="dates" size={24} framed={false} />
-              <AppText style={{ flex: 1 }}>{ownTripDates(trip)}</AppText>
-            </View>
-            <TripTimeline trip={trip} />
+            {trip.visibility === 'private' ? <AppText variant="caption" color="primaryStrong">Prywatny plan</AppText> : null}
+            <TripLocationSummary trip={trip} locationLabel={ownTripPlace(trip)} />
+            <Card style={{ gap: 12 }}>
+              <AppText variant="heading" accessibilityRole="header">
+                O wyjeździe
+              </AppText>
+              <AppText color="textSecondary">
+                {trip.description ||
+                  'Jeszcze bez opisu. Możesz uzupełnić go w edycji.'}
+              </AppText>
+              <TripReactionsButton
+                tripId={trip.id}
+                ownerGroupId={trip.groupId}
+                compact
+              />
+              {!trip.travelModes.length ? (
+                <AppText variant="label">
+                  Sposób podróżowania do uzupełnienia
+                </AppText>
+              ) : null}
+              {trip.interests.length ? (
+                <View style={layout.wrap}>
+                  {trip.interests.map((value) => (
+                    <Chip key={value} label={value} />
+                  ))}
+                </View>
+              ) : null}
+            </Card>
           </View>
           <TripMapCard trip={trip} />
           <Card><SectionTitle title="Skład wyjazdu" /><TripParticipantsSummary value={trip.participants} /></Card>
@@ -241,32 +237,6 @@ export default function OwnTripDetailsScreen() {
               </View>
               <TravelModeBadges modes={trip.travelModes} />
             </View>
-          </Card>
-          <Card style={{ gap: 12 }}>
-            <AppText variant="heading" accessibilityRole="header">
-              O wyjeździe
-            </AppText>
-            <AppText color="textSecondary">
-              {trip.description ||
-                'Jeszcze bez opisu. Możesz uzupełnić go w edycji.'}
-            </AppText>
-            <TripReactionsButton
-              tripId={trip.id}
-              ownerGroupId={trip.groupId}
-              compact
-            />
-            {!trip.travelModes.length ? (
-              <AppText variant="label">
-                Sposób podróżowania do uzupełnienia
-              </AppText>
-            ) : null}
-            {trip.interests.length ? (
-              <View style={layout.wrap}>
-                {trip.interests.map((value) => (
-                  <Chip key={value} label={value} />
-                ))}
-              </View>
-            ) : null}
           </Card>
           <Card>
             <AnimalInformation animals={trip.animals} />

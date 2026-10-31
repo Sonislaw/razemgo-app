@@ -111,7 +111,7 @@ for(const kind of ['favorite_trip','proposal']) test(`${kind} opens its trip fro
   await expect(item).toHaveAttribute('aria-label',kind==='proposal'?/^Nieodczytane\. Nowa propozycja wyjazdu/:/^Nieodczytane\. Nowy wyjazd ulubionej ekipy/);
   await page.getByTestId('home-notifications-popover').screenshot({path:'.expo/'+kind+'-bell.png'});
   await item.click();await expect(page).toHaveURL('http://localhost:8085/trip/'+tripId);
-  await expect(page.getByRole('heading',{name:'Nowy wyjazd ulubionej ekipy nad morze.',exact:true})).toBeVisible();
+  await expect(page.getByText('Nowy wyjazd ulubionej ekipy nad morze.',{exact:true}).filter({visible:true})).toBeVisible();
   expect(entry.read_at).toBeTruthy();
   await page.goto('/notifications');await page.reload();
   await expect(item).not.toHaveAttribute('aria-label',/^Nieodczytane/);

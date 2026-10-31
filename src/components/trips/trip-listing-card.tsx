@@ -6,16 +6,16 @@ import { InterestTag, ListingTag } from '@/components/ui/listing-tag';
 import { AppText, layout } from '@/components/ui/primitives';
 import { tripAnimalSummary } from '@/features/animals/animal-data';
 import { AnimalPortrait } from '@/features/animals/animal-portrait';
-import { formatTripDates, getTripLocation } from '@/features/discovery/filter-trips';
+import { formatTripDates } from '@/features/discovery/filter-trips';
 import { GroupAvatar } from '@/features/profile/group-avatar';
 import { useGroupOnline } from '@/features/presence/presence-context';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { useTheme } from '@/hooks/use-theme';
 import type { TravelGroup, TripPlan } from '@/types/travel';
-import { LandscapePhoto } from './landscape-photo';
+import { TripCover } from './trip-cover';
 import { TripPlanningIcon } from './trip-planning-icon';
-import { TripTimeline } from './trip-timeline';
+import { TripLocationSummary } from './trip-location-summary';
 
 interface TripListingCardProps {
   trip: TripPlan;
@@ -60,49 +60,16 @@ export function TripListingCard({
   const online = useGroupOnline(group?.id);
   const content = (
     <>
-      <View style={styles.hero}>
-        <View style={StyleSheet.absoluteFill} aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-          <LandscapePhoto
-            kind={trip.landscape}
-            style={StyleSheet.absoluteFill}
-            contentPosition={trip.landscape === 'coast' ? { top: '35%', left: '50%' } : undefined}
-          />
-        </View>
-        <View style={styles.imageLabels}>
-          <View style={[styles.badge, { backgroundColor: theme.backgroundElement }]}>
-            <AppText variant="caption" color="primaryStrong" style={styles.modeLabel}>
-              {trip.mode === 'planned' ? 'MAM PLAN' : 'SZUKAM POMYSŁU'}
-            </AppText>
-          </View>
-          {rightBadge || favoriteAction ? (
-            <View style={styles.rightBadge}>
-              {rightBadge}
-              {favoriteAction ? (onPress ? <View style={styles.favoriteSpace} /> : favoriteAction) : null}
-            </View>
-          ) : null}
-        </View>
-        <TripTimeline trip={trip} compact appearance="overlay" />
-      </View>
+      <TripCover trip={trip} decorative action={rightBadge || favoriteAction ? <>
+        {rightBadge}
+        {favoriteAction ? (onPress ? <View style={styles.favoriteSpace} /> : favoriteAction) : null}
+      </> : undefined} />
       <View style={styles.content}>
         <AppText variant="heading" accessibilityRole="header" numberOfLines={2} style={styles.headline}>
           {getTripHeadline(trip)}
         </AppText>
         <View style={styles.metadata}>
-          <View style={styles.metadataRow}>
-            <Icon name="pin" size={20} />
-            <AppText color="textSecondary" style={[styles.flex, styles.detailText]}>
-              {locationLabel ?? getTripLocation(trip)}
-              {trip.mode === 'flexible' ? ' · cel do ustalenia' : ''}
-            </AppText>
-          </View>
-          {trip.mode === 'planned' && trip.campgroundName?.trim() ? (
-            <View style={styles.metadataRow}>
-              <Icon name="tent" size={20} />
-              <AppText color="textSecondary" style={[styles.flex, styles.detailText]}>
-                Kemping: {trip.campgroundName.trim()}
-              </AppText>
-            </View>
-          ) : null}
+          <TripLocationSummary trip={trip} locationLabel={locationLabel} compact />
           <View style={styles.metadataRow}>
             <TripPlanningIcon kind="dates" size={20} framed={false} />
             <AppText color="textSecondary" style={[styles.flex, styles.detailText]}>
@@ -196,20 +163,12 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderRadius: 24, padding: 6,
     boxShadow: '0 4px 20px rgba(36, 56, 66, 0.08)',
   },
-  hero: { borderRadius: 18, overflow: 'hidden', minHeight: 148, padding: 8, justifyContent: 'space-between', gap: 24 },
-  imageLabels: {
-    flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between',
-    flexWrap: 'wrap', gap: 6,
-  },
-  badge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
-  rightBadge: { marginLeft: 'auto', maxWidth: '100%', flexDirection: 'row', alignItems: 'center', gap: 6 },
   favoriteSpace: { width: 44, height: 44 },
   cardFavoriteAction: { position: 'absolute', top: 14, right: 14 },
-  modeLabel: { fontSize: 11, letterSpacing: 0.3 },
   content: { padding: 8, paddingBottom: 0, gap: 10 },
   flex: { flex: 1, minWidth: 0 },
   headline: { fontSize: 19, lineHeight: 25 },
-  metadata: { gap: 4 },
+  metadata: { gap: 8 },
   metadataRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   detailText: { fontSize: 13, lineHeight: 20 },
   facts: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },

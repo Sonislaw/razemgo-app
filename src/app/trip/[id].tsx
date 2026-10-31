@@ -1,6 +1,5 @@
 import { TripParticipantsSummary } from '@/components/trips/trip-participants-summary';
 import { DataStatus } from '@/components/ui/data-status';
-import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useDiscoveryTrip } from '@/features/discovery/use-trip-search';
 import { StyleSheet, View } from 'react-native';
@@ -17,16 +16,11 @@ import {
   SectionTitle,
   layout,
 } from '@/components/ui/primitives';
-import { Landscape } from '@/components/trips/landscape';
-import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
-import { TripTimeline } from '@/components/trips/trip-timeline';
+import { TripCover } from '@/components/trips/trip-cover';
 import { TripMapCard } from '@/components/trips/trip-map-card';
+import { TripLocationSummary } from '@/components/trips/trip-location-summary';
 import { AVAILABLE_PROPOSALS } from '@/data/proposals';
-import {
-  formatTripDates,
-  getTripLocation,
-} from '@/features/discovery/filter-trips';
-import { Radius } from '@/constants/theme';
+import { formatTripDates } from '@/features/discovery/filter-trips';
 import { TripContactAction } from '@/features/messaging/trip-contact-action';
 import { AnimalInformation } from '@/features/animals/animal-ui';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
@@ -74,49 +68,22 @@ export default function TripDetailsScreen() {
       </HeaderRow>
       <FavoritesNotice />
       <DataStatus status={status} error={error} onRetry={() => { void refresh(); }} label="Odświeżanie wyjazdu" />
-      <View style={styles.illustration}>
-        <Landscape kind={trip.landscape} />
-        <View style={styles.favoriteAction}>
-          <FavoriteButton kind="trip" targetId={trip.id} compact translucent />
-        </View>
-      </View>
+      <TripCover trip={trip} variant="details" datesLabel={formatTripDates(trip)} action={<FavoriteButton kind="trip" targetId={trip.id} compact translucent />} />
       <View style={layout.stack}>
-        <AppText variant="caption" color="primaryStrong">
-          {trip.mode === 'planned'
-            ? 'MAM PLAN'
-            : 'SZUKAM POMYSŁU · CEL DO USTALENIA'}
-        </AppText>
-        <AppText variant="title" accessibilityRole="header">
-          {getTripHeadline(trip)}
-        </AppText>
-        <View style={layout.row}>
-          <TripPlanningIcon kind={trip.mode} size={24} framed={false} />
-          <AppText style={styles.flex}>{getTripLocation(trip)}</AppText>
-        </View>
-        {trip.mode === 'planned' && trip.campgroundName ? (
-          <AppText>Kemping: {trip.campgroundName}</AppText>
-        ) : null}
-        {trip.mode === 'planned' && trip.campgroundAddress ? (
-          <AppText>{trip.campgroundAddress}</AppText>
-        ) : null}
-        <View style={layout.row}>
-          <TripPlanningIcon kind="dates" size={24} framed={false} />
-          <AppText style={styles.flex}>{formatTripDates(trip)}</AppText>
-        </View>
-        <TripTimeline trip={trip} />
+        <TripLocationSummary trip={trip} />
+        <Card>
+          <SectionTitle title="Pomysł na wspólny czas" />
+          <AppText color="textSecondary">{trip.description}</AppText>
+          <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} compact />
+          {trip.interests.length ? <View style={layout.wrap}>
+            {trip.interests.map((interest) => (
+              <Chip key={interest} label={interest} />
+            ))}
+          </View> : null}
+        </Card>
       </View>
       <TripMapCard trip={trip} />
       <Card><SectionTitle title="Skład wyjazdu" /><TripParticipantsSummary value={trip.participants} /></Card>
-      <Card>
-        <SectionTitle title="Pomysł na wspólny czas" />
-        <AppText color="textSecondary">{trip.description}</AppText>
-        <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} compact />
-        {trip.interests.length ? <View style={layout.wrap}>
-          {trip.interests.map((interest) => (
-            <Chip key={interest} label={interest} />
-          ))}
-        </View> : null}
-      </Card>
       <Card>
         <AnimalInformation animals={trip.animals} />
       </Card>
@@ -144,6 +111,4 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   organizerDetails: { flex: 1, minWidth: 0, gap: 4 },
   organizerName: { fontSize: 16, lineHeight: 22 },
-  illustration: { borderRadius: Radius.card, overflow: 'hidden' },
-  favoriteAction: { position: 'absolute', top: 8, right: 8 },
 });

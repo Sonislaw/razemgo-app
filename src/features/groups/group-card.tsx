@@ -21,6 +21,7 @@ export function GroupCard({ item, onNavigate }: { item: PublicGroup; onNavigate?
       group={group}
       about={about}
       decorativeAvatar
+      showTravelModeLabel={false}
     />
     </Pressable>
     <View style={[layout.row, { borderTopWidth: 1, borderColor: theme.border, paddingTop: 10 }]}>

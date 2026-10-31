@@ -53,7 +53,6 @@ export function TripListingCard({
   favoriteAction,
 }: TripListingCardProps) {
   const theme = useTheme();
-  const travelMode = travelModes[0];
   const ageBands = trip.participants?.childCount ? trip.participants.childAgeBands : [];
   const hasChildren = (trip.participants?.childCount ?? 0) > 0;
   const hasFacts = !group || hasChildren || trip.animals.animals.length > 0 || trip.interests.length > 0;
@@ -117,7 +116,7 @@ export function TripListingCard({
               <ListingTag icon="people" label={participantsSummary} />
             ) : null}
             {hasChildren ? (
-              <ListingTag icon="people" label={ageBands.length ? 'Dzieci ' + ageBands.join(', ') + ' lat' : 'Wiek dzieci niepodany'} />
+              <ListingTag icon="people" tone="warm" label={ageBands.length ? 'Dzieci ' + ageBands.join(', ') + ' lat' : 'Wiek dzieci niepodany'} />
             ) : null}
             {trip.animals.animals.length ? (
               <ListingTag tone="warm" label={tripAnimalSummary(trip.animals)}>
@@ -140,7 +139,6 @@ export function TripListingCard({
               <AppText variant="label">{group.name}</AppText>
               <AppText variant="caption" color="textSecondary">
                 {participantsSummary}
-                {travelMode ? ' · ' + (travelMode === 'Van' ? 'Kampervan' : travelMode) : ''}
               </AppText>
             </View>
             {travelModes.length ? <TravelModeBadges modes={travelModes} /> : null}

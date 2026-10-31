@@ -5,7 +5,8 @@ import { InterestTag, ListingTag } from '@/components/ui/listing-tag';
 import { GroupAvatar } from '@/features/profile/group-avatar';
 import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
-import { AnimalBadge } from '@/features/animals/animal-portrait';
+import { tripAnimalSummary } from '@/features/animals/animal-data';
+import { AnimalPortrait } from '@/features/animals/animal-portrait';
 import type { TravelGroup } from '@/types/travel';
 import { crewNumberText } from '@/features/profile/crew-number';
 
@@ -16,6 +17,7 @@ interface GroupCardContentProps {
   decorativeAvatar?: boolean;
   expanded?: boolean;
   showCrewNumber?: boolean;
+  showTravelModeLabel?: boolean;
 }
 
 type GroupProfileCardProps = Pick<
@@ -36,7 +38,7 @@ export function GroupProfileCard({
   );
 }
 
-export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar = false, expanded = false, showCrewNumber = false }: GroupCardContentProps) {
+export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar = false, expanded = false, showCrewNumber = false, showTravelModeLabel = true }: GroupCardContentProps) {
   const interests = group.interests;
   const ages = group.childAgeBands;
   return (
@@ -53,15 +55,21 @@ export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar 
           </AppText> : null}
           <AppText variant="caption" color="textSecondary">
             {group.adultCount} {group.adultCount === 1 ? 'dorosły' : 'dorosłych'}
-            {group.travelModes[0] ? ' · ' + (group.travelModes[0] === 'Van' ? 'Kampervan' : group.travelModes[0]) : ''}
+            {showTravelModeLabel && group.travelModes[0] ? ' · ' + (group.travelModes[0] === 'Van' ? 'Kampervan' : group.travelModes[0]) : ''}
           </AppText>
         </View>
         <TravelModeBadges modes={group.travelModes} />
       </View>
       {about ? <AppText color="textSecondary" numberOfLines={expanded ? undefined : 3}>{about}</AppText> : null}
       <View style={groupCardStyles.tags}>
-        {ages.length ? <ListingTag icon="people" label={'Dzieci ' + ages.join(', ') + ' lat'} /> : null}
-        {group.animals.animals.map(animal => <AnimalBadge key={animal.kind} kind={animal.kind} />)}
+        {ages.length ? <ListingTag icon="people" tone="warm" label={'Dzieci ' + ages.join(', ') + ' lat'} /> : null}
+        {group.animals.animals.length ? (
+          <ListingTag tone="warm" label={tripAnimalSummary(group.animals)}>
+            {group.animals.animals.map(({ kind }) => (
+              <AnimalPortrait key={kind} kind={kind} size={20} />
+            ))}
+          </ListingTag>
+        ) : null}
         {(expanded ? interests : interests.slice(0, 3)).map(interest => <InterestTag key={interest} interest={interest} />)}
       </View>
     </>

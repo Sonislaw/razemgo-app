@@ -1,7 +1,8 @@
 import { tripParticipantsSummary } from '@/lib/trip-participants';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { Icon, type IconName } from '@/components/ui/icon';
+import { Icon } from '@/components/ui/icon';
+import { InterestTag, ListingTag } from '@/components/ui/listing-tag';
 import { AppText, layout } from '@/components/ui/primitives';
 import { tripAnimalSummary } from '@/features/animals/animal-data';
 import { AnimalPortrait } from '@/features/animals/animal-portrait';
@@ -15,17 +16,6 @@ import type { TravelGroup, TripPlan } from '@/types/travel';
 import { LandscapePhoto } from './landscape-photo';
 import { TripPlanningIcon } from './trip-planning-icon';
 import { TripTimeline } from './trip-timeline';
-
-const INTEREST_ICONS: Record<string, IconName> = {
-  Plaża: 'water',
-  Kajaki: 'water',
-  Rowery: 'bike',
-  Ognisko: 'campfire',
-  Las: 'leaf',
-  Przyroda: 'leaf',
-  Wędrówki: 'mountain',
-  'Spokojny wypoczynek': 'sun',
-};
 
 interface TripListingCardProps {
   trip: TripPlan;
@@ -125,32 +115,20 @@ export function TripListingCard({
         {hasFacts ? (
           <View style={styles.facts}>
             {!group ? (
-              <View style={[styles.fact, { backgroundColor: theme.muted }]}>
-                <Icon name="people" size={18} />
-                <AppText variant="caption" style={styles.shrink}>{participantsSummary}</AppText>
-              </View>
+              <ListingTag icon="people" label={participantsSummary} />
             ) : null}
             {hasChildren ? (
-              <View style={[styles.fact, { backgroundColor: theme.muted }]}>
-                <Icon name="people" size={18} />
-                <AppText variant="caption" style={styles.shrink}>
-                  {ageBands.length ? 'Dzieci ' + ageBands.join(', ') + ' lat' : 'Wiek dzieci niepodany'}
-                </AppText>
-              </View>
+              <ListingTag icon="people" label={ageBands.length ? 'Dzieci ' + ageBands.join(', ') + ' lat' : 'Wiek dzieci niepodany'} />
             ) : null}
             {trip.animals.animals.length ? (
-              <View style={[styles.fact, { backgroundColor: theme.hero }]}>
+              <ListingTag tone="warm" label={tripAnimalSummary(trip.animals)}>
                 {trip.animals.animals.map(({ kind }) => (
                   <AnimalPortrait key={kind} kind={kind} size={20} />
                 ))}
-                <AppText variant="caption" style={styles.shrink}>{tripAnimalSummary(trip.animals)}</AppText>
-              </View>
+              </ListingTag>
             ) : null}
             {trip.interests.map((interest) => (
-              <View key={interest} style={[styles.fact, { backgroundColor: theme.muted }]}>
-                <Icon name={INTEREST_ICONS[interest] ?? 'compass'} size={18} />
-                <AppText variant="caption" style={styles.shrink}>{interest}</AppText>
-              </View>
+              <InterestTag key={interest} interest={interest} />
             ))}
           </View>
         ) : null}
@@ -235,16 +213,11 @@ const styles = StyleSheet.create({
   modeLabel: { fontSize: 11, letterSpacing: 0.3 },
   content: { padding: 8, paddingBottom: 0, gap: 10 },
   flex: { flex: 1, minWidth: 0 },
-  shrink: { flexShrink: 1 },
   headline: { fontSize: 19, lineHeight: 25 },
   metadata: { gap: 4 },
   metadataRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   detailText: { fontSize: 13, lineHeight: 20 },
   facts: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  fact: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, maxWidth: '100%',
-  },
   crew: {
     flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10,
     borderTopWidth: 1, borderBottomWidth: 1,

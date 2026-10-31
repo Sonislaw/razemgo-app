@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { AppText, Card, Chip, layout } from '@/components/ui/primitives';
+import { AppText, Card, layout } from '@/components/ui/primitives';
+import { InterestTag, ListingTag } from '@/components/ui/listing-tag';
 import { GroupAvatar } from '@/features/profile/group-avatar';
 import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
@@ -58,10 +59,10 @@ export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar 
         <TravelModeBadges modes={group.travelModes} />
       </View>
       {about ? <AppText color="textSecondary" numberOfLines={expanded ? undefined : 3}>{about}</AppText> : null}
-      <View style={layout.wrap}>
-        {ages.length ? <Chip label={'Dzieci ' + ages.join(', ') + ' lat'} /> : null}
+      <View style={groupCardStyles.tags}>
+        {ages.length ? <ListingTag icon="people" label={'Dzieci ' + ages.join(', ') + ' lat'} /> : null}
         {group.animals.animals.map(animal => <AnimalBadge key={animal.kind} kind={animal.kind} />)}
-        {(expanded ? interests : interests.slice(0, 3)).map(interest => <Chip key={interest} label={interest} />)}
+        {(expanded ? interests : interests.slice(0, 3)).map(interest => <InterestTag key={interest} interest={interest} />)}
       </View>
     </>
   );
@@ -69,4 +70,5 @@ export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar 
 
 export const groupCardStyles = StyleSheet.create({
   frame: { padding: 16, gap: 12, borderRadius: 24, borderWidth: 1 },
+  tags: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6 },
 });

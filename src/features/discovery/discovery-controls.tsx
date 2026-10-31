@@ -1,3 +1,4 @@
+import { useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText, IconButton, layout } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
@@ -5,7 +6,7 @@ import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export function DiscoveryFilterBar({ activeCount, summary, placeholder, filterLabel = 'Otwórz filtry', filterHint,
-  clearLabel = 'Wyczyść filtry', refreshLabel, onOpen, onClear, onRefresh }: {
+  clearLabel = 'Wyczyść filtry', refreshLabel, renderFilters, onClear, onRefresh }: {
   activeCount: number;
   summary: string;
   placeholder: string;
@@ -13,13 +14,15 @@ export function DiscoveryFilterBar({ activeCount, summary, placeholder, filterLa
   filterHint: string;
   clearLabel?: string;
   refreshLabel: string;
-  onOpen: () => void;
+  renderFilters: (onClose: () => void) => ReactNode;
   onClear: () => void;
   onRefresh: () => void;
 }) {
   const theme = useTheme();
+  // Opening a panel must not re-render the collection and its mounted cards.
+  const [showFilters, setShowFilters] = useState(false);
   return <View style={layout.row}>
-    <Pressable accessibilityRole="button" accessibilityLabel={filterLabel} accessibilityHint={filterHint} onPress={onOpen}
+    <Pressable accessibilityRole="button" accessibilityLabel={filterLabel} accessibilityHint={filterHint} onPress={() => setShowFilters(true)}
       style={({ pressed }) => [styles.filterBar, { borderColor: theme.border, backgroundColor: theme.backgroundElement, opacity: pressed ? 0.7 : 1 }]}>
       <Icon name="filters" size={21} />
       <View style={styles.flex}>
@@ -30,6 +33,7 @@ export function DiscoveryFilterBar({ activeCount, summary, placeholder, filterLa
     </Pressable>
     {activeCount ? <IconButton label={clearLabel} icon="close" onPress={onClear} /> : null}
     <IconButton label={refreshLabel} icon="refresh" onPress={onRefresh} />
+    {showFilters ? renderFilters(() => setShowFilters(false)) : null}
   </View>;
 }
 

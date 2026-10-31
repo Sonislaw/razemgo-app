@@ -1,5 +1,6 @@
 import { TripTimeline } from '@/components/trips/trip-timeline';
 import { DataStatus } from '@/components/ui/data-status';
+import { LoadMoreButton } from '@/components/ui/load-more-button';
 import { Icon } from '@/components/ui/icon';
 import {
   AppText,
@@ -336,14 +337,10 @@ export default function ChatScreen() {
                   />
                 ) : null}
                 {history?.hasMore ? (
-                  <Button
-                    label={
-                      history.loading
-                        ? 'Wczytywanie…'
-                        : 'Wczytaj starsze wiadomości'
-                    }
-                    variant="secondary"
-                    disabled={history.loading || history.requestPending}
+                  <LoadMoreButton
+                    label="Wczytaj starsze wiadomości"
+                    loading={history.loading}
+                    disabled={history.requestPending}
                     onPress={() => {
                       scroll.current.readingOlder();
                       void loadHistory(id, true);

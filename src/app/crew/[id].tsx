@@ -3,6 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { AppText, Button, Card, EmptyState, SectionTitle } from '@/components/ui/primitives';
 import { CollectionScreen } from '@/components/ui/collection-screen';
 import { DataStatus } from '@/components/ui/data-status';
+import { LoadMoreButton } from '@/components/ui/load-more-button';
 import { ProfileSubpageHeader } from '@/features/profile/profile-ui';
 import { GroupContactAction } from '@/features/messaging/trip-contact-action';
 import { GroupReportAction } from '@/features/moderation/trip-report-action';
@@ -12,13 +13,11 @@ import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { useGroupProfile } from '@/features/groups/use-group-profile';
 import { GroupProfileCard } from '@/features/groups/group-profile-card';
 import { FavoriteButton, FavoritesNotice } from '@/features/favorites/favorite-button';
-import { ActivityIndicator, View } from 'react-native';
-import { useTheme } from '@/hooks/use-theme';
+import { View } from 'react-native';
 
 export default function PublicGroupScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, status, error, loadingMore, retry, loadMore, preserveOnReturn } = useGroupProfile(id);
-  const theme = useTheme();
   const [blocking, setBlocking] = useState(false);
   const { setBlock, busy, actionError, state } = useMessaging();
   const blocked = state.blockedGroupIds.includes(id);
@@ -47,8 +46,8 @@ export default function PublicGroupScreen() {
     empty={available ? <Card><AppText color="textSecondary">Ta ekipa nie ma teraz aktywnych ogłoszeń. Możesz zaprosić ją do kontaktu i wspólnie wymyślić wyjazd.</AppText></Card> : null}
     afterList={available ? <>
       <DataStatus status={status === 'loading' ? 'ready' : status} error={error} label="Wczytywanie ogłoszeń" onRetry={() => void retry()} />
-      {data.hasMore ? <Button label={loadingMore ? 'Wczytywanie ogłoszeń' : 'Pokaż więcej wyjazdów'} variant="secondary"
-        disabled={status === 'loading'} leading={loadingMore ? <ActivityIndicator size="small" color={theme.primaryStrong} accessibilityLabel="Wczytywanie kolejnych ogłoszeń" /> : undefined}
+      {data.hasMore ? <LoadMoreButton label="Pokaż więcej wyjazdów" loadingLabel="Wczytywanie ogłoszeń"
+        loadingAccessibilityLabel="Wczytywanie kolejnych ogłoszeń" loading={loadingMore} disabled={status === 'loading'}
         onPress={() => void loadMore()} /> : null}
       <GroupReportAction groupId={id} />
       <Button label="Zablokuj ekipę" variant="secondary" icon="block" onPress={() => setBlocking(true)} />

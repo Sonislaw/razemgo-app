@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
+import { LoadMoreButton } from '@/components/ui/load-more-button';
 import { AppText, Button, layout } from '@/components/ui/primitives';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/features/auth/auth-context';
@@ -106,7 +107,7 @@ export function TripReactionsButton({ tripId, ownerGroupId, compact = false }: {
             <AppText variant="caption" color="textSecondary">{reactionOption(person.kind).label}</AppText></View>
           <AppText aria-hidden style={{ fontSize: 24 }}>{reactionOption(person.kind).emoji}</AppText>
         </Pressable>)}
-        {people?.has_more ? <Button label="Wczytaj kolejne ekipy" variant="secondary" disabled={peopleBusy}
+        {people?.has_more ? <LoadMoreButton label="Wczytaj kolejne ekipy" loadingLabel="Wczytywanie ekip" loading={peopleBusy}
           onPress={() => void loadPeople(people.items.at(-1))} /> : null}
       </> : null}
     </BottomSheet> : null}

@@ -1,4 +1,5 @@
 import { BottomSheet } from '@/components/ui/bottom-sheet';
+import { LoadMoreButton } from '@/components/ui/load-more-button';
 import { Icon } from '@/components/ui/icon';
 import {
   AppText,
@@ -701,12 +702,9 @@ export default function AdminScreen() {
                   </Pressable>
                 ))}
                 {page.has_more ? (
-                  <Button
-                    label={
-                      loading ? 'Wczytywanie…' : 'Pokaż kolejne zgłoszenia'
-                    }
-                    disabled={loading}
-                    variant="secondary"
+                  <LoadMoreButton
+                    label="Pokaż kolejne zgłoszenia"
+                    loading={loading}
                     onPress={() => void load(page.items.at(-1))}
                   />
                 ) : null}

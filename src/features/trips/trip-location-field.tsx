@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import type { TextInputInstance } from 'react-native';
 import { AppText, FieldLabel, layout } from '@/components/ui/primitives';
@@ -47,8 +47,12 @@ export function TripLocationField({
   };
   const [expanded, setExpanded] = useState(false);
   const selected = findTripLocation(value);
-  const results = searchTripLocations(query, mode);
   const showSuggestions = expanded && !selected;
+  // Keep the locality dictionary and search out of a closed field's render.
+  const results = useMemo(
+    () => showSuggestions ? searchTripLocations(query, mode) : [],
+    [showSuggestions, query, mode],
+  );
 
   return (
     <View style={styles.field}>

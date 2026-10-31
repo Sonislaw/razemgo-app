@@ -1,5 +1,6 @@
 import { CollectionScreen } from '@/components/ui/collection-screen';
 import { DataStatus } from '@/components/ui/data-status';
+import { LoadMoreButton } from '@/components/ui/load-more-button';
 import { Icon } from '@/components/ui/icon';
 import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import {
@@ -23,7 +24,7 @@ import { useTheme } from '@/hooks/use-theme';
 import type { OwnTripFilters } from '@/types/owned-trip';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 export default function TripsScreen() {
   const { state } = useOwnTrips();
@@ -81,16 +82,11 @@ function TripsContent() {
               />
             ) : null}
             {hasMore ? (
-              <Button
-                label={loadingMore ? 'Wczytywanie ogłoszeń' : 'Pokaż więcej wyjazdów'}
-                leading={loadingMore ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={theme.primaryStrong}
-                    accessibilityLabel="Wczytywanie kolejnych ogłoszeń"
-                  />
-                ) : undefined}
-                variant="secondary"
+              <LoadMoreButton
+                label="Pokaż więcej wyjazdów"
+                loadingLabel="Wczytywanie ogłoszeń"
+                loadingAccessibilityLabel="Wczytywanie kolejnych ogłoszeń"
+                loading={loadingMore}
                 disabled={status === 'loading'}
                 onPress={() => { void loadMore(); }}
               />

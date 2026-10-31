@@ -1,6 +1,7 @@
 import { DataStatus } from '@/components/ui/data-status';
+import { LoadMoreButton } from '@/components/ui/load-more-button';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import {
   AppText,
   Button,
@@ -39,7 +40,6 @@ export default function ExploreScreen() {
   const sourceTrip = ownTrips.trips.find(
     (trip) => trip.id === filters.sourceTripId,
   );
-  const [showFilters, setShowFilters] = useState(false);
   const dateRange = resolveDiscoveryRange(filters);
   const activeCount =
     Number(filters.tripModes.length === 1) +
@@ -145,7 +145,11 @@ export default function ExploreScreen() {
         ) : null}
         <DiscoveryFilterBar activeCount={activeCount} summary={summary} placeholder="Typ, termin, miejsce i klimat"
           filterHint="Wybierz typ ogłoszenia, klimat, termin, miejsce i wiek dzieci" refreshLabel="Odśwież ogłoszenia"
-          onOpen={() => setShowFilters(true)} onClear={reset} onRefresh={() => void refresh()} />
+          onClear={reset} onRefresh={() => void refresh()}
+          renderFilters={(onClose) => (
+            <DiscoveryFiltersSheet initialFilters={filters} onClose={onClose}
+              onApply={(nextFilters) => { setFilters(nextFilters); onClose(); }} />
+          )} />
       </View>
         <DiscoveryResultsHeader title={totalCount === null ? 'Propozycje' : 'Propozycje · ' + totalCount} />
       </>}
@@ -160,27 +164,17 @@ export default function ExploreScreen() {
         ) : null}
       afterList={<>
         {hasMore ? (
-          <Button
-            label={loadingMore ? 'Wczytywanie ogłoszeń' : 'Pokaż więcej wyjazdów'}
-            leading={loadingMore ? <ActivityIndicator size="small" color={theme.primaryStrong} accessibilityLabel="Wczytywanie kolejnych ogłoszeń" /> : undefined}
-            variant="secondary"
+          <LoadMoreButton
+            label="Pokaż więcej wyjazdów"
+            loadingLabel="Wczytywanie ogłoszeń"
+            loadingAccessibilityLabel="Wczytywanie kolejnych ogłoszeń"
+            loading={loadingMore}
             disabled={status === 'loading'}
             onPress={() => { void loadMore(); }}
           />
         ) : null}
       </>}
-    >
-      {showFilters ? (
-        <DiscoveryFiltersSheet
-          initialFilters={filters}
-          onClose={() => setShowFilters(false)}
-          onApply={(nextFilters) => {
-            setFilters(nextFilters);
-            setShowFilters(false);
-          }}
-        />
-      ) : null}
-    </CollectionScreen>
+    />
   );
 }
 const styles = StyleSheet.create({

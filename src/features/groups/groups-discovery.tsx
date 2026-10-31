@@ -1,5 +1,6 @@
 import { CollectionScreen } from '@/components/ui/collection-screen';
 import { DataStatus } from '@/components/ui/data-status';
+import { LoadMoreButton } from '@/components/ui/load-more-button';
 import { Button, EmptyState } from '@/components/ui/primitives';
 import { USE_DEMO_DATA } from '@/constants/app';
 import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
@@ -13,7 +14,6 @@ import { useMessaging } from '@/features/messaging/messaging-context';
 import { isPresenceActive } from '@/features/presence/presence-context';
 import { PRESENCE_POLL_MS } from '@/features/presence/presence-controller';
 import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
-import { useTheme } from '@/hooks/use-theme';
 import { router, useFocusEffect } from 'expo-router';
 import {
   useCallback,
@@ -22,7 +22,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { ActivityIndicator, AppState, Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import { GroupCard } from './group-card';
 import {
   filterPublicGroups,
@@ -56,8 +56,6 @@ export function GroupsDiscovery({
     groupFilters: filters,
     setGroupFilters: setFilters,
   } = useDiscovery();
-  const theme = useTheme();
-  const [showFilters, setShowFilters] = useState(false);
   const { store: favoritesStore } = useFavorites();
   const [page, setPage] = useState<GroupPage>(EMPTY_PAGE);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -363,7 +361,10 @@ export function GroupsDiscovery({
             filterHint="Wybierz nazwę, rodzaj ekipy, wiek dzieci i sposób podróżowania"
             clearLabel="Wyczyść filtry ekip"
             refreshLabel="Odśwież ekipy"
-            onOpen={() => setShowFilters(true)}
+            renderFilters={(onClose) => (
+              <GroupFiltersSheet filters={filters} onClose={onClose}
+                onApply={(next) => { setFilters(next); onClose(); }} />
+            )}
             onClear={reset}
             onRefresh={() => void load(true)}
           />
@@ -390,19 +391,11 @@ export function GroupsDiscovery({
             />
           ) : null}
           {page.hasMore && (status !== 'loading' || isLoadingMore) ? (
-            <Button
-              label={isLoadingMore ? 'Wczytywanie ekip' : 'Pokaż więcej ekip'}
-              variant="secondary"
-              disabled={isLoadingMore}
-              leading={
-                isLoadingMore ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={theme.primaryStrong}
-                    accessibilityLabel="Wczytywanie kolejnych ekip"
-                  />
-                ) : undefined
-              }
+            <LoadMoreButton
+              label="Pokaż więcej ekip"
+              loadingLabel="Wczytywanie ekip"
+              loadingAccessibilityLabel="Wczytywanie kolejnych ekip"
+              loading={isLoadingMore}
               onPress={() => void more()}
             />
           ) : null}
@@ -413,17 +406,6 @@ export function GroupsDiscovery({
           />
         </>
       }
-    >
-      {showFilters ? (
-        <GroupFiltersSheet
-          filters={filters}
-          onClose={() => setShowFilters(false)}
-          onApply={(next) => {
-            setFilters(next);
-            setShowFilters(false);
-          }}
-        />
-      ) : null}
-    </CollectionScreen>
+    />
   );
 }

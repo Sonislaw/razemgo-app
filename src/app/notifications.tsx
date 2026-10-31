@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import { AppText, Button, EmptyState, Screen, layout } from '@/components/ui/primitives';
+import { LoadMoreButton } from '@/components/ui/load-more-button';
 import { ProfileSubpageHeader } from '@/features/profile/profile-ui';
 import { MessageSegments } from '@/features/messaging/messaging-ui';
 import { useNotifications } from '@/features/notifications/notifications-context';
@@ -27,8 +28,8 @@ export default function NotificationsScreen() {
         title={inbox.unreadOnly ? 'Wszystko odczytane' : 'Jeszcze nie masz powiadomień'}
         description={inbox.unreadOnly ? 'Nowe powiadomienia pojawią się tutaj.' : 'Tutaj znajdziesz wiadomości, zaproszenia i propozycje do swoich ogłoszeń.'} /> : null}
       {inbox.items.map(entry => <NotificationEntryRow key={entry.id} entry={entry} />)}
-      {inbox.hasMore ? <Button label={inbox.loadingMore ? 'Wczytywanie…' : 'Wczytaj starsze powiadomienia'} variant="secondary"
-        disabled={inbox.loadingMore || inbox.busy} onPress={() => { void inbox.loadMore(); }} /> : null}
+      {inbox.hasMore ? <LoadMoreButton label="Wczytaj starsze powiadomienia" loading={inbox.loadingMore}
+        disabled={inbox.busy} onPress={() => { void inbox.loadMore(); }} /> : null}
       <AppText variant="caption" color="textSecondary">Odczyt powiadomienia nie oznacza odczytania wiadomości w rozmowie.</AppText>
     </View>
   </Screen>;

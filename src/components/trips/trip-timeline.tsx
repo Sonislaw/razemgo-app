@@ -6,11 +6,17 @@ import { useTheme } from '@/hooks/use-theme';
 import { useCurrentDate } from '@/hooks/use-current-date';
 import { getTripTimeline, type TimelineTrip } from '@/features/trips/trip-timeline-model';
 
-export const TripTimeline = memo(function TripTimeline({ trip, compact = false, testID = 'trip-timeline' }: { trip: TimelineTrip; compact?: boolean; testID?: string }) {
+export const TripTimeline = memo(function TripTimeline({ trip, compact = false, appearance = 'default', testID = 'trip-timeline' }: {
+  trip: TimelineTrip;
+  compact?: boolean;
+  appearance?: 'default' | 'overlay';
+  testID?: string;
+}) {
   const theme = useTheme();
   const today = useCurrentDate();
   const { fontScale } = useWindowDimensions();
   const [width, setWidth] = useState(0);
+  const overlay = appearance === 'overlay';
   const model = getTripTimeline(trip, today);
   if (!model) return null;
   const ink = model.muted ? theme.textSecondary : model.phase === 'ongoing' ? theme.positive : theme.primaryStrong;
@@ -19,19 +25,19 @@ export const TripTimeline = memo(function TripTimeline({ trip, compact = false, 
   const labelWidths = model.markers.map(marker => Math.max(34, marker.label.length * fontSize * 0.58 + 8) * fontScale);
   const separateLabels = width > 0 && model.markers.some((marker, i) => i > 0 &&
     (marker.position - model.markers[i - 1].position) * width / 100 < (labelWidths[i] + labelWidths[i - 1]) / 2 + 4);
-  const railTop = separateLabels ? 8 : (compact ? 27 : 30) * fontScale;
-  const railHeight = compact ? 7 : 9;
-  const dotSize = compact ? 12 : 14;
+  const railTop = separateLabels ? 8 : (overlay ? 20 : compact ? 27 : 30) * fontScale;
+  const railHeight = overlay ? 6 : compact ? 7 : 9;
+  const dotSize = overlay ? 10 : compact ? 12 : 14;
   return (
     <View testID={testID} accessible accessibilityRole="image" accessibilityLabel={model.accessibilityLabel}
-      style={[styles.container, { backgroundColor: theme.backgroundSelected, padding: compact ? 8 : 10 }]}>
+      style={[styles.container, { backgroundColor: overlay ? theme.backgroundElement + 'EB' : theme.backgroundSelected, padding: compact ? 8 : 10 }]}>
       <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         <View style={styles.caption}>
-          <Icon name="clock" size={14} color={ink} />
-          <AppText variant="caption" style={{ color: ink, fontWeight: '700', fontSize: compact ? 11 : 12, flexShrink: 1 }}>{model.caption}</AppText>
+          <Icon name="clock" size={overlay ? 12 : 14} color={ink} />
+          <AppText variant="caption" style={{ color: ink, fontWeight: '700', fontSize: compact ? 11 : 12, lineHeight: overlay ? 14 : undefined, flexShrink: 1 }}>{model.caption}</AppText>
         </View>
         {separateLabels ? <View style={styles.legend}>
-          {model.markers.map(marker => <AppText key={marker.key} variant="caption" style={{ flex: 1, textAlign: 'center', fontSize,
+          {model.markers.map(marker => <AppText key={marker.key} variant="caption" style={{ flex: 1, textAlign: 'center', fontSize, lineHeight: overlay ? 14 : undefined,
             color: marker.isToday ? theme.primaryStrong : theme.textSecondary, fontWeight: marker.isToday ? '700' : '500' }}>
             {marker.isToday ? marker.label : (marker.key === 'start' ? 'Start\n' : 'Koniec\n') + marker.label}
           </AppText>)}
@@ -47,7 +53,7 @@ export const TripTimeline = memo(function TripTimeline({ trip, compact = false, 
             const labelLeft = Math.max(0, Math.min(width - labelWidth, width * marker.position / 100 - labelWidth / 2));
             return <View key={marker.key} style={StyleSheet.absoluteFill} pointerEvents="none">
               {!separateLabels && width > 0 ? <AppText variant="caption" numberOfLines={1} style={{ position: 'absolute', top: 0, left: labelLeft, width: labelWidth,
-                textAlign: 'center', fontSize, fontWeight: marker.isToday ? '700' : '500', color: marker.isToday ? theme.primaryStrong : theme.textSecondary }}>{marker.label}</AppText> : null}
+                textAlign: 'center', fontSize, lineHeight: overlay ? 14 : undefined, fontWeight: marker.isToday ? '700' : '500', color: marker.isToday ? theme.primaryStrong : theme.textSecondary }}>{marker.label}</AppText> : null}
               <View style={{ position: 'absolute', left: `${marker.position}%`, top: railTop - 7, height: 7, width: 1,
                 backgroundColor: marker.isToday ? theme.primaryStrong : theme.textSecondary }} />
               <View testID={marker.isToday ? 'trip-timeline-today' : undefined} style={{ position: 'absolute', left: `${marker.position}%`, top: railTop + railHeight / 2 - dotSize / 2,

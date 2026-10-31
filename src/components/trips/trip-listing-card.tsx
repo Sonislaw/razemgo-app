@@ -1,6 +1,6 @@
 import { tripParticipantsSummary } from '@/lib/trip-participants';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Icon } from '@/components/ui/icon';
 import { InterestTag, ListingTag } from '@/components/ui/listing-tag';
 import { AppText, layout } from '@/components/ui/primitives';
@@ -53,7 +53,6 @@ export function TripListingCard({
   favoriteAction,
 }: TripListingCardProps) {
   const theme = useTheme();
-  const { fontScale } = useWindowDimensions();
   const travelMode = travelModes[0];
   const ageBands = trip.participants?.childCount ? trip.participants.childAgeBands : [];
   const hasChildren = (trip.participants?.childCount ?? 0) > 0;
@@ -63,10 +62,10 @@ export function TripListingCard({
   const content = (
     <>
       <View style={styles.hero}>
-        <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <View style={StyleSheet.absoluteFill} aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
           <LandscapePhoto
             kind={trip.landscape}
-            style={[styles.photo, { minHeight: 80 * fontScale }]}
+            style={StyleSheet.absoluteFill}
             contentPosition={trip.landscape === 'coast' ? { top: '35%', left: '50%' } : undefined}
           />
         </View>
@@ -83,6 +82,7 @@ export function TripListingCard({
             </View>
           ) : null}
         </View>
+        <TripTimeline trip={trip} compact appearance="overlay" />
       </View>
       <View style={styles.content}>
         <AppText variant="heading" accessibilityRole="header" numberOfLines={2} style={styles.headline}>
@@ -111,7 +111,6 @@ export function TripListingCard({
             </AppText>
           </View>
         </View>
-        <TripTimeline trip={trip} />
         {hasFacts ? (
           <View style={styles.facts}>
             {!group ? (
@@ -199,10 +198,8 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderRadius: 24, padding: 6,
     boxShadow: '0 4px 20px rgba(36, 56, 66, 0.08)',
   },
-  hero: { borderRadius: 18, overflow: 'hidden' },
-  photo: { width: '100%', aspectRatio: 3 },
+  hero: { borderRadius: 18, overflow: 'hidden', minHeight: 148, padding: 8, justifyContent: 'space-between', gap: 24 },
   imageLabels: {
-    position: 'absolute', top: 8, left: 8, right: 8,
     flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between',
     flexWrap: 'wrap', gap: 6,
   },

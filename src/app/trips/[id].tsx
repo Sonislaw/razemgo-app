@@ -1,4 +1,4 @@
-import { TripParticipantsSummary } from '@/components/trips/trip-participants-summary';
+import { TripParticipantsCard } from '@/components/trips/trip-participants-card';
 import { TripCover } from '@/components/trips/trip-cover';
 import { TripMapCard } from '@/components/trips/trip-map-card';
 import { TripLocationSummary } from '@/components/trips/trip-location-summary';
@@ -10,10 +10,8 @@ import {
   Chip,
   layout,
   Screen,
-  SectionTitle,
 } from '@/components/ui/primitives';
 import { DEMO_OWN_TRIPS } from '@/data/mocks/owned-trips';
-import { AnimalInformation } from '@/features/animals/animal-ui';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { INITIAL_FILTERS } from '@/features/discovery/filter-trips';
 import { useTripResultCount } from '@/features/discovery/use-trip-search';
@@ -223,7 +221,7 @@ export default function OwnTripDetailsScreen() {
             </Card>
           </View>
           <TripMapCard trip={trip} />
-          <Card><SectionTitle title="Skład wyjazdu" /><TripParticipantsSummary value={trip.participants} /></Card>
+          <TripParticipantsCard value={trip.participants} animals={trip.animals} />
           <Card>
             <View style={layout.row}>
               <GroupAvatar groupId={trip.groupId} size={48} />
@@ -237,9 +235,6 @@ export default function OwnTripDetailsScreen() {
               </View>
               <TravelModeBadges modes={trip.travelModes} />
             </View>
-          </Card>
-          <Card>
-            <AnimalInformation animals={trip.animals} />
           </Card>
           <Card style={{ gap: 12 }}>
             <AppText variant="heading" accessibilityRole="header">

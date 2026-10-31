@@ -1,4 +1,4 @@
-import { TripParticipantsSummary } from '@/components/trips/trip-participants-summary';
+import { TripParticipantsCard } from '@/components/trips/trip-participants-card';
 import { DataStatus } from '@/components/ui/data-status';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useDiscoveryTrip } from '@/features/discovery/use-trip-search';
@@ -22,7 +22,6 @@ import { TripLocationSummary } from '@/components/trips/trip-location-summary';
 import { AVAILABLE_PROPOSALS } from '@/data/proposals';
 import { formatTripDates } from '@/features/discovery/filter-trips';
 import { TripContactAction } from '@/features/messaging/trip-contact-action';
-import { AnimalInformation } from '@/features/animals/animal-ui';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 import { GroupAvatar } from '@/features/profile/group-avatar';
 import { TripReportAction } from '@/features/moderation/trip-report-action';
@@ -83,10 +82,7 @@ export default function TripDetailsScreen() {
         </Card>
       </View>
       <TripMapCard trip={trip} />
-      <Card><SectionTitle title="Skład wyjazdu" /><TripParticipantsSummary value={trip.participants} /></Card>
-      <Card>
-        <AnimalInformation animals={trip.animals} />
-      </Card>
+      <TripParticipantsCard value={trip.participants} animals={trip.animals} />
       <Card>
         <View style={layout.row}>
           <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={48} />

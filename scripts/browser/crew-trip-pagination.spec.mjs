@@ -1,4 +1,8 @@
-import { recommendCrew, recommendTrip } from './trip-fixtures.mjs';
+import {
+  recommendCrew,
+  recommendTrip,
+  resultRevision,
+} from './trip-fixtures.mjs';
 import { test, expect } from '@playwright/test';
 import {
   B,
@@ -21,7 +25,10 @@ test('crew listings fetch 5/10/13 with a spinner, retry and restore the listing 
     trips = Array.from({ length: 13 }, (_, i) => ({
       id: uuid(8700 + i),
       group_id: groupId(B),
-      adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',
+      adult_count: 2,
+      child_count: 1,
+      child_age_bands: ['4–6'],
+      mode: 'planned',
       status: 'published',
       visibility: 'public',
       start_date: '2099-05-21',
@@ -78,7 +85,12 @@ test('crew listings fetch 5/10/13 with a spinner, retry and restore the listing 
       recommendation: recommendCrew(profile(B).group),
       about: 'Wspólne wyjazdy bez pośpiechu.',
       active_trip_count: 13,
-      trips: items.map((trip) => ({ trip, crew: profile(B).group, recommendation: recommendTrip(trip, profile(B).group, store) })),
+      result_revision: resultRevision(trips.map((t) => [t.id, t.published_at])),
+      trips: items.map((trip) => ({
+        trip,
+        crew: profile(B).group,
+        recommendation: recommendTrip(trip, profile(B).group, store),
+      })),
       has_more: offset + items.length < trips.length,
       cursor: last
         ? {

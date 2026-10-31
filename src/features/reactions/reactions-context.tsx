@@ -6,11 +6,13 @@ import { useStoreSelector } from '@/hooks/use-store-selector';
 import {
   createContext,
   useContext,
+  useCallback,
   useEffect,
   useMemo,
   type ReactNode,
 } from 'react';
 import { AppState, Platform } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { fetchReactionSummaries, saveReaction } from './reactions-repository';
 import {
   createReactionsStore,
@@ -80,6 +82,6 @@ export function useTripReactions(id: string) {
       error: value.errors.get(id),
     }),
   );
-  useEffect(() => store?.watch(id), [id, store]);
+  useFocusEffect(useCallback(() => store?.watch(id), [id, store]));
   return { store, ...snapshot };
 }

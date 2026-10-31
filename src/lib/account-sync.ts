@@ -4,7 +4,7 @@ export type SyncReason = 'initial' | 'event' | 'foreground' | 'poll' | 'push';
 // the same burst share work. A change during a request gets one follow-up.
 export function createAccountSync(
   isActive: () => boolean,
-  readRevision?: () => Promise<string>,
+  readRevision?: () => Promise<string | Record<string, string>>,
 ) {
   const jobs = new Map<
     string,
@@ -16,7 +16,8 @@ export function createAccountSync(
   let timer: ReturnType<typeof setTimeout> | undefined;
   let disposed = false;
   let pendingReason: SyncReason = 'initial';
-  let revision: string | undefined;
+  let revision: string | Record<string, string> | undefined;
+  const initialized = new Set<string>();
   let checking = false;
   let checkAgain = false;
   let epoch = 0;
@@ -64,13 +65,14 @@ export function createAccountSync(
         const generation = epoch;
         const reason = pendingReason;
         pendingReason = 'poll';
-        let unchanged = false;
+        let nextRevision: typeof revision;
+        const previousRevision = revision;
         try {
           if (readRevision) {
             try {
               const next = await readRevision();
               if (disposed || epoch !== generation || !isActive()) return;
-              unchanged = revision === next;
+              nextRevision = next;
               revision = next;
             } catch {
               /* Let each job expose its normal retryable error state. */
@@ -79,10 +81,19 @@ export function createAccountSync(
           if (disposed || epoch !== generation || !isActive()) return;
           for (const [key, job] of jobs)
             if (
-              (!unchanged || reason === 'initial' || failed.has(key)) &&
+              (!initialized.has(key) ||
+                failed.has(key) ||
+                nextRevision === undefined ||
+                (typeof nextRevision === 'object'
+                  ? nextRevision[key] === undefined ||
+                    typeof previousRevision !== 'object' ||
+                    previousRevision?.[key] !== nextRevision[key]
+                  : previousRevision !== nextRevision)) &&
               (reason !== 'poll' || job.periodic || failed.has(key))
-            )
+            ) {
+              initialized.add(key);
               run(key, reason === 'event' || reason === 'push');
+            }
         } finally {
           if (epoch === generation) {
             checking = false;
@@ -99,11 +110,13 @@ export function createAccountSync(
     register(key: string, runJob: () => Promise<unknown>, periodic = true) {
       const job = { run: runJob, periodic };
       jobs.set(key, job);
+      initialized.delete(key);
       invalidate('initial');
       return () => {
         if (jobs.get(key) === job) jobs.delete(key);
         repeat.delete(key);
         failed.delete(key);
+        initialized.delete(key);
       };
     },
     invalidate,
@@ -125,6 +138,7 @@ export function createAccountSync(
       repeat.clear();
       failed.clear();
       running.clear();
+      initialized.clear();
     },
   };
 }

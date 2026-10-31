@@ -7,7 +7,10 @@ function seeded() {
   store.trips.set(TRIP, {
     id: TRIP,
     group_id: groupId(A),
-    adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',
+    adult_count: 2,
+    child_count: 1,
+    child_age_bands: ['4–6'],
+    mode: 'planned',
     status: 'published',
     visibility: 'public',
     start_date: '2027-05-21',
@@ -251,16 +254,22 @@ test('mailbox and history errors offer real retry without showing fake empty sta
   await expect(
     page.getByText('Jeszcze nie masz rozmów', { exact: true }),
   ).toHaveCount(0);
+  // Hold the safety poll/debounced recovery while exercising the manual action.
+  // Advancing with failures still enabled drains already scheduled callbacks.
+  await page.clock.install();
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
   store.failMailbox = false;
   await page
     .getByRole('button', { name: 'Spróbuj ponownie', exact: true })
     .click();
   await expect(page.getByRole('button', { name: /^Ekipa B,/ })).toBeVisible();
+  await page.clock.resume();
   store.failHistory = true;
   await page.goto('/chat/' + chat);
   await expect(page.getByRole('alert')).toContainText(
     'Nie udało się pobrać wiadomości',
   );
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
   store.failHistory = false;
   await page
     .getByRole('button', { name: 'Spróbuj ponownie', exact: true })
@@ -268,6 +277,7 @@ test('mailbox and history errors offer real retry without showing fake empty sta
   await expect(
     page.getByText('Wiadomość numer 1', { exact: true }),
   ).toBeVisible();
+  await page.clock.resume();
 });
 
 test('history pagination and a lost send response never duplicate the committed message', async ({
@@ -365,22 +375,46 @@ test('history paging waits for pending reaction synchronization before accepting
   }
 });
 
-test('a background history refresh preserves a press requesting the older page', async ({ page, context }) => {
-  const store = seeded(), chat = accepted(store, 65);
+test('a background history refresh preserves a press requesting the older page', async ({
+  page,
+  context,
+}) => {
+  const store = seeded(),
+    chat = accepted(store, 65);
   await backend(context, store);
   await login(page);
   await page.goto('/chat/' + chat);
-  const older = page.getByRole('button', { name: 'Wczytaj starsze wiadomości', exact: true });
-  await expect(older).toBeEnabled();
-  let release, started, olderReads = 0;
-  const response = new Promise((resolve) => { release = resolve; });
-  const request = new Promise((resolve) => { started = resolve; });
-  await page.route('**/rest/v1/rpc/get_conversation_messages', async (route) => {
-    if (route.request().postDataJSON().before_sequence) olderReads++;
-    else { started(); await response; }
-    await route.fallback();
+  const older = page.getByRole('button', {
+    name: 'Wczytaj starsze wiadomości',
+    exact: true,
   });
-  store.messages.push({ ...store.messages.at(-1), id: '00000000-0000-4000-9000-000000000066', sequence: 66, text: 'Nowa wiadomość w tle' });
+  await expect(older).toBeEnabled();
+  let release,
+    started,
+    olderReads = 0;
+  const response = new Promise((resolve) => {
+    release = resolve;
+  });
+  const request = new Promise((resolve) => {
+    started = resolve;
+  });
+  await page.route(
+    '**/rest/v1/rpc/get_conversation_messages',
+    async (route) => {
+      if (route.request().postDataJSON().before_sequence) olderReads++;
+      else {
+        started();
+        await response;
+      }
+      await route.fallback();
+    },
+  );
+  store.messages.push({
+    ...store.messages.at(-1),
+    id: '00000000-0000-4000-9000-000000000066',
+    sequence: 66,
+    text: 'Nowa wiadomość w tle',
+  });
   try {
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await request;
@@ -390,5 +424,7 @@ test('a background history refresh preserves a press requesting the older page',
     release();
     await expect(older).toHaveCount(0);
     expect(olderReads).toBe(1);
-  } finally { release(); }
+  } finally {
+    release();
+  }
 });

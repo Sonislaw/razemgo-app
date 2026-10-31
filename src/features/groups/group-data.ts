@@ -28,6 +28,7 @@ export type GroupTripCursor = {
   version?: 3;
 };
 export interface PublicGroupPage extends PublicGroupDetail {
+  revision?: string;
   hasMore: boolean;
   cursor: GroupTripCursor | null;
 }
@@ -57,6 +58,7 @@ export const GROUP_SEARCH_PAGE_SIZE = 5;
 export interface GroupPage {
   items: PublicGroup[];
   totalCount: number;
+  revision?: string;
   hasMore: boolean;
   cursor: RankedGroupCursor | null;
 }
@@ -110,7 +112,6 @@ export function publicGroupFromRow(row: PublicGroupRow): PublicGroup {
     },
     about: row.about,
     activeTripCount: row.active_trip_count,
-
   };
 }
 export function groupFiltersPayload(filters: GroupFilters) {
@@ -169,9 +170,17 @@ export function groupDirectoryError(error: unknown) {
     return 'Wyszukiwanie ekip wymaga nowej migracji backendu. Ta wersja funkcji jest przygotowana lokalnie.';
   return 'Nie udało się pobrać ekip. Sprawdź połączenie i spróbuj ponownie.';
 }
-export function sortPublicGroups(groups: PublicGroup[], _sort: GroupSort = 'alphabetical') {
+export function sortPublicGroups(
+  groups: PublicGroup[],
+  _sort: GroupSort = 'alphabetical',
+) {
   return [...groups].sort((a, b) => {
-    const first = normalizeGroupSearch(a.group.name), second = normalizeGroupSearch(b.group.name);
-    return first < second ? -1 : first > second ? 1 : a.group.id.localeCompare(b.group.id);
+    const first = normalizeGroupSearch(a.group.name),
+      second = normalizeGroupSearch(b.group.name);
+    return first < second
+      ? -1
+      : first > second
+        ? 1
+        : a.group.id.localeCompare(b.group.id);
   });
 }

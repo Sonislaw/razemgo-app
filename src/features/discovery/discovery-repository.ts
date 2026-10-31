@@ -1,3 +1,4 @@
+import { pageRevision } from '@/data/contracts/page-revision';
 import {
   proposalFromRow,
   type PublicTripRow,
@@ -23,6 +24,7 @@ async function accountToken(userId: string) {
 }
 export type DiscoveryTripRow = PublicTripRow;
 export interface TripSearchPageRow {
+  result_revision?: string;
   items: DiscoveryTripRow[];
   total_count: number;
   has_more: boolean;
@@ -65,6 +67,7 @@ export async function fetchTripPage(
   return {
     items: data.items.map(fromRow),
     totalCount: data.total_count,
+    revision: pageRevision(data.result_revision),
     hasMore: data.has_more,
     cursor: data.cursor,
   };

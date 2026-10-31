@@ -24,13 +24,9 @@ try {
     ),
   );
   const queries = {
-    trips: "select public.search_public_trips('{}','default',null,5)",
-    tripRanking:
-      "select public.search_public_trips('{}','compatibility',null,5)",
-    crews:
-      "select public.list_ranked_public_groups('{}','alphabetical',null,5)",
-    crewRanking:
-      "select public.list_ranked_public_groups('{}','compatibility',null,5)",
+    trips: "select public.search_public_trips_v3('{}',null,5)",
+    crews: "select public.list_public_groups_v3('{}',null,5)",
+    crewCount: "select public.count_public_groups('{}')",
     summary: 'select public.get_my_sync_state()',
     mailbox: 'select public.get_my_mailbox_page()',
   };

@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from 'react';
 import { AppState, Platform } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import {
   createPresenceController,
   PRESENCE_POLL_MS,
@@ -95,9 +96,11 @@ export function PresenceProvider({ children }: { children: ReactNode }) {
 
 export function useGroupOnline(groupId?: string) {
   const controller = useContext(PresenceContext);
-  useEffect(
-    () => (groupId ? controller?.watch(groupId) : undefined),
-    [controller, groupId],
+  useFocusEffect(
+    useCallback(
+      () => (groupId ? controller?.watch(groupId) : undefined),
+      [controller, groupId],
+    ),
   );
   const getOnline = useCallback(
     () => !!groupId && !!controller?.getSnapshot().has(groupId),

@@ -1,15 +1,17 @@
+import {
+  resendConfirmation,
+  confirmEmail,
+} from '@/features/auth/auth-repository';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/primitives';
 import { AuthField, AuthNotice, AuthScreen } from '@/features/auth/auth-ui';
 import {
   authErrorMessage,
-  normalizeEmail,
   validateCredentials,
 } from '@/features/auth/auth-data';
 import { getAuthRedirectUrl } from '@/features/auth/auth-context';
-import { getSupabase } from '@/lib/supabase';
-import { monitoredOperation, reportFailure } from '@/lib/monitoring-core';
+import { reportFailure } from '@/lib/monitoring-core';
 
 export default function ConfirmEmailScreen() {
   const params = useLocalSearchParams<{ email?: string }>();
@@ -37,16 +39,8 @@ export default function ConfirmEmailScreen() {
     setMessage(null);
     try {
       const result = resend
-        ? await monitoredOperation('auth.resend', () => getSupabase().auth.resend({
-            type: 'signup',
-            email: normalizeEmail(email),
-            options: { emailRedirectTo: getAuthRedirectUrl() },
-          }))
-        : await monitoredOperation('auth.confirm', () => getSupabase().auth.verifyOtp({
-            type: 'signup',
-            email: normalizeEmail(email),
-            token: code.trim(),
-          }));
+        ? await resendConfirmation(email, getAuthRedirectUrl())
+        : await confirmEmail(email, code);
       if (result.error) setError(authErrorMessage(result.error));
       else if (resend) {
         setMessage(

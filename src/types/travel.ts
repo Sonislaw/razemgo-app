@@ -31,7 +31,6 @@ export interface DateRange {
 interface TripBase extends DateRange {
   participants?: TripParticipants | null;
   travelModes?: string[];
-  matching?: { groupKinds: TravelGroup['kind'][]; childAgeBands: ChildAgeBand[] };
   id: string;
   publishedAt?: string;
   groupId: string;

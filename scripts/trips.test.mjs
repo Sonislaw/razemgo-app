@@ -63,9 +63,18 @@ test('trip creation, editing, duplication and companion search do not restore re
     const values = toTripForm(original);
     assert.equal(Object.hasOwn(values, 'groupKinds'), false);
     assert.equal(Object.hasOwn(values, 'childAgeBands'), false);
-    const legacy = { ...values, groupKinds: ['solo'], childAgeBands: ['13–17'] };
-    const saved = tripFromForm(legacy, original.id, original.groupId, original.status);
-    assert.deepEqual(saved.matching, { groupKinds: [], childAgeBands: [] });
+    const legacy = {
+      ...values,
+      groupKinds: ['solo'],
+      childAgeBands: ['13–17'],
+    };
+    const saved = tripFromForm(
+      legacy,
+      original.id,
+      original.groupId,
+      original.status,
+    );
+    assert.equal(Object.hasOwn(saved, 'matching'), false);
     const payload = tripToPayload(legacy);
     assert.deepEqual(payload.matching_group_kinds, []);
     assert.deepEqual(payload.matching_child_age_bands, []);
@@ -88,7 +97,9 @@ const save = (state, draft, id, values = form()) =>
 test('trips keep one travel mode through legacy load, profile defaults and draft saves; publication rejects multiple choices', () => {
   const legacy = { ...fixture[0], travelModes: ['Przyczepa', 'Samochód'] };
   assert.deepEqual(toTripForm(legacy).travelModes, ['Przyczepa']);
-  assert.deepEqual(createOwnTripsState([legacy]).trips[0].travelModes, ['Przyczepa']);
+  assert.deepEqual(createOwnTripsState([legacy]).trips[0].travelModes, [
+    'Przyczepa',
+  ]);
   assert.deepEqual(legacy.travelModes, ['Przyczepa', 'Samochód']);
   const legacyProfile = {
     ...profile,
@@ -97,13 +108,17 @@ test('trips keep one travel mode through legacy load, profile defaults and draft
   assert.deepEqual(newTripForm(legacyProfile).travelModes, ['Kamper']);
   const state = initial();
   const values = { ...form(), travelModes: ['Namiot', 'Samochód'] };
-  assert.deepEqual(validateTripForm(values, 2), ['Wybierz jeden sposób podróżowania.']);
+  assert.deepEqual(validateTripForm(values, 2), [
+    'Wybierz jeden sposób podróżowania.',
+  ]);
   assert.equal(save(state, false, state.trips[0].id, values), state);
   const draftState = save(state, true, undefined, values);
   assert.deepEqual(draftState.trips.at(-1).travelModes, ['Namiot']);
   assert.deepEqual(values.travelModes, ['Namiot', 'Samochód']);
   values.travelModes = [];
-  assert.deepEqual(validateTripForm(values, 2), ['Wybierz jeden sposób podróżowania.']);
+  assert.deepEqual(validateTripForm(values, 2), [
+    'Wybierz jeden sposób podróżowania.',
+  ]);
   values.travelModes = ['Van'];
   assert.deepEqual(validateTripForm(values, 2), []);
 });
@@ -596,10 +611,11 @@ test('duplicate and draft editing clone nested fields rather than mutating the o
   const state = reduce(initial(), { type: 'duplicate', id: fixture[0].id });
   const copy = state.trips.at(-1);
   copy.interests.push('Nowe');
-  copy.matching.childAgeBands.length = 0;
+  const originalAges = [...state.trips[0].participants.childAgeBands];
+  copy.participants.childAgeBands.length = 0;
   copy.destination.name = 'Inne miejsce';
   assert.equal(state.trips[0].destination.name, 'Chłapowo');
-  assert.deepEqual(state.trips[0].matching.childAgeBands, []);
+  assert.deepEqual(state.trips[0].participants.childAgeBands, originalAges);
   assert.equal(JSON.stringify(fixture), before);
   const draft = toTripForm(state.trips[0]);
   draft.travelModes.length = 0;

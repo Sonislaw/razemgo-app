@@ -1,7 +1,7 @@
 import { USE_DEMO_DATA } from '@/constants/app';
 import { DEMO_PROPOSALS } from '@/data/mocks/travel';
 import { useAuth } from '@/features/auth/auth-context';
-import { useFavorites } from '@/features/favorites/favorites-context';
+import { useFavoriteIds } from '@/features/favorites/favorites-context';
 import { useProfile } from '@/features/profile/profile-context';
 import type { DiscoveryFilters } from '@/types/travel';
 import { useFocusEffect } from 'expo-router';
@@ -38,8 +38,11 @@ export function useTripSearch(
 ) {
   const { session } = useAuth();
   const { hasProfile, status: profileStatus } = useProfile();
-  const favorites = useFavorites();
-  const demoFavoriteIds = USE_DEMO_DATA ? favorites.tripIds : null;
+  const favoriteTripIds = useFavoriteIds(
+    'trip',
+    USE_DEMO_DATA || !!filters.favoritesOnly,
+  );
+  const demoFavoriteIds = USE_DEMO_DATA ? favoriteTripIds : null;
   const { revision } = useDiscovery();
   const userId = session?.user.id ?? '';
   const key = 'discovery:3:' + JSON.stringify(discoveryFiltersPayload(filters));
@@ -50,17 +53,18 @@ export function useTripSearch(
       createTripSearchStore(
         async (cursor?: TripSearchCursor, signal?: AbortSignal) => {
           if (!USE_DEMO_DATA)
-            return fetchTripPage(
-              userId,
-              filters,
-              cursor,
-              pageSize,
-              signal,
-            );
+            return fetchTripPage(userId, filters, cursor, pageSize, signal);
           const sorted = filterProposals(
-            DEMO_PROPOSALS, filters, undefined, favorites.tripIds,
-          ).sort((a, b) => (b.trip.publishedAt ?? '').localeCompare(a.trip.publishedAt ?? '')
-            || a.trip.id.localeCompare(b.trip.id));
+            DEMO_PROPOSALS,
+            filters,
+            undefined,
+            favoriteTripIds,
+          ).sort(
+            (a, b) =>
+              (b.trip.publishedAt ?? '').localeCompare(
+                a.trip.publishedAt ?? '',
+              ) || a.trip.id.localeCompare(b.trip.id),
+          );
           const offset = cursor
             ? sorted.findIndex((item) => item.trip.id === cursor.id) + 1
             : 0;
@@ -94,12 +98,7 @@ export function useTripSearch(
     // Serialized filters and mutation revisions define the resource identity.
     // Hydration updates the cache without resetting already viewed pages.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      userId,
-      key,
-      pageSize,
-      demoFavoriteIds,
-    ],
+    [userId, key, pageSize, demoFavoriteIds],
   );
   const state = useSyncExternalStore(
     store.subscribe,
@@ -110,7 +109,7 @@ export function useTripSearch(
   const preserveOnReturn = useCallback(() => {
     returnStore.current = store;
   }, [store]);
-  const favoritesRevision = filters.favoritesOnly ? favorites.tripIds : null;
+  const favoritesRevision = filters.favoritesOnly ? favoriteTripIds : null;
   useFocusEffect(
     useCallback(() => {
       if (!enabled || !ready) return;
@@ -149,7 +148,10 @@ export function useTripResultCount(filters: DiscoveryFilters, enabled = true) {
   const { session } = useAuth();
   const { hasProfile, status } = useProfile();
   const { revision } = useDiscovery();
-  const favorites = useFavorites();
+  const favoriteTripIds = useFavoriteIds(
+    'trip',
+    USE_DEMO_DATA || !!filters.favoritesOnly,
+  );
   const key = 'discovery:3:' + JSON.stringify(discoveryFiltersPayload(filters));
   const userId = session?.user.id ?? '';
   const [attempt, setAttempt] = useState(0);
@@ -194,13 +196,13 @@ export function useTripResultCount(filters: DiscoveryFilters, enabled = true) {
     status,
     attempt,
     revision,
-    favorites.tripIds,
+    favoriteTripIds,
   ]);
   return {
     count: !enabled
       ? null
       : USE_DEMO_DATA
-        ? filterProposals(DEMO_PROPOSALS, filters, undefined, favorites.tripIds)
+        ? filterProposals(DEMO_PROPOSALS, filters, undefined, favoriteTripIds)
             .length
         : result.key === requestKey
           ? result.count

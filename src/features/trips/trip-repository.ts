@@ -1,3 +1,4 @@
+import { pageRevision } from '@/data/contracts/page-revision';
 import type { OwnTripCursor } from '@/data/contracts/pages';
 import { integer, object } from '@/data/contracts/validate';
 import { backendRequest } from '@/lib/backend-request';
@@ -61,6 +62,7 @@ export async function fetchOwnTripPage(
     totalCount: data!.total_count,
     activeCount: data!.active_count,
     archivedCount: data!.archived_count,
+    revision: pageRevision(row.result_revision),
     hasMore: data!.has_more,
     cursor: data!.cursor,
     latest: data!.latest_trip ? tripFromRow(data!.latest_trip) : null,
@@ -78,6 +80,29 @@ export async function fetchOwnTrip(id: string, parentSignal?: AbortSignal) {
   );
   if (error) throw error;
   return data ? tripFromRow(data) : null;
+}
+export async function refreshOwnTripItems(
+  ids: string[],
+  parentSignal?: AbortSignal,
+) {
+  const trips = [];
+  for (let offset = 0; offset < ids.length; offset += 100) {
+    const { data, error } = await backendRequest(
+      (signal) =>
+        getSupabase()
+          .from('trip_plans')
+          .select('*')
+          .in('id', ids.slice(offset, offset + 100))
+          .abortSignal(signal),
+      'trips.load',
+      { signal: parentSignal, read: true, retries: 1 },
+    );
+    if (error) throw error;
+    if (!Array.isArray(data) || data.length > 100)
+      throw new Error('Invalid cached own trips');
+    trips.push(...data.map(tripFromRow));
+  }
+  return trips;
 }
 export async function persistTrip(
   form: TripForm,
@@ -138,7 +163,10 @@ export async function removeTrip(id: string) {
 }
 export function tripErrorMessage(error: unknown, fallback: string) {
   const code = (error as { code?: string })?.code;
-  if (code === '23514' && (error as { message?: string })?.message === 'Trip participants required')
+  if (
+    code === '23514' &&
+    (error as { message?: string })?.message === 'Trip participants required'
+  )
     return 'Uzupełnij skład uczestników w edycji wyjazdu, a następnie ponów operację.';
   if (code === 'P0002')
     return 'Ten wyjazd jest niedostępny. Odśwież listę wyjazdów.';

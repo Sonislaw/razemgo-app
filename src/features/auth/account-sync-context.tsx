@@ -54,12 +54,26 @@ export function AccountSyncProvider({ children }: { children: ReactNode }) {
               'archived_trips',
             ])
               integer(value[key]);
+            if (value.domains !== undefined) {
+              const domains = object(value.domains);
+              for (const key of [
+                'mailbox',
+                'notifications',
+                'favorites',
+                'trips',
+              ])
+                if (
+                  typeof domains[key] !== 'string' ||
+                  !/^\d+$/.test(domains[key] as string)
+                )
+                  throw new Error('Invalid synchronization domain');
+            }
             setSummary((previous) =>
               JSON.stringify(previous) === JSON.stringify(data)
                 ? previous
                 : data,
             );
-            return JSON.stringify(data);
+            return data?.domains ?? JSON.stringify(data);
           })
         : null,
     // Identity must replace the controller even when readiness stays true.

@@ -14,6 +14,7 @@ export type DiscoveryTripProposal = TripProposal;
 export interface TripSearchPage {
   items: DiscoveryTripProposal[];
   totalCount: number;
+  revision?: string;
   hasMore: boolean;
   cursor: TripSearchCursor | null;
 }
@@ -28,14 +29,27 @@ export function discoveryFiltersPayload(filters: DiscoveryFilters) {
     animal_kinds: [...new Set(filters.animalKinds ?? [])].sort(),
     favorites_only: !!filters.favoritesOnly,
     location_query: filters.location.trim(),
-    location: selected ? { id: selected.id, kind: selected.kind, name: selected.name, region: selected.region, country: selected.country } : null,
+    location: selected
+      ? {
+          id: selected.id,
+          kind: selected.kind,
+          name: selected.name,
+          region: selected.region,
+          country: selected.country,
+        }
+      : null,
     start_date: range?.startDate ?? null,
     end_date: range?.endDate ?? null,
-    tolerance_days: range ? Math.min(7, Math.max(0, Math.trunc(filters.dateFlexibilityDays ?? 0))) : 0,
+    tolerance_days: range
+      ? Math.min(7, Math.max(0, Math.trunc(filters.dateFlexibilityDays ?? 0)))
+      : 0,
   };
 }
 export function discoveryError(error: unknown) {
-  const code = error && typeof error === 'object' && 'code' in error ? error.code : undefined;
+  const code =
+    error && typeof error === 'object' && 'code' in error
+      ? error.code
+      : undefined;
   return code === 'PGRST202' || code === '42883'
     ? 'Wyszukiwanie wyjazdów nie jest jeszcze dostępne. Spróbuj ponownie za chwilę.'
     : 'Nie udało się pobrać ogłoszeń. Sprawdź połączenie i spróbuj ponownie.';

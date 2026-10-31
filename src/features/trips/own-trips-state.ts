@@ -1,4 +1,8 @@
-import { cloneTripParticipants, participantsFromProfile, validateTripParticipants } from '../../lib/trip-participants.ts';
+import {
+  cloneTripParticipants,
+  participantsFromProfile,
+  validateTripParticipants,
+} from '../../lib/trip-participants.ts';
 import { isValidDate } from '../../lib/calendar-date.ts';
 import type {
   OwnedTrip,
@@ -91,10 +95,15 @@ export function discoveryFiltersForTrip(trip: OwnedTrip): DiscoveryFilters {
     childAgeBands: [],
   };
 }
-export function toTripForm(trip: OwnedTrip, profile?: TravelerProfile): TripForm {
+export function toTripForm(
+  trip: OwnedTrip,
+  profile?: TravelerProfile,
+): TripForm {
   const place = trip.mode === 'planned' ? trip.destination : trip.travelArea;
   return {
-    participants: cloneTripParticipants(trip.participants) ?? (profile ? participantsFromProfile(profile.group) : null),
+    participants:
+      cloneTripParticipants(trip.participants) ??
+      (profile ? participantsFromProfile(profile.group) : null),
     mode: trip.mode,
     startDate: trip.startDate,
     endDate: trip.endDate,
@@ -229,10 +238,6 @@ export function tripFromForm(
     visibility: form.visibility,
     status,
     animals: cloneAnimals(form.animals),
-    matching: {
-      groupKinds: [],
-      childAgeBands: [],
-    },
   };
   const place = {
     name: location?.name ?? '',

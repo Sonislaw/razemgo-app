@@ -18,6 +18,52 @@ import {
   selectedSnapshot,
 } from '../src/lib/snapshot-store.ts';
 import { createAccountSync } from '../src/lib/account-sync.ts';
+
+test('domain synchronization keeps unrelated reads idle and initializes late subscribers', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let domains = { mailbox: '0', notifications: '0', favorites: '0' },
+    active = true;
+  const runs = { mailbox: 0, notifications: 0, favorites: 0 };
+  const sync = createAccountSync(
+    () => active,
+    async () => ({ ...domains }),
+  );
+  for (const key of Object.keys(runs))
+    sync.register(key, async () => {
+      runs[key]++;
+    });
+  const tick = async (reason) => {
+    sync.invalidate(reason);
+    t.mock.timers.tick(150);
+    await flush();
+  };
+  await tick('initial');
+  assert.deepEqual(runs, { mailbox: 1, notifications: 1, favorites: 1 });
+  for (let i = 0; i < 15; i++) await tick('poll');
+  assert.deepEqual(runs, { mailbox: 1, notifications: 1, favorites: 1 });
+  domains.notifications = '1';
+  await tick('event');
+  assert.deepEqual(runs, { mailbox: 1, notifications: 2, favorites: 1 });
+  domains.mailbox = '1';
+  await tick('push');
+  assert.deepEqual(runs, { mailbox: 2, notifications: 2, favorites: 1 });
+  active = false;
+  domains.favorites = '1';
+  await tick('foreground');
+  assert.equal(runs.favorites, 1);
+  active = true;
+  await tick('foreground');
+  assert.equal(runs.favorites, 2);
+  let late = 0;
+  sync.register('mailbox', async () => {
+    late++;
+  });
+  t.mock.timers.tick(150);
+  await flush();
+  assert.equal(late, 1);
+  sync.dispose();
+  t.mock.timers.reset();
+});
 import {
   allowMapNavigation,
   isGoogleMapUrl,

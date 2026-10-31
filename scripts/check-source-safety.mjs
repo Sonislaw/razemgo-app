@@ -67,6 +67,18 @@ for (const file of modules) {
       /(?:import\s+(?:[^;'"\n]*?\s+from\s*)?|export\s+[^;]*?\s+from\s*|(?:require|import)\s*\(\s*)['"]([^'"]+)['"]/g,
     ),
   ].map((match) => match[1]);
+  // Providers own authentication and the single Realtime connection. Product
+  // screens/components must go through repositories, never the backend SDK.
+  if (
+    /\.tsx$/.test(file) &&
+    !/\/features\/auth\/(auth-context|account-sync-context)\.tsx$/.test(file)
+  ) {
+    if (
+      /\bgetSupabase\b/.test(source) ||
+      imports.includes('@supabase/supabase-js')
+    )
+      failures.push(file + ': view calls backend SDK instead of a repository');
+  }
   const dependencies = [];
   for (const path of imports) {
     const base = path.startsWith('@/')

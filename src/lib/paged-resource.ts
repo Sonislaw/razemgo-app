@@ -3,6 +3,9 @@ export interface ResourcePage<T, C> {
   hasMore: boolean;
   cursor: C | null;
   totalCount: number;
+  // Opaque fingerprint of the authorized result IDs and their ordering keys.
+  // Missing fingerprints use the safe prefix reconciliation path.
+  revision?: string;
 }
 export interface ResourceState<T, C, P extends ResourcePage<T, C>> {
   page: P | null;
@@ -44,7 +47,7 @@ export function createPagedResource<
     )
       throw Error('Invalid cursor progression');
   };
-  const load = async (restart = false) => {
+  const load = async (restart = false, desiredCount = 0) => {
     controller?.abort();
     controller = new AbortController();
     const signal = controller.signal,
@@ -59,10 +62,25 @@ export function createPagedResource<
     });
     try {
       let page = await options.load(undefined, signal);
-      if (page && previous && options.refreshItems) {
-        const validated = await options.refreshItems(previous.items, signal);
+      const validated =
+        page && previous && options.refreshItems
+          ? await options.refreshItems(previous.items, signal)
+          : undefined;
+      const validKeys = validated && new Set(validated.map(options.key));
+      const boundary =
+        validKeys &&
+        previous?.items.findLast((item) => validKeys.has(options.key(item)));
+      const boundaryKey = boundary ? options.key(boundary) : undefined;
+      if (
+        page &&
+        previous &&
+        options.refreshItems &&
+        page.revision &&
+        page.revision === previous.revision &&
+        page.totalCount === previous.totalCount
+      ) {
         const byId = new Map(
-          validated.map((item) => [options.key(item), item]),
+          validated!.map((item) => [options.key(item), item]),
         );
         const retained = previous.items.flatMap((item) =>
           byId.has(options.key(item)) ? [byId.get(options.key(item))!] : [],
@@ -80,11 +98,20 @@ export function createPagedResource<
         while (
           page?.hasMore &&
           page.cursor &&
-          page.items.length < (previous?.items.length ?? 0) &&
+          (page.items.length <
+            Math.max(previous?.items.length ?? 0, desiredCount) ||
+            (!!boundaryKey &&
+              !page.items.some((item) => options.key(item) === boundaryKey))) &&
           version === generation
         ) {
           const next = await options.load(page.cursor, signal);
           checkCursor(page.cursor, next);
+          if (
+            next?.revision &&
+            page.revision &&
+            next.revision !== page.revision
+          )
+            throw Error('Results changed during reconciliation');
           if (!next) {
             page = null;
             break;
@@ -114,6 +141,16 @@ export function createPagedResource<
     try {
       const next = await options.load(previous.cursor!, signal);
       checkCursor(previous.cursor!, next);
+      if (
+        next?.revision &&
+        previous.revision &&
+        next.revision !== previous.revision
+      ) {
+        // The result set moved while paging. Reconcile the loaded prefix before
+        // advancing; an old keyset cursor must not silently skip new records.
+        await load(false, previous.items.length + next.items.length);
+        return;
+      }
       if (version === generation)
         publish({
           page: next

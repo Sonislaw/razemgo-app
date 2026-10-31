@@ -1,9 +1,7 @@
 import { USE_DEMO_DATA } from '@/constants/app';
 import type { OwnTripCursor } from '@/data/contracts/pages';
 import { useAuth } from '@/features/auth/auth-context';
-import { backendRequest } from '@/lib/backend-request';
 import { createPagedResource } from '@/lib/paged-resource';
-import { getSupabase } from '@/lib/supabase';
 import type { OwnedTrip, OwnTripFilters } from '@/types/owned-trip';
 import { useFocusEffect } from 'expo-router';
 import {
@@ -15,8 +13,8 @@ import {
 } from 'react';
 import { useOwnTrips } from './own-trips-context';
 import { isArchivedTrip, selectOwnTrips, todayDate } from './own-trips-state';
-import { tripFromRow } from './trip-mapper';
 import {
+  refreshOwnTripItems,
   fetchOwnTrip,
   fetchOwnTripPage,
   OWN_TRIP_PAGE_SIZE,
@@ -118,26 +116,10 @@ export function useOwnTripListing(filters: OwnTripFilters, archived: boolean) {
         refreshItems: USE_DEMO_DATA
           ? undefined
           : async (items, signal) => {
-              const loaded: OwnedTrip[] = [];
-              for (let offset = 0; offset < items.length; offset += 100) {
-                const { data, error } = await backendRequest(
-                  (requestSignal) =>
-                    getSupabase()
-                      .from('trip_plans')
-                      .select('*')
-                      .in(
-                        'id',
-                        items
-                          .slice(offset, offset + 100)
-                          .map((item) => item.id),
-                      )
-                      .abortSignal(requestSignal),
-                  'trips.load',
-                  { signal },
-                );
-                if (error) throw error;
-                loaded.push(...(data ?? []).map(tripFromRow));
-              }
+              const loaded = await refreshOwnTripItems(
+                items.map((item) => item.id),
+                signal,
+              );
               if (!signal.aborted) cacheTrips(loaded);
               return selectOwnTrips(loaded, filters, archived, todayDate());
             },

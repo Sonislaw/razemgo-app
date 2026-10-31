@@ -1,8 +1,21 @@
 // Legacy test fixtures only; current discovery performs explicit filtering.
-import type { ChildAgeBand, DateRange, DiscoveryFilters, TripPlan, TripProposal, TravelGroup } from '../../../src/types/travel';
-import type { OwnedTrip } from '../../../src/types/owned-trip';
+import type {
+  ChildAgeBand,
+  DateRange,
+  DiscoveryFilters,
+  TripPlan,
+  TripProposal,
+  TravelGroup,
+} from '../../../src/types/travel';
+import type { OwnedTrip as CurrentOwnedTrip } from '../../../src/types/owned-trip';
+import type { LegacyTrip } from './legacy-trip';
+type OwnedTrip = LegacyTrip<CurrentOwnedTrip>;
 import type { TravelerProfile } from '../../../src/types/profile';
-import { filterProposals, getDiscoveryReferenceRange, sharedNights } from '../../../src/features/discovery/filter-trips.ts';
+import {
+  filterProposals,
+  getDiscoveryReferenceRange,
+  sharedNights,
+} from '../../../src/features/discovery/filter-trips.ts';
 
 export interface MatchFacts {
   nights: number | null;
@@ -40,8 +53,8 @@ export function getMatchFacts(
         ? 'own-plans'
         : 'none',
     ageBands: proposal.trip.participants?.childAgeBands ?? [],
-    matchingAgeBands: (proposal.trip.participants?.childAgeBands ?? []).filter((band) =>
-      preferredAges.includes(band),
+    matchingAgeBands: (proposal.trip.participants?.childAgeBands ?? []).filter(
+      (band) => preferredAges.includes(band),
     ),
     commonInterests: proposal.trip.interests.filter((interest) =>
       ownGroup.interests.includes(interest),
@@ -117,8 +130,8 @@ export function selectHomeRecommendations(
         },
         dateFlexibilityDays: 0,
         location: place.region,
-        childAgeBands: ownTrip.matching.childAgeBands,
-        groupKinds: ownTrip.matching.groupKinds,
+        childAgeBands: ownTrip.matching?.childAgeBands ?? [],
+        groupKinds: ownTrip.matching?.groupKinds ?? [],
       };
       if (!filterProposals([proposal], filters).length) continue;
       const reference = getDiscoveryReferenceRange(
@@ -138,8 +151,8 @@ export function selectHomeRecommendations(
         commonInterests: proposal.trip.interests.filter((interest) =>
           interests.includes(interest),
         ),
-        matchingAges: (proposal.trip.participants?.childAgeBands ?? []).filter((age) =>
-          ownTrip.matching.childAgeBands.includes(age),
+        matchingAges: (proposal.trip.participants?.childAgeBands ?? []).filter(
+          (age) => (ownTrip.matching?.childAgeBands ?? []).includes(age),
         ),
       });
       break;
@@ -167,7 +180,9 @@ export function selectHomeRecommendations(
     .filter(
       ({ group, trip }) =>
         (!preferredAges.length ||
-          (trip.participants?.childAgeBands ?? []).some((age) => preferredAges.includes(age))) &&
+          (trip.participants?.childAgeBands ?? []).some((age) =>
+            preferredAges.includes(age),
+          )) &&
         trip.interests.some((interest) =>
           profile.group.interests.includes(interest),
         ),
@@ -180,8 +195,8 @@ export function selectHomeRecommendations(
       commonInterests: proposal.trip.interests.filter((interest) =>
         profile.group.interests.includes(interest),
       ),
-      matchingAges: (proposal.trip.participants?.childAgeBands ?? []).filter((age) =>
-        preferredAges.includes(age),
+      matchingAges: (proposal.trip.participants?.childAgeBands ?? []).filter(
+        (age) => preferredAges.includes(age),
       ),
       ownTripId: searchableTrips[0]?.id,
     }));

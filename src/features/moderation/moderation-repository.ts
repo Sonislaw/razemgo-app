@@ -1,10 +1,35 @@
 import { backendRequest } from '@/lib/backend-request';
 import { getSupabase } from '@/lib/supabase';
+import type { ReportReason } from '@/types/messaging';
 import type {
   ModerationAction,
   ReportFilter,
   ReportSummary,
 } from './moderation-types';
+export async function reportContent(
+  kind: 'trip' | 'profile',
+  id: string,
+  reason: ReportReason,
+  key: string,
+) {
+  const { error } = await backendRequest(
+    (signal) =>
+      (kind === 'trip'
+        ? getSupabase().rpc('report_trip', {
+            target_trip_id: id,
+            report_reason: reason,
+            request_key: key,
+          })
+        : getSupabase().rpc('report_profile', {
+            target_group_id: id,
+            report_reason: reason,
+            request_key: key,
+          })
+      ).abortSignal(signal),
+    kind === 'trip' ? 'trips.report' : 'groups.report',
+  );
+  if (error) throw error;
+}
 export async function fetchAccountAccess() {
   const { data, error } = await backendRequest(
     (signal) => getSupabase().rpc('get_my_account_access').abortSignal(signal),

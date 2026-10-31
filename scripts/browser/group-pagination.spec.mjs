@@ -1,4 +1,8 @@
-import { recommendCrew, recommendTrip } from './trip-fixtures.mjs';
+import {
+  recommendCrew,
+  recommendTrip,
+  resultRevision,
+} from './trip-fixtures.mjs';
 import { test, expect } from '@playwright/test';
 import {
   B,
@@ -23,7 +27,10 @@ test('crew pages load five at a time, show progress, retry and restore profile s
   const trip = {
     id: tripId,
     group_id: groupId(B),
-    adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',
+    adult_count: 2,
+    child_count: 1,
+    child_age_bands: ['4–6'],
+    mode: 'planned',
     status: 'published',
     visibility: 'public',
     start_date: '2099-05-21',
@@ -58,7 +65,7 @@ test('crew pages load five at a time, show progress, retry and restore profile s
       limited_data: false,
       evaluated_weight: 100,
     },
-  })).map(row => ({...row, recommendation: recommendCrew(row.crew)}));
+  })).map((row) => ({ ...row, recommendation: recommendCrew(row.crew) }));
   const calls = [];
   let failMore = false,
     releaseMore;
@@ -89,7 +96,15 @@ test('crew pages load five at a time, show progress, retry and restore profile s
       return respond({
         ...row,
         trips:
-          body.target_group_id === groupId(B) ? [{ trip, crew: row.crew, recommendation: recommendTrip(trip, row.crew, store) }] : [],
+          body.target_group_id === groupId(B)
+            ? [
+                {
+                  trip,
+                  crew: row.crew,
+                  recommendation: recommendTrip(trip, row.crew, store),
+                },
+              ]
+            : [],
         has_more: false,
         cursor: null,
       });
@@ -115,6 +130,9 @@ test('crew pages load five at a time, show progress, retry and restore profile s
     return respond({
       items,
       total_count: filtered.length,
+      result_revision: resultRevision(
+        filtered.map((r) => [r.crew.id, r.crew.name]),
+      ),
       has_more: offset + items.length < filtered.length,
       cursor: last
         ? {
@@ -217,7 +235,9 @@ test('crew pages load five at a time, show progress, retry and restore profile s
   await expect(cards).toHaveCount(0);
   await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
   await expect(cards).toHaveCount(5);
-  await expect(page.getByRole('button', { name: /^Sortowanie ekip:/ })).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: /^Sortowanie ekip:/ }),
+  ).toHaveCount(0);
   await expect(cards).toHaveCount(5);
   await page.getByRole('button', { name: 'Filtry ekip', exact: true }).click();
   await page
@@ -237,5 +257,7 @@ test('crew pages load five at a time, show progress, retry and restore profile s
     .click();
   await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
   await expect(cards).toHaveCount(1);
-  await expect(page.getByRole('button', { name: /^Sortowanie ekip:/ })).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: /^Sortowanie ekip:/ }),
+  ).toHaveCount(0);
 });

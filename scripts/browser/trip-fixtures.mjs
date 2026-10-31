@@ -1,3 +1,6 @@
+import { createHash } from 'node:crypto';
+export const resultRevision = (rows) =>
+  createHash('md5').update(JSON.stringify(rows)).digest('hex');
 import { expect } from '@playwright/test';
 import {
   proposalFromRow,
@@ -156,6 +159,39 @@ async function backend(context, store) {
         .filter((t) => t.group_id === groupId(id))
         .map(tripFromRow);
       return respond({
+        domains: {
+          mailbox: String(
+            parseInt(
+              resultRevision([
+                store.messages,
+                store.invitations,
+                [...store.reads],
+                [...store.blocks],
+                [...(store.messageReactions ?? new Map())],
+              ]).slice(0, 12),
+              16,
+            ),
+          ),
+          notifications: String(
+            parseInt(
+              resultRevision([
+                store.notifications,
+                [...store.notificationPreferences],
+              ]).slice(0, 12),
+              16,
+            ),
+          ),
+          favorites: String(
+            parseInt(
+              resultRevision([
+                ...(store.favoriteGroups.get(id) ?? []),
+                ...(store.favoriteTrips.get(id) ?? []),
+              ]).slice(0, 12),
+              16,
+            ),
+          ),
+          trips: String(parseInt(resultRevision(own).slice(0, 12), 16)),
+        },
         revision: JSON.stringify([
           store.messages.length,
           store.invitations.map((i) => i.status),
@@ -256,6 +292,9 @@ async function backend(context, store) {
       return respond({
         items: items.map((t) => store.trips.get(t.id)),
         total_count: matches.length,
+        result_revision: resultRevision(
+          matches.map((t) => [t.id, t.startDate]),
+        ),
         active_count: all.filter((t) => !isArchivedTrip(t, '2026-10-24'))
           .length,
         archived_count: all.filter((t) => isArchivedTrip(t, '2026-10-24'))
@@ -628,6 +667,9 @@ async function backend(context, store) {
       return respond({
         items,
         total_count: result.length,
+        result_revision: resultRevision(
+          result.map((r) => [r.trip.id, r.trip.published_at]),
+        ),
         has_more: offset + items.length < result.length,
         cursor: last
           ? {
@@ -1100,11 +1142,24 @@ async function messagingEndpoint(name, id, body, store, respond) {
 }
 
 export function recommendCrew(crew, viewerId = A) {
-  const group = value => publicGroupFromRow({ crew: value, about: '', active_trip_count: 0 }).group;
+  const group = (value) =>
+    publicGroupFromRow({ crew: value, about: '', active_trip_count: 0 }).group;
   return groupRecommendation(group(profile(viewerId).group), group(crew));
 }
-export function recommendTrip(trip, crew = profile(B).group, store, viewerId = A) {
+export function recommendTrip(
+  trip,
+  crew = profile(B).group,
+  store,
+  viewerId = A,
+) {
   const viewer = profile(viewerId);
-  return tripRecommendation(proposalFromRow({trip, crew}), profileFromRows(viewer.group, viewer.preferences),
-    [...(store?.trips.values() ?? [])].filter(t => t.group_id === groupId(viewerId)).map(tripFromRow), INITIAL_FILTERS, '2026-10-24').recommendation;
+  return tripRecommendation(
+    proposalFromRow({ trip, crew }),
+    profileFromRows(viewer.group, viewer.preferences),
+    [...(store?.trips.values() ?? [])]
+      .filter((t) => t.group_id === groupId(viewerId))
+      .map(tripFromRow),
+    INITIAL_FILTERS,
+    '2026-10-24',
+  ).recommendation;
 }

@@ -1,9 +1,14 @@
 import { BottomSheet } from '@/components/ui/bottom-sheet';
-import { AppText, Button, Chip, IconButton, layout } from '@/components/ui/primitives';
+import {
+  AppText,
+  Button,
+  Chip,
+  IconButton,
+  layout,
+} from '@/components/ui/primitives';
 import { USE_DEMO_DATA } from '@/constants/app';
-import { backendRequest } from '@/lib/backend-request';
 import { createRequestKey } from '@/lib/request-key';
-import { getSupabase } from '@/lib/supabase';
+import { reportContent } from './moderation-repository';
 import type { ReportReason } from '@/types/messaging';
 import { useRef, useState } from 'react';
 import { View } from 'react-native';
@@ -15,11 +20,16 @@ type GroupBlockAction = {
   error: string | null;
   onConfirm: () => Promise<void>;
 };
-export function GroupReportAction({ groupId, blockAction }: {
+export function GroupReportAction({
+  groupId,
+  blockAction,
+}: {
   groupId: string;
   blockAction: GroupBlockAction;
 }) {
-  return <ReportAction targetId={groupId} kind="profile" blockAction={blockAction} />;
+  return (
+    <ReportAction targetId={groupId} kind="profile" blockAction={blockAction} />
+  );
 }
 function ReportAction({
   targetId,
@@ -46,23 +56,7 @@ function ReportAction({
     setBusy(true);
     setError(null);
     try {
-      const result = await backendRequest(
-        (signal) =>
-          (kind === 'trip'
-            ? getSupabase().rpc('report_trip', {
-                target_trip_id: targetId,
-                report_reason: reason,
-                request_key: key.current,
-              })
-            : getSupabase().rpc('report_profile', {
-                target_group_id: targetId,
-                report_reason: reason,
-                request_key: key.current,
-              })
-          ).abortSignal(signal),
-        kind === 'trip' ? 'trips.report' : 'groups.report',
-      );
-      if (result.error) throw result.error;
+      await reportContent(kind, targetId, reason, key.current);
       setSaved(true);
       setPanel('menu');
     } catch {
@@ -74,12 +68,23 @@ function ReportAction({
   };
   return (
     <>
-      <IconButton label={menuTitle} icon="more" onPress={() => setPanel('menu')} />
+      <IconButton
+        label={menuTitle}
+        icon="more"
+        onPress={() => setPanel('menu')}
+      />
       {panel ? (
         <BottomSheet
-          title={panel === 'report' ? reportTitle : panel === 'block' ? 'Zablokować ekipę?' : menuTitle}
+          title={
+            panel === 'report'
+              ? reportTitle
+              : panel === 'block'
+                ? 'Zablokować ekipę?'
+                : menuTitle
+          }
           onClose={() => {
-            if (!busy && !(panel === 'block' && blockAction?.busy)) setPanel(null);
+            if (!busy && !(panel === 'block' && blockAction?.busy))
+              setPanel(null);
           }}
         >
           {panel === 'menu' && saved ? (
@@ -108,8 +113,14 @@ function ReportAction({
           ) : null}
           {panel === 'block' && blockAction ? (
             <>
-              <AppText>Ekipa zniknie z Twoich propozycji i wyszukiwania. Obie strony stracą możliwość wysyłania wiadomości. Blokadę możesz usunąć w ustawieniach bezpieczeństwa.</AppText>
-              {blockAction.error ? <AppText accessibilityRole="alert">{blockAction.error}</AppText> : null}
+              <AppText>
+                Ekipa zniknie z Twoich propozycji i wyszukiwania. Obie strony
+                stracą możliwość wysyłania wiadomości. Blokadę możesz usunąć w
+                ustawieniach bezpieczeństwa.
+              </AppText>
+              {blockAction.error ? (
+                <AppText accessibilityRole="alert">{blockAction.error}</AppText>
+              ) : null}
               <Button
                 label={blockAction.busy ? 'Blokowanie…' : 'Zablokuj ekipę'}
                 disabled={blockAction.busy}
@@ -139,10 +150,14 @@ function ReportAction({
               </View>
               <AppText variant="caption" color="textSecondary">
                 Moderacja otrzyma zapis{' '}
-                {kind === 'trip' ? 'tego ogłoszenia' : 'publicznej części profilu'}{' '}
+                {kind === 'trip'
+                  ? 'tego ogłoszenia'
+                  : 'publicznej części profilu'}{' '}
                 i wybrany powód.
               </AppText>
-              {error ? <AppText accessibilityRole="alert">{error}</AppText> : null}
+              {error ? (
+                <AppText accessibilityRole="alert">{error}</AppText>
+              ) : null}
               <Button
                 label={busy ? 'Zapisywanie…' : 'Wyślij zgłoszenie'}
                 disabled={busy}

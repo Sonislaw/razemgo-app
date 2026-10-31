@@ -9,20 +9,21 @@ import {
   DiscoveryFilterBar,
   DiscoveryResultsHeader,
 } from '@/features/discovery/discovery-controls';
-import { useFavorites } from '@/features/favorites/favorites-context';
-import { useMessaging } from '@/features/messaging/messaging-context';
+import { useFavoritesStore } from '@/features/favorites/favorites-context';
+import { useMessagingSelector } from '@/features/messaging/messaging-context';
 import { isPresenceActive } from '@/features/presence/presence-context';
 import { PRESENCE_POLL_MS } from '@/features/presence/presence-controller';
 import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import { router, useFocusEffect } from 'expo-router';
 import {
   useCallback,
-  useEffect,
   useRef,
-  useState,
+  useMemo,
+  useSyncExternalStore,
   type ReactNode,
 } from 'react';
 import { AppState, Platform } from 'react-native';
+import { createPagedResource } from '@/lib/paged-resource';
 import { GroupCard } from './group-card';
 import {
   filterPublicGroups,
@@ -37,14 +38,6 @@ import { DEMO_PUBLIC_GROUPS } from './group-demo';
 import { GroupFiltersSheet } from './group-filters-sheet';
 import { fetchPublicGroups, refreshGroupResults } from './group-repository';
 
-const EMPTY_PAGE: GroupPage = {
-  items: [],
-  totalCount: 0,
-  hasMore: false,
-  cursor: null,
-};
-
-
 export function GroupsDiscovery({
   header,
   beforeList,
@@ -52,37 +45,10 @@ export function GroupsDiscovery({
   header?: ReactNode;
   beforeList?: ReactNode;
 }) {
-  const {
-    groupFilters: filters,
-    setGroupFilters: setFilters,
-  } = useDiscovery();
-  const { store: favoritesStore } = useFavorites();
-  const [page, setPage] = useState<GroupPage>(EMPTY_PAGE);
-  const [hasLoaded, setHasLoaded] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(
-    'loading',
-  );
-  const [error, setError] = useState<string | null>(null);
-  const generation = useRef(0);
-  const request = useRef<AbortController | null>(null);
-  const alive = useRef(true);
-  const loadingMore = useRef(false);
-  const currentPage = useRef(page);
-  const failedRequest = useRef<'load' | 'more'>('load');
-  const returnLoad = useRef<((quiet?: boolean) => Promise<void>) | null>(null);
-  const publishPage = useCallback((next: GroupPage) => {
-    currentPage.current = next;
-    setPage(next);
-  }, []);
-  const { state: mailbox } = useMessaging();
-  const blocked = mailbox.blockedGroupIds;
-  useEffect(() => {
-    alive.current = true;
-    return () => {
-      alive.current = false;
-    };
-  }, []);
+  const { groupFilters: filters, setGroupFilters: setFilters } = useDiscovery();
+  const favoritesStore = useFavoritesStore();
+  const blocked = useMessagingSelector((value) => value.state.blockedGroupIds);
+  const returnLoad = useRef<(() => Promise<void>) | null>(null);
   const fetchPage = useCallback(
     async (
       cursor?: RankedGroupCursor,
@@ -118,104 +84,38 @@ export function GroupsDiscovery({
     },
     [filters, favoritesStore],
   );
-  const load = useCallback(
-    async (quiet = false) => {
-      if (quiet && loadingMore.current) return;
-      const version = ++generation.current;
-      request.current?.abort();
-      const controller = new AbortController();
-      request.current = controller;
-      loadingMore.current = true;
-      failedRequest.current = 'load';
-      const desiredCount = quiet
-        ? Math.max(GROUP_SEARCH_PAGE_SIZE, currentPage.current.items.length)
-        : GROUP_SEARCH_PAGE_SIZE;
-      if (!quiet) {
-        setStatus('loading');
-        setError(null);
-        setIsLoadingMore(false);
-        setHasLoaded(false);
-        publishPage(EMPTY_PAGE);
-      }
-      try {
-        let result = await fetchPage(undefined, controller.signal);
-        if (
-          quiet &&
-          !USE_DEMO_DATA &&
-          currentPage.current.items.length > GROUP_SEARCH_PAGE_SIZE
-        ) {
-          const fresh = await refreshGroupResults(
-            currentPage.current.items.map((item) => item.group.id),
-            filters,
-            controller.signal,
-          );
-          const byId = new Map(fresh.map((item) => [item.group.id, item]));
-          const retained = currentPage.current.items.flatMap((item) =>
-            byId.has(item.group.id) ? [byId.get(item.group.id)!] : [],
-          );
-          const items = [
-            ...new Map(
-              [...result.items, ...retained].map((item) => [
-                item.group.id,
-                item,
-              ]),
-            ).values(),
-          ];
-          result = {
-            ...result,
-            items,
-            cursor: currentPage.current.cursor ?? result.cursor,
-            hasMore:
-              items.length < result.totalCount &&
-              !!(currentPage.current.cursor ?? result.cursor),
-          };
-        }
-        while (
-          USE_DEMO_DATA &&
-          result.hasMore &&
-          result.cursor &&
-          result.items.length < desiredCount &&
-          alive.current &&
-          version === generation.current
-        ) {
-          const previous = result.cursor;
-          const next = await fetchPage(previous);
-          if (
-            next.hasMore &&
-            (!next.cursor ||
-              JSON.stringify(next.cursor) === JSON.stringify(previous))
-          )
-            throw new Error('Invalid cursor progression');
-          result = {
-            ...next,
-            items: [
-              ...new Map(
-                [...result.items, ...next.items].map((item) => [
-                  item.group.id,
-                  item,
-                ]),
-              ).values(),
-            ],
-          };
-        }
-        if (alive.current && version === generation.current) {
-          publishPage(result);
-          setHasLoaded(true);
-          setStatus('ready');
-          setError(null);
-        }
-      } catch (e) {
-        if (alive.current && version === generation.current) {
-          failedRequest.current = 'load';
-          setError(groupDirectoryError(e));
-          setStatus('error');
-        }
-      } finally {
-        if (version === generation.current) loadingMore.current = false;
-      }
-    },
-    [fetchPage, publishPage, filters],
+  const store = useMemo(
+    () =>
+      createPagedResource({
+        load: fetchPage,
+        key: (item: GroupPage['items'][number]) => item.group.id,
+        error: groupDirectoryError,
+        refreshItems: USE_DEMO_DATA
+          ? undefined
+          : (items, signal) =>
+              refreshGroupResults(
+                items.map((item) => item.group.id),
+                filters,
+                signal,
+              ),
+      }),
+    [fetchPage, filters],
   );
+  const snapshot = useSyncExternalStore(
+    store.subscribe,
+    store.getSnapshot,
+    store.getSnapshot,
+  );
+  const page = snapshot.page ?? {
+    items: [],
+    totalCount: 0,
+    hasMore: false,
+    cursor: null,
+  };
+  const { status, error, loadingMore: isLoadingMore } = snapshot;
+  const hasLoaded = !!snapshot.page;
+  const load = store.refresh;
+  const more = store.more;
   const preserveOnReturn = useCallback(() => {
     returnLoad.current = load;
   }, [load]);
@@ -223,18 +123,16 @@ export function GroupsDiscovery({
     useCallback(() => {
       const restore = returnLoad.current === load;
       returnLoad.current = null;
-      void load(restore);
-      const dynamic = filters.onlineOnly || filters.favoritesOnly;
+      void (restore ? store.refresh() : store.restart());
       const refreshOnline = () => {
-        if (dynamic && isPresenceActive()) void load(true);
+        if (isPresenceActive() && store.getSnapshot().status !== 'loading')
+          void store.refresh();
       };
-      const timer = dynamic
+      const timer = filters.onlineOnly
         ? setInterval(refreshOnline, PRESENCE_POLL_MS)
         : undefined;
-      const foreground = dynamic
-        ? AppState.addEventListener('change', refreshOnline)
-        : null;
-      if (dynamic && Platform.OS === 'web')
+      const foreground = AppState.addEventListener('change', refreshOnline);
+      if (Platform.OS === 'web')
         document.addEventListener('visibilitychange', refreshOnline);
       let revision = favoritesStore?.getSnapshot().revision;
       const unsubscribe = favoritesStore?.subscribe(() => {
@@ -243,63 +141,21 @@ export function GroupsDiscovery({
         revision = next;
       });
       return () => {
-        generation.current++;
-        request.current?.abort();
-        loadingMore.current = false;
-        setIsLoadingMore(false);
+        store.stop();
         clearInterval(timer);
-        foreground?.remove();
+        foreground.remove();
         unsubscribe?.();
-        if (dynamic && Platform.OS === 'web')
+        if (Platform.OS === 'web')
           document.removeEventListener('visibilitychange', refreshOnline);
       };
-    }, [load, filters.onlineOnly, filters.favoritesOnly, favoritesStore]),
+    }, [
+      store,
+      load,
+      filters.onlineOnly,
+      filters.favoritesOnly,
+      favoritesStore,
+    ]),
   );
-  const more = async () => {
-    if (!page.hasMore || !page.cursor || loadingMore.current) return;
-    loadingMore.current = true;
-    const version = generation.current;
-    const controller = new AbortController();
-    request.current = controller;
-    setStatus('loading');
-    setError(null);
-    setIsLoadingMore(true);
-    try {
-      const next = await fetchPage(page.cursor, controller.signal);
-      if (
-        next.hasMore &&
-        (!next.cursor ||
-          JSON.stringify(next.cursor) === JSON.stringify(page.cursor))
-      )
-        throw new Error('Invalid cursor progression');
-      if (alive.current && version === generation.current) {
-        publishPage({
-          ...next,
-          items: [
-            ...new Map(
-              [...currentPage.current.items, ...next.items].map((x) => [
-                x.group.id,
-                x,
-              ]),
-            ).values(),
-          ],
-        });
-        setHasLoaded(true);
-        setStatus('ready');
-      }
-    } catch (e) {
-      if (alive.current && version === generation.current) {
-        failedRequest.current = 'more';
-        setError(groupDirectoryError(e));
-        setStatus('error');
-      }
-    } finally {
-      if (alive.current && version === generation.current) {
-        loadingMore.current = false;
-        setIsLoadingMore(false);
-      }
-    }
-  };
   const items = page.items.filter((x) => !blocked.includes(x.group.id));
   const activeCount =
     Number(Boolean(filters.name.trim())) +
@@ -362,11 +218,17 @@ export function GroupsDiscovery({
             clearLabel="Wyczyść filtry ekip"
             refreshLabel="Odśwież ekipy"
             renderFilters={(onClose) => (
-              <GroupFiltersSheet filters={filters} onClose={onClose}
-                onApply={(next) => { setFilters(next); onClose(); }} />
+              <GroupFiltersSheet
+                filters={filters}
+                onClose={onClose}
+                onApply={(next) => {
+                  setFilters(next);
+                  onClose();
+                }}
+              />
             )}
             onClear={reset}
-            onRefresh={() => void load(true)}
+            onRefresh={() => void load()}
           />
           <DiscoveryResultsHeader
             title={hasLoaded ? 'Ekipy · ' + page.totalCount : 'Ekipy'}
@@ -379,9 +241,7 @@ export function GroupsDiscovery({
             status={isLoadingMore ? 'ready' : status}
             error={error}
             label="Wczytywanie ekip"
-            onRetry={() => {
-              void (failedRequest.current === 'more' ? more() : load(true));
-            }}
+            onRetry={() => void store.retry()}
           />
           {status === 'ready' && !items.length ? (
             <EmptyState

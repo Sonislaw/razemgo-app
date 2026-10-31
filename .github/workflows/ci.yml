@@ -123,7 +123,6 @@ jobs:
       - name: Optional paced synthetic read sessions (uniform, local only)
         if: ${{ !cancelled() && inputs.session_test && steps.sql-profile.outcome == 'success' }}
         run: |
-          node scripts/benchmark-ranking-baseline.mjs
           npm run benchmark:sessions -- --strict
       - name: Optional high-diversity SQL profiles (local only)
         id: diverse-profile
@@ -135,7 +134,6 @@ jobs:
       - name: Optional paced synthetic read sessions (diverse, local only)
         if: ${{ !cancelled() && inputs.session_test && steps.diverse-profile.outcome == 'success' }}
         run: |
-          node scripts/benchmark-ranking-baseline.mjs --diverse
           npm run benchmark:sessions -- --diverse --strict
       - name: Optional varied scoring inputs and exact parity (local only)
         id: varied-profile
@@ -147,7 +145,6 @@ jobs:
       - name: Optional paced synthetic read sessions (varied scoring inputs, local only)
         if: ${{ !cancelled() && inputs.session_test && steps.varied-profile.outcome == 'success' }}
         run: |
-          node scripts/benchmark-ranking-baseline.mjs --varied
           npm run benchmark:sessions -- --varied --strict
       - name: Preserve failed checks and measured load results
         if: always()

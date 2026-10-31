@@ -1,3 +1,4 @@
+import { registerEmail } from '@/features/auth/auth-repository';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Button } from '@/components/ui/primitives';
@@ -14,8 +15,8 @@ import {
   normalizeEmail,
   validateCredentials,
 } from '@/features/auth/auth-data';
-import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
-import { monitoredOperation, reportFailure } from '@/lib/monitoring-core';
+import { isSupabaseConfigured } from '@/lib/supabase';
+import { reportFailure } from '@/lib/monitoring-core';
 
 export default function SignUpScreen() {
   const { signInGoogle } = useAuth();
@@ -35,11 +36,11 @@ export default function SignUpScreen() {
     try {
       if (google) setError(await signInGoogle());
       else {
-        const { data, error: cause } = await monitoredOperation('auth.sign_up', () => getSupabase().auth.signUp({
-          email: normalizeEmail(email),
+        const { data, error: cause } = await registerEmail(
+          email,
           password,
-          options: { emailRedirectTo: getAuthRedirectUrl() },
-        }));
+          getAuthRedirectUrl(),
+        );
         if (cause) setError(authErrorMessage(cause));
         else
           router.replace(
@@ -68,10 +69,7 @@ export default function SignUpScreen() {
       title="Dołącz do RazemGo"
       description="Załóż konto osoby dorosłej. W kolejnym kroku utworzysz profil swojej ekipy."
     >
-      <GoogleSignInButton
-        disabled={busy}
-        onPress={() => void register(true)}
-      />
+      <GoogleSignInButton disabled={busy} onPress={() => void register(true)} />
       <AuthField
         label="E-mail"
         value={email}

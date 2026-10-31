@@ -1,3 +1,4 @@
+import { pageRevision } from '@/data/contracts/page-revision';
 import { proposalFromRow } from '@/features/trips/trip-mapper';
 import { backendRequest } from '@/lib/backend-request';
 import { getSupabase } from '@/lib/supabase';
@@ -46,6 +47,7 @@ export async function fetchPublicGroups(
   return {
     items: (data.items as PublicGroupRow[]).map(publicGroupFromRow),
     totalCount: data.total_count,
+    revision: pageRevision(data.result_revision),
     hasMore: data.has_more,
     cursor: data.cursor,
   };
@@ -107,6 +109,7 @@ export async function fetchPublicGroup(
   return {
     ...publicGroupFromRow(data),
     trips: data.trips.map(proposalFromRow),
+    revision: pageRevision(data.result_revision),
     hasMore: data.has_more,
     cursor: data.cursor,
   };

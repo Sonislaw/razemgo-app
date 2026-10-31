@@ -181,6 +181,16 @@
   },
   {
     "schema": "messaging_private",
+    "name": "collection_changed",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "messaging_private",
     "name": "discard_legacy_group_preferences",
     "arguments": "",
     "definer": false,

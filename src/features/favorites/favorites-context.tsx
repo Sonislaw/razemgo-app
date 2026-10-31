@@ -1,6 +1,6 @@
 import { USE_DEMO_DATA } from '@/constants/app';
 import { useAuth } from '@/features/auth/auth-context';
-import { isPresenceActive } from '@/features/presence/presence-context';
+import { useAccountSyncJob } from '@/features/auth/account-sync-context';
 import { useProfile } from '@/features/profile/profile-context';
 import { useStoreSelector } from '@/hooks/use-store-selector';
 import {
@@ -11,7 +11,6 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
-import { AppState, Platform } from 'react-native';
 import { fetchFavorites, saveFavorite } from './favorites-repository';
 import {
   createFavoritesStore,
@@ -78,22 +77,20 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!store) return;
     store.activate();
-    const refresh = () => {
-      if (isPresenceActive()) void store.refresh();
-    };
-    refresh();
-    const timer = setInterval(refresh, 30000);
-    const foreground = AppState.addEventListener('change', refresh);
-    if (Platform.OS === 'web')
-      document.addEventListener('visibilitychange', refresh);
+    if (USE_DEMO_DATA) void store.refresh();
     return () => {
-      clearInterval(timer);
-      foreground.remove();
       store.dispose();
-      if (Platform.OS === 'web')
-        document.removeEventListener('visibilitychange', refresh);
     };
   }, [store]);
+  useAccountSyncJob(
+    'favorites',
+    async () => {
+      await store?.refresh();
+      const snapshot = store?.getSnapshot();
+      return snapshot?.status === 'ready' && !snapshot.error;
+    },
+    !!store && !USE_DEMO_DATA,
+  );
   return <FavoritesContext value={store}>{children}</FavoritesContext>;
 }
 export function useFavorites() {
@@ -105,7 +102,23 @@ export function useFavorites() {
   );
   return { ...snapshot, store, refresh: store?.refresh ?? noopRefresh };
 }
+export function useFavoritesStore() {
+  return useContext(FavoritesContext);
+}
 const EMPTY_STORE = { subscribe: noSubscription, getSnapshot: emptySnapshot };
+export function useFavoriteIds(kind: FavoriteKind, enabled = true) {
+  const store = useContext(FavoritesContext);
+  return useStoreSelector(
+    store ?? EMPTY_STORE,
+    (value) =>
+      enabled
+        ? kind === 'group'
+          ? value.groupIds
+          : value.tripIds
+        : EMPTY.tripIds,
+    (a, b) => a === b,
+  );
+}
 export function useFavorite(kind: FavoriteKind, id: string) {
   const store = useContext(FavoritesContext);
   const selection = useStoreSelector(store ?? EMPTY_STORE, (value) => ({

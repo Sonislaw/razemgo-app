@@ -1,3 +1,5 @@
+import { mergeRecentEntities } from '@/lib/bounded-entities';
+import { useAccountSyncJob } from '@/features/auth/account-sync-context';
 import { USE_DEMO_DATA } from '@/constants/app';
 import { demoOwnTrips } from '@/data/demo-adapter';
 import { useAuth } from '@/features/auth/auth-context';
@@ -14,7 +16,6 @@ import {
   type Dispatch,
   type ReactNode,
 } from 'react';
-import { AppState } from 'react-native';
 import {
   createOwnTripsState,
   getTripStatus,
@@ -76,17 +77,28 @@ export function OwnTripsProvider({ children }: { children: ReactNode }) {
   const [hasLoaded, setHasLoaded] = useState(USE_DEMO_DATA);
   const alive = useRef(true);
   const busy = useRef(false);
+  const lastRefreshSucceeded = useRef(false);
   const generation = useRef(0);
   const current = useRef(state);
   useEffect(() => {
     current.current = state;
   }, [state]);
   const cacheTrips = useCallback((trips: OwnedTrip[]) => {
-    const merged = [
-      ...new Map(
-        [...current.current.trips, ...trips].map((trip) => [trip.id, trip]),
-      ).values(),
-    ];
+    const latest = [...current.current.trips, ...trips]
+      .filter(
+        (trip) => trip.status === 'published' && trip.endDate > todayDate(),
+      )
+      .sort(
+        (a, b) =>
+          (b.publishedAt ?? '').localeCompare(a.publishedAt ?? '') ||
+          a.id.localeCompare(b.id),
+      )[0];
+    const merged = mergeRecentEntities(
+      current.current.trips,
+      trips,
+      100,
+      latest ? [latest.id] : [],
+    );
     current.current = { ...current.current, trips: merged };
     commit({ type: 'hydrate', trips: merged });
     setHasLoaded(true);
@@ -122,23 +134,26 @@ export function OwnTripsProvider({ children }: { children: ReactNode }) {
       const trips = await fetchOwnTrips();
       if (!alive.current || generation.current !== request) return;
       cacheTrips(trips);
+      lastRefreshSucceeded.current = true;
       setHasLoaded(true);
       setStatus('ready');
     } catch {
       if (!alive.current || generation.current !== request) return;
+      lastRefreshSucceeded.current = false;
       setStatus('error');
       setError(
         'Nie udało się pobrać wyjazdów. Sprawdź połączenie i spróbuj ponownie.',
       );
     }
   }, [userId, hasProfile, profileStatus, cacheTrips]);
-  useEffect(() => {
-    void Promise.resolve().then(refresh);
-    const subscription = AppState.addEventListener('change', (value) => {
-      if (value === 'active') void refresh();
-    });
-    return () => subscription.remove();
-  }, [refresh]);
+  useAccountSyncJob(
+    'trips',
+    async () => {
+      await refresh();
+      return lastRefreshSucceeded.current;
+    },
+    !USE_DEMO_DATA && !!userId && hasProfile && profileStatus === 'ready',
+  );
 
   async function run(
     action: OwnTripsAction,

@@ -33,6 +33,7 @@ export interface OwnTripCursor {
   query_key: string;
 }
 export interface OwnTripPageRow {
+  result_revision?: string;
   items: TripRow[];
   total_count: number;
   active_count: number;
@@ -42,6 +43,7 @@ export interface OwnTripPageRow {
   latest_trip: TripRow | null;
 }
 export interface AccountSummary {
+  domains?: Record<'mailbox' | 'notifications' | 'favorites' | 'trips', string>;
   revision: number;
   unread_messages: number;
   pending_invitations: number;

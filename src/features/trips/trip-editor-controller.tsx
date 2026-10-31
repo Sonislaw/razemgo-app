@@ -53,7 +53,7 @@ export function TripEditorScreen() {
   const insets = useSafeAreaInsets();
   const existing = state.trips.find((trip) => trip.id === id);
   const [initial] = useState(() => {
-    const values = existing ? toTripForm(existing) : newTripForm(profile);
+    const values = existing ? toTripForm(existing, profile) : newTripForm(profile);
     return changeTripMode(values, values.mode);
   });
   const [form, setForm] = useState<TripForm>(initial);

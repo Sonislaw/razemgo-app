@@ -5,6 +5,7 @@ import type {
   TravelGroup,
   TripMode,
   TripPlan,
+  TripParticipants,
 } from './travel';
 
 export type TripStatus =
@@ -20,6 +21,7 @@ export type OwnedTrip = TripPlan & {
   };
 };
 export interface TripForm {
+  participants: TripParticipants | null;
   mode: TripMode;
   startDate: string;
   endDate: string;

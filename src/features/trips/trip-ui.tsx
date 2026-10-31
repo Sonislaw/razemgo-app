@@ -101,13 +101,14 @@ export function OwnTripCard({ trip, onMenu }: {
   const { hidden_trip_ids } = useAccountAccess();
   const hidden = hidden_trip_ids.includes(trip.id);
   const searching = !hidden && isSearchingTrip(trip, todayDate());
+  const status = getTripStatus(trip, todayDate());
   return (
     <TripListingCard
       testID={'own-trip-' + trip.id}
       trip={trip}
       locationLabel={ownTripPlace(trip)}
       datesLabel={ownTripDates(trip)}
-      rightBadge={<TripStatusBadge status={getTripStatus(trip, todayDate())} />}
+      rightBadge={status === 'published' ? undefined : <TripStatusBadge status={status} />}
       footer={
         <View style={{ gap: 8 }}>
           {hidden ? <AppText variant="caption" color="textSecondary">Ogłoszenie ukryte przez moderację. Zmiana treści nie przywróci jego widoczności.</AppText> : null}

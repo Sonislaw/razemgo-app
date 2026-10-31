@@ -42,7 +42,7 @@ test('push health SQL: privacy, scheduler detection, due dates and durable incid
       await as(i);await one('select public.save_my_profile($1) as value',[{name:'Health crew',avatar_id:'camp-bear',kind:'couple',adult_count:2,child_count:0,child_age_bands:[],travel_mode:'Kamper',interests:[],animal_kinds:[],matching:{group_kinds:[],child_age_bands:[],description:''}}]);
     }
     await as(0);await one('select public.register_my_push_device($1,$2,$3,$4,$5)',[randomUUID(),randomUUID(),'ExpoPushToken['+randomUUID().replaceAll('-','')+']','android','b7305e7b-7e1c-4b12-9123-caa0587f49b0']);
-    const trip=await one('select public.save_my_trip($1) as value',[{mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',location_id:'health',location_name:'Test',location_kind:'village',location_region:'Test',travel_mode:'Kamper',description:'A fictional trip for a health check.',landscape:'coast',interests:[],animal_kinds:[],matching_group_kinds:[],matching_child_age_bands:[]}]);
+    const trip=await one('select public.save_my_trip($1) as value',[{adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',location_id:'health',location_name:'Test',location_kind:'village',location_region:'Test',travel_mode:'Kamper',description:'A fictional trip for a health check.',landscape:'coast',interests:[],animal_kinds:[],matching_group_kinds:[],matching_child_age_bands:[]}]);
     await as(1);await one('select public.send_contact_invitation($1,$2,$3) as value',[trip.id,'Private health invitation',randomUUID()]);
     await t.test('normal receipt wait and backoff are not stale; genuinely overdue work is visible',async()=>{
       assert.equal((await snapshot()).pending,1);

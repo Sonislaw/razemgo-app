@@ -772,9 +772,12 @@ export type Database = {
             };
             "trip_plans": {
                 Row: {
+                    "adult_count": number | null;
                     "animal_kinds": (string)[];
                     "campground_address": string;
                     "campground_name": string;
+                    "child_age_bands": (string)[];
+                    "child_count": number | null;
                     "create_key": string | null;
                     "created_at": string;
                     "description": string;
@@ -799,9 +802,12 @@ export type Database = {
                 };
                 ComputedFields: never;
                 Insert: {
+                    "adult_count"?: number | null;
                     "animal_kinds"?: (string)[];
                     "campground_address"?: string;
                     "campground_name"?: string;
+                    "child_age_bands"?: (string)[];
+                    "child_count"?: number | null;
                     "create_key"?: string | null;
                     "created_at"?: string;
                     "description"?: string;
@@ -825,9 +831,12 @@ export type Database = {
                     "visibility"?: string;
                 };
                 Update: {
+                    "adult_count"?: number | null;
                     "animal_kinds"?: (string)[];
                     "campground_address"?: string;
                     "campground_name"?: string;
+                    "child_age_bands"?: (string)[];
+                    "child_count"?: number | null;
                     "create_key"?: string | null;
                     "created_at"?: string;
                     "description"?: string;

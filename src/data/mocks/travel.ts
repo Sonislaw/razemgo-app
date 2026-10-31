@@ -121,6 +121,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
 export const DEMO_TRIPS: TripPlan[] = [
   {
     id: 'demo-coast',
+    participants: { adultCount: 2, childCount: 2, childAgeBands: ['4–6', '7–9'] },
     publishedAt: '2026-10-20T08:00:00.000Z',
     animals: { animals: [{ kind: 'dog' }] },
 
@@ -141,6 +142,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-lake',
+    participants: { adultCount: 2, childCount: 2, childAgeBands: ['7–9', '10–12'] },
     publishedAt: '2026-10-20T12:00:00.000Z',
     animals: { animals: [] },
 
@@ -161,6 +163,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-mountains',
+    participants: { adultCount: 2, childCount: 0, childAgeBands: [] },
     publishedAt: '2026-10-21T08:00:00.000Z',
     animals: { animals: [{ kind: 'cat' }] },
 
@@ -176,6 +179,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-forest',
+    participants: { adultCount: 1, childCount: 2, childAgeBands: ['0–3', '4–6'] },
     publishedAt: '2026-10-21T10:00:00.000Z',
     animals: { animals: [] },
 
@@ -191,6 +195,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-friends',
+    participants: { adultCount: 3, childCount: 0, childAgeBands: [] },
     publishedAt: '2026-10-21T14:00:00.000Z',
     animals: { animals: [] },
 
@@ -210,6 +215,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-bieszczady',
+    participants: { adultCount: 2, childCount: 2, childAgeBands: ['10–12', '13–17'] },
     publishedAt: '2026-10-21T18:00:00.000Z',
     animals: { animals: [{ kind: 'dog' }] },
 
@@ -231,6 +237,7 @@ export const DEMO_TRIPS: TripPlan[] = [
 export const MY_TRIPS: TripPlan[] = [
   {
     id: 'demo-my-coast',
+    participants: { adultCount: 2, childCount: 2, childAgeBands: ['4–6', '7–9'] },
     publishedAt: '2026-10-18T09:00:00.000Z',
     animals: { animals: [{ kind: 'dog' }] },
 
@@ -246,6 +253,7 @@ export const MY_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-my-idea',
+    participants: { adultCount: 2, childCount: 2, childAgeBands: ['4–6', '7–9'] },
     publishedAt: '2026-10-19T09:00:00.000Z',
     animals: { animals: [] },
 

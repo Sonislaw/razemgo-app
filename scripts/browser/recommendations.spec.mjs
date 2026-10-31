@@ -3,7 +3,7 @@ import { A, B, groupId, profile, state, backend, login, recommendCrew, recommend
 
 const uuid = n => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
 const plan = (n, owner) => ({
-  id: uuid(n), group_id: groupId(owner), mode: 'planned', status: 'published', visibility: 'public',
+  id: uuid(n), group_id: groupId(owner), adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned', status: 'published', visibility: 'public',
   start_date: '2099-05-21', end_date: '2099-05-24', location_id: 'pl-locality:4259',
   location_name: 'Chłapowo', location_region: 'pomorskie', location_kind: 'village',
   campground_name: 'Pod Wydmami', campground_address: '', travel_mode: 'Kamper',
@@ -12,28 +12,29 @@ const plan = (n, owner) => ({
   published_at: '2026-10-31T10:00:00Z',
 });
 
-test('trip and Start highlight concrete shared plans and details identify the same source, without percentages', async ({ page, context }) => {
+test('trip and Start highlight shared plans; trip details retain interests without the recommendation section', async ({ page, context }) => {
   const store = state(), own = plan(9901, A), other = plan(9902, B);
   other.published_at = '2026-10-31T11:00:00Z';
   for (const trip of [own, other]) store.trips.set(trip.id, trip);
   await backend(context, store); await login(page);
   const home = page.getByTestId('home-latest-listing');
   await expect(home).toContainText('Podobne plany');
+  await expect(home).not.toContainText('Terminy się pokrywają');
   await expect(home).not.toContainText(/\d+%/);
   await page.goto('/explore');
   const card = page.getByTestId('discovery-trip-' + other.id);
   await expect(card).toContainText('Podobne plany');
-  await expect(card).toContainText('Chłapowo · Terminy się pokrywają');
+  await expect(card).not.toContainText('Terminy się pokrywają');
+  await expect(card.getByText('Rowery', { exact: true })).toBeVisible();
+  await expect(card.getByText('Dzieci 4–6 lat', { exact: true })).toBeVisible();
   await expect(card).not.toContainText(/\d+%|wspólnych nocy|wspólne noce/);
   await page.setViewportSize({ width: 320, height: 800 });
   await card.screenshot({ path: '.expo/recommendation-trip-small.png' });
   expect(await card.evaluate(el => el.scrollWidth <= el.clientWidth + 2)).toBe(true);
   await card.getByRole('button', { name: 'Zobacz wyjazd', exact: true }).click();
-  const details = page.locator('[data-testid="recommendation-details"]:visible');
-  await expect(details).toContainText('Co Cię łączy z tym wyjazdem?');
-  await expect(details).toContainText('Na podstawie Twojego wyjazdu: Chłapowo');
-  await expect(details).toContainText('Terminy się pokrywają');
-  await expect(details).not.toContainText(/\d+%/);
+  await expect(page.getByRole('heading', { name: 'Wyjazd', exact: true })).toBeVisible();
+  await expect(page.locator('[data-testid="recommendation-details"]:visible')).toHaveCount(0);
+  await expect(page.getByText('Rowery', { exact: true }).filter({ visible: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Zaproś do kontaktu', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'Wróć do listy wyjazdów', exact: true }).click();
   await expect(card).toContainText('Podobne plany');
@@ -58,7 +59,8 @@ test('a card without shared evidence has no rating and still permits contact', a
   await expect(card).toBeVisible();
   await expect(card).not.toContainText(/Podobne plany|Wspólne zainteresowania|Podobny wiek dzieci|Za mało danych|\d+%/);
   await card.getByRole('button', { name: 'Zobacz wyjazd', exact: true }).click();
-  await expect(page.locator('[data-testid="recommendation-details"]:visible')).toContainText('Poznaj ten pomysł na wyjazd i porozmawiaj z ekipą.');
+  await expect(page.getByRole('heading', { name: 'Wyjazd', exact: true })).toBeVisible();
+  await expect(page.locator('[data-testid="recommendation-details"]:visible')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Zaproś do kontaktu', exact: true })).toBeEnabled();
 });
 
@@ -97,7 +99,8 @@ test('Start and crew listings use their own recommendation context while preserv
   await page.getByRole('tab',{name:'Start',exact:true}).click();
   const home=page.getByTestId('home-latest-listing');await expect(home).toContainText('Podobne plany');
   await home.getByRole('button',{name:'Zobacz wyjazd',exact:true}).click();
-  await expect(page.locator('[data-testid="recommendation-details"]:visible')).toContainText('Na podstawie Twojego wyjazdu: Chłapowo');
+  await expect(page.getByRole('heading', { name: 'Wyjazd', exact: true })).toBeVisible();
+  await expect(page.locator('[data-testid="recommendation-details"]:visible')).toHaveCount(0);
   const detailCalls=()=>store.tripSearchCalls.filter(call=>call.endpoint==='get_discovery_trip_v2');
   expect(detailCalls().at(-1).filters.start_date).toBeNull();
   await page.getByRole('button',{name:'Wróć do listy wyjazdów',exact:true}).click();
@@ -107,6 +110,7 @@ test('Start and crew listings use their own recommendation context while preserv
   await page.getByTestId('public-group-'+groupId(B)).click();
   const card=page.getByTestId('discovery-trip-'+other.id);await expect(card).toContainText('Podobne plany');
   await card.getByRole('button',{name:'Zobacz wyjazd',exact:true}).click();
-  await expect(page.locator('[data-testid="recommendation-details"]:visible')).toContainText('Na podstawie Twojego wyjazdu: Chłapowo');
+  await expect(page.getByRole('heading', { name: 'Wyjazd', exact: true })).toBeVisible();
+  await expect(page.locator('[data-testid="recommendation-details"]:visible')).toHaveCount(0);
   expect(detailCalls().at(-1).filters.start_date).toBeNull();
 });

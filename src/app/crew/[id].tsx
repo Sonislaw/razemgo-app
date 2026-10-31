@@ -10,7 +10,6 @@ import { useMessaging } from '@/features/messaging/messaging-context';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { useGroupProfile } from '@/features/groups/use-group-profile';
-import { GroupCompatibilitySummary } from '@/features/groups/group-compatibility-summary';
 import { GroupProfileCard } from '@/features/groups/group-profile-card';
 import { FavoriteButton, FavoritesNotice } from '@/features/favorites/favorite-button';
 import { ActivityIndicator, View } from 'react-native';
@@ -27,7 +26,7 @@ export default function PublicGroupScreen() {
   const available = !!data && !blocked;
   return <CollectionScreen testID="crew-profile-screen" data={available ? data.trips : []} itemGap={24}
     keyExtractor={item => item.trip.id}
-    renderItem={({ item }) => <DiscoveryTripCard {...item} onNavigate={preserveOnReturn} facts={{ ageBands: item.group.childAgeBands, matchingAgeBands: [] }} />}
+    renderItem={({ item }) => <DiscoveryTripCard {...item} onNavigate={preserveOnReturn} />}
     beforeList={<>
     <ProfileSubpageHeader title="Profil ekipy" backLabel="Wróć" onBack={back} />
     <FavoritesNotice />
@@ -35,8 +34,7 @@ export default function PublicGroupScreen() {
     {status === 'ready' && (!data || blocked) ? <EmptyState title="Ten profil jest niedostępny"
       description="Ekipa mogła wyłączyć widoczność, usunąć konto lub ograniczyć kontakt."
       action={<Button label="Wróć do Odkrywaj" onPress={() => router.dismissTo('/explore')} />} /> : data && !blocked ? <>
-      <GroupProfileCard group={data.group} about={data.about} recommendation={data.recommendation} expanded />
-      {data.recommendation ? <Card><GroupCompatibilitySummary recommendation={data.recommendation} detailed testID="profile-group-compatibility" /></Card> : null}
+      <GroupProfileCard group={data.group} about={data.about} expanded />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <FavoriteButton kind="group" targetId={data.group.id} />
         <View style={{ flex: 1, minWidth: 0 }}>

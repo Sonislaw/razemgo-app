@@ -17,11 +17,11 @@ select md5('synthetic-group-'||n)::uuid,true,'Syntetyczny profil do pomiarów.' 
 on conflict(group_id) do update set discoverable=true,about=excluded.about;
 alter table public.trip_plans disable trigger user;
 insert into public.trip_plans(id,group_id,mode,status,visibility,start_date,end_date,location_id,location_name,location_region,location_kind,
-  campground_name,description,travel_mode,landscape,interests,animal_kinds,matching_group_kinds,matching_child_age_bands,published_at)
+  campground_name,description,travel_mode,landscape,interests,animal_kinds,matching_group_kinds,matching_child_age_bands,published_at,adult_count,child_count,child_age_bands)
 select md5('synthetic-trip-'||n)::uuid,md5('synthetic-group-'||((n-1)/5+1))::uuid,'planned','published','public',
   current_date+7+n%120,current_date+10+n%120,'pl-locality:4259','Chłapowo','pomorskie','village','Kemping testowy',
   'Syntetyczny wyjazd nad morze, rowery i odpoczynek. '||n,'Kamper',
-  (array['coast','lake','mountain','forest'])[1+n%4],array['Rowery'],case when n%4=0 then array['dog'] else '{}'::text[] end,'{}','{}',now()-n*interval '1 minute'
+  (array['coast','lake','mountain','forest'])[1+n%4],array['Rowery'],case when n%4=0 then array['dog'] else '{}'::text[] end,'{}','{}',now()-n*interval '1 minute',2,1,array['4–6']
 from generate_series(1,50000) n;
 alter table public.trip_plans enable trigger user;
 alter table public.contact_invitations disable trigger user;

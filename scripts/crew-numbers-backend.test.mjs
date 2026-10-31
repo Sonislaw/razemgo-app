@@ -79,7 +79,7 @@ test('crew numbers: backfill, immutable server assignment, exact directory searc
       const invitation=await rpc('send_profile_invitation',[groups[1],'Cześć!',randomUUID()]);
       await as(1);await rpc('respond_contact_invitation',[invitation,'accepted']);await as(0);
       assert.equal((await rpc('get_my_mailbox')).contacts.find(c=>c.id===groups[1]).crew_number,numbers[1]);
-      await as(1);const trip=await rpc('save_my_trip',[{mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',
+      await as(1);const trip=await rpc('save_my_trip',[{adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',
         location_id:'test',location_name:'Chłapowo',location_region:'Pomorskie',location_kind:'village',campground_name:'',campground_address:'',travel_mode:'Kamper',
         description:'Spokojny wyjazd nad morze i wspólne rowery.',landscape:'coast',interests:[],animal_kinds:[],matching_group_kinds:[],matching_child_age_bands:[]},null,false,randomUUID()]);
       await as(0);const listing=(await db.query('select * from public.list_public_trips($1)',[trip.id])).rows[0];assert.equal(listing.crew.crew_number,numbers[1]);

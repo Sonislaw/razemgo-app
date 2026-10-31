@@ -8,9 +8,9 @@ Ogłoszenia i ekipy otrzymują najwyżej jedną etykietę, opartą na potwierdzo
 | --- | --- | --- |
 | `similar_plans` | Podobne plany | Wspólny termin oraz miejscowość lub region; tylko wyjazdy. |
 | `shared_interests` | Wspólne zainteresowania | Przynajmniej jedno wspólne zainteresowanie. |
-| `similar_children` | Podobny wiek dzieci | Dzieci obu ekip należą do wspólnego przedziału wieku. |
+| `similar_children` | Podobny wiek dzieci | W ogłoszeniach jadące dzieci, a w profilach dzieci obu ekip należą do wspólnego przedziału wieku. |
 
-Kolejność w tabeli rozstrzyga wybór etykiety. Dwa pierwsze powody są widoczne na karcie, pełniejsze uzasadnienie w szczegółach. Powody pokazywane w podsumowaniu zastępują odpowiadające im zwykłe tagi. Brak wyróżnienia nie blokuje kontaktu i nie otrzymuje oceny negatywnej ani komunikatu o niewystarczających danych. Sam pojazd, zwierzę lub klimat nie daje etykiety. Powitanie prezentuje „Pomysł na wyjazd”, bez osobistego dopasowania.
+Kolejność w tabeli rozstrzyga wybór etykiety. Dwa pierwsze powody są widoczne na karcie listy. Szczegóły wyjazdu oraz profil ekipy nie zawierają sekcji „Co Cię łączy…”. Szczegóły wyjazdu pokazują pełny zestaw zainteresowań w sekcji „Pomysł na wspólny czas”, a profil ekipy pełny zestaw zainteresowań i przedziałów wieku dzieci w jej karcie. Powody pokazywane w podsumowaniu zastępują odpowiadające im zwykłe tagi. Brak wyróżnienia nie blokuje kontaktu i nie otrzymuje oceny negatywnej ani komunikatu o niewystarczających danych. Sam pojazd, zwierzę lub klimat nie daje etykiety. Powitanie prezentuje „Pomysł na wyjazd”, bez osobistego dopasowania.
 
 Sortowanie ma nazwę „Polecane”. Domyślna kolejność wyjazdów pozostaje chronologiczna według publikacji; domyślna kolejność ekip nadal wykorzystuje wewnętrzny ranking. Reakcje, serca i stan online pozostają odrębne.
 
@@ -52,3 +52,5 @@ Sekcja „Kogo chcę poznać?” znika z profilu i edytora. Model interfejsu, za
 Migracja `202610310002_remove_profile_preferences.sql` usuwa dotychczasowe wartości z `group_preferences` i neutralizuje zapisy starszych klientów przez trigger. Tabela oraz odpowiedź starego `save_my_profile` pozostają zgodne; nie są źródłem rankingu. Ranking ekip korzysta z rzeczywistych danych, a zoptymalizowany odczyt nadal ogranicza stronę przed budowaniem pełnych kart. Kursor V2 otrzymuje nowy klucz kontekstu. RLS i uprawnienia pozostają bez zmian. Preview nie otrzymuje tej migracji.
 
 Weryfikacja wycofania preferencji: 522 dotychczasowe testy Node/PGlite oraz nowy test migracji przeszły; 24 scenariusze Playwright, lint, TypeScript, kontrola granic modułów i eksporty Android/web również przeszły. Na rzeczywistym Dev potwierdzono 37 migracji, brak niepustych wycofanych preferencji, pięcioelementowe strony list oraz brak uprawnień anonimowych. Metro działa na 8081. Weryfikacja na fizycznym telefonie pozostaje oddzielna.
+
+Skład uczestników ogłoszenia jest niezależny od profilu. Filtry wieku i powody rekomendacji ogłoszeń wykorzystują dzieci jadące na wyjazd; nie odczytują ich składu z profilu organizatora. [Kontrakty i zachowanie](TRIP_PARTICIPANTS.md).

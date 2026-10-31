@@ -36,7 +36,7 @@ test('durable notification inbox, ownership, receipts and push preferences', asy
       const profile={name:'Ekipa '+i,avatar_id:'camp-bear',kind:'couple',adult_count:2,child_count:0,child_age_bands:[],travel_mode:'Kamper',interests:[],animal_kinds:[],matching:{group_kinds:[],child_age_bands:[],description:''}};
       groups.push((await one('select public.save_my_profile($1) as value',[profile])).group.id);
     }
-    const plan={mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',location_id:'test',location_name:'Chłapowo',location_region:'Pomorskie',location_kind:'village',travel_mode:'Kamper',description:'Spokojny wyjazd nad morze, rowery i ognisko.',landscape:'coast',interests:[],animal_kinds:[],matching_group_kinds:[],matching_child_age_bands:[]};
+    const plan={adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',location_id:'test',location_name:'Chłapowo',location_region:'Pomorskie',location_kind:'village',travel_mode:'Kamper',description:'Spokojny wyjazd nad morze, rowery i ognisko.',landscape:'coast',interests:[],animal_kinds:[],matching_group_kinds:[],matching_child_age_bands:[]};
     await as(0);const trip=await one('select public.save_my_trip($1) as value',[plan]);
     await as(1);const invitation=await one('select public.send_contact_invitation($1,$2,$3) as value',[trip.id,'Spotkajmy się na wyjeździe!',randomUUID()]);
     await t.test('inbox is created with no push devices and contains no private message text',async()=>{
@@ -102,12 +102,12 @@ test('durable notification inbox, ownership, receipts and push preferences', asy
       await assert.rejects(inbox(first.fetched_at,null));await assert.rejects(read(Array(101).fill(randomUUID())));
     });
     await t.test('proposals are durable, deduplicated and exclude private plans, mismatching dates and children',async()=>{
-      await as(1);const own=await one('select public.save_my_trip($1) as value',[{...plan,mode:'flexible'}]);
+      await as(1);const own=await one('select public.save_my_trip($1) as value',[{...plan,adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'flexible'}]);
       let data=await inbox();let matches=data.items.filter(n=>n.kind==='proposal');assert.equal(matches.length,1);assert.equal(matches[0].proposed_trip_id,trip.id);
       await read([matches[0].id]);assert.ok((await inbox()).items.find(n=>n.id===matches[0].id).read_at);
       await as(0);await one('select public.save_my_trip($1) as value',[{...plan,start_date:'2099-06-01',end_date:'2099-06-03'}]);
       await as(1);assert.equal((await inbox()).items.filter(n=>n.kind==='proposal').length,1);
-      await one('select public.save_my_trip($1,$2) as value',[{...plan,mode:'flexible',matching_group_kinds:['family'],matching_child_age_bands:['7–9']},own.id]);
+      await one('select public.save_my_trip($1,$2) as value',[{...plan,adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'flexible',matching_group_kinds:['family'],matching_child_age_bands:['7–9']},own.id]);
       await as(2);const candidate=await one('select public.save_my_trip($1,null,true) as value',[plan]);
       await as(1);assert.equal((await inbox()).items.some(n=>n.proposed_trip_id===candidate.id),false);
       await as(2);await one('select public.save_my_trip($1,$2,false) as value',[plan,candidate.id]);

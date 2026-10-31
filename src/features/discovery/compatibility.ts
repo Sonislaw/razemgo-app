@@ -41,7 +41,7 @@ function calculate(proposal: TripProposal, profile: TravelerProfile, filters: Di
   if (interests.length) add(overlap(interests, proposal.trip.interests), 20, 'Wspólne zainteresowania');
   const ages = filters.childAgeBands.length ? filters.childAgeBands
     : source ? source.matching.childAgeBands : [];
-  if (ages.length) add(overlap(ages, proposal.group.childAgeBands), 15, 'Pasujący wiek dzieci');
+  if (ages.length) add(overlap(ages, (proposal.trip.participants?.childAgeBands ?? [])), 15, 'Pasujący wiek dzieci');
   const kinds = filters.groupKinds?.length ? filters.groupKinds
     : source ? source.matching.groupKinds : [];
   if (kinds.length) add(kinds.includes(proposal.group.kind) ? 1 : 0, 10, 'Preferowany rodzaj ekipy');
@@ -49,7 +49,7 @@ function calculate(proposal: TripProposal, profile: TravelerProfile, filters: Di
   if (theirPreferences?.groupKinds.length)
     add(theirPreferences.groupKinds.includes(profile.group.kind) ? 1 : 0, 10, 'Wasze ekipy pasują do swoich preferencji');
   if (theirPreferences?.childAgeBands.length)
-    add(overlap(theirPreferences.childAgeBands, profile.group.childAgeBands), 10, 'Twoja ekipa pasuje wiekiem dzieci');
+    add(overlap(theirPreferences.childAgeBands, source ? source.participants?.childAgeBands ?? [] : profile.group.childAgeBands), 10, 'Twoja ekipa pasuje wiekiem dzieci');
   const modes = source?.travelModes ?? profile.group.travelModes;
   if (modes.length) add(overlap(modes, proposal.trip.travelModes ?? proposal.group.travelModes), 5, 'Podobny sposób podróżowania');
   const pets = (source?.animals ?? profile.group.animals).animals.map(item => item.kind);

@@ -53,7 +53,7 @@ test('recommendation V2: factual evidence, contextual ranking, bounded pages and
       assert.equal((await compare(exact.id,discoveryFiltersForTrip(tripFromRow(alias)))).recommendation.label,'similar_plans');
       const partial=await save(1,{start_date:'2099-05-23',end_date:'2099-05-27'});
       assert.equal((await compare(partial.id)).recommendation.label,'similar_plans');
-      const region=await save(1,{mode:'flexible',location_kind:'region',location_id:'pl-region:pomorskie',location_name:'Pomorskie',location_region:''});
+      const region=await save(1,{adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'flexible',location_kind:'region',location_id:'pl-region:pomorskie',location_name:'Pomorskie',location_region:''});
       assert.equal((await compare(region.id)).recommendation.reasons[0].code,'same_region');
       const disjoint=await save(1,{start_date:'2099-06-01',end_date:'2099-06-05'});
       assert.equal((await compare(disjoint.id)).recommendation.label,'shared_interests');

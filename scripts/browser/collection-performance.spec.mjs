@@ -17,7 +17,7 @@ function seed(store, owner = B, count = 50, base = 10000) {
   const trips = Array.from({ length: count }, (_, i) => ({
     id: uuid(base + i),
     group_id: groupId(owner),
-    mode: 'planned',
+    adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',
     status: 'published',
     visibility: 'public',
     start_date: '2099-05-21',

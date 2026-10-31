@@ -6,7 +6,7 @@ function seed(store, archived) {
   return Array.from({ length: 13 }, (_, index) => {
     const trip = {
       id: '00000000-0000-4000-8000-' + String((archived ? 82000 : 81000) + index).padStart(12, '0'),
-      group_id: groupId(A), mode: 'planned',
+      group_id: groupId(A), adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',
       status: archived ? index % 2 ? 'cancelled' : 'completed' : 'published',
       visibility: 'public', start_date: archived ? '2026-05-21' : '2099-05-21',
       end_date: archived ? '2026-05-24' : '2099-05-24',

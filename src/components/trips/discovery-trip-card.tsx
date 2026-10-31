@@ -1,5 +1,4 @@
 import { router } from 'expo-router';
-import type { MatchFacts } from '@/features/discovery/filter-trips';
 import type { TripProposal } from '@/types/travel';
 import { TripListingAction, TripListingCard } from './trip-listing-card';
 import { FavoriteButton } from '@/features/favorites/favorite-button';
@@ -8,13 +7,12 @@ import { TripReactionsButton } from '@/features/reactions/trip-reactions';
 import type { Recommendation } from '@/features/recommendations/recommendation';
 
 interface DiscoveryTripCardProps extends TripProposal {
-  facts: Pick<MatchFacts, 'ageBands' | 'matchingAgeBands'>;
   recommendation?: Recommendation;
   recommendationScope?: 'search' | 'default';
   onNavigate?: () => void;
 }
 
-export function DiscoveryTripCard({ trip, group, facts, recommendation, recommendationScope = 'default', onNavigate }: DiscoveryTripCardProps) {
+export function DiscoveryTripCard({ trip, group, recommendation, recommendationScope = 'default', onNavigate }: DiscoveryTripCardProps) {
   return (
     <TripListingCard
       testID={'discovery-trip-' + trip.id}
@@ -22,7 +20,6 @@ export function DiscoveryTripCard({ trip, group, facts, recommendation, recommen
       group={group}
       onPressGroup={() => { onNavigate?.(); router.push({ pathname: '/crew/[id]', params: { id: group.id } }); }}
       travelModes={trip.travelModes}
-      ageBands={facts.matchingAgeBands.length ? facts.matchingAgeBands : facts.ageBands}
       recommendation={recommendation}
       favoriteAction={<FavoriteButton kind="trip" targetId={trip.id} compact translucent />}
       footer={

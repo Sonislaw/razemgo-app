@@ -1,6 +1,6 @@
 import type { ProfileAvatarId } from '../../types/avatar';
 import type { ContactInvitation, LocalReport } from '../../types/messaging';
-import type { TripPlan } from '../../types/travel';
+import type { ChildAgeBand, TripPlan } from '../../types/travel';
 
 export type ContactRow = {
   id: string;
@@ -10,6 +10,9 @@ export type ContactRow = {
   adult_count: number;
 };
 export type TripSnapshot = {
+  adult_count?: number | null;
+  child_count?: number | null;
+  child_age_bands?: ChildAgeBand[];
   id: string;
   group_id: string;
   mode: 'planned' | 'flexible';

@@ -8,7 +8,7 @@ const [A,B,C]=[randomUUID(),randomUUID(),randomUUID()];
 const sessions={[A]:randomUUID(),[B]:randomUUID(),[C]:randomUUID()};
 const project='b7305e7b-7e1c-4b12-9123-caa0587f49b0';
 const profile={name:'Ekipa',avatar_id:'camp-bear',kind:'couple',adult_count:2,child_count:0,child_age_bands:[],travel_mode:'Kamper',interests:[],animal_kinds:[],matching:{group_kinds:[],child_age_bands:[],description:''}};
-const plan={mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',location_id:'test',location_name:'Chłapowo',location_region:'Pomorskie',location_kind:'village',campground_name:'',campground_address:'',travel_mode:'Kamper',description:'Spokojny wyjazd nad morze, rowery i ognisko.',landscape:'coast',interests:[],animal_kinds:[],matching_group_kinds:[],matching_child_age_bands:[]};
+const plan={adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',location_id:'test',location_name:'Chłapowo',location_region:'Pomorskie',location_kind:'village',campground_name:'',campground_address:'',travel_mode:'Kamper',description:'Spokojny wyjazd nad morze, rowery i ognisko.',landscape:'coast',interests:[],animal_kinds:[],matching_group_kinds:[],matching_child_age_bands:[]};
 const device=()=>({id:randomUUID(),key:randomUUID(),token:'ExponentPushToken['+randomUUID().replaceAll('-','')+']'});
 
 test('push outbox: three event types, consent, session binding, leases, retries and isolation',async t=>{

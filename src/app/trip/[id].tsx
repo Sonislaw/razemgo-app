@@ -1,5 +1,5 @@
+import { TripParticipantsSummary } from '@/features/trips/trip-participants-fields';
 import { DataStatus } from '@/components/ui/data-status';
-import { RecommendationDetails } from '@/components/ui/recommendation';
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useDiscoveryTrip } from '@/features/discovery/use-trip-search';
@@ -29,7 +29,6 @@ import {
 } from '@/features/discovery/filter-trips';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { Radius } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { TripContactAction } from '@/features/messaging/trip-contact-action';
 import { AnimalInformation } from '@/features/animals/animal-ui';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
@@ -46,7 +45,6 @@ export default function TripDetailsScreen() {
   const { id, recommendationScope } = useLocalSearchParams<{ id: string; recommendationScope?: string }>();
   const { filters } = useDiscovery();
   const { item: proposal, status, error, refresh } = useDiscoveryTrip(id, recommendationScope === 'search' ? filters : INITIAL_FILTERS);
-  const theme = useTheme();
   const back = () =>
     router.canGoBack() ? router.back() : router.replace('/explore');
   if (!proposal && status !== 'ready') return (
@@ -68,8 +66,6 @@ export default function TripDetailsScreen() {
       </Screen>
     );
   const { trip, group } = proposal;
-  const recommendedInterests = new Set(proposal.recommendation?.reasons.filter(reason => reason.code === 'interest').map(reason => reason.value));
-  const remainingInterests = trip.interests.filter(interest => !recommendedInterests.has(interest));
   return (
     <Screen>
       <HeaderRow>
@@ -113,12 +109,13 @@ export default function TripDetailsScreen() {
         <TripTimeline trip={trip} />
       </View>
       <TripMapCard trip={trip} />
+      <Card><SectionTitle title="Skład wyjazdu" /><TripParticipantsSummary value={trip.participants} /></Card>
       <Card>
         <SectionTitle title="Pomysł na wspólny czas" />
         <AppText color="textSecondary">{trip.description}</AppText>
         <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} compact />
-        {remainingInterests.length ? <View style={layout.wrap}>
-          {remainingInterests.map((interest) => (
+        {trip.interests.length ? <View style={layout.wrap}>
+          {trip.interests.map((interest) => (
             <Chip key={interest} label={interest} />
           ))}
         </View> : null}
@@ -126,9 +123,6 @@ export default function TripDetailsScreen() {
       <Card>
         <AnimalInformation animals={trip.animals} />
       </Card>
-      {proposal.recommendation ? <Card style={{ backgroundColor: theme.positiveBackground }}>
-        <RecommendationDetails recommendation={proposal.recommendation} kind="trip" />
-      </Card> : null}
       <Card>
         <View style={layout.row}>
           <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={56} />
@@ -141,12 +135,6 @@ export default function TripDetailsScreen() {
             </AppText>
           </View>
         </View>
-        <AppText>
-          {group.adultCount} {group.adultCount === 1 ? 'dorosły' : 'dorosłych'}
-          {group.childAgeBands.length
-            ? ' · dzieci: ' + group.childAgeBands.join(', ') + ' lat'
-            : ' · bez dzieci'}
-        </AppText>
         <TravelModeBadges modes={trip.travelModes ?? group.travelModes} />
         <Button label="Zobacz profil ekipy" variant="secondary" onPress={() => router.push({ pathname: '/crew/[id]', params: { id: group.id } })} />
       </Card>

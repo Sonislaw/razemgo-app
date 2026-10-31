@@ -19,7 +19,7 @@ test('privacy settings link to real visibility and blocked-crew screens without 
 
 test('own-trip contacts explain invitation acceptance and keep access to an accepted conversation',async({page,context})=>{
   const store=state(),id='00000000-0000-4000-8000-000000000901';
-  const trip={id,group_id:groupId(A),mode:'planned',status:'published',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',
+  const trip={id,group_id:groupId(A),adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',status:'published',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',
     location_id:'pl-locality:4259',location_name:'Chłapowo',location_region:'pomorskie',location_kind:'village',campground_name:'',campground_address:'',
     travel_mode:'Kamper',description:'Spokojny wyjazd nad morze, rowery i wspólne ognisko.',landscape:'coast',interests:[],animal_kinds:[],
     matching_group_kinds:[],matching_child_age_bands:[],published_at:'2026-10-24T10:00:00Z'};

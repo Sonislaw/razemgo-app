@@ -97,7 +97,7 @@ test('push preferences wait for the server and persist independently across acco
 
 for(const kind of ['favorite_trip','proposal']) test(`${kind} opens its trip from the bell and preserves read state without navigating unavailable entries`,async({page,context})=>{
   const store=state(),tripId='00000000-0000-4000-8000-000000009900';
-  store.trips.set(tripId,{id:tripId,group_id:groupId(B),mode:'planned',status:'published',visibility:'public',
+  store.trips.set(tripId,{id:tripId,group_id:groupId(B),adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',status:'published',visibility:'public',
     start_date:'2027-05-21',end_date:'2027-05-24',location_id:'test',location_name:'Chłapowo',location_region:'Pomorskie',location_kind:'village',
     campground_name:'Pod Wydmami',campground_address:'',travel_mode:'Kamper',description:'Nowy wyjazd ulubionej ekipy nad morze.',
     landscape:'coast',interests:[],animal_kinds:[],matching_group_kinds:[],matching_child_age_bands:[],
@@ -138,7 +138,7 @@ test('marking alerts read leaves the chat unread and opening chat acknowledges i
   const trip='00000000-0000-4000-8000-000000009003';
   store.invitations=[{id:entry.invitation_id,sender_group_id:groupId(B),recipient_group_id:groupId(A),
     trip_id:null,source_trip_id:null,trip_reference:trip,
-    trip_snapshot:{id:trip,group_id:groupId(A),mode:'planned',description:'Spokojny weekend przy morzu.',
+    trip_snapshot:{id:trip,group_id:groupId(A),adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',description:'Spokojny weekend przy morzu.',
       start_date:'2027-05-21',end_date:'2027-05-24',location_name:'Chlapowo',location_region:'Pomorskie',
       campground_name:'',landscape:'coast'},source_trip_snapshot:null,text:'Jedziemy razem!',
     status:'accepted',created_at:entry.created_at}];

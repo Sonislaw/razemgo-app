@@ -8,7 +8,7 @@ test('favorites backend: persistence, privacy, unavailable targets, filtering an
   const db = new PGlite(), users = [], groups = [], trips = [];
   const profile = { avatar_id: 'camp-bear', kind: 'couple', adult_count: 2, child_count: 0, child_age_bands: [],
     travel_mode: 'Kamper', interests: ['Rowery'], animal_kinds: [], matching: { group_kinds: [], child_age_bands: [], description: '' } };
-  const plan = { mode: 'planned', visibility: 'public', start_date: '2099-05-21', end_date: '2099-05-24',
+  const plan = { adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned', visibility: 'public', start_date: '2099-05-21', end_date: '2099-05-24',
     location_id: 'pl-locality:test', location_name: 'Chłapowo', location_region: 'Pomorskie', location_kind: 'village',
     campground_name: '', campground_address: '', travel_mode: 'Kamper', description: 'Wspólny wyjazd nad morze, rowery i ognisko.', landscape: 'coast',
     interests: ['Rowery'], animal_kinds: [], matching_group_kinds: [], matching_child_age_bands: [] };

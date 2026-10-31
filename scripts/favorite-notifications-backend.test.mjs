@@ -7,7 +7,7 @@ import { PGlite } from '@electric-sql/pglite';
 test('favorite crew publications: durable inbox, default-on push, deduplication, revocation and access control', async t => {
   const db = new PGlite();
   const users = Array.from({ length: 4 }, () => randomUUID()), sessions = users.map(() => randomUUID()), groups = [];
-  const plan = { mode: 'planned', visibility: 'public', start_date: '2099-05-21', end_date: '2099-05-24',
+  const plan = { adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned', visibility: 'public', start_date: '2099-05-21', end_date: '2099-05-24',
     location_id: 'test', location_name: 'Chłapowo', location_region: 'Pomorskie', location_kind: 'village',
     campground_name: '', campground_address: '', travel_mode: 'Kamper', description: 'Wyjazd ulubionej ekipy nad morze i wspólne rowery.',
     landscape: 'coast', interests: [], animal_kinds: [], matching_group_kinds: [], matching_child_age_bands: [] };

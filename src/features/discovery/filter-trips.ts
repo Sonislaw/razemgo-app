@@ -181,7 +181,7 @@ export function filterProposals(
       return false;
     if (
       filters.childAgeBands.length &&
-      !group.childAgeBands.some((band) => filters.childAgeBands.includes(band))
+      !(trip.participants?.childAgeBands ?? []).some((band) => filters.childAgeBands.includes(band))
     )
       return false;
     if (
@@ -298,8 +298,8 @@ export function getMatchFacts(
       : referenceRange
         ? 'own-plans'
         : 'none',
-    ageBands: proposal.group.childAgeBands,
-    matchingAgeBands: proposal.group.childAgeBands.filter((band) =>
+    ageBands: proposal.trip.participants?.childAgeBands ?? [],
+    matchingAgeBands: (proposal.trip.participants?.childAgeBands ?? []).filter((band) =>
       preferredAges.includes(band),
     ),
     commonInterests: proposal.trip.interests.filter((interest) =>
@@ -397,7 +397,7 @@ export function selectHomeRecommendations(
         commonInterests: proposal.trip.interests.filter((interest) =>
           interests.includes(interest),
         ),
-        matchingAges: proposal.group.childAgeBands.filter((age) =>
+        matchingAges: (proposal.trip.participants?.childAgeBands ?? []).filter((age) =>
           ownTrip.matching.childAgeBands.includes(age),
         ),
       });
@@ -426,7 +426,7 @@ export function selectHomeRecommendations(
     .filter(
       ({ group, trip }) =>
         (!preferredAges.length ||
-          group.childAgeBands.some((age) => preferredAges.includes(age))) &&
+          (trip.participants?.childAgeBands ?? []).some((age) => preferredAges.includes(age))) &&
         trip.interests.some((interest) =>
           profile.group.interests.includes(interest),
         ),
@@ -439,7 +439,7 @@ export function selectHomeRecommendations(
       commonInterests: proposal.trip.interests.filter((interest) =>
         profile.group.interests.includes(interest),
       ),
-      matchingAges: proposal.group.childAgeBands.filter((age) =>
+      matchingAges: (proposal.trip.participants?.childAgeBands ?? []).filter((age) =>
         preferredAges.includes(age),
       ),
       ownTripId: searchableTrips[0]?.id,

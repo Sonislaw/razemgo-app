@@ -138,6 +138,8 @@ export async function removeTrip(id: string) {
 }
 export function tripErrorMessage(error: unknown, fallback: string) {
   const code = (error as { code?: string })?.code;
+  if (code === '23514' && (error as { message?: string })?.message === 'Trip participants required')
+    return 'Uzupełnij skład uczestników w edycji wyjazdu, a następnie ponów operację.';
   if (code === 'P0002')
     return 'Ten wyjazd jest niedostępny. Odśwież listę wyjazdów.';
   if (code === '22023')

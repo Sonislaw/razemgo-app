@@ -3,7 +3,7 @@ import { A,B,groupId,state,backend,login } from './trip-fixtures.mjs';
 
 const TRIP='00000000-0000-4000-8000-000000009950';
 function fixture(){
-  const store=state();store.trips.set(TRIP,{id:TRIP,group_id:groupId(B),mode:'planned',status:'published',visibility:'public',
+  const store=state();store.trips.set(TRIP,{id:TRIP,group_id:groupId(B),adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',status:'published',visibility:'public',
     start_date:'2027-05-21',end_date:'2027-05-24',location_id:'test',location_name:'Chłapowo',location_region:'Pomorskie',location_kind:'village',
     campground_name:'Pod Wydmami',campground_address:'',travel_mode:'Kamper',description:'Plaża, rowery i kawa z widokiem na morze.',
     landscape:'coast',interests:['Rowery'],animal_kinds:[],matching_group_kinds:[],matching_child_age_bands:[],

@@ -5,7 +5,7 @@ import { createMessagingState, messagingReducer, unreadCount, notificationCount,
 import { selectHomeNotifications } from '../src/features/notifications/notification-state.ts';
 
 const seed={invitations:[],acceptedInvitations:[],conversations:[],messages:[]};
-const snapshot={id:'trip',group_id:'a',mode:'planned',description:'Spokojny wyjazd nad morze.',start_date:'2027-05-21',end_date:'2027-05-24',location_name:'Chłapowo',location_region:'Pomorskie',campground_name:'Pod Wydmami',landscape:'coast'};
+const snapshot={id:'trip',group_id:'a',adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',description:'Spokojny wyjazd nad morze.',start_date:'2027-05-21',end_date:'2027-05-24',location_name:'Chłapowo',location_region:'Pomorskie',campground_name:'Pod Wydmami',landscape:'coast'};
 const row={contacts:[{id:'b',name:'Ekipa B',avatar_id:'camp-bear',adult_count:2}],
   invitations:[{id:'inv',sender_group_id:'b',recipient_group_id:'a',trip_id:null,source_trip_id:null,trip_reference:'trip',trip_snapshot:snapshot,source_trip_snapshot:null,text:'Cześć!',status:'accepted',created_at:'2026-10-24T12:00:00Z'}],
   conversations:[{id:'chat',invitation_id:'inv',sender_group_id:'b',recipient_group_id:'a',updated_at:'2026-10-24T12:00:00Z',blocked:false,unread_count:77,self_read_sequence:0,other_read_sequence:0,

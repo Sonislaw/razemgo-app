@@ -42,7 +42,10 @@ export function tripRecommendation(proposal: TripProposal, profile: TravelerProf
     if (!dateMatch && dates) for (let delta = -tolerance; delta <= tolerance; delta++) {
       if (sharedNights({ startDate: shiftDate(dates.startDate, delta), endDate: shiftDate(dates.endDate, delta) }, proposal.trip) > 0) { dateMatch = 1; break; }
     }
-    const group = groupRecommendation(profile.group, proposal.group);
+    const ownParticipants = source ? source.participants : profile.group;
+    const otherParticipants = proposal.trip.participants;
+    const group = groupRecommendation({ ...profile.group, childCount: ownParticipants?.childCount ?? 0, childAgeBands: ownParticipants?.childAgeBands ?? [] },
+      { ...proposal.group, childCount: otherParticipants?.childCount ?? 0, childAgeBands: otherParticipants?.childAgeBands ?? [] });
     const interests = source?.interests.length ? source.interests : profile.group.interests;
     const common = [...new Set(interests.filter(value => proposal.trip.interests.includes(value)))].sort();
     const interestReasons: RecommendationReason[] = common.map(value => ({ code: 'interest', value }));

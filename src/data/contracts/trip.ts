@@ -10,6 +10,9 @@ import type {
 import type { GroupRow } from './profile';
 
 export type TripRow = {
+  adult_count?: number | null;
+  child_count?: number | null;
+  child_age_bands?: ChildAgeBand[];
   id: string;
   group_id: string;
   create_key?: string | null;

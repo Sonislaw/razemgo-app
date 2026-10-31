@@ -847,7 +847,7 @@ test('unavailable migration and failed requests are retryable and distinct from 
   ).toBeVisible();
 });
 
-test('positive profile explanations, sort selection and sparse data stay readable on mobile', async ({page, context}) => {
+test('crew cards retain recommendations while profiles show full facts without the matching section', async ({page, context}) => {
   const store = state();
   await groupBackend(context, store);
   await login(page);
@@ -864,18 +864,21 @@ test('positive profile explanations, sort selection and sparse data stay readabl
   await expect(card).toBeVisible();
   expect(store.lastGroupSort).toBe('alphabetical');
   await card.click();
-  const explanation=page.getByTestId('profile-group-compatibility');
-  await expect(explanation).toContainText('Co Cię łączy z tą ekipą?');
-  await expect(explanation).toContainText('Rowery');
+  const profileCard=page.getByTestId('group-profile-card');
+  await expect(profileCard).toContainText('Rowery');
+  await expect(profileCard).toContainText('Dzieci '+profile(B).group.child_age_bands.join(', ')+' lat');
+  await expect(page.getByTestId('profile-group-compatibility')).toHaveCount(0);
+  await expect(page.locator('[data-testid="recommendation-details"]:visible')).toHaveCount(0);
   store.groupMatch={score:0,reasons:[],limited_data:false,evaluated_weight:100};
   await page.reload();
-  await expect(explanation).toContainText('Rowery');
-  await expect(explanation).not.toContainText(/\d+%|Niska zgodność|Za mało danych/);
+  await expect(profileCard).toContainText('Rowery');
+  await expect(profileCard).not.toContainText(/\d+%|Niska zgodność|Za mało danych/);
   store.groupMatch={score:null,reasons:[],limited_data:true,evaluated_weight:10};
   store.groupRecommendation={version:2,label:null,reasons:[],context:{kind:'profile'}};
   await page.reload();
-  await expect(explanation).toContainText('Poznaj ekipę i sprawdź jej plany.');
-  await expect(explanation).not.toContainText(/\d+%|Za mało danych|Ograniczone dane/);
+  await expect(profileCard).toContainText('Rowery');
+  await expect(page.getByTestId('profile-group-compatibility')).toHaveCount(0);
+  await expect(profileCard).not.toContainText(/\d+%|Za mało danych|Ograniczone dane/);
   await page.goto('/explore');
   await page.getByRole('tab',{name:'Ekipy',exact:true}).click();
   await expect(card).toBeVisible();

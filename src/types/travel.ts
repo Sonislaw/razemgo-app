@@ -5,6 +5,12 @@ export type ChildAgeBand = '0–3' | '4–6' | '7–9' | '10–12' | '13–17';
 export type TripMode = 'planned' | 'flexible';
 export type LandscapeKind = 'coast' | 'lake' | 'mountain' | 'forest';
 
+export interface TripParticipants {
+  adultCount: number;
+  childCount: number;
+  childAgeBands: ChildAgeBand[];
+}
+
 export interface TravelGroup {
   id: string;
   crewNumber?: number;
@@ -23,6 +29,7 @@ export interface DateRange {
   endDate: string;
 }
 interface TripBase extends DateRange {
+  participants?: TripParticipants | null;
   travelModes?: string[];
   matching?: { groupKinds: TravelGroup['kind'][]; childAgeBands: ChildAgeBand[] };
   id: string;

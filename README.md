@@ -14,7 +14,7 @@ Aplikacja do poznawania osób podróżujących kamperem, przyczepą, kampervanem
 
 Pracujemy w Dev. Preview ma własne konta, dane i samodzielny APK dla testerów. Zmiana kodu lub wdrożenie do Dev nie aktualizuje Preview. Procedura wydawania: [ENVIRONMENTS.md](docs/ENVIRONMENTS.md).
 
-Aktualne wydanie: [Preview 1.3.0 i Dev 1.3.0](docs/RELEASE_1.3.0.md). Preview działa samodzielnie, a Dev korzysta z klienta deweloperskiego z Metro. Dev ma 37 migracji, Preview zachowuje 35. Najnowsze zmiany Dev to [rekomendacje bez procentowej oceny i wycofanie prywatnych preferencji profilu](docs/RECOMMENDATIONS.md). Raport techniczny: [architektura, wydajność i bezpieczeństwo](docs/ARCHITECTURE_HARDENING.md).
+Aktualne wydanie: [Preview 1.3.0 i Dev 1.3.0](docs/RELEASE_1.3.0.md). Preview działa samodzielnie, a Dev korzysta z klienta deweloperskiego z Metro. Dev ma 39 migracji, Preview zachowuje 35. Najnowsze zmiany Dev to [skład uczestników konkretnego wyjazdu](docs/TRIP_PARTICIPANTS.md) oraz [opisowe rekomendacje](docs/RECOMMENDATIONS.md). Raport techniczny: [architektura, wydajność i bezpieczeństwo](docs/ARCHITECTURE_HARDENING.md).
 
 ## Uruchomienie
 

@@ -1,9 +1,10 @@
+import { tripParticipantsSummary } from '@/lib/trip-participants';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { AppText, layout } from '@/components/ui/primitives';
-import { RecommendationBadge, RecommendationReasons } from '@/components/ui/recommendation';
-import { cardReasons, type Recommendation } from '@/features/recommendations/recommendation';
+import { RecommendationBadge } from '@/components/ui/recommendation';
+import type { Recommendation } from '@/features/recommendations/recommendation';
 import { tripAnimalSummary } from '@/features/animals/animal-data';
 import { AnimalPortrait } from '@/features/animals/animal-portrait';
 import { formatTripDates, getTripLocation } from '@/features/discovery/filter-trips';
@@ -12,7 +13,7 @@ import { useGroupOnline } from '@/features/presence/presence-context';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { useTheme } from '@/hooks/use-theme';
-import type { ChildAgeBand, TravelGroup, TripPlan } from '@/types/travel';
+import type { TravelGroup, TripPlan } from '@/types/travel';
 import { LandscapePhoto } from './landscape-photo';
 import { TripPlanningIcon } from './trip-planning-icon';
 import { TripTimeline } from './trip-timeline';
@@ -31,7 +32,6 @@ const INTEREST_ICONS: Record<string, IconName> = {
 interface TripListingCardProps {
   trip: TripPlan;
   group?: TravelGroup;
-  ageBands?: ChildAgeBand[];
   travelModes?: string[];
   recommendation?: Recommendation;
   exampleRecommendation?: boolean;
@@ -53,7 +53,6 @@ interface TripListingCardProps {
 export function TripListingCard({
   trip,
   group,
-  ageBands = group?.childAgeBands ?? [],
   travelModes = group?.travelModes ?? [],
   recommendation,
   exampleRecommendation,
@@ -74,11 +73,8 @@ export function TripListingCard({
   const theme = useTheme();
   const { fontScale } = useWindowDimensions();
   const travelMode = travelModes[0];
+  const ageBands = trip.participants?.childCount ? trip.participants.childAgeBands : [];
   const online = useGroupOnline(group?.id);
-  const shownReasons = cardReasons(recommendation);
-  const shownInterests = new Set(shownReasons.filter(reason => reason.code === 'interest').map(reason => reason.value));
-  const shownAges = new Set(shownReasons.filter(reason => reason.code === 'child_age').map(reason => reason.value));
-  const remainingAges = ageBands.filter(age => !shownAges.has(age));
   const content = (
     <>
       <View style={styles.hero}>
@@ -136,14 +132,19 @@ export function TripListingCard({
           </View>
         </View>
         <TripTimeline trip={trip} />
-        <RecommendationReasons recommendation={recommendation} />
-        {ageBands.length || group?.childCount || trip.animals.animals.length || trip.interests.length ? (
+        {!group || ageBands.length || trip.participants?.childCount || trip.animals.animals.length || trip.interests.length ? (
           <View style={styles.facts}>
-            {remainingAges.length || (!ageBands.length && group?.childCount) ? (
+            {!group ? (
+              <View style={[styles.fact, { backgroundColor: theme.muted }]}>
+                <Icon name="people" size={18} />
+                <AppText variant="caption" style={styles.shrink}>{tripParticipantsSummary(trip.participants)}</AppText>
+              </View>
+            ) : null}
+            {ageBands.length || trip.participants?.childCount ? (
               <View style={[styles.fact, { backgroundColor: theme.muted }]}>
                 <Icon name="people" size={18} />
                 <AppText variant="caption" style={styles.shrink}>
-                  {remainingAges.length ? 'Dzieci ' + remainingAges.join(', ') + ' lat' : 'Wiek dzieci niepodany'}
+                  {ageBands.length ? 'Dzieci ' + ageBands.join(', ') + ' lat' : 'Wiek dzieci niepodany'}
                 </AppText>
               </View>
             ) : null}
@@ -155,7 +156,7 @@ export function TripListingCard({
                 <AppText variant="caption" style={styles.shrink}>{tripAnimalSummary(trip.animals)}</AppText>
               </View>
             ) : null}
-            {trip.interests.filter(interest => !shownInterests.has(interest)).map((interest) => (
+            {trip.interests.map((interest) => (
               <View key={interest} style={[styles.fact, { backgroundColor: theme.muted }]}>
                 <Icon name={INTEREST_ICONS[interest] ?? 'compass'} size={18} />
                 <AppText variant="caption" style={styles.shrink}>{interest}</AppText>
@@ -171,7 +172,7 @@ export function TripListingCard({
             <View style={styles.flex}>
               <AppText variant="label">{group.name}</AppText>
               <AppText variant="caption" color="textSecondary">
-                {group.adultCount} {group.adultCount === 1 ? 'dorosły' : 'dorosłych'}
+                {tripParticipantsSummary(trip.participants)}
                 {travelMode ? ' · ' + (travelMode === 'Van' ? 'Kampervan' : travelMode) : ''}
               </AppText>
             </View>

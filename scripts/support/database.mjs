@@ -55,7 +55,7 @@ export const profile = (name) => ({
   },
 });
 export const trip = {
-  mode: 'planned',
+  adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',
   visibility: 'public',
   start_date: '2099-05-21',
   end_date: '2099-05-24',

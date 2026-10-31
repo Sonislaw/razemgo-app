@@ -23,7 +23,7 @@ test('moderation: privileged access, evidence, reversible decisions, old session
       await as(i);groups.push((await one('select public.save_my_profile($1) as value',[{name:['Moderator','Reported crew','Reporting crew'][i],avatar_id:'camp-bear',kind:'couple',adult_count:2,child_count:0,child_age_bands:[],travel_mode:'Kamper',interests:[],animal_kinds:[],matching:{group_kinds:[],child_age_bands:[],description:''}}])).group.id);
     }
     await admin();await db.query('insert into moderation_private.administrators(user_id) values($1)',[users[0]]);
-    const plan={mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',location_id:'test',location_name:'Test',location_region:'Test',location_kind:'village',travel_mode:'Kamper',description:'Original description saved as evidence.',landscape:'coast',interests:[],animal_kinds:[],matching_group_kinds:[],matching_child_age_bands:[]};
+    const plan={adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',location_id:'test',location_name:'Test',location_region:'Test',location_kind:'village',travel_mode:'Kamper',description:'Original description saved as evidence.',landscape:'coast',interests:[],animal_kinds:[],matching_group_kinds:[],matching_child_age_bands:[]};
     await as(1);const trip=await one('select public.save_my_trip($1) as value',[plan]);
     await as(2);const key=randomUUID(),report=await one('select public.report_trip($1,$2,$3) as value',[trip.id,'Spam',key]);
     const detail=()=>one('select public.admin_report_detail($1) as value',[report]);

@@ -1,3 +1,4 @@
+import { TripParticipantsFields } from './trip-participants-fields';
 import { DateRangeField } from '@/components/trips/date-range-field';
 import { TripListingCard } from '@/components/trips/trip-listing-card';
 import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
@@ -173,6 +174,7 @@ export function TripDestinationStep({
         multiline
         hint={`Min. ${MIN_TRIP_DESCRIPTION_LENGTH} znaków · ${tripDescriptionLength(form.description)}/${MAX_TRIP_DESCRIPTION_LENGTH}. Początek opisu pokażemy na karcie wyjazdu.`}
       />
+      <TripParticipantsFields value={form.participants} onChange={value => update('participants', value)} />
       <View style={{ gap: 8 }}>
         <FieldLabel required>Jak podróżujesz na ten wyjazd?</FieldLabel>
         <TravelModePicker

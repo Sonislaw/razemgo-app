@@ -23,7 +23,7 @@ test('crew pages load five at a time, show progress, retry and restore profile s
   const trip = {
     id: tripId,
     group_id: groupId(B),
-    mode: 'planned',
+    adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',
     status: 'published',
     visibility: 'public',
     start_date: '2099-05-21',

@@ -5,7 +5,7 @@ import {A,B,groupId,profile,state,backend,login} from './trip-fixtures.mjs';
 test.use({timezoneId:'Europe/Warsaw'});
 const uuid=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
 function plan(n,owner,start,end,status='published'){
-  return{id:uuid(n),group_id:groupId(owner),mode:'planned',status,visibility:'public',start_date:start,end_date:end,
+  return{id:uuid(n),group_id:groupId(owner),adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',status,visibility:'public',start_date:start,end_date:end,
     location_id:'pl-locality:4259',location_name:'Chłapowo',location_region:'pomorskie',location_kind:'village',campground_name:'Pod Wydmami',campground_address:'',
     travel_mode:'Przyczepa',description:'Plaża, rowery i dużo czasu na wspólny odpoczynek.',landscape:'coast',interests:['Rowery'],animal_kinds:['dog'],
     matching_group_kinds:[],matching_child_age_bands:[],published_at:'2026-10-26T10:00:00Z'};

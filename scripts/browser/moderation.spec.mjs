@@ -73,7 +73,7 @@ test('a suspended account restores into the blocked screen and can still sign ou
 test('reporting a trip supports cancellation, retry and an accessible success confirmation',async({page,context})=>{
   const store=state();
   const trip='00000000-0000-4000-8000-000000000903';
-  store.trips.set(trip,{id:trip,group_id:groupId(B),mode:'planned',status:'published',visibility:'public',
+  store.trips.set(trip,{id:trip,group_id:groupId(B),adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',status:'published',visibility:'public',
     start_date:'2027-05-21',end_date:'2027-05-24',location_id:'pl-locality:test',location_name:'Chłapowo',
     location_region:'Pomorskie',location_kind:'village',campground_name:'Pod Wydmami',campground_address:'',
     travel_mode:'Kamper',description:'Spokojny wyjazd nad morze, rowery i wspólne ognisko.',landscape:'coast',

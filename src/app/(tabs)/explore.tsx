@@ -40,7 +40,6 @@ export default function ExploreScreen() {
   const sourceTrip = ownTrips.trips.find(
     (trip) => trip.id === filters.sourceTripId,
   );
-  const preferredAges = filters.childAgeBands;
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
   const dateRange = resolveDiscoveryRange(filters);
@@ -124,7 +123,6 @@ export default function ExploreScreen() {
       data={proposals}
       keyExtractor={proposal => proposal.trip.id}
       renderItem={({ item: proposal }) => <DiscoveryTripCard {...proposal}
-        facts={{ ageBands: proposal.group.childAgeBands, matchingAgeBands: proposal.group.childAgeBands.filter(band => preferredAges.includes(band)) }}
         recommendation={proposal.recommendation} recommendationScope="search" onNavigate={preserveOnReturn} />}
       beforeList={<>
       {switcher}

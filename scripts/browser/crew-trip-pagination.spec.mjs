@@ -21,7 +21,7 @@ test('crew listings fetch 5/10/13 with a spinner, retry and restore the listing 
     trips = Array.from({ length: 13 }, (_, i) => ({
       id: uuid(8700 + i),
       group_id: groupId(B),
-      mode: 'planned',
+      adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',
       status: 'published',
       visibility: 'public',
       start_date: '2099-05-21',

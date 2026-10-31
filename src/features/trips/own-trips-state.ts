@@ -1,3 +1,4 @@
+import { cloneTripParticipants, participantsFromProfile, validateTripParticipants } from '../../lib/trip-participants.ts';
 import { isValidDate } from '../../lib/calendar-date.ts';
 import type {
   OwnedTrip,
@@ -90,9 +91,10 @@ export function discoveryFiltersForTrip(trip: OwnedTrip): DiscoveryFilters {
     childAgeBands: [],
   };
 }
-export function toTripForm(trip: OwnedTrip): TripForm {
+export function toTripForm(trip: OwnedTrip, profile?: TravelerProfile): TripForm {
   const place = trip.mode === 'planned' ? trip.destination : trip.travelArea;
   return {
+    participants: cloneTripParticipants(trip.participants) ?? (profile ? participantsFromProfile(profile.group) : null),
     mode: trip.mode,
     startDate: trip.startDate,
     endDate: trip.endDate,
@@ -110,6 +112,7 @@ export function toTripForm(trip: OwnedTrip): TripForm {
 }
 export function newTripForm(profile: TravelerProfile): TripForm {
   return {
+    participants: participantsFromProfile(profile.group),
     mode: 'planned',
     startDate: '',
     endDate: '',
@@ -163,6 +166,7 @@ export function validateTripForm(form: TripForm, step?: 1 | 2): string[] {
   }
   if (!step || step === 2) {
     errors.push(...validateAnimals(form.animals.animals));
+    errors.push(...validateTripParticipants(form.participants));
     const location = findTripLocation(form.locationId);
     if (!location || !isLocationAllowedForTrip(location, form.mode))
       errors.push(
@@ -210,6 +214,7 @@ export function tripFromForm(
       ? form.campgroundAddress?.trim()
       : '';
   const base = {
+    participants: cloneTripParticipants(form.participants),
     id,
     groupId,
     ...(publishedAt ? { publishedAt } : {}),

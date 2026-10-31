@@ -41,7 +41,7 @@ test('group directory and profile invitations: real local SQL, privacy, safety a
     const visible = (value, about = 'Publiczny opis ekipy.') => rpc('save_my_group_visibility', [value, about]);
     const invite = (target, token = randomUUID(), text = 'Cześć! Może wspólnie zaplanujemy wyjazd?') => rpc('send_profile_invitation', [target, text, token]);
     const respond = (id, response) => rpc('respond_contact_invitation', [id, response]);
-    const plan = { mode: 'planned', visibility: 'public', start_date: '2099-05-21', end_date: '2099-05-24', location_id: 'test',
+    const plan = { adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned', visibility: 'public', start_date: '2099-05-21', end_date: '2099-05-24', location_id: 'test',
       location_name: 'Chłapowo', location_region: 'Pomorskie', location_kind: 'village', travel_mode: 'Kamper',
       description: 'Spokojny wyjazd nad morze i wspólne ognisko.', landscape: 'coast', interests: ['Rowery'], animal_kinds: [], matching_group_kinds: [], matching_child_age_bands: [] };
 

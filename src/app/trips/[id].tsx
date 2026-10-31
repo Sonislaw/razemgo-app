@@ -1,3 +1,4 @@
+import { TripParticipantsSummary } from '@/features/trips/trip-participants-fields';
 import { Landscape } from '@/components/trips/landscape';
 import { TripMapCard } from '@/components/trips/trip-map-card';
 import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
@@ -10,6 +11,7 @@ import {
   Chip,
   layout,
   Screen,
+  SectionTitle,
 } from '@/components/ui/primitives';
 import { DEMO_OWN_TRIPS } from '@/data/mocks/owned-trips';
 import { AnimalInformation } from '@/features/animals/animal-ui';
@@ -225,6 +227,7 @@ export default function OwnTripDetailsScreen() {
             <TripTimeline trip={trip} />
           </View>
           <TripMapCard trip={trip} />
+          <Card><SectionTitle title="Skład wyjazdu" /><TripParticipantsSummary value={trip.participants} /></Card>
           <Card>
             <View style={layout.row}>
               <GroupAvatar groupId={trip.groupId} size={56} />

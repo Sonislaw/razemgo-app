@@ -9,7 +9,7 @@ test('proposal health: migration, durable age, cron failures, isolated access an
   const migration='202610270003_proposal_health.sql';
   const profile={name:'Health crew',avatar_id:'camp-bear',kind:'couple',adult_count:2,child_count:0,child_age_bands:[],
     travel_mode:'Kamper',interests:[],animal_kinds:[],matching:{group_kinds:[],child_age_bands:[],description:'PRIVATE_PROFILE'}};
-  const plan={mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-25',location_id:'pl-locality:4259',
+  const plan={adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-25',location_id:'pl-locality:4259',
     location_name:'Chłapowo',location_region:'pomorskie',location_kind:'village',travel_mode:'Kamper',
     description:'PRIVATE_TRIP: spokojny wyjazd nad morze i wspólne wycieczki.',landscape:'coast',interests:[],animal_kinds:[],
     matching_group_kinds:[],matching_child_age_bands:[]};

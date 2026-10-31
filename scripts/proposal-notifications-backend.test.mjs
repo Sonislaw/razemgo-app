@@ -7,7 +7,7 @@ import {PGlite} from '@electric-sql/pglite';
 test('background proposals: closed-app discovery, grouped delivery, privacy and bounded retries',async t=>{
   const db=new PGlite(),users=Array.from({length:4},randomUUID),groups=[];
   const migration='202610270002_background_proposals.sql';
-  const plan={mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-25',
+  const plan={adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-25',
     location_id:'test-coast',location_name:'Chłapowo',location_region:'Pomorskie',location_kind:'village',
     travel_mode:'Kamper',description:'Morze, spokojny wypoczynek i wspólne wycieczki rowerowe.',landscape:'coast',
     interests:['Rowery'],animal_kinds:[],matching_group_kinds:[],matching_child_age_bands:[]};
@@ -95,7 +95,7 @@ test('background proposals: closed-app discovery, grouped delivery, privacy and 
       assert.ok((await inbox()).items.some(n=>n.proposed_trip_id===p.id));
     });
     await scenario('country areas work and similarly named regions are not confused',async()=>{
-      await publish(0,{mode:'flexible',location_id:'country:PL',location_name:'Polska',location_region:'',location_kind:'country'},own.id);
+      await publish(0,{adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'flexible',location_id:'country:PL',location_name:'Polska',location_region:'',location_kind:'country'},own.id);
       const p=await publish(1,{location_name:'Zakopane',location_region:'Małopolskie'});await run();await as(0);
       assert.ok((await inbox()).items.some(n=>n.proposed_trip_id===p.id));
       await publish(0,{location_name:'Katowice',location_region:'Śląskie'},own.id);

@@ -7,7 +7,7 @@ function seeded() {
   store.trips.set(TRIP, {
     id: TRIP,
     group_id: groupId(A),
-    mode: 'planned',
+    adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',
     status: 'published',
     visibility: 'public',
     start_date: '2027-05-21',

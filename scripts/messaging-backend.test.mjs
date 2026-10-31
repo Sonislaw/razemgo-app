@@ -11,7 +11,7 @@ const key=()=>`00000000-0000-4000-8000-${String(sequence++).padStart(12,'0')}`;
 const profile={name:'Ekipa',avatar_id:'camp-bear',kind:'family',adult_count:2,child_count:1,
   child_age_bands:['4–6'],travel_mode:'Kamper',interests:['Rowery'],animal_kinds:[],
   matching:{group_kinds:['family'],child_age_bands:['4–6'],description:'PRIVATE PREFERENCES'}};
-const plan={mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',
+const plan={adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',
   location_id:'pl-locality:test',location_name:'Chłapowo',location_region:'Pomorskie',location_kind:'village',
   campground_name:'Pod Wydmami',campground_address:'',travel_mode:'Kamper',
   description:'Spokojny wyjazd nad morze, rowery i ognisko.',landscape:'coast',

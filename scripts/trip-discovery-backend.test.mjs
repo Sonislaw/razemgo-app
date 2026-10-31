@@ -12,7 +12,7 @@ import {discoveryFiltersPayload} from '../src/features/discovery/discovery-data.
 test('server trip discovery: filters, global ranking, cursors, counts and authorization',async t=>{
   const db=new PGlite(),users=[],groups=[],profiles=[],trips=[];
   const profile={name:'Ekipa kontrolna',avatar_id:'camp-bear',kind:'family',adult_count:2,child_count:1,child_age_bands:['4–6'],travel_mode:'Kamper',interests:['Rowery','Ognisko'],animal_kinds:['dog'],matching:{group_kinds:['family'],child_age_bands:['4–6'],description:'PRIVATE_PROFILE_SENTINEL'}};
-  const base={mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',location_id:'pl-locality:4259',location_name:'Chłapowo',location_region:'Pomorskie',location_kind:'village',campground_name:'Pod Wydmami',campground_address:'',travel_mode:'Kamper',description:'Spokojny wyjazd nad morze, rowery i ognisko.',landscape:'coast',interests:['Rowery'],animal_kinds:['dog'],matching_group_kinds:['family'],matching_child_age_bands:['4–6']};
+  const base={adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',location_id:'pl-locality:4259',location_name:'Chłapowo',location_region:'Pomorskie',location_kind:'village',campground_name:'Pod Wydmami',campground_address:'',travel_mode:'Kamper',description:'Spokojny wyjazd nad morze, rowery i ognisko.',landscape:'coast',interests:['Rowery'],animal_kinds:['dog'],matching_group_kinds:['family'],matching_child_age_bands:['4–6']};
   try{
     await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;
       create table auth.users(id uuid primary key);create table auth.sessions(id uuid primary key,user_id uuid references auth.users on delete cascade,not_after timestamptz);
@@ -42,7 +42,7 @@ test('server trip discovery: filters, global ranking, cursors, counts and author
       assert.equal(await rpc('get_discovery_trip',[own.id]),null);
     });
     await create({name:'Para z lasu',kind:'couple',child_count:0,child_age_bands:[],animal_kinds:['cat']});
-    const flexible=await save(2,{mode:'flexible',location_id:'pl-region:pomorskie',location_name:'Pomorskie',location_region:'',location_kind:'region',campground_name:'',landscape:'forest',animal_kinds:['cat']});
+    const flexible=await save(2,{adult_count:2,child_count:0,child_age_bands:[],mode:'flexible',location_id:'pl-region:pomorskie',location_name:'Pomorskie',location_region:'',location_kind:'region',campground_name:'',landscape:'forest',animal_kinds:['cat']});
     await as(0);
     await t.test('all filters use AND across categories, OR within a category and literal normalized place search',async()=>{
       const cases=[
@@ -90,7 +90,7 @@ test('server trip discovery: filters, global ranking, cursors, counts and author
       await rpc('set_my_trip_favorite',[other.id,false]);assert.equal(await count(f),0);
     });
     await t.test('ranking preserves the existing formula for filters, source plans and the best single own plan',async()=>{
-      await save(0,{landscape:'forest',location_id:'pl-region:pomorskie',location_kind:'region',mode:'flexible',location_name:'Pomorskie',location_region:'',interests:['Kajaki'],animal_kinds:['cat']});await as(0);
+      await save(0,{landscape:'forest',location_id:'pl-region:pomorskie',location_kind:'region',adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'flexible',location_name:'Pomorskie',location_region:'',interests:['Kajaki'],animal_kinds:['cat']});await as(0);
       for(const filters of [INITIAL_FILTERS,{...INITIAL_FILTERS,sourceTripId:own.id},{...INITIAL_FILTERS,sourceTripId:other.id},
         {...INITIAL_FILTERS,childAgeBands:['7–9'],groupKinds:['couple']},
         {...INITIAL_FILTERS,dateRangeId:'custom',customDateRange:{startDate:'2099-05-24',endDate:'2099-05-27'},dateFlexibilityDays:2}]){

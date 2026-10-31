@@ -18,9 +18,9 @@ test('bounded trip pages, load-more retry, full filter counts, global sorting an
   const cards=page.locator('[data-testid^="discovery-trip-"]');
   const screen=page.getByTestId('discovery-screen');
   await expect(page.getByText('Propozycje · 13',{exact:true})).toBeVisible();await expect(cards).toHaveCount(5);
-  expect(store.tripSearchCalls.filter(c=>c.endpoint==='search_public_trips_v2').every(c=>c.page_size===1||c.page_size===5)).toBe(true);
+  expect(store.tripSearchCalls.filter(c=>c.endpoint==='search_public_trips_v3').every(c=>c.page_size===1||c.page_size===5)).toBe(true);
   let releaseMore;const morePending=new Promise(resolve=>{releaseMore=resolve;});
-  await page.route('**/rest/v1/rpc/search_public_trips_v2',async route=>{
+  await page.route('**/rest/v1/rpc/search_public_trips_v3',async route=>{
     if(route.request().postDataJSON()?.after_cursor)await morePending;
     await route.fallback();
   });
@@ -34,24 +34,23 @@ test('bounded trip pages, load-more retry, full filter counts, global sorting an
   store.failMore=false;await page.getByRole('button',{name:'Spróbuj ponownie',exact:true}).click();await expectLoaded(screen,10);
   await page.getByRole('button',{name:'Pokaż więcej wyjazdów',exact:true}).click();await expectLoaded(screen,13);
   await expect(page.getByRole('button',{name:'Pokaż więcej wyjazdów',exact:true})).toHaveCount(0);
-  expect(store.tripSearchCalls.filter(c=>c.endpoint==='search_public_trips_v2').every(c=>c.page_size===1||c.page_size===5)).toBe(true);
+  expect(store.tripSearchCalls.filter(c=>c.endpoint==='search_public_trips_v3').every(c=>c.page_size===1||c.page_size===5)).toBe(true);
   await page.getByRole('tab',{name:'Start',exact:true}).click();await expect(page).toHaveURL('http://localhost:8085/');
   await page.getByRole('tab',{name:'Odkrywaj',exact:true}).click();await expect(cards).toHaveCount(5);
   await expect(page.getByText('Propozycje · 13',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Pokaż więcej wyjazdów',exact:true}).click();await expectLoaded(screen,10);
   await page.getByRole('tab',{name:'Ekipy',exact:true}).click();await expect(cards).toHaveCount(0);
   await page.getByRole('tablist',{name:'Odkrywaj',exact:true}).getByRole('tab',{name:'Wyjazdy',exact:true}).click();await expect(cards).toHaveCount(5);
-  await page.getByRole('button',{name:'Sortowanie: Domyślnie',exact:true}).click();await page.getByRole('radio',{name:'Polecane',exact:true}).click();
-  await expect(cards).toHaveCount(5);await expect(cards.first()).toContainText('Najlepszy plan');
+  await expect(page.getByRole('button',{name:/^Sortowanie:/})).toHaveCount(0);
   await page.getByRole('button',{name:'Otwórz filtry',exact:true}).click();await page.getByRole('checkbox',{name:'Klimat wyjazdu: Morze',exact:true}).click();
   await expect(page.getByRole('button',{name:'Pokaż wyniki · 1',exact:true})).toBeVisible();await page.getByRole('button',{name:'Pokaż wyniki · 1',exact:true}).click();
   await expect(page.getByText('Propozycje · 1',{exact:true})).toBeVisible();await expect(cards).toHaveCount(1);
   await page.goto('/trip/'+uuid(8012));await expect(page.getByRole('heading',{name:'Kontrolny wyjazd do lasu numer 12.',exact:true})).toBeVisible();
-  expect(store.tripSearchCalls.some(c=>c.endpoint==='get_discovery_trip_v2'&&c.target_trip_id===uuid(8012))).toBe(true);
+  expect(store.tripSearchCalls.some(c=>c.endpoint==='get_discovery_trip_v3'&&c.target_trip_id===uuid(8012))).toBe(true);
 });
 test('returning from a listing or its crew restores all viewed pages and the scroll position',async({page,context})=>{
   const store=state();seed(store);await backend(context,store);
-  await page.route('**/rest/v1/rpc/get_public_group_v2',async route=>{
+  await page.route('**/rest/v1/rpc/get_public_group_v3',async route=>{
     if(route.request().method()==='OPTIONS')return route.fallback();
     return route.fulfill({json:{crew:profile(B).group,recommendation:recommendCrew(profile(B).group),about:'Ekipa na wspólne wyjazdy.',active_trip_count:0,trips:[],has_more:false,cursor:null},
       headers:{'access-control-allow-origin':'http://localhost:8085'}});
@@ -64,10 +63,10 @@ test('returning from a listing or its crew restores all viewed pages and the scr
   const openTrip=target.getByRole('button',{name:'Zobacz wyjazd',exact:true});
   await scrollToRow(screen,openTrip);const tripScroll=await screen.evaluate(el=>el.scrollTop);
   expect(tripScroll).toBeGreaterThan(1000);
-  await openTrip.click();await expect(page).toHaveURL('http://localhost:8085/trip/'+uuid(8009)+'?recommendationScope=search');
+  await openTrip.click();await expect(page).toHaveURL('http://localhost:8085/trip/'+uuid(8009));
   await page.getByRole('button',{name:'Zobacz profil ekipy',exact:true}).click();
   await expect(page).toHaveURL('http://localhost:8085/crew/'+groupId(B));
-  await page.getByRole('button',{name:'Wróć',exact:true}).click();await expect(page).toHaveURL('http://localhost:8085/trip/'+uuid(8009)+'?recommendationScope=search');
+  await page.getByRole('button',{name:'Wróć',exact:true}).click();await expect(page).toHaveURL('http://localhost:8085/trip/'+uuid(8009));
   await page.getByRole('button',{name:'Wróć do listy wyjazdów',exact:true}).click();
   await expect(page).toHaveURL('http://localhost:8085/explore');await expectLoaded(screen,10);
   await expect(page.getByRole('button',{name:'Pokaż więcej wyjazdów',exact:true})).toBeEnabled();

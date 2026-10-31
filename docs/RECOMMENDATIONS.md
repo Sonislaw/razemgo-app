@@ -1,4 +1,9 @@
-# Rekomendacje bez procentów — Dev
+# Archiwum: rekomendacje bez procentów
+
+**Mechanizm wycofany z bieżącej aplikacji Dev 31.10.2026.** Etykiety i ranking
+zostały usunięte. Aktualne zachowanie opisuje [wyszukiwanie bez dopasowania](UNRANKED_DISCOVERY.md).
+Poniższy opis dotyczy starszych kontraktów V2, zachowanych dla zainstalowanych
+klientów. Automatyczne powiadomienia o propozycjach pozostają aktywne.
 
 ## Zachowanie
 

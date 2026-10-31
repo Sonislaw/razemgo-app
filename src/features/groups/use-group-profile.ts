@@ -2,10 +2,6 @@ import { USE_DEMO_DATA } from '@/constants/app';
 import { useAuth } from '@/features/auth/auth-context';
 import { refreshTripResults } from '@/features/discovery/discovery-repository';
 import { INITIAL_FILTERS } from '@/features/discovery/filter-trips';
-import { useProfile } from '@/features/profile/profile-context';
-import { useOwnTrips } from '@/features/trips/own-trips-context';
-import { todayDate } from '@/features/trips/own-trips-state';
-import { tripRecommendation } from '@/features/recommendations/trip-recommendation';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react';
 import {
@@ -13,15 +9,12 @@ import {
   type GroupTripCursor,
   type PublicGroupPage,
 } from './group-data';
-import { DEMO_PUBLIC_GROUPS, withDemoGroupCompatibility } from './group-demo';
+import { DEMO_PUBLIC_GROUPS } from './group-demo';
 import { createGroupProfileStore } from './group-profile-store';
 import { fetchPublicGroup } from './group-repository';
 
 export function useGroupProfile(id: string) {
   const { session } = useAuth();
-  const { profile } = useProfile();
-  const { state: ownTrips } = useOwnTrips();
-  const demoTrips = USE_DEMO_DATA ? ownTrips.trips : null;
   const userId = session?.user.id ?? '';
   const store = useMemo(
     () =>
@@ -36,13 +29,11 @@ export function useGroupProfile(id: string) {
             (item) => item.group.id === id,
           );
           if (!example) return null;
-          const data = withDemoGroupCompatibility(example, profile);
+          const data = example;
           const offset = cursor
             ? data.trips.findIndex((item) => item.trip.id === cursor.id) + 1
             : 0;
-          const trips = data.trips.slice(offset, offset + GROUP_TRIP_PAGE_SIZE).map(proposal => ({ ...proposal,
-            ...tripRecommendation(proposal, profile, demoTrips ?? [], INITIAL_FILTERS, todayDate()),
-          })),
+          const trips = data.trips.slice(offset, offset + GROUP_TRIP_PAGE_SIZE),
             last = trips.at(-1);
           return {
             ...data,
@@ -67,7 +58,7 @@ export function useGroupProfile(id: string) {
                 signal,
               ),
       ),
-    [userId, id, profile, demoTrips],
+    [userId, id],
   );
   const state = useSyncExternalStore(
     store.subscribe,

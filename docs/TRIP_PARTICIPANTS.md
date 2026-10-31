@@ -22,7 +22,7 @@ Walidacja odpowiedzi API zachowuje zgodność ze starymi odczytami pomijającymi
 
 Odczyty list, szczegółów, odświeżenia oraz kopie kontekstu zaproszeń przenoszą skład wyjazdu. RLS, właściciel, uprawnienia RPC, limity zapisów i idempotencja pozostają zachowane. Generowane pola schematu wyprowadzono z katalogu lokalnego PostgreSQL PGlite; pełna kontrola generatorem CLI wymaga lokalnego Supabase/Dockera.
 
-Filtr wieku dzieci w ogłoszeniach używa uczestników danego wyjazdu. Rekomendacje porównują ich wiek z uczestnikami własnego planu, a przy braku własnego planu z profilem oglądającego. Nie podpowiadają wspólnego wieku na podstawie dzieci właściciela, które nie jadą. Ranking ekip nadal porównuje profile. Nie dodajemy żądań dla pojedynczych kart. Zaktualizowano klucze rankingu i kursorów ogłoszeń.
+Filtr wieku dzieci w ogłoszeniach używa uczestników danego wyjazdu. Dane profilu właściciela nie zastępują dzieci, które faktycznie jadą. Bieżący Dev nie oblicza zgodności ani nie nadaje etykiet: [wyszukiwanie bez dopasowania](UNRANKED_DISCOVERY.md). Zainteresowania oraz wiek uczestników pozostają zwykłymi informacjami na kartach. Starsze kontrakty V1/V2 zachowują dotychczasowy kształt dla zainstalowanych klientów.
 
 ## Weryfikacja
 

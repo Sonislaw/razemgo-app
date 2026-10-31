@@ -1019,6 +1019,12 @@ export type Database = {
                 };
                 Returns: Json;
             };
+            "get_discovery_trip_v3": {
+                Args: {
+                    "target_trip_id": string;
+                };
+                Returns: Json;
+            };
             "get_message_reactions": {
                 Args: {
                     "conversation_id": string;
@@ -1127,6 +1133,14 @@ export type Database = {
                 };
                 Returns: Json;
             };
+            "get_public_group_v3": {
+                Args: {
+                    "after_cursor"?: Json;
+                    "page_size"?: number;
+                    "target_group_id": string;
+                };
+                Returns: Json;
+            };
             "get_push_health": {
                 Args: Record<PropertyKey, never>;
                 Returns: Json;
@@ -1151,6 +1165,14 @@ export type Database = {
                     "after_id"?: string;
                     "after_name"?: string;
                     "filters"?: Json;
+                };
+                Returns: Json;
+            };
+            "list_public_groups_v3": {
+                Args: {
+                    "after_cursor"?: Json;
+                    "filters"?: Json;
+                    "page_size"?: number;
                 };
                 Returns: Json;
             };
@@ -1223,6 +1245,13 @@ export type Database = {
                 };
                 Returns: Json;
             };
+            "refresh_public_group_results_v3": {
+                Args: {
+                    "filters"?: Json;
+                    "group_ids": (string)[];
+                };
+                Returns: Json;
+            };
             "refresh_public_trip_results": {
                 Args: {
                     "filters"?: Json;
@@ -1231,6 +1260,13 @@ export type Database = {
                 Returns: Json;
             };
             "refresh_public_trip_results_v2": {
+                Args: {
+                    "filters"?: Json;
+                    "trip_ids": (string)[];
+                };
+                Returns: Json;
+            };
+            "refresh_public_trip_results_v3": {
                 Args: {
                     "filters"?: Json;
                     "trip_ids": (string)[];
@@ -1322,6 +1358,14 @@ export type Database = {
                     "filters"?: Json;
                     "page_size"?: number;
                     "sort_mode"?: string;
+                };
+                Returns: Json;
+            };
+            "search_public_trips_v3": {
+                Args: {
+                    "after_cursor"?: Json;
+                    "filters"?: Json;
+                    "page_size"?: number;
                 };
                 Returns: Json;
             };

@@ -160,7 +160,7 @@ test('50 crew profiles, 50 crew listings and 50 own trips each keep a bounded re
     },
   })).map(row => ({...row, recommendation: recommendCrew(row.crew)}));
   await page.route(
-    '**/rest/v1/rpc/list_ranked_public_groups_v2',
+    '**/rest/v1/rpc/list_public_groups_v3',
     async (route) => {
       if (route.request().method() === 'OPTIONS') return route.fallback();
       const body = route.request().postDataJSON();
@@ -187,7 +187,7 @@ test('50 crew profiles, 50 crew listings and 50 own trips each keep a bounded re
       });
     },
   );
-  await page.route('**/rest/v1/rpc/get_public_group_v2', async (route) => {
+  await page.route('**/rest/v1/rpc/get_public_group_v3', async (route) => {
     if (route.request().method() === 'OPTIONS') return route.fallback();
     const body = route.request().postDataJSON();
     const offset = body.after_cursor

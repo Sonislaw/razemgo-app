@@ -1,4 +1,5 @@
-import type { TripProposal } from '../../types/travel';
+// Legacy API reference fixture; never imported by application code.
+import type { TripProposal } from '../../../src/types/travel.ts';
 
 export type DiscoverySort = 'default' | 'compatibility';
 

@@ -3,7 +3,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
 import { PGlite } from '@electric-sql/pglite';
-import { groupCompatibility } from '../src/features/groups/group-compatibility.ts';
+import { groupCompatibility } from './support/legacy-matching/group-compatibility.ts';
 import { profileFromRows } from '../src/features/profile/profile-mapper.ts';
 
 test('profile ranking: server parity, actual shared characteristics, global pagination and access', async t => {

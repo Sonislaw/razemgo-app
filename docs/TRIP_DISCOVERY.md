@@ -1,6 +1,6 @@
 # Wyszukiwanie wyjazdów po stronie Supabase
 
-**Aktualizacja Dev 31.10.2026:** aplikacja korzysta z odczytów V2 i opisowych rekomendacji, bez procentów. Termin i kierunek mają pierwszeństwo w polecanych; szczegóły kontraktów, kontekstu oraz testów opisano w [RECOMMENDATIONS.md](RECOMMENDATIONS.md). Poniższy opis liczbowego rankingu i API V1 pozostaje aktualny dla Preview i starszych klientów.
+**Aktualizacja Dev 31.10.2026:** aplikacja korzysta z odczytów V3 bez obliczania zgodności, etykiet i rankingu. Wyjazdy są wyświetlane od najnowszych; filtry i stronicowanie po pięć pozostają dostępne. [Aktualne kontrakty i weryfikacja](UNRANKED_DISCOVERY.md). Poniższy opis liczbowego rankingu i API V1 pozostaje historią dla Preview i starszych klientów.
 
 Funkcja działa w **RazemGo Dev** (`kswuakzcnoqgovnwejhb`) oraz od wydania **Preview 1.2.0** w backendzie testerów (`tueqqnbdvuazdxoqtpvk`). Migracja `202610260001_trip_discovery.sql` jest wdrożona do obu projektów. Zachowano starsze API i dane testerów. Kontrolę wydania opisano w [RELEASE_1.2.0.md](RELEASE_1.2.0.md).
 

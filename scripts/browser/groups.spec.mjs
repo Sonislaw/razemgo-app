@@ -25,10 +25,10 @@ async function groupBackend(context, store) {
       if (
         ![
           'list_public_groups',
-          'list_ranked_public_groups_v2',
-          'refresh_public_group_results_v2',
+          'list_public_groups_v3',
+          'refresh_public_group_results_v3',
           'count_public_groups',
-          'get_public_group_v2',
+          'get_public_group_v3',
           'get_my_group_visibility',
           'save_my_group_visibility',
           'send_profile_invitation',
@@ -70,11 +70,11 @@ async function groupBackend(context, store) {
           evaluated_weight: 100,
         },
       });
-      if (name === 'refresh_public_group_results_v2')
+      if (name === 'refresh_public_group_results_v3')
         return respond(body.group_ids.includes(other) ? [info()] : []);
       if (
         name === 'list_public_groups' ||
-        name === 'list_ranked_public_groups_v2' ||
+        name === 'list_public_groups_v3' ||
         name === 'count_public_groups'
       ) {
         if (name !== 'count_public_groups') {
@@ -122,7 +122,7 @@ async function groupBackend(context, store) {
           cursor: null,
         });
       }
-      if (name === 'get_public_group_v2') {
+      if (name === 'get_public_group_v3') {
         if (store.failGroupDetail) return respond({ code: '503' }, 503);
         if (target !== other || store.blocks.has(me) || store.blocks.has(other))
           return respond(null);
@@ -855,14 +855,10 @@ test('crew cards retain recommendations while profiles show full facts without t
   await page.goto('/explore');
   await page.getByRole('tab',{name:'Ekipy',exact:true}).click();
   const card=page.getByTestId('public-group-'+groupId(B));
-  await expect(card).toContainText('Wspólne zainteresowania');
+  await expect(card).not.toContainText(/Wspólne zainteresowania|Podobny wiek dzieci/);
   await expect(card).not.toContainText(/\d+%/);
   await card.screenshot({path:'.expo/recommendation-group-small.png'});
-  expect(store.lastGroupSort).toBe('compatibility');
-  await page.getByRole('button',{name:'Sortowanie ekip: Polecane',exact:true}).click();
-  await page.getByRole('radio',{name:'Alfabetycznie',exact:true}).click();
-  await expect(card).toBeVisible();
-  expect(store.lastGroupSort).toBe('alphabetical');
+  await expect(page.getByRole('button',{name:/^Sortowanie ekip:/})).toHaveCount(0);
   await card.click();
   const profileCard=page.getByTestId('group-profile-card');
   await expect(profileCard).toContainText('Rowery');

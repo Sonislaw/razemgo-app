@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { MY_GROUP, MY_TRIPS, DEMO_PROPOSALS } from '../src/data/mocks/travel.ts';
 import { toTripForm } from '../src/features/trips/own-trips-state.ts';
 import { tripToPayload, tripFromRow, proposalFromRow } from '../src/features/trips/trip-mapper.ts';
-import { tripCompatibility } from '../src/features/discovery/compatibility.ts';
+import { tripCompatibility } from './support/legacy-matching/trip-compatibility.ts';
 import { INITIAL_FILTERS } from '../src/features/discovery/filter-trips.ts';
 
 const form = { ...toTripForm({

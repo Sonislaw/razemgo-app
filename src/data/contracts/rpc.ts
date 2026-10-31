@@ -78,6 +78,34 @@ export interface ClientDatabase {
     Tables: GeneratedDatabase['public']['Tables'];
     Views: Record<never, never>;
     Functions: {
+      search_public_trips_v3: {
+        Args: {
+          filters?: ReturnType<typeof import('../../features/discovery/discovery-data').discoveryFiltersPayload>;
+          after_cursor?: import('../../features/discovery/discovery-data').TripSearchCursor | null;
+          page_size?: number;
+        };
+        Returns: import('../../features/discovery/discovery-repository').TripSearchPageRow;
+      };
+      get_discovery_trip_v3: {
+        Args: { target_trip_id: string };
+        Returns: import('./trip').PublicTripRow | null;
+      };
+      refresh_public_trip_results_v3: {
+        Args: { trip_ids: string[]; filters?: ReturnType<typeof import('../../features/discovery/discovery-data').discoveryFiltersPayload> };
+        Returns: import('./trip').PublicTripRow[];
+      };
+      list_public_groups_v3: {
+        Args: { filters?: ReturnType<typeof groupFiltersPayload>; after_cursor?: RankedGroupCursor | null; page_size?: number };
+        Returns: { items: PublicGroupRow[]; total_count: number; has_more: boolean; cursor: RankedGroupCursor | null };
+      };
+      get_public_group_v3: {
+        Args: { target_group_id: string; after_cursor?: GroupTripCursor | null; page_size?: number };
+        Returns: (PublicGroupRow & { trips: import('./trip').PublicTripRow[]; has_more: boolean; cursor: GroupTripCursor | null }) | null;
+      };
+      refresh_public_group_results_v3: {
+        Args: { group_ids: string[]; filters?: ReturnType<typeof groupFiltersPayload> };
+        Returns: PublicGroupRow[];
+      };
       get_my_trip_contact_counts: {
         Args: { target_trip_id: string };
         Returns: { contacts: number; pending: number };
@@ -131,7 +159,7 @@ export interface ClientDatabase {
             typeof import('../../features/discovery/discovery-data').discoveryFiltersPayload
           >;
         };
-        Returns: import('../../features/discovery/discovery-repository').RankedTripRow[];
+        Returns: import('../../features/discovery/discovery-repository').DiscoveryTripRow[];
       };
       refresh_public_group_results_v2: {
         Args: {
@@ -219,7 +247,7 @@ export interface ClientDatabase {
         };
         Returns:
           | (PublicGroupRow & {
-              trips: import('../../features/discovery/discovery-repository').RankedTripRow[];
+              trips: import('../../features/discovery/discovery-repository').DiscoveryTripRow[];
               has_more: boolean;
               cursor: GroupTripCursor | null;
             })
@@ -415,7 +443,7 @@ export interface ClientDatabase {
           >;
         };
         Returns:
-          | import('../../features/discovery/discovery-repository').RankedTripRow
+          | import('../../features/discovery/discovery-repository').DiscoveryTripRow
           | null;
       };
       save_my_profile: {

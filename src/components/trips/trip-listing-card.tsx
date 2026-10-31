@@ -3,8 +3,6 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { AppText, layout } from '@/components/ui/primitives';
-import { RecommendationBadge } from '@/components/ui/recommendation';
-import type { Recommendation } from '@/features/recommendations/recommendation';
 import { tripAnimalSummary } from '@/features/animals/animal-data';
 import { AnimalPortrait } from '@/features/animals/animal-portrait';
 import { formatTripDates, getTripLocation } from '@/features/discovery/filter-trips';
@@ -33,8 +31,6 @@ interface TripListingCardProps {
   trip: TripPlan;
   group?: TravelGroup;
   travelModes?: string[];
-  recommendation?: Recommendation;
-  exampleRecommendation?: boolean;
   rightBadge?: ReactNode;
   footer?: ReactNode;
   children?: ReactNode;
@@ -46,7 +42,6 @@ interface TripListingCardProps {
   accessibilityHint?: string;
   testID?: string;
   nativeID?: string;
-  recommendationTestID?: string;
   favoriteAction?: ReactNode;
 }
 
@@ -54,8 +49,6 @@ export function TripListingCard({
   trip,
   group,
   travelModes = group?.travelModes ?? [],
-  recommendation,
-  exampleRecommendation,
   rightBadge,
   footer,
   children,
@@ -67,7 +60,6 @@ export function TripListingCard({
   accessibilityHint,
   testID,
   nativeID,
-  recommendationTestID,
   favoriteAction,
 }: TripListingCardProps) {
   const theme = useTheme();
@@ -84,7 +76,7 @@ export function TripListingCard({
         <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
           <LandscapePhoto
             kind={trip.landscape}
-            style={[styles.photo, { minHeight: (favoriteAction && (recommendation?.label || exampleRecommendation) ? 104 : 80) * fontScale }]}
+            style={[styles.photo, { minHeight: 80 * fontScale }]}
             contentPosition={trip.landscape === 'coast' ? { top: '35%', left: '50%' } : undefined}
           />
         </View>
@@ -101,11 +93,6 @@ export function TripListingCard({
             </View>
           ) : null}
         </View>
-        {!rightBadge && (recommendation?.label || exampleRecommendation) ? (
-          <View style={styles.compatibility}>
-            <RecommendationBadge recommendation={recommendation} example={exampleRecommendation} testID={recommendationTestID} />
-          </View>
-        ) : null}
       </View>
       <View style={styles.content}>
         <AppText variant="heading" accessibilityRole="header" numberOfLines={2} style={styles.headline}>
@@ -243,7 +230,6 @@ const styles = StyleSheet.create({
   },
   badge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
   rightBadge: { marginLeft: 'auto', maxWidth: '100%', flexDirection: 'row', alignItems: 'center', gap: 6 },
-  compatibility: { position: 'absolute', bottom: 8, right: 8, maxWidth: '90%' },
   favoriteSpace: { width: 44, height: 44 },
   cardFavoriteAction: { position: 'absolute', top: 14, right: 14 },
   modeLabel: { fontSize: 11, letterSpacing: 0.3 },

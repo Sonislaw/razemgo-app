@@ -55,9 +55,9 @@ test('returning to the list clears old pagination, fetches only the first page a
   assert.equal(store.getSnapshot().cursor.id,'fresh-b');assert.equal(store.getSnapshot().hasMore,true);
   assert.equal(store.getSnapshot().totalCount,9);assert.equal(calls.length,4);assert.equal(calls.at(-1),undefined);
 });
-test('query payload preserves selected location identity, date tolerance and source and canonicalizes equivalent choices',()=>{
+test('query payload preserves selected location and date tolerance without sending personal matching context',()=>{
   const filters={...INITIAL_FILTERS,tripModes:['flexible','planned'],locationId:'pl-locality:4259',location:'Chłapowo',dateRangeId:'custom',customDateRange:{startDate:'2099-05-21',endDate:'2099-05-24'},dateFlexibilityDays:2,sourceTripId:'source',landscapeKinds:['forest','coast']};
-  const f=discoveryFiltersPayload(filters);assert.equal(f.location.id,'pl-locality:4259');assert.equal(f.location.country,'Polska');assert.equal(f.start_date,'2099-05-21');assert.equal(f.tolerance_days,2);assert.equal(f.source_trip_id,'source');
+  const f=discoveryFiltersPayload(filters);assert.equal(f.location.id,'pl-locality:4259');assert.equal(f.location.country,'Polska');assert.equal(f.start_date,'2099-05-21');assert.equal(f.tolerance_days,2);assert.equal(f.source_trip_id,undefined);
   assert.deepEqual(f,discoveryFiltersPayload({...filters,tripModes:['planned','flexible'],landscapeKinds:['coast','forest']}));
   const cleared=discoveryFiltersPayload({...filters,dateRangeId:'all',locationId:undefined,location:''});assert.equal(cleared.start_date,null);assert.equal(cleared.tolerance_days,0);assert.equal(cleared.location,null);
 });

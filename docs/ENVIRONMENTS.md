@@ -1,6 +1,6 @@
 # RazemGo Dev i Preview
 
-31.10.2026 wyłącznie Dev otrzymał `202610310001_recommendations.sql` , `202610310002_remove_profile_preferences.sql` oraz `202610310003_trip_participants.sql` i `202610310004_trip_participant_guards.sql`: **39 migracji**, opisowe rekomendacje ogłoszeń i ekip oraz nowe odczyty V2. Preview zachowuje **35 migracji** i APK 1.3.0. Zmiana nie wymaga nowych modułów natywnych; Dev korzysta z Metro. [Reguły i weryfikacja rekomendacji](RECOMMENDATIONS.md).
+31.10.2026 Dev otrzymał migrację `202610310005_unranked_discovery.sql`: **40 migracji**, odczyty V3 bez obliczania dopasowania. Usunięto etykiety i ranking; zachowano filtry, stronicowanie oraz automatyczne powiadomienia o propozycjach. Preview zachowuje **35 migracji** i APK 1.3.0. Zmiana nie wymaga nowych modułów natywnych. [Zakres i kontrakty](UNRANKED_DISCOVERY.md).
 
 Dwie aplikacje mają osobne identyfikatory, schematy linków logowania i konfiguracje Firebase. Można zainstalować je obok siebie. Współdzielą kod źródłowy i projekt EAS; każda ma osobny profil budowania i środowisko zmiennych EAS. Zmiana kodu ani uruchomienie Metro nie aktualizują samodzielnego APK Preview u testerów.
 

@@ -1,13 +1,13 @@
 import { createPagedResource } from '../../lib/paged-resource.ts';
 import type {
-  RankedTripProposal,
+  DiscoveryTripProposal,
   TripSearchCursor,
   TripSearchPage,
 } from './discovery-data';
 import { discoveryError, TRIP_SEARCH_PAGE_SIZE } from './discovery-data.ts';
 
 export interface TripSearchState {
-  items: RankedTripProposal[];
+  items: DiscoveryTripProposal[];
   totalCount: number | null;
   hasMore: boolean;
   cursor: TripSearchCursor | null;
@@ -23,14 +23,14 @@ export function createTripSearchStore(
   ) => Promise<TripSearchPage>,
   pageSize = TRIP_SEARCH_PAGE_SIZE,
   refreshItems?: (
-    items: RankedTripProposal[],
+    items: DiscoveryTripProposal[],
     signal: AbortSignal,
-  ) => Promise<RankedTripProposal[]>,
+  ) => Promise<DiscoveryTripProposal[]>,
 ) {
   const resource = createPagedResource({
     load: (cursor: TripSearchCursor | undefined, signal) =>
       fetchPage(cursor, signal),
-    key: (item: RankedTripProposal) => item.trip.id,
+    key: (item: DiscoveryTripProposal) => item.trip.id,
     error: discoveryError,
     refreshItems,
   });

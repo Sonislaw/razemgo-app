@@ -1,28 +1,18 @@
 import type { DiscoveryFilters, TripProposal } from '../../types/travel';
-import type { Compatibility } from './compatibility';
-import type { DiscoverySort } from './sort-proposals';
 import { resolveDiscoveryRange } from './filter-trips.ts';
 import { findTripLocation } from '../trips/trip-locations.ts';
-import type { Recommendation } from '../recommendations/recommendation';
 
 export const TRIP_SEARCH_PAGE_SIZE = 5;
 
 export interface TripSearchCursor {
   id: string;
   published_at: string;
-  score: number;
-  sort: DiscoverySort;
   query_key: string;
-  rank?: number;
-  version?: 2;
+  version?: 3;
 }
-export interface RankedTripProposal extends TripProposal {
-  // Only the demonstration adapter retains the legacy arithmetic for sorting.
-  compatibility?: Compatibility;
-  recommendation?: Recommendation;
-}
+export type DiscoveryTripProposal = TripProposal;
 export interface TripSearchPage {
-  items: RankedTripProposal[];
+  items: DiscoveryTripProposal[];
   totalCount: number;
   hasMore: boolean;
   cursor: TripSearchCursor | null;
@@ -42,7 +32,6 @@ export function discoveryFiltersPayload(filters: DiscoveryFilters) {
     start_date: range?.startDate ?? null,
     end_date: range?.endDate ?? null,
     tolerance_days: range ? Math.min(7, Math.max(0, Math.trunc(filters.dateFlexibilityDays ?? 0))) : 0,
-    source_trip_id: filters.sourceTripId ?? null,
   };
 }
 export function discoveryError(error: unknown) {

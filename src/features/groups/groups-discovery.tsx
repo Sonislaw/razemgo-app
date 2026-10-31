@@ -1,7 +1,6 @@
 import { CollectionScreen } from '@/components/ui/collection-screen';
 import { DataStatus } from '@/components/ui/data-status';
 import { Button, EmptyState } from '@/components/ui/primitives';
-import { SortOptionsSheet } from '@/components/ui/sort-options-sheet';
 import { USE_DEMO_DATA } from '@/constants/app';
 import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
 import { useDiscovery } from '@/features/discovery/discovery-context';
@@ -13,7 +12,6 @@ import { useFavorites } from '@/features/favorites/favorites-context';
 import { useMessaging } from '@/features/messaging/messaging-context';
 import { isPresenceActive } from '@/features/presence/presence-context';
 import { PRESENCE_POLL_MS } from '@/features/presence/presence-controller';
-import { useProfile } from '@/features/profile/profile-context';
 import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import { useTheme } from '@/hooks/use-theme';
 import { router, useFocusEffect } from 'expo-router';
@@ -33,10 +31,9 @@ import {
   INITIAL_GROUP_FILTERS,
   sortPublicGroups,
   type GroupPage,
-  type GroupSort,
   type RankedGroupCursor,
 } from './group-data';
-import { DEMO_PUBLIC_GROUPS, withDemoGroupCompatibility } from './group-demo';
+import { DEMO_PUBLIC_GROUPS } from './group-demo';
 import { GroupFiltersSheet } from './group-filters-sheet';
 import { fetchPublicGroups, refreshGroupResults } from './group-repository';
 
@@ -47,10 +44,6 @@ const EMPTY_PAGE: GroupPage = {
   cursor: null,
 };
 
-const SORT_OPTIONS: { value: GroupSort; label: string }[] = [
-  { value: 'compatibility', label: 'Polecane' },
-  { value: 'alphabetical', label: 'Alfabetycznie' },
-];
 
 export function GroupsDiscovery({
   header,
@@ -62,13 +55,9 @@ export function GroupsDiscovery({
   const {
     groupFilters: filters,
     setGroupFilters: setFilters,
-    groupSort: sort,
-    setGroupSort: setSort,
   } = useDiscovery();
   const theme = useTheme();
   const [showFilters, setShowFilters] = useState(false);
-  const [showSort, setShowSort] = useState(false);
-  const { profile } = useProfile();
   const { store: favoritesStore } = useFavorites();
   const [page, setPage] = useState<GroupPage>(EMPTY_PAGE);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -102,17 +91,14 @@ export function GroupsDiscovery({
       signal?: AbortSignal,
     ): Promise<GroupPage> => {
       if (!USE_DEMO_DATA)
-        return fetchPublicGroups(filters, cursor, sort, undefined, signal);
+        return fetchPublicGroups(filters, cursor, undefined, signal);
       const sorted = sortPublicGroups(
         filterPublicGroups(
-          DEMO_PUBLIC_GROUPS.map((item) =>
-            withDemoGroupCompatibility(item, profile),
-          ),
+          DEMO_PUBLIC_GROUPS,
           filters,
           undefined,
           favoritesStore?.getSnapshot().groupIds,
         ),
-        sort,
       );
       const offset = cursor
         ? sorted.findIndex((item) => item.group.id === cursor.id) + 1
@@ -127,13 +113,12 @@ export function GroupsDiscovery({
           ? {
               id: last.group.id,
               name: last.group.name,
-              score: last.compatibility?.score ?? null,
-              sort,
+              version: 3,
             }
           : null,
       };
     },
-    [filters, sort, profile, favoritesStore],
+    [filters, favoritesStore],
   );
   const load = useCallback(
     async (quiet = false) => {
@@ -384,14 +369,6 @@ export function GroupsDiscovery({
           />
           <DiscoveryResultsHeader
             title={hasLoaded ? 'Ekipy · ' + page.totalCount : 'Ekipy'}
-            sortLabel={sort === 'compatibility' ? 'Polecane' : 'Alfabetycznie'}
-            sortAccessibilityLabel={
-              'Sortowanie ekip: ' +
-              (sort === 'compatibility'
-                ? 'Polecane'
-                : 'Alfabetycznie')
-            }
-            onSort={() => setShowSort(true)}
           />
         </>
       }
@@ -444,19 +421,6 @@ export function GroupsDiscovery({
           onApply={(next) => {
             setFilters(next);
             setShowFilters(false);
-          }}
-        />
-      ) : null}
-      {showSort ? (
-        <SortOptionsSheet
-          title="Sortowanie ekip"
-          value={sort}
-          options={SORT_OPTIONS}
-          caption="Kolejność uwzględnia zainteresowania i preferencje obu ekip. Wyróżnienia wskazują konkretne wspólne cechy."
-          onClose={() => setShowSort(false)}
-          onSelect={(value) => {
-            setSort(value);
-            setShowSort(false);
           }}
         />
       ) : null}

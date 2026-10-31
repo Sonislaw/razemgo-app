@@ -3,11 +3,11 @@ import {readFile,readdir} from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
 import {test} from 'node:test';
 import {PGlite} from '@electric-sql/pglite';
-import {tripCompatibility} from '../src/features/discovery/compatibility.ts';
+import {tripCompatibility} from './support/legacy-matching/trip-compatibility.ts';
 import {profileFromRows} from '../src/features/profile/profile-mapper.ts';
 import {proposalFromRow,tripFromRow} from '../src/features/trips/trip-mapper.ts';
 import {INITIAL_FILTERS} from '../src/features/discovery/filter-trips.ts';
-import {discoveryFiltersPayload} from '../src/features/discovery/discovery-data.ts';
+import {discoveryFiltersPayload} from './support/legacy-matching/discovery-payload.ts';
 
 test('server trip discovery: filters, global ranking, cursors, counts and authorization',async t=>{
   const db=new PGlite(),users=[],groups=[],profiles=[],trips=[];

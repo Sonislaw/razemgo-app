@@ -18,7 +18,6 @@ import {
 } from '@/features/discovery/filter-trips';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { DiscoveryFiltersSheet } from '@/features/discovery/discovery-filters-sheet';
-import { DiscoverySortSheet } from '@/features/discovery/discovery-sort-sheet';
 import { DiscoveryFilterBar, DiscoveryResultsHeader } from '@/features/discovery/discovery-controls';
 import { useTripSearch } from '@/features/discovery/use-trip-search';
 import { TRIP_SEARCH_PAGE_SIZE } from '@/features/discovery/discovery-data';
@@ -34,14 +33,13 @@ import { CollectionScreen } from '@/components/ui/collection-screen';
 export default function ExploreScreen() {
   const [view, setView] = useState<'trips' | 'groups'>('trips');
   const theme = useTheme();
-  const { filters, setFilters, sort, setSort } = useDiscovery();
-  const { items: proposals, totalCount, hasMore, status, loadingMore, error, refresh, retry, loadMore, preserveOnReturn } = useTripSearch(filters, sort, TRIP_SEARCH_PAGE_SIZE, view === 'trips');
+  const { filters, setFilters } = useDiscovery();
+  const { items: proposals, totalCount, hasMore, status, loadingMore, error, refresh, retry, loadMore, preserveOnReturn } = useTripSearch(filters, TRIP_SEARCH_PAGE_SIZE, view === 'trips');
   const { state: ownTrips } = useOwnTrips();
   const sourceTrip = ownTrips.trips.find(
     (trip) => trip.id === filters.sourceTripId,
   );
   const [showFilters, setShowFilters] = useState(false);
-  const [showSort, setShowSort] = useState(false);
   const dateRange = resolveDiscoveryRange(filters);
   const activeCount =
     Number(filters.tripModes.length === 1) +
@@ -123,7 +121,7 @@ export default function ExploreScreen() {
       data={proposals}
       keyExtractor={proposal => proposal.trip.id}
       renderItem={({ item: proposal }) => <DiscoveryTripCard {...proposal}
-        recommendation={proposal.recommendation} recommendationScope="search" onNavigate={preserveOnReturn} />}
+        onNavigate={preserveOnReturn} />}
       beforeList={<>
       {switcher}
       <DataStatus status={status === 'loading' && proposals.length ? 'ready' : status} error={error} onRetry={() => { void retry(); }} label="Wczytywanie ogłoszeń" />
@@ -137,7 +135,6 @@ export default function ExploreScreen() {
             >
               Dla wyjazdu:{' '}
               {sourceTrip ? getTripHeadline(sourceTrip) : 'zapisane kryteria'}
-              {filters.groupKinds?.length ? ' · wybrane towarzystwo' : ''}
             </AppText>
             <IconButton
               label="Usuń kryteria wyjazdu"
@@ -150,10 +147,7 @@ export default function ExploreScreen() {
           filterHint="Wybierz typ ogłoszenia, klimat, termin, miejsce i wiek dzieci" refreshLabel="Odśwież ogłoszenia"
           onOpen={() => setShowFilters(true)} onClear={reset} onRefresh={() => void refresh()} />
       </View>
-        <DiscoveryResultsHeader title={totalCount === null ? 'Propozycje' : 'Propozycje · ' + totalCount}
-          sortLabel={sort === 'compatibility' ? 'Polecane' : 'Domyślnie'}
-          sortAccessibilityLabel={'Sortowanie: ' + (sort === 'compatibility' ? 'Polecane' : 'Domyślnie')}
-          onSort={() => setShowSort(true)} />
+        <DiscoveryResultsHeader title={totalCount === null ? 'Propozycje' : 'Propozycje · ' + totalCount} />
       </>}
       empty={status === 'ready' ? (
           <EmptyState
@@ -183,16 +177,6 @@ export default function ExploreScreen() {
           onApply={(nextFilters) => {
             setFilters(nextFilters);
             setShowFilters(false);
-          }}
-        />
-      ) : null}
-      {showSort ? (
-        <DiscoverySortSheet
-          sort={sort}
-          onClose={() => setShowSort(false)}
-          onSelect={(value) => {
-            setSort(value);
-            setShowSort(false);
           }}
         />
       ) : null}

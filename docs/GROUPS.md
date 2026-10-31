@@ -1,5 +1,11 @@
 # Wyszukiwanie ekip
 
+**Bieżący Dev 31.10.2026:** aplikacja korzysta z katalogu V3, uporządkowanego
+alfabetycznie. Usunięto etykiety, ranking, sortowanie „Polecane” oraz obliczanie
+zgodności. Zwykłe filtry, ulubione, online i strony po pięć są zachowane.
+[Aktualne kontrakty](UNRANKED_DISCOVERY.md). Opisy starszych rankingów poniżej
+stanowią historię wcześniejszych wersji i kontraktów.
+
 **Aktualizacja Dev 31.10.2026:** odczyty V2 prezentują wspólne zainteresowania i wiek dzieci bez procentowej oceny i komunikatów o brakujących danych. Ranking ekip porównuje faktyczne cechy profili; prywatna sekcja „Kogo chcę poznać?” została wycofana na Dev. [Kontrakty i weryfikacja](RECOMMENDATIONS.md). API V1 nadal obsługuje Preview i starszych klientów.
 
 Funkcja działa w **RazemGo Dev** na osobnym backendzie **`kswuakzcnoqgovnwejhb`** oraz w **Preview 1.2.0** na `tueqqnbdvuazdxoqtpvk`. Migracje `202610260002_group_pagination.sql` i `202610260003_group_trip_pagination.sql` dodają stronicowanie katalogu ekip oraz ogłoszeń w profilu i są wdrożone do obu projektów. Dane testerów zachowano. Szczegóły aktualizacji są w [RELEASE_1.2.0.md](RELEASE_1.2.0.md).

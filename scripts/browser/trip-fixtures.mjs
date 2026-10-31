@@ -12,8 +12,8 @@ import {
   selectOwnTrips,
   isArchivedTrip,
 } from '../../src/features/trips/own-trips-state.ts';
-import { tripRecommendation } from '../../src/features/recommendations/trip-recommendation.ts';
-import { groupRecommendation } from '../../src/features/recommendations/recommendation.ts';
+import { tripRecommendation } from '../support/legacy-matching/trip-recommendation.ts';
+import { groupRecommendation } from '../support/legacy-matching/recommendation.ts';
 import { publicGroupFromRow } from '../../src/features/groups/group-data.ts';
 
 const A = '00000000-0000-4000-8000-000000000001';
@@ -544,10 +544,10 @@ async function backend(context, store) {
     }
     if (
       [
-        'search_public_trips_v2',
-        'refresh_public_trip_results_v2',
+        'search_public_trips_v3',
+        'refresh_public_trip_results_v3',
         'count_public_trips',
-        'get_discovery_trip_v2',
+        'get_discovery_trip_v3',
       ].includes(url.pathname.split('/').at(-1))
     ) {
       const endpoint = url.pathname.split('/').at(-1),
@@ -555,7 +555,7 @@ async function backend(context, store) {
       (store.tripSearchCalls ??= []).push({ endpoint, ...body });
       if (
         store.failPublic ||
-        (endpoint === 'search_public_trips_v2' &&
+        (endpoint === 'search_public_trips_v3' &&
           body.after_cursor &&
           store.failMore)
       )
@@ -595,20 +595,10 @@ async function backend(context, store) {
           trip,
           crew: profile(trip.group_id === groupId(A) ? A : B).group,
         }));
-      const scored = (row) => ({
-        ...row,
-        ...tripRecommendation(
-          proposalFromRow(row),
-          profileFromRows(currentProfile.group, currentProfile.preferences),
-          own,
-          filters,
-          '2026-10-24',
-        ),
-      });
-      if (endpoint === 'get_discovery_trip_v2')
+      if (endpoint === 'get_discovery_trip_v3')
         return respond(
           rows.find((r) => r.trip.id === body.target_trip_id)
-            ? scored(rows.find((r) => r.trip.id === body.target_trip_id))
+            ? rows.find((r) => r.trip.id === body.target_trip_id)
             : null,
         );
       const allowed = new Set(
@@ -621,17 +611,13 @@ async function backend(context, store) {
       );
       const result = rows
         .filter((r) => allowed.has(r.trip.id))
-        .map(scored)
         .sort(
           (a, b) =>
-            (body.sort_mode === 'compatibility'
-              ? b.rank - a.rank
-              : 0) ||
             b.trip.published_at.localeCompare(a.trip.published_at) ||
             a.trip.id.localeCompare(b.trip.id),
         );
       if (endpoint === 'count_public_trips') return respond(result.length);
-      if (endpoint === 'refresh_public_trip_results_v2')
+      if (endpoint === 'refresh_public_trip_results_v3')
         return respond(result.filter((r) => body.trip_ids.includes(r.trip.id)));
       const offset = body.after_cursor
           ? result.findIndex((r) => r.trip.id === body.after_cursor.id) + 1
@@ -647,9 +633,7 @@ async function backend(context, store) {
           ? {
               id: last.trip.id,
               published_at: last.trip.published_at,
-              score: last.compatibility.score,
-              rank: last.rank, version: 2,
-              sort: body.sort_mode ?? 'default',
+              version: 3,
               query_key: 'mock',
             }
           : null,

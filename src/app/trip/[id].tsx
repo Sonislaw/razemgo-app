@@ -25,9 +25,7 @@ import { AVAILABLE_PROPOSALS } from '@/data/proposals';
 import {
   formatTripDates,
   getTripLocation,
-  INITIAL_FILTERS,
 } from '@/features/discovery/filter-trips';
-import { useDiscovery } from '@/features/discovery/discovery-context';
 import { Radius } from '@/constants/theme';
 import { TripContactAction } from '@/features/messaging/trip-contact-action';
 import { AnimalInformation } from '@/features/animals/animal-ui';
@@ -42,9 +40,8 @@ export function generateStaticParams() {
 }
 
 export default function TripDetailsScreen() {
-  const { id, recommendationScope } = useLocalSearchParams<{ id: string; recommendationScope?: string }>();
-  const { filters } = useDiscovery();
-  const { item: proposal, status, error, refresh } = useDiscoveryTrip(id, recommendationScope === 'search' ? filters : INITIAL_FILTERS);
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { item: proposal, status, error, refresh } = useDiscoveryTrip(id);
   const back = () =>
     router.canGoBack() ? router.back() : router.replace('/explore');
   if (!proposal && status !== 'ready') return (

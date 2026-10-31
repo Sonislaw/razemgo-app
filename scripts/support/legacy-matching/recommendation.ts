@@ -1,5 +1,6 @@
-import { integer, object, text } from '../../data/contracts/validate.ts';
-import type { TravelGroup } from '../../types/travel';
+// Legacy API reference fixture; never imported by application code.
+import { integer, object, text } from '../../../src/data/contracts/validate.ts';
+import type { TravelGroup } from '../../../src/types/travel.ts';
 
 export const RECOMMENDATION_VERSION = 2;
 export type RecommendationLabel = 'similar_plans' | 'shared_interests' | 'similar_children';

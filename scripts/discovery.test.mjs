@@ -1,3 +1,4 @@
+import { getMatchFacts, formatSharedNights } from './support/legacy-matching/filter-trips.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
@@ -6,24 +7,9 @@ import {
   MY_TRIPS,
   MY_GROUP,
 } from '../src/data/mocks/travel.ts';
-import {
-  INITIAL_FILTERS,
-  filterProposals,
-  sharedNights,
-  formatTripDates,
-  getMatchFacts,
-  formatSharedNights,
-  toggleDiscoveryTripMode,
-  updateDiscoveryDateRange,
-  clearDiscoveryDates,
-  getDiscoveryDateRangeError,
-  resolveDiscoveryRange,
-  getDiscoveryReferenceRange,
-  selectDiscoveryLocation,
-  updateDiscoveryLocationQuery,
-} from '../src/features/discovery/filter-trips.ts';
-import { DEMO_COMPATIBILITY_SCORES } from '../src/data/mocks/compatibility.ts';
-import { sortDiscoveryProposals } from '../src/features/discovery/sort-proposals.ts';
+import { INITIAL_FILTERS, filterProposals, sharedNights, formatTripDates, toggleDiscoveryTripMode, updateDiscoveryDateRange, clearDiscoveryDates, getDiscoveryDateRangeError, resolveDiscoveryRange, getDiscoveryReferenceRange, selectDiscoveryLocation, updateDiscoveryLocationQuery } from '../src/features/discovery/filter-trips.ts';
+import { DEMO_COMPATIBILITY_SCORES } from './support/legacy-matching/scores.ts';
+import { sortDiscoveryProposals } from './support/legacy-matching/sort-proposals.ts';
 import {
   calendarMonthCells,
   selectCalendarDate,

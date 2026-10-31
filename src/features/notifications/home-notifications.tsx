@@ -112,7 +112,7 @@ function DemoHomeNotifications() {
   const { width, height } = useWindowDimensions();
   const { state: ownTrips } = useOwnTrips();
   const { state: mailbox, dispatch, contact } = useMessaging();
-  const { setFilters, setSort } = useDiscovery();
+  const { setFilters } = useDiscovery();
   const { readKeys, markRead } = useNotifications();
   const notifications = selectHomeNotifications(
     DEMO_PROPOSALS,
@@ -287,7 +287,6 @@ function DemoHomeNotifications() {
                     close();
                     if (suggestions.trip) {
                       setFilters(discoveryFiltersForTrip(suggestions.trip));
-                      setSort('compatibility');
                       router.navigate('/explore');
                     } else router.navigate('/trips');
                   }}

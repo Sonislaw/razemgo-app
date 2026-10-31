@@ -3,8 +3,6 @@ import { DEMO_PROPOSALS } from '@/data/mocks/travel';
 import { useAuth } from '@/features/auth/auth-context';
 import { useFavorites } from '@/features/favorites/favorites-context';
 import { useProfile } from '@/features/profile/profile-context';
-import { useOwnTrips } from '@/features/trips/own-trips-context';
-import { todayDate } from '@/features/trips/own-trips-state';
 import type { DiscoveryFilters } from '@/types/travel';
 import { useFocusEffect } from 'expo-router';
 import {
@@ -16,13 +14,12 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { AppState, Platform } from 'react-native';
-import { tripRecommendation } from '../recommendations/trip-recommendation';
 import { useDiscovery } from './discovery-context';
 import {
   discoveryError,
   discoveryFiltersPayload,
   TRIP_SEARCH_PAGE_SIZE,
-  type RankedTripProposal,
+  type DiscoveryTripProposal,
   type TripSearchCursor,
 } from './discovery-data';
 import {
@@ -33,22 +30,19 @@ import {
 } from './discovery-repository';
 import { createTripSearchStore } from './discovery-store';
 import { filterProposals } from './filter-trips';
-import { sortDiscoveryProposals, type DiscoverySort } from './sort-proposals';
 
 export function useTripSearch(
   filters: DiscoveryFilters,
-  sort: DiscoverySort = 'default',
   pageSize = TRIP_SEARCH_PAGE_SIZE,
   enabled = true,
 ) {
   const { session } = useAuth();
-  const { profile, hasProfile, status: profileStatus } = useProfile();
-  const { state: ownTrips } = useOwnTrips();
+  const { hasProfile, status: profileStatus } = useProfile();
   const favorites = useFavorites();
   const demoFavoriteIds = USE_DEMO_DATA ? favorites.tripIds : null;
   const { revision } = useDiscovery();
   const userId = session?.user.id ?? '';
-  const key = 'recommendations:2:' + JSON.stringify(discoveryFiltersPayload(filters));
+  const key = 'discovery:3:' + JSON.stringify(discoveryFiltersPayload(filters));
   const ready =
     USE_DEMO_DATA || (!!userId && hasProfile && profileStatus === 'ready');
   const store = useMemo(
@@ -59,33 +53,14 @@ export function useTripSearch(
             return fetchTripPage(
               userId,
               filters,
-              sort,
               cursor,
               pageSize,
               signal,
             );
-          const items = filterProposals(
-            DEMO_PROPOSALS,
-            filters,
-            undefined,
-            favorites.tripIds,
-          ).map((proposal) => ({
-            ...proposal,
-            ...tripRecommendation(
-              proposal,
-              profile,
-              ownTrips.trips,
-              filters,
-              todayDate(),
-            ),
-          }));
-          const sorted = sortDiscoveryProposals(
-            items,
-            sort,
-            Object.fromEntries(
-              items.map((p) => [p.trip.id, p.rank]),
-            ),
-          ) as RankedTripProposal[];
+          const sorted = filterProposals(
+            DEMO_PROPOSALS, filters, undefined, favorites.tripIds,
+          ).sort((a, b) => (b.trip.publishedAt ?? '').localeCompare(a.trip.publishedAt ?? '')
+            || a.trip.id.localeCompare(b.trip.id));
           const offset = cursor
             ? sorted.findIndex((item) => item.trip.id === cursor.id) + 1
             : 0;
@@ -99,10 +74,7 @@ export function useTripSearch(
               ? {
                   id: last.trip.id,
                   published_at: last.trip.publishedAt ?? '',
-                  score: last.compatibility?.score ?? 0,
-                  rank: items.find(item => item.trip.id === last.trip.id)!.rank,
-                  version: 2,
-                  sort,
+                  version: 3,
                   query_key: key,
                 }
               : null,
@@ -125,10 +97,7 @@ export function useTripSearch(
     [
       userId,
       key,
-      sort,
       pageSize,
-      profile,
-      ownTrips.revision,
       demoFavoriteIds,
     ],
   );
@@ -178,10 +147,10 @@ export function useTripSearch(
 
 export function useTripResultCount(filters: DiscoveryFilters, enabled = true) {
   const { session } = useAuth();
-  const { profile, hasProfile, status } = useProfile();
+  const { hasProfile, status } = useProfile();
   const { revision } = useDiscovery();
   const favorites = useFavorites();
-  const key = 'recommendations:2:' + JSON.stringify(discoveryFiltersPayload(filters));
+  const key = 'discovery:3:' + JSON.stringify(discoveryFiltersPayload(filters));
   const userId = session?.user.id ?? '';
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<{
@@ -226,7 +195,6 @@ export function useTripResultCount(filters: DiscoveryFilters, enabled = true) {
     attempt,
     revision,
     favorites.tripIds,
-    profile,
   ]);
   return {
     count: !enabled
@@ -243,16 +211,14 @@ export function useTripResultCount(filters: DiscoveryFilters, enabled = true) {
   };
 }
 
-export function useDiscoveryTrip(id: string, filters: DiscoveryFilters) {
+export function useDiscoveryTrip(id: string) {
   const { session } = useAuth();
-  const { profile } = useProfile();
-  const { state: ownTrips } = useOwnTrips();
   const { revision } = useDiscovery();
   const userId = session?.user.id ?? '';
-  const key = 'recommendations:2:' + userId + id + JSON.stringify(discoveryFiltersPayload(filters));
+  const key = 'discovery:3:' + userId + ':' + id;
   const [result, setResult] = useState<{
     key: string;
-    item: RankedTripProposal | null;
+    item: DiscoveryTripProposal | null;
     status: 'loading' | 'ready' | 'error';
     error: string | null;
   }>({ key: '', item: null, status: 'loading', error: null });
@@ -265,21 +231,8 @@ export function useDiscoveryTrip(id: string, filters: DiscoveryFilters) {
       setResult({ key, item: null, status: 'loading', error: null });
       const demo = DEMO_PROPOSALS.find((p) => p.trip.id === id);
       const request = USE_DEMO_DATA
-        ? Promise.resolve(
-            demo
-              ? {
-                  ...demo,
-                  ...tripRecommendation(
-                    demo,
-                    profile,
-                    ownTrips.trips,
-                    filters,
-                    todayDate(),
-                  ),
-                }
-              : null,
-          )
-        : fetchDiscoveryTrip(userId, id, filters, controller.signal);
+        ? Promise.resolve(demo ?? null)
+        : fetchDiscoveryTrip(userId, id, controller.signal);
       void request
         .then((item) => {
           if (current) setResult({ key, item, status: 'ready', error: null });
@@ -298,7 +251,7 @@ export function useDiscoveryTrip(id: string, filters: DiscoveryFilters) {
         controller.abort();
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [key, userId, id, profile, ownTrips.revision, revision, attempt]),
+    }, [key, userId, id, revision, attempt]),
   );
   return {
     item: result.key === key ? result.item : null,

@@ -2,7 +2,6 @@ import {
   integer,
   object,
   parseGroupRow,
-  strings,
   text,
 } from '../../data/contracts/validate.ts';
 import type { AnimalKind } from '../../types/animals';
@@ -13,27 +12,20 @@ import type {
   TripProposal,
 } from '../../types/travel';
 import { matchesCrewSearch } from '../profile/crew-number.ts';
-import { parseRecommendation, type Recommendation } from '../recommendations/recommendation.ts';
-import type {
-  GroupCompatibility,
-  GroupCompatibilityRow,
-} from './group-compatibility';
 
 export interface PublicGroup {
   group: TravelGroup;
   about: string;
   activeTripCount: number;
-  compatibility?: GroupCompatibility;
-  recommendation?: Recommendation;
 }
 export interface PublicGroupDetail extends PublicGroup {
-  trips: (TripProposal & { recommendation?: Recommendation })[];
+  trips: TripProposal[];
 }
 export type GroupTripCursor = {
   id: string;
   published_at: string;
   query_key: string;
-  version?: 2;
+  version?: 3;
 };
 export interface PublicGroupPage extends PublicGroupDetail {
   hasMore: boolean;
@@ -56,11 +48,9 @@ export interface GroupFilters {
   favoritesOnly: boolean;
 }
 export type GroupCursor = { name: string; id: string };
-export type GroupSort = 'compatibility' | 'alphabetical';
+export type GroupSort = 'alphabetical';
 export type RankedGroupCursor = GroupCursor & {
-  score: number | null;
-  sort: GroupSort;
-  version?: 2;
+  version?: 3;
   query_key?: string;
 };
 export const GROUP_SEARCH_PAGE_SIZE = 5;
@@ -97,22 +87,12 @@ export type PublicGroupRow = {
   };
   about: string;
   active_trip_count: number;
-  compatibility?: GroupCompatibilityRow;
-  recommendation?: Recommendation;
 };
 export function publicGroupFromRow(row: PublicGroupRow): PublicGroup {
   const value = object(row);
   parseGroupRow(value.crew, true);
   text(value.about, 600);
   integer(value.active_trip_count);
-  if (value.compatibility !== undefined) {
-    const matching = object(value.compatibility);
-    if (matching.score !== null) integer(matching.score, 0, 100);
-    strings(matching.reasons, 20);
-    integer(matching.evaluated_weight, 0, 1000);
-    if (typeof matching.limited_data !== 'boolean')
-      throw new Error('Invalid compatibility');
-  }
   const g = row.crew;
   return {
     group: {
@@ -130,17 +110,7 @@ export function publicGroupFromRow(row: PublicGroupRow): PublicGroup {
     },
     about: row.about,
     activeTripCount: row.active_trip_count,
-    ...(row.recommendation ? { recommendation: parseRecommendation(row.recommendation) } : {}),
-    ...(row.compatibility
-      ? {
-          compatibility: {
-            score: row.compatibility.score,
-            reasons: row.compatibility.reasons,
-            limitedData: row.compatibility.limited_data,
-            evaluatedWeight: row.compatibility.evaluated_weight,
-          },
-        }
-      : {}),
+
   };
 }
 export function groupFiltersPayload(filters: GroupFilters) {
@@ -199,21 +169,9 @@ export function groupDirectoryError(error: unknown) {
     return 'Wyszukiwanie ekip wymaga nowej migracji backendu. Ta wersja funkcji jest przygotowana lokalnie.';
   return 'Nie udało się pobrać ekip. Sprawdź połączenie i spróbuj ponownie.';
 }
-export function sortPublicGroups(groups: PublicGroup[], sort: GroupSort) {
+export function sortPublicGroups(groups: PublicGroup[], _sort: GroupSort = 'alphabetical') {
   return [...groups].sort((a, b) => {
-    const score =
-      sort === 'compatibility'
-        ? (b.compatibility?.score ?? -1) - (a.compatibility?.score ?? -1)
-        : 0;
-    const first = normalizeGroupSearch(a.group.name),
-      second = normalizeGroupSearch(b.group.name);
-    return (
-      score ||
-      (first < second
-        ? -1
-        : first > second
-          ? 1
-          : a.group.id.localeCompare(b.group.id))
-    );
+    const first = normalizeGroupSearch(a.group.name), second = normalizeGroupSearch(b.group.name);
+    return first < second ? -1 : first > second ? 1 : a.group.id.localeCompare(b.group.id);
   });
 }

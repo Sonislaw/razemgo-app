@@ -7,17 +7,14 @@ import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 import { AnimalBadge } from '@/features/animals/animal-portrait';
 import type { TravelGroup } from '@/types/travel';
 import { crewNumberText } from '@/features/profile/crew-number';
-import { cardReasons, type Recommendation } from '@/features/recommendations/recommendation';
 
 interface GroupCardContentProps {
   group: TravelGroup;
   about?: string;
   avatarTestID?: string;
   decorativeAvatar?: boolean;
-  afterIdentity?: ReactNode;
   expanded?: boolean;
   showCrewNumber?: boolean;
-  recommendation?: Recommendation;
 }
 
 type GroupProfileCardProps = Pick<
@@ -38,10 +35,9 @@ export function GroupProfileCard({
   );
 }
 
-export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar = false, afterIdentity, expanded = false, showCrewNumber = false, recommendation }: GroupCardContentProps) {
-  const shown = cardReasons(recommendation);
-  const interests = group.interests.filter(interest => !shown.some(reason => reason.code === 'interest' && reason.value === interest));
-  const ages = group.childAgeBands.filter(age => !shown.some(reason => reason.code === 'child_age' && reason.value === age));
+export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar = false, expanded = false, showCrewNumber = false }: GroupCardContentProps) {
+  const interests = group.interests;
+  const ages = group.childAgeBands;
   return (
     <>
       <View style={layout.row}>
@@ -61,7 +57,6 @@ export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar 
         </View>
         <TravelModeBadges modes={group.travelModes} />
       </View>
-      {afterIdentity}
       {about ? <AppText color="textSecondary" numberOfLines={expanded ? undefined : 3}>{about}</AppText> : null}
       <View style={layout.wrap}>
         {ages.length ? <Chip label={'Dzieci ' + ages.join(', ') + ' lat'} /> : null}

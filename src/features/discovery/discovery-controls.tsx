@@ -33,22 +33,13 @@ export function DiscoveryFilterBar({ activeCount, summary, placeholder, filterLa
   </View>;
 }
 
-export function DiscoveryResultsHeader({ title, sortLabel, sortAccessibilityLabel, onSort }: {
+export function DiscoveryResultsHeader({ title }: {
   title: string;
-  sortLabel: string;
-  sortAccessibilityLabel: string;
-  onSort: () => void;
 }) {
-  const theme = useTheme();
   return <View style={styles.resultsHeader}>
     <View style={styles.flex}>
       <AppText variant="heading" accessibilityRole="header" accessibilityLiveRegion="polite" style={styles.resultTitle}>{title}</AppText>
     </View>
-    <Pressable accessibilityRole="button" accessibilityLabel={sortAccessibilityLabel} accessibilityHint="Zmień kolejność wyników" onPress={onSort}
-      style={({ pressed }) => [styles.sortButton, { backgroundColor: theme.muted, opacity: pressed ? 0.7 : 1 }]}>
-      <Icon name="sort" size={18} />
-      <AppText variant="label" color="primaryStrong" style={styles.sortLabel}>{sortLabel}</AppText>
-    </Pressable>
   </View>;
 }
 
@@ -57,8 +48,5 @@ const styles = StyleSheet.create({
   filterBar: { flex: 1, flexDirection: 'row', alignItems: 'center', minHeight: 56, padding: 12, gap: Spacing.two,
     borderWidth: 1, borderRadius: Radius.small },
   resultsHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, justifyContent: 'space-between' },
-  sortButton: { flexDirection: 'row', alignItems: 'center', minHeight: 48, maxWidth: '50%', paddingHorizontal: 12,
-    paddingVertical: 8, gap: 6, borderRadius: Radius.small },
-  sortLabel: { flexShrink: 1 },
   resultTitle: { fontSize: 18, lineHeight: 24 },
 });

@@ -1,4 +1,5 @@
-import type { TravelerProfile } from '../../types/profile';
+// Legacy API reference fixture; never imported by application code.
+import type { TravelerProfile } from '../../../src/types/profile.ts';
 
 export interface GroupCompatibility {
   score: number | null;

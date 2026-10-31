@@ -1,3 +1,4 @@
+import { selectHomeRecommendations } from './support/legacy-matching/filter-trips.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
@@ -11,7 +12,7 @@ import {
   validateProfile,
 } from '../src/features/profile/profile-data.ts';
 import { createOwnTripsState, newTripForm, ownTripsReducer, selectNextTrip, toTripForm } from '../src/features/trips/own-trips-state.ts';
-import { selectHomeRecommendations } from '../src/features/discovery/filter-trips.ts';
+
 import { selectLatestListing } from '../src/features/home/latest-listing.ts';
 
 const today = '2026-10-18';

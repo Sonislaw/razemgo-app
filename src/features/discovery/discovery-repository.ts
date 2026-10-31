@@ -5,15 +5,13 @@ import {
 import { backendRequest } from '@/lib/backend-request';
 import { getSupabase } from '@/lib/supabase';
 import type { DiscoveryFilters } from '@/types/travel';
-import { parseRecommendation, type Recommendation } from '../recommendations/recommendation';
 import {
   discoveryFiltersPayload,
   TRIP_SEARCH_PAGE_SIZE,
-  type RankedTripProposal,
+  type DiscoveryTripProposal,
   type TripSearchCursor,
   type TripSearchPage,
 } from './discovery-data';
-import type { DiscoverySort } from './sort-proposals';
 
 async function accountToken(userId: string) {
   const {
@@ -23,20 +21,19 @@ async function accountToken(userId: string) {
     throw Object.assign(new Error(), { name: 'AbortError' });
   return session.access_token;
 }
-export type RankedTripRow = PublicTripRow & { recommendation: Recommendation };
+export type DiscoveryTripRow = PublicTripRow;
 export interface TripSearchPageRow {
-  items: RankedTripRow[];
+  items: DiscoveryTripRow[];
   total_count: number;
   has_more: boolean;
   cursor: TripSearchCursor | null;
 }
-const ranked = (row: RankedTripRow): RankedTripProposal => {
-  return { ...proposalFromRow(row), recommendation: parseRecommendation(row.recommendation) };
+const fromRow = (row: DiscoveryTripRow): DiscoveryTripProposal => {
+  return proposalFromRow(row);
 };
 export async function fetchTripPage(
   userId: string,
   filters: DiscoveryFilters,
-  sort: DiscoverySort,
   cursor?: TripSearchCursor,
   pageSize = TRIP_SEARCH_PAGE_SIZE,
   parentSignal?: AbortSignal,
@@ -45,9 +42,8 @@ export async function fetchTripPage(
   const { data, error } = await backendRequest(
     (signal) =>
       getSupabase()
-        .rpc('search_public_trips_v2', {
+        .rpc('search_public_trips_v3', {
           filters: discoveryFiltersPayload(filters),
-          sort_mode: sort,
           after_cursor: cursor ?? null,
           page_size: pageSize,
         })
@@ -67,7 +63,7 @@ export async function fetchTripPage(
   )
     throw new Error('Invalid trip page');
   return {
-    items: data.items.map(ranked),
+    items: data.items.map(fromRow),
     totalCount: data.total_count,
     hasMore: data.has_more,
     cursor: data.cursor,
@@ -98,7 +94,6 @@ export async function fetchTripCount(
 export async function fetchDiscoveryTrip(
   userId: string,
   id: string,
-  filters: DiscoveryFilters,
   parentSignal?: AbortSignal,
 ) {
   if (!/^[a-f\d]{8}(-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(id)) return null;
@@ -106,9 +101,8 @@ export async function fetchDiscoveryTrip(
   const { data, error } = await backendRequest(
     (signal) =>
       getSupabase()
-        .rpc('get_discovery_trip_v2', {
+        .rpc('get_discovery_trip_v3', {
           target_trip_id: id,
-          filters: discoveryFiltersPayload(filters),
         })
         .setHeader('Authorization', 'Bearer ' + token)
         .abortSignal(signal),
@@ -116,7 +110,7 @@ export async function fetchDiscoveryTrip(
     { signal: parentSignal, read: true, retries: 1 },
   );
   if (error) throw error;
-  return data ? ranked(data) : null;
+  return data ? fromRow(data) : null;
 }
 export async function refreshTripResults(
   userId: string,
@@ -125,12 +119,12 @@ export async function refreshTripResults(
   parentSignal?: AbortSignal,
 ) {
   const token = await accountToken(userId),
-    items: RankedTripProposal[] = [];
+    items: DiscoveryTripProposal[] = [];
   for (let offset = 0; offset < ids.length; offset += 100) {
     const { data, error } = await backendRequest(
       (signal) =>
         getSupabase()
-          .rpc('refresh_public_trip_results_v2', {
+          .rpc('refresh_public_trip_results_v3', {
             trip_ids: ids.slice(offset, offset + 100),
             filters: discoveryFiltersPayload(filters),
           })
@@ -142,7 +136,7 @@ export async function refreshTripResults(
     if (error) throw error;
     if (!Array.isArray(data) || data.length > 100)
       throw new Error('Invalid cached trip results');
-    items.push(...data.map(ranked));
+    items.push(...data.map(fromRow));
   }
   return items;
 }

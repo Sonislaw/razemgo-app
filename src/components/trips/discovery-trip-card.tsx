@@ -4,15 +4,12 @@ import { TripListingAction, TripListingCard } from './trip-listing-card';
 import { FavoriteButton } from '@/features/favorites/favorite-button';
 import { View } from 'react-native';
 import { TripReactionsButton } from '@/features/reactions/trip-reactions';
-import type { Recommendation } from '@/features/recommendations/recommendation';
 
 interface DiscoveryTripCardProps extends TripProposal {
-  recommendation?: Recommendation;
-  recommendationScope?: 'search' | 'default';
   onNavigate?: () => void;
 }
 
-export function DiscoveryTripCard({ trip, group, recommendation, recommendationScope = 'default', onNavigate }: DiscoveryTripCardProps) {
+export function DiscoveryTripCard({ trip, group, onNavigate }: DiscoveryTripCardProps) {
   return (
     <TripListingCard
       testID={'discovery-trip-' + trip.id}
@@ -20,7 +17,6 @@ export function DiscoveryTripCard({ trip, group, recommendation, recommendationS
       group={group}
       onPressGroup={() => { onNavigate?.(); router.push({ pathname: '/crew/[id]', params: { id: group.id } }); }}
       travelModes={trip.travelModes}
-      recommendation={recommendation}
       favoriteAction={<FavoriteButton kind="trip" targetId={trip.id} compact translucent />}
       footer={
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
@@ -28,7 +24,7 @@ export function DiscoveryTripCard({ trip, group, recommendation, recommendationS
         <TripListingAction
           label="Zobacz wyjazd"
           onPress={() => { onNavigate?.(); router.push({ pathname: '/trip/[id]', params: {
-            id: trip.id, ...(recommendationScope === 'search' ? { recommendationScope: 'search' } : {}),
+            id: trip.id,
           } }); }}
         />
         </View>

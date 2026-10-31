@@ -1,3 +1,4 @@
+// Legacy API reference fixture; never imported by application code.
 // Legacy sorting inputs for regression tests; never displayed as public grades.
 export const DEMO_COMPATIBILITY_SCORES: Readonly<
   Record<string, number | undefined>

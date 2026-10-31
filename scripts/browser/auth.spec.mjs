@@ -185,7 +185,7 @@ async function backend(context, existingState) {
       if (request.method() === 'PUT') state.lastPassword = body.password;
       return respond(user(id));
     }
-    if (url.pathname === '/rest/v1/rpc/search_public_trips_v2')
+    if (url.pathname === '/rest/v1/rpc/search_public_trips_v3')
       return respond({
         items: [],
         total_count: 0,
@@ -193,7 +193,7 @@ async function backend(context, existingState) {
         cursor: null,
       });
     if (url.pathname === '/rest/v1/rpc/count_public_trips') return respond(0);
-    if (url.pathname === '/rest/v1/rpc/get_discovery_trip_v2')
+    if (url.pathname === '/rest/v1/rpc/get_discovery_trip_v3')
       return respond(null);
     if (
       url.pathname === '/rest/v1/trip_plans' ||

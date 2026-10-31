@@ -1,10 +1,11 @@
-import type { DiscoveryFilters, TripPlace, TripProposal } from '../../types/travel';
-import type { TravelerProfile } from '../../types/profile';
-import type { OwnedTrip } from '../../types/owned-trip';
-import { isSearchingTrip, shiftDate } from '../trips/own-trips-state.ts';
-import { findTripLocation } from '../trips/trip-locations.ts';
-import { tripCompatibility } from '../discovery/compatibility.ts';
-import { normalizeLocation, resolveDiscoveryRange, sharedNights } from '../discovery/filter-trips.ts';
+// Legacy API reference fixture; never imported by application code.
+import type { DiscoveryFilters, TripPlace, TripProposal } from '../../../src/types/travel.ts';
+import type { TravelerProfile } from '../../../src/types/profile.ts';
+import type { OwnedTrip } from '../../../src/types/owned-trip.ts';
+import { isSearchingTrip, shiftDate } from '../../../src/features/trips/own-trips-state.ts';
+import { findTripLocation } from '../../../src/features/trips/trip-locations.ts';
+import { tripCompatibility } from './trip-compatibility.ts';
+import { normalizeLocation, resolveDiscoveryRange, sharedNights } from '../../../src/features/discovery/filter-trips.ts';
 import { groupRecommendation, type Recommendation, type RecommendationReason } from './recommendation.ts';
 
 const placeOf = (trip: TripProposal['trip']): TripPlace => trip.mode === 'planned' ? trip.destination : trip.travelArea;

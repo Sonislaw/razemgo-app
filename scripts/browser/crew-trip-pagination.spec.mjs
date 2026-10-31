@@ -52,7 +52,7 @@ test('crew listings fetch 5/10/13 with a spinner, retry and restore the listing 
   const pending = new Promise((resolve) => {
     release = resolve;
   });
-  await page.route('**/rest/v1/rpc/get_public_group_v2', async (route) => {
+  await page.route('**/rest/v1/rpc/get_public_group_v3', async (route) => {
     if (route.request().method() === 'OPTIONS') return route.fallback();
     const body = route.request().postDataJSON();
     calls.push(body);

@@ -1,3 +1,4 @@
+import { selectHomeRecommendations } from './support/legacy-matching/filter-trips.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
@@ -19,11 +20,7 @@ import {
   validateTripForm,
   discoveryFiltersForTrip,
 } from '../src/features/trips/own-trips-state.ts';
-import {
-  INITIAL_FILTERS,
-  filterProposals,
-  selectHomeRecommendations,
-} from '../src/features/discovery/filter-trips.ts';
+import { INITIAL_FILTERS, filterProposals } from '../src/features/discovery/filter-trips.ts';
 import {
   animalSummary,
   emptyAnimals,

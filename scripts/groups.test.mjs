@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { filterPublicGroups, sortPublicGroups, INITIAL_GROUP_FILTERS, publicGroupFromRow, groupFiltersPayload, normalizeGroupSearch } from '../src/features/groups/group-data.ts';
-import { groupCompatibility } from '../src/features/groups/group-compatibility.ts';
+import { groupCompatibility } from './support/legacy-matching/group-compatibility.ts';
 import { mailboxFromRow } from '../src/features/messaging/messaging-mapper.ts';
 import { getGroupContact, isConversationAccepted, canSendToConversation } from '../src/features/messaging/messaging-state.ts';
 
@@ -55,11 +55,11 @@ test('missing child ages stay unknown and adult-only profiles are not treated as
   assert.equal(sparse.score, null); assert.equal(sparse.evaluatedWeight, 45);
 });
 
-test('group mapping and sorting preserve zero, put unscored last, and break ties alphabetically', () => {
+test('group mapping discards legacy grades and always sorts alphabetically', () => {
   const scored = (id, name, score) => publicGroupFromRow({ ...row, crew: { ...row.crew, id, name },
     compatibility: { score, reasons: [], evaluated_weight: score === null ? 10 : 100, limited_data: score === null } });
   const source = [scored('none', 'AAA', null), scored('zero', 'Zero', 0), scored('best', 'Zeta', 90), scored('tie', 'Alpha', 90)];
-  assert.deepEqual(sortPublicGroups(source, 'compatibility').map(g => g.group.id), ['tie', 'best', 'zero', 'none']);
+  assert.ok(source.every(group => group.compatibility === undefined && group.recommendation === undefined));
   assert.deepEqual(sortPublicGroups(source, 'alphabetical').map(g => g.group.id), ['none', 'tie', 'zero', 'best']);
   assert.deepEqual(source.map(g => g.group.id), ['none', 'zero', 'best', 'tie']);
 });

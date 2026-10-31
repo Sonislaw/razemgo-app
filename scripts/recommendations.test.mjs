@@ -5,10 +5,10 @@ import { testDatabase, asUser, profile, trip } from './support/database.mjs';
 import { profileFromRows, profileToPayload } from '../src/features/profile/profile-mapper.ts';
 import { proposalFromRow, tripFromRow } from '../src/features/trips/trip-mapper.ts';
 import { INITIAL_FILTERS } from '../src/features/discovery/filter-trips.ts';
-import { discoveryFiltersPayload } from '../src/features/discovery/discovery-data.ts';
+import { discoveryFiltersPayload } from './support/legacy-matching/discovery-payload.ts';
 import { discoveryFiltersForTrip } from '../src/features/trips/own-trips-state.ts';
-import { tripRecommendation } from '../src/features/recommendations/trip-recommendation.ts';
-import { cardReasons, groupRecommendation, parseRecommendation, reasonText } from '../src/features/recommendations/recommendation.ts';
+import { tripRecommendation } from './support/legacy-matching/trip-recommendation.ts';
+import { cardReasons, groupRecommendation, parseRecommendation, reasonText } from './support/legacy-matching/recommendation.ts';
 
 test('recommendation JSON rejects unsupported claims and renders controlled explanations',()=>{
   const base={version:2,label:null,context:{kind:'profile'},reasons:[]};

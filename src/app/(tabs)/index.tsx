@@ -26,7 +26,7 @@ export default function HomeScreen() {
     status,
     error,
     refresh,
-  } = useTripSearch(INITIAL_FILTERS, 'default', 1);
+  } = useTripSearch(INITIAL_FILTERS, 1);
   const { state: ownTrips } = useOwnTrips();
   const { state: messaging } = useMessaging();
   const [demoOpen, setDemoOpen] = useState(false);
@@ -103,13 +103,6 @@ export default function HomeScreen() {
               group={latestGroup}
               travelModes={
                 latestOwnTrip?.travelModes ?? latestListing.trip.travelModes
-              }
-              recommendation={
-                latestListing.own
-                  ? undefined
-                  : availableProposals.find(
-                      (p) => p.trip.id === latestListing.trip.id,
-                    )?.recommendation
               }
               isOwn={latestListing.own}
               onPress={() =>

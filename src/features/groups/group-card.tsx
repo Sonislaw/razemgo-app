@@ -4,7 +4,6 @@ import { AppText, layout } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
 import type { PublicGroup } from './group-data';
-import { GroupCompatibilitySummary } from './group-compatibility-summary';
 import { GroupCardContent, groupCardStyles } from './group-profile-card';
 import { useGroupOnline } from '@/features/presence/presence-context';
 import { FavoriteButton } from '@/features/favorites/favorite-button';
@@ -20,10 +19,8 @@ export function GroupCard({ item, onNavigate }: { item: PublicGroup; onNavigate?
     onPress={open} style={({ pressed }) => ({ gap: 12, opacity: pressed ? 0.75 : 1 })}>
     <GroupCardContent
       group={group}
-      recommendation={item.recommendation}
       about={about}
       decorativeAvatar
-      afterIdentity={<GroupCompatibilitySummary recommendation={item.recommendation} testID={'group-compatibility-' + group.id} />}
     />
     </Pressable>
     <View style={[layout.row, { borderTopWidth: 1, borderColor: theme.border, paddingTop: 10 }]}>

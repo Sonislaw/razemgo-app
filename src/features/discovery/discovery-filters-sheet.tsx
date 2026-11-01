@@ -281,8 +281,8 @@ export function DiscoveryFiltersSheet({
       </View>
       {draft.sourceTripId ? (
         <View style={layout.stack}>
-          <FieldLabel>Towarzystwo z preferencji wyjazdu</FieldLabel>
-          <ChipRow horizontal label="Towarzystwo z preferencji wyjazdu">
+          <FieldLabel>Rodzaj ekipy</FieldLabel>
+          <ChipRow horizontal label="Rodzaj ekipy">
             {GROUP_KIND_OPTIONS.map((option) => (
               <Chip
                 key={option.value}

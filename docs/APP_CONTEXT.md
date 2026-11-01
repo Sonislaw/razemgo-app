@@ -69,6 +69,8 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   publikacji, ekipy alfabetycznie. Filtry użytkownika są jawne i nie wynikają
   automatycznie z preferencji profilu. „Znajdź towarzystwo” ustawia termin i region
   własnego wyjazdu. „Znajdź ekipę” na Start zeruje filtry Odkrywaj.
+  W filtrach szukania dla wyjazdu sekcja „Rodzaj ekipy” oznacza ręczny wybór
+  użytkownika, a nie preferencje zapisane w ogłoszeniu.
   Zdjęcie, tytuł i „Zobacz wyjazd” otwierają te same szczegóły, z zachowaniem
   pozycji listy po powrocie. Serce, reakcje i profil ekipy mają odrębne akcje.
   Wymiary nagłówka oraz wygląd karty pozostają zachowane.

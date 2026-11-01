@@ -190,7 +190,7 @@ export default function OwnTripDetailsScreen() {
           ) : null}
           <TripCover trip={trip} variant="details" datesLabel={ownTripDates(trip)} />
           <View style={{ gap: 12 }}>
-            <TripStatusBadge status={status} />
+            {status !== 'published' ? <TripStatusBadge status={status} /> : null}
             {trip.visibility === 'private' ? <AppText variant="caption" color="primaryStrong">Prywatny plan</AppText> : null}
             <TripLocationSummary trip={trip} locationLabel={ownTripPlace(trip)} />
             <Card style={{ gap: 12 }}>

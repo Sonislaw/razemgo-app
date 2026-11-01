@@ -81,7 +81,7 @@ export function TravelModePicker({
   );
 }
 
-export function TravelModeBadges({ modes }: { modes: string[] }) {
+export function TravelModeBadges({ modes, size = 48 }: { modes: string[]; size?: number }) {
   return (
     <View style={layout.wrap} accessibilityLabel="Sposób podróżowania">
       {modes.slice(0, 1).map((mode) => {
@@ -93,7 +93,7 @@ export function TravelModeBadges({ modes }: { modes: string[] }) {
             accessibilityRole="image"
             accessibilityLabel={travelModeLabel(mode)}
           >
-            <TravelModeArtwork source={source} size={48} />
+            <TravelModeArtwork source={source} size={size} />
           </View>
         ) : (
           <Chip key={mode} label={travelModeLabel(mode)} />

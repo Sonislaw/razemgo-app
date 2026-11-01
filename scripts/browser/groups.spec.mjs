@@ -977,16 +977,44 @@ test('profile covers load for every avatar, follow saved changes and disappear f
 test('crew cards retain recommendations while profiles show full facts without the matching section', async ({page, context}) => {
   const store = state();
   await groupBackend(context, store);
+  store.profiles = new Map([[B, {...profile(B), group: {...profile(B).group,
+    name:'Beskidzkie ślady', avatar_id:'cycling-hare', travel_mode:'Namiot'}}]]);
+  store.publicProfiles.set(groupId(B), {about:'Lubimy górskie widoki i niezbyt długie szlaki. Ważniejsze od zdobytego szczytu są dla nas rozmowy i przyjemność wspólnej drogi.'});
   await login(page);
   await page.setViewportSize({width:320,height:800});
   await page.goto('/explore');
   await page.getByRole('tab',{name:'Ekipy',exact:true}).click();
   const card=page.getByTestId('public-group-'+groupId(B));
+  const frame=page.getByTestId('group-card-'+groupId(B));
+  const cover=page.getByTestId('group-card-cover-'+groupId(B));
+  await expect.poll(()=>cover.evaluate(el=>{
+    const img=el.tagName==='IMG'?el:el.querySelector('img'); return !!img?.complete && img.naturalWidth>=1000;
+  })).toBe(true);
+  const photo=await cover.evaluate(el=>(el.tagName==='IMG'?el:el.querySelector('img')).currentSrc);
+  const heart=page.getByTestId('favorite-group-'+groupId(B));
+  const cardBox=await frame.boundingBox(), heartBox=await heart.boundingBox();
+  expect(heartBox.y-cardBox.y).toBeLessThan(16);
+  expect(cardBox.x+cardBox.width-heartBox.x-heartBox.width).toBeLessThan(16);
+  await expect(card.getByRole('button')).toHaveCount(0);
   await expect(card).not.toContainText(/Wspólne zainteresowania|Podobny wiek dzieci/);
   await expect(card).not.toContainText(/\d+%/);
-  await card.screenshot({path:'.expo/recommendation-group-small.png'});
+  await frame.screenshot({path:'.expo/discovery-crew-card-320.png'});
+  await page.setViewportSize({width:390,height:844});
+  await frame.screenshot({path:'.expo/discovery-crew-card-390.png'});
+  await page.setViewportSize({width:320,height:800});
+  await frame.scrollIntoViewIfNeeded();
+  const photoBox=await cover.boundingBox();
+  await page.mouse.move(photoBox.x+photoBox.width/2,photoBox.y+40);
+  await page.mouse.down();
+  await page.waitForTimeout(700);
+  await frame.screenshot({path:'.expo/discovery-crew-card-held-320.png'});
+  await page.mouse.move(0,0); await page.mouse.up();
+  await expect(page).toHaveURL('http://localhost:8085/explore');
   await expect(page.getByRole('button',{name:/^Sortowanie ekip:/})).toHaveCount(0);
-  await card.click();
+  await card.focus(); await page.keyboard.press('Enter');
+  const detailCover=page.getByTestId('profile-cover-cycling-hare');
+  await expect(detailCover).toBeVisible();
+  expect(await detailCover.evaluate(el=>(el.tagName==='IMG'?el:el.querySelector('img')).currentSrc)).toBe(photo);
   const profileCard=page.getByTestId('group-profile-card');
   await expect(profileCard).toContainText('Rowery');
   await expect(profileCard).toContainText('Dzieci '+profile(B).group.child_age_bands.join(', ')+' lat');

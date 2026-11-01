@@ -36,6 +36,8 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   to różne identyfikatory. Profil opisuje ekipę: nazwę, ilustrowany avatar, typ,
   dorosłych, dzieci i ich przedziały wieku, transport, zainteresowania i zwierzęta.
   Nazwa ma 2–20 znaków; numer ekipy służy prezentacji i wyszukiwaniu.
+  Nazwy rodzajów ekip są wszędzie w liczbie pojedynczej, również w filtrach:
+  „Rodzina z dziećmi”, „Para”, „Osoba solo”, „Grupa znajomych”.
 - **„O mojej ekipie” edytuje się w „Mój profil → Edytuj profil → Moja ekipa”**,
   razem z nazwą i avatarem. Opis ma limit 600 znaków. Własny profil i ekran
   innej ekipy `/crew/[id]` pokazują pełny opis w osobnej sekcji „O ekipie”
@@ -92,7 +94,14 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   użytkownika, a nie preferencje zapisane w ogłoszeniu.
   Zdjęcie, tytuł i „Zobacz wyjazd” otwierają te same szczegóły, z zachowaniem
   pozycji listy po powrocie. Serce, reakcje i profil ekipy mają odrębne akcje.
-  Wymiary nagłówka oraz wygląd karty pozostają zachowane.
+  Wymiary nagłówka oraz wygląd karty wyjazdu pozostają zachowane.
+  Karty w widoku ekip mają fotograficzne tło powiązane z avatarem, takie samo
+  jak w szczegółach profilu, faliste przejście do danych i avatar w białej ramce.
+  Serce jest osobną akcją w prawym górnym rogu zdjęcia, w rozmiarze używanym
+  na karcie wyjazdu. Ikona transportu jest na dole obok „Profil”, pozostawiając
+  miejsce na nazwę ekipy. Zdjęcie oraz treść
+  otwierają profil; wybór ulubionych zachowuje pozycję na liście.
+  Opis ekipy jest dostępny w szczegółach profilu; karta na liście go nie pokazuje.
 - **Główne listy wyjazdów i ekip pobierają po pięć elementów.** Kolejna porcja
   wymaga przycisku; listy są wirtualizowane i zachowują miejsce po powrocie ze
   szczegółów. Skrzynka ma porcje po 20, historia rozmowy po 50 wiadomości.

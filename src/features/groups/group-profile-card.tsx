@@ -10,21 +10,11 @@ import type { TravelGroup } from '@/types/travel';
 import { crewNumberText } from '@/features/profile/crew-number';
 import { useTheme } from '@/hooks/use-theme';
 
-interface GroupCardContentProps {
+interface GroupProfileCardProps {
   group: TravelGroup;
-  about?: string;
-  aboutLabel?: string;
   avatarTestID?: string;
-  decorativeAvatar?: boolean;
   expanded?: boolean;
-  showCrewNumber?: boolean;
-  showTravelModeLabel?: boolean;
 }
-
-type GroupProfileCardProps = Pick<
-  GroupCardContentProps,
-  'group' | 'avatarTestID' | 'expanded'
->;
 
 export function GroupProfileCard({
   group, avatarTestID, expanded = false,
@@ -61,40 +51,7 @@ export function GroupProfileCard({
   );
 }
 
-export function GroupCardContent({ group, about, aboutLabel, avatarTestID, decorativeAvatar = false, expanded = false, showCrewNumber = false, showTravelModeLabel = true }: GroupCardContentProps) {
-  return (
-    <>
-      <View style={layout.row}>
-        <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={64} testID={avatarTestID} decorative={decorativeAvatar} />
-        <View style={{ flex: 1, gap: 4 }}>
-          <AppText variant="heading" numberOfLines={2}>{group.name}</AppText>
-          {showCrewNumber && crewNumberText(group.crewNumber) ? <AppText variant="caption" color="textSecondary" testID={'crew-number-' + group.id}>
-            {crewNumberText(group.crewNumber)}
-          </AppText> : null}
-          {expanded ? <AppText variant="caption" color="textSecondary">
-            {GROUP_KIND_OPTIONS.find(option => option.value === group.kind)?.label}
-          </AppText> : null}
-          <AppText variant="caption" color="textSecondary">
-            {group.adultCount} {group.adultCount === 1 ? 'dorosły' : 'dorosłych'}
-            {showTravelModeLabel && group.travelModes[0] ? ' · ' + travelModeLabel(group.travelModes[0]) : ''}
-          </AppText>
-        </View>
-        <TravelModeBadges modes={group.travelModes} />
-      </View>
-      {about || aboutLabel ? (
-        <View style={{ gap: 4 }}>
-          {aboutLabel ? <AppText variant="label">{aboutLabel}</AppText> : null}
-          <AppText color="textSecondary" numberOfLines={expanded ? undefined : 3}>
-            {about || 'Przedstaw swoją ekipę w edycji profilu.'}
-          </AppText>
-        </View>
-      ) : null}
-      <GroupCardFacts group={group} expanded={expanded} />
-    </>
-  );
-}
-
-function GroupCardFacts({ group, expanded }: { group: TravelGroup; expanded: boolean }) {
+export function GroupCardFacts({ group, expanded }: { group: TravelGroup; expanded: boolean }) {
   const ages = group.childAgeBands;
   const interests = group.interests;
   return (
@@ -112,8 +69,7 @@ function GroupCardFacts({ group, expanded }: { group: TravelGroup; expanded: boo
   );
 }
 
-export const groupCardStyles = StyleSheet.create({
-  frame: { padding: 16, gap: 12, borderRadius: 24, borderWidth: 1 },
+const groupCardStyles = StyleSheet.create({
   tags: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6 },
 });
 

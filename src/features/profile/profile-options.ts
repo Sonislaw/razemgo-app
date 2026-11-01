@@ -27,8 +27,8 @@ export const GROUP_KIND_OPTIONS: {
   value: TravelGroup['kind'];
   label: string;
 }[] = [
-  { value: 'family', label: 'Rodziny z dziećmi' },
-  { value: 'couple', label: 'Pary' },
-  { value: 'solo', label: 'Osoby solo' },
-  { value: 'friends', label: 'Grupy znajomych' },
+  { value: 'family', label: 'Rodzina z dziećmi' },
+  { value: 'couple', label: 'Para' },
+  { value: 'solo', label: 'Osoba solo' },
+  { value: 'friends', label: 'Grupa znajomych' },
 ];

@@ -27,6 +27,8 @@ nie zmieniała kompozycji. Nie dodano zależności aplikacji.
 
 [header-shade.svg](header-shade.svg) to gradient z kodu nakładany na zdjęcie
 dla czytelności białego tytułu. Nie jest częścią wygenerowanych fotografii.
+[card-wave.svg](card-wave.svg) tworzy falistą krawędź między zdjęciem a treścią
+karty w Odkrywaj → Ekipy. Karta używa tego samego zdjęcia co profil ekipy.
 
 Mapowanie w [profile-cover-data.ts](../../../src/features/profile/profile-cover-data.ts)
 jest kompletne dla `ProfileAvatarId`. Starszy profil bez avatara korzysta

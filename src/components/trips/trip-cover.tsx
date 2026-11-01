@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, ScreenFullWidth } from '@/components/ui/primitives';
 import { useTheme } from '@/hooks/use-theme';
@@ -8,12 +8,14 @@ import { LandscapePhoto } from './landscape-photo';
 import { TripTimeline } from './trip-timeline';
 import { TripPlanningIcon } from './trip-planning-icon';
 
-export function TripCover({ trip, action, decorative = false, variant = 'card', datesLabel }: {
+export function TripCover({ trip, action, decorative = false, variant = 'card', datesLabel, onPress, accessibilityLabel }: {
   trip: TripPlan;
   action?: ReactNode;
   decorative?: boolean;
   variant?: 'card' | 'details';
   datesLabel?: string;
+  onPress?: () => void;
+  accessibilityLabel?: string;
 }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -29,15 +31,17 @@ export function TripCover({ trip, action, decorative = false, variant = 'card', 
         <LandscapePhoto kind={trip.landscape} style={StyleSheet.absoluteFill}
           contentPosition={trip.landscape === 'coast' ? { top: '35%', left: '50%' } : undefined} />
       </View>
-      <View style={styles.labels}>
-        <View style={[styles.badge, { backgroundColor: theme.backgroundElement }]}>
+      {onPress ? <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel}
+        onPress={onPress} style={({ pressed }) => [StyleSheet.absoluteFill, { backgroundColor: pressed ? theme.scrim : 'transparent' }]} /> : null}
+      <View pointerEvents={onPress ? 'box-none' : 'auto'} style={styles.labels}>
+        <View pointerEvents={onPress ? 'none' : 'auto'} style={[styles.badge, { backgroundColor: theme.backgroundElement }]}>
           <AppText variant="caption" color="primaryStrong" style={styles.modeLabel}>
             {trip.mode === 'planned' ? 'MAM PLAN' : 'SZUKAM POMYSŁU'}
           </AppText>
         </View>
         {action ? <View style={styles.action}>{action}</View> : null}
       </View>
-      <View style={styles.timelineGroup}>
+      <View pointerEvents={onPress ? 'none' : 'auto'} style={styles.timelineGroup}>
         {details && datesLabel ? (
           <View style={[styles.dates, { backgroundColor: theme.backgroundElement + 'EB' }]}>
             <TripPlanningIcon kind="dates" size={20} framed={false} />

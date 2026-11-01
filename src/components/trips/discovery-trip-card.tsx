@@ -15,12 +15,17 @@ interface DiscoveryTripCardProps extends TripProposal {
 }
 
 export function DiscoveryTripCard({ trip, group, onNavigate, preview = false, testID, locationLabel, datesLabel }: DiscoveryTripCardProps) {
+  const openTrip = () => {
+    onNavigate?.();
+    router.push({ pathname: '/trip/[id]', params: { id: trip.id } });
+  };
   return (
     <TripListingCard
       testID={testID ?? 'discovery-trip-' + trip.id}
       trip={trip}
       group={group}
       disabled={preview}
+      onPressDetails={preview ? undefined : openTrip}
       locationLabel={locationLabel}
       datesLabel={datesLabel}
       onPressGroup={() => { onNavigate?.(); router.push({ pathname: '/crew/[id]', params: { id: group.id } }); }}
@@ -33,9 +38,7 @@ export function DiscoveryTripCard({ trip, group, onNavigate, preview = false, te
         {preview ? <TripReactionsPreview /> : <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} />}
         <TripListingAction
           label="Zobacz wyjazd"
-          onPress={preview ? undefined : () => { onNavigate?.(); router.push({ pathname: '/trip/[id]', params: {
-            id: trip.id,
-          } }); }}
+          onPress={preview ? undefined : openTrip}
         />
         </View>
       }

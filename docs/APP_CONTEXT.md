@@ -69,6 +69,9 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   publikacji, ekipy alfabetycznie. Filtry użytkownika są jawne i nie wynikają
   automatycznie z preferencji profilu. „Znajdź towarzystwo” ustawia termin i region
   własnego wyjazdu. „Znajdź ekipę” na Start zeruje filtry Odkrywaj.
+  Zdjęcie, tytuł i „Zobacz wyjazd” otwierają te same szczegóły, z zachowaniem
+  pozycji listy po powrocie. Serce, reakcje i profil ekipy mają odrębne akcje.
+  Wymiary nagłówka oraz wygląd karty pozostają zachowane.
 - **Główne listy wyjazdów i ekip pobierają po pięć elementów.** Kolejna porcja
   wymaga przycisku; listy są wirtualizowane i zachowują miejsce po powrocie ze
   szczegółów. Skrzynka ma porcje po 20, historia rozmowy po 50 wiadomości.

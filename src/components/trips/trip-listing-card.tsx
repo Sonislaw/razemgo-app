@@ -27,6 +27,7 @@ interface TripListingCardProps {
   locationLabel?: string;
   datesLabel?: string;
   onPress?: () => void;
+  onPressDetails?: () => void;
   onPressGroup?: () => void;
   accessibilityLabel?: string;
   accessibilityHint?: string;
@@ -46,6 +47,7 @@ export function TripListingCard({
   locationLabel,
   datesLabel,
   onPress,
+  onPressDetails,
   onPressGroup,
   accessibilityLabel,
   accessibilityHint,
@@ -60,16 +62,19 @@ export function TripListingCard({
   const hasFacts = !group || hasChildren || trip.animals.animals.length > 0 || trip.interests.length > 0;
   const participantsSummary = tripParticipantsSummary(trip.participants);
   const online = useGroupOnline(group?.id);
+  const openDetails = !disabled && !onPress ? onPressDetails : undefined;
+  const headline = <AppText variant="heading" accessibilityRole="header" numberOfLines={2} style={styles.headline}>
+    {getTripHeadline(trip)}
+  </AppText>;
   const content = (
     <>
-      <TripCover trip={trip} decorative action={rightBadge || favoriteAction ? <>
+      <TripCover trip={trip} decorative onPress={openDetails} accessibilityLabel={'Otwórz wyjazd ze zdjęcia: ' + getTripHeadline(trip)} action={rightBadge || favoriteAction ? <>
         {rightBadge}
         {favoriteAction ? (onPress ? <View style={styles.favoriteSpace} /> : favoriteAction) : null}
       </> : undefined} />
       <View style={styles.content}>
-        <AppText variant="heading" accessibilityRole="header" numberOfLines={2} style={styles.headline}>
-          {getTripHeadline(trip)}
-        </AppText>
+        {openDetails ? <Pressable accessibilityRole="button" accessibilityLabel={'Otwórz wyjazd: ' + getTripHeadline(trip)}
+          onPress={openDetails} style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>{headline}</Pressable> : headline}
         <View style={styles.metadata}>
           <TripLocationSummary trip={trip} locationLabel={locationLabel} compact />
           <View style={styles.metadataRow}>

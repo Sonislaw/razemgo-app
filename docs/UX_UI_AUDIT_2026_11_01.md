@@ -4,6 +4,10 @@
 Dev. Szczegóły i weryfikację opisuje [raport zmian](UX_FIRST_IMPROVEMENTS_2026_11_01.md).
 Poniższe obserwacje i zrzuty przedstawiają stan sprzed tych poprawek.
 
+Punkt 4 uzupełniono o otwieranie wyjazdu zdjęciem i tytułem, z zachowaniem
+pozycji listy po powrocie. Zgodnie z decyzją użytkownika wielkość nagłówka
+i wygląd karty pozostają takie same; zmniejszenie ich nie jest częścią poprawki.
+
 Największą słabością jest hierarchia działań: użytkownik ogląda dużo treści,
 zanim zobaczy możliwość otwarcia wyjazdu lub skontaktowania się z ekipą.
 Druga istotna grupa problemów dotyczy edycji: utraty niezapisanych zmian profilu

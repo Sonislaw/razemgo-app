@@ -193,10 +193,7 @@ test('returning from a listing or its crew restores all viewed pages and the scr
     .click();
   await expectLoaded(screen, 10);
   const target = page.getByTestId('discovery-trip-' + uuid(8009));
-  const openTrip = target.getByRole('button', {
-    name: 'Zobacz wyjazd',
-    exact: true,
-  });
+  const openTrip = target.getByRole('button', { name: /^Otwórz wyjazd ze zdjęcia:/ });
   await scrollToRow(screen, openTrip);
   const tripScroll = await screen.evaluate((el) => el.scrollTop);
   expect(tripScroll).toBeGreaterThan(1000);
@@ -221,6 +218,14 @@ test('returning from a listing or its crew restores all viewed pages and the scr
       Math.abs((await screen.evaluate((el) => el.scrollTop)) - tripScroll),
     )
     .toBeLessThan(4);
+  const openTitle = target.getByRole('button', { name: /^Otwórz wyjazd:/ });
+  await scrollToRow(screen, openTitle);
+  const titleScroll = await screen.evaluate(el => el.scrollTop);
+  await openTitle.focus(); await page.keyboard.press('Enter');
+  await expect(page).toHaveURL('http://localhost:8085/trip/' + uuid(8009));
+  await page.getByRole('button', { name: 'Wróć do listy wyjazdów', exact: true }).click();
+  await expectLoaded(screen, 10);
+  await expect.poll(async () => Math.abs((await screen.evaluate(el => el.scrollTop)) - titleScroll)).toBeLessThan(4);
   const openCrew = target.getByRole('button', { name: /^Zobacz profil:/ });
   await openCrew.scrollIntoViewIfNeeded();
   const crewScroll = await screen.evaluate((el) => el.scrollTop);

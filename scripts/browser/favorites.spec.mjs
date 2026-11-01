@@ -54,6 +54,11 @@ test('trip favorites survive restart, match the filter count and stay independen
   ).toBeVisible();
   expect(store.favoriteTrips.get(A).has(tripId)).toBe(true);
   expect(store.favoriteGroups.get(A)?.size ?? 0).toBe(0);
+  await card.getByRole('button', { name: 'Usuń wyjazd z ulubionych', exact: true }).click();
+  await expect(page).toHaveURL('http://localhost:8085/explore');
+  await card.getByRole('button', { name: 'Dodaj wyjazd do ulubionych', exact: true }).click();
+  await expect(page).toHaveURL('http://localhost:8085/explore');
+  await expect(card.getByRole('button', { name: 'Usuń wyjazd z ulubionych', exact: true })).toBeVisible();
   await card
     .getByRole('button', { name: 'Zobacz wyjazd', exact: true })
     .click();

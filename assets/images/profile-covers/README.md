@@ -1,4 +1,14 @@
-# Fotograficzne tła profilu ekipy
+# Tła profilu ekipy
+
+**Aktualny zestaw:** [akwarelowe tła](watercolor/README.md), dopasowane do
+stylu grafik wyjazdów. Używa ich wspólne mapowanie `profile-cover-data.ts`
+na kartach ekip oraz w szczegółach profilu. Pełny aktualny zestaw promptów:
+[watercolor/prompts.json](watercolor/prompts.json).
+
+## Pierwotny zestaw fotograficzny
+
+Poniżej zachowano dokumentację i pliki pierwszej wersji, użyte jako cele
+edycji przy tworzeniu akwareli.
 
 Dziesięć krajobrazów wygenerowanych narzędziem **built-in image_gen** 1.11.2026.
 Fotograficzna stylistyka, bez pojazdów, namiotów, wyposażenia kempingowego,

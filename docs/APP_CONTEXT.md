@@ -47,10 +47,11 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   Wyjście z edycji zmienionego profilu proponuje zapis, odrzucenie zmian lub
   kontynuację. Ochrona obejmuje nawigację wstecz i ostrzeżenie przeglądarki
   przed przeładowaniem; nieudany zapis pozostawia formularz do poprawy.
-- **Własny profil i profil innej ekipy mają fotograficzne tło dobrane do avatara.**
+- **Własny profil i profil innej ekipy mają akwarelowe tło dobrane do avatara.**
   Każde z 10 zwierząt ma własny krajobraz; zmiana zapisanego avatara zmienia
-  również zdjęcie. Większy avatar w białej ramce nachodzi na kartę danych ekipy.
-  W tle nie ma pojazdów, namiotów ani wyposażenia kempingowego. Zdjęcia są
+  również ilustrację. Większy avatar w białej ramce nachodzi na kartę danych ekipy.
+  Styl odpowiada grafikom wyjazdów. W tle nie ma pojazdów, namiotów ani
+  wyposażenia kempingowego. Ilustracje są
   lokalnymi plikami WebP. Mapowanie nie wymaga migracji ani osobnego wyboru tła.
   Lista motywów i prompty są w [dokumentacji grafik](../assets/images/profile-covers/README.md).
 - **Wybór transportu ma widoczne podpisy pod ilustracjami** w profilu,
@@ -95,11 +96,11 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   Zdjęcie, tytuł i „Zobacz wyjazd” otwierają te same szczegóły, z zachowaniem
   pozycji listy po powrocie. Serce, reakcje i profil ekipy mają odrębne akcje.
   Wymiary nagłówka oraz wygląd karty wyjazdu pozostają zachowane.
-  Karty w widoku ekip mają fotograficzne tło powiązane z avatarem, takie samo
+  Karty w widoku ekip mają akwarelowe tło powiązane z avatarem, takie samo
   jak w szczegółach profilu, faliste przejście do danych i avatar w białej ramce.
-  Serce jest osobną akcją w prawym górnym rogu zdjęcia, w rozmiarze używanym
+  Serce jest osobną akcją w prawym górnym rogu ilustracji, w rozmiarze używanym
   na karcie wyjazdu. Ikona transportu jest na dole obok „Profil”, pozostawiając
-  miejsce na nazwę ekipy. Zdjęcie oraz treść
+  miejsce na nazwę ekipy. Ilustracja oraz treść
   otwierają profil; wybór ulubionych zachowuje pozycję na liście.
   Opis ekipy jest dostępny w szczegółach profilu; karta na liście go nie pokazuje.
 - **Główne listy wyjazdów i ekip pobierają po pięć elementów.** Kolejna porcja

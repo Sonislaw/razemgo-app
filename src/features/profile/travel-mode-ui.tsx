@@ -4,7 +4,7 @@ import { Chip, layout } from '@/components/ui/primitives';
 import { useTheme } from '@/hooks/use-theme';
 import { Image, type ImageSource } from 'expo-image';
 import { StyleSheet, View } from 'react-native';
-import { TRAVEL_MODE_OPTIONS } from './profile-options';
+import { TRAVEL_MODE_OPTIONS, travelModeLabel } from './profile-options';
 
 const TRAVEL_MODE_IMAGES: Record<string, ImageSource> = {
   Przyczepa: require('../../../assets/images/travel-modes/caravan.webp'),
@@ -67,7 +67,8 @@ export function TravelModePicker({
         {TRAVEL_MODE_OPTIONS.map((mode) => (
           <IllustrationChoice
             key={mode}
-            label={'Sposób podróżowania: ' + mode}
+            label={'Sposób podróżowania: ' + travelModeLabel(mode)}
+            caption={travelModeLabel(mode)}
             selectionMode="single"
             selected={value[0] === mode}
             onPress={() => onChange([mode])}
@@ -90,12 +91,12 @@ export function TravelModeBadges({ modes }: { modes: string[] }) {
             key={mode}
             accessible
             accessibilityRole="image"
-            accessibilityLabel={mode}
+            accessibilityLabel={travelModeLabel(mode)}
           >
             <TravelModeArtwork source={source} size={48} />
           </View>
         ) : (
-          <Chip key={mode} label={mode} />
+          <Chip key={mode} label={travelModeLabel(mode)} />
         );
       })}
     </View>

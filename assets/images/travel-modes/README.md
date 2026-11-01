@@ -2,7 +2,7 @@
 
 Generated with the built-in `image_gen` tool using `../animals/dog.png` as a watercolor style reference. Transparent PNG assets are resized to 256 × 256 with alpha preserved.
 
-Files: `caravan.png` (Przyczepa), `motorhome.png` (Kamper), `tent.png` (Namiot), `van.png` (Van), `car.png` (Samochód).
+Files: `caravan.png` (Przyczepa), `motorhome.png` (Kamper), `tent.png` (Namiot), `van.png` (Kampervan), `car.png` (Samochód).
 
 ## caravan.png
 

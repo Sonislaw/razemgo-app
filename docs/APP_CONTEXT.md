@@ -9,7 +9,7 @@ Telefonu nie testowano.
 
 ## Produkt i główny przepływ
 
-RazemGo pomaga poznawać inne ekipy podróżujące przyczepą, kamperem, vanem,
+RazemGo pomaga poznawać inne ekipy podróżujące przyczepą, kamperem, kampervanem,
 z namiotem lub samochodem. Obsługuje rodziny, pary, osoby solo i grupy znajomych.
 Główną platformą jest Android; wersja webowa jest utrzymywana równolegle.
 
@@ -43,6 +43,18 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   Wyjście z edycji zmienionego profilu proponuje zapis, odrzucenie zmian lub
   kontynuację. Ochrona obejmuje nawigację wstecz i ostrzeżenie przeglądarki
   przed przeładowaniem; nieudany zapis pozostawia formularz do poprawy.
+- **Własny profil i profil innej ekipy mają fotograficzne tło dobrane do avatara.**
+  Każde z 10 zwierząt ma własny krajobraz; zmiana zapisanego avatara zmienia
+  również zdjęcie. Większy avatar w białej ramce nachodzi na kartę danych ekipy.
+  W tle nie ma pojazdów, namiotów ani wyposażenia kempingowego. Zdjęcia są
+  lokalnymi plikami WebP. Mapowanie nie wymaga migracji ani osobnego wyboru tła.
+  Lista motywów i prompty są w [dokumentacji grafik](../assets/images/profile-covers/README.md).
+- **Wybór transportu ma widoczne podpisy pod ilustracjami** w profilu,
+  onboardingu i formularzu wyjazdu. Obrazek oraz podpis są jedną klikalną opcją.
+  Wybiera się jeden środek transportu; oznaczenia na kartach pozostają bez zmian.
+  Widoczna nazwa „Kampervan” odpowiada dotychczasowej wartości `Van` w danych.
+  W edycji profilu opcje rodzaju ekipy, wieku dzieci, zwierząt, transportu
+  i zainteresowań mają pojedyncze rzędy przewijane poziomo.
 - **Profile ekip są zawsze dostępne dla innych zalogowanych podróżników.**
   Usunięto ekran „Profil publiczny”, przełącznik oraz odnośniki w profilu,
   ustawieniach i Odkrywaj. Dotychczas ukryte ekipy również są dostępne.
@@ -65,6 +77,11 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   z nieaktywnymi akcjami; pełny opis i adres nie są dodawane nad ekipą.
   Statusy zapisu: `draft`, `published`, `paused`, `completed`, `cancelled`;
   widoczność: `public` albo `private`. Prezentacja uwzględnia również upływ terminu.
+- **Menu „Zarządzaj wyjazdem” wyróżnia edycję** głównym przyciskiem, a poniżej
+  udostępnia wstrzymanie/wznowienie i zwykłą akcję duplikowania. Zakończenie
+  oraz anulowanie mają osobną grupę z opisami skutków; usuwanie jest oddzielone
+  na dole i oznaczone czerwonym tekstem oraz koszem. Potwierdzenia i reguły
+  dostępności akcji według statusu wyjazdu pozostają zachowane.
 - **Odkrywaj nie ma rankingu ani etykiet dopasowania.** Wyjazdy są od najnowszych
   publikacji, ekipy alfabetycznie. Filtry użytkownika są jawne i nie wynikają
   automatycznie z preferencji profilu. „Znajdź towarzystwo” ustawia termin i region

@@ -1,8 +1,11 @@
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText, Button } from '@/components/ui/primitives';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
+import { Icon, type IconName } from '@/components/ui/icon';
+import { useTheme } from '@/hooks/use-theme';
 import type { OwnedTrip } from '@/types/owned-trip';
 import { useOwnTrips, type TripMutation } from './own-trips-context';
 import { getTripStatus, todayDate } from './own-trips-state';
@@ -17,6 +20,7 @@ export function TripActions({
   onDeleted?: () => void;
 }) {
   const { mutateTrip, isSaving } = useOwnTrips();
+  const theme = useTheme();
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<
     'cancel' | 'delete' | 'publish' | 'complete' | null
@@ -99,48 +103,48 @@ export function TripActions({
         </>
       ) : (
         <>
-          <Button
-            disabled={isSaving}
-            label={status === 'draft' ? 'Dokończ szkic' : 'Edytuj wyjazd'}
-            icon="edit"
-            variant="secondary"
-            onPress={() => {
-              onClose();
-              router.push({
-                pathname: '/trip-editor',
-                params: { id: trip.id },
-              });
-            }}
-          />
-          {status === 'published' ? (
+          <View style={styles.primaryActions}>
             <Button
               disabled={isSaving}
-              label="Wstrzymaj poszukiwania"
-              icon="pause"
-              variant="secondary"
+              label={status === 'draft' ? 'Dokończ szkic' : 'Edytuj wyjazd'}
+              icon="edit"
               onPress={() => {
-                void perform({
-                  type: 'status',
-                  id: trip.id,
-                  status: 'paused',
-                  today,
+                onClose();
+                router.push({
+                  pathname: '/trip-editor',
+                  params: { id: trip.id },
                 });
               }}
             />
-          ) : status === 'paused' ? (
-            <Button
-              disabled={isSaving}
-              label="Wznów poszukiwania"
-              icon="people"
-              variant="secondary"
-              onPress={() => setConfirm('publish')}
-            />
-          ) : null}
-          <Button
+            {status === 'published' ? (
+              <Button
+                disabled={isSaving}
+                label="Wstrzymaj poszukiwania"
+                icon="pause"
+                variant="secondary"
+                onPress={() => {
+                  void perform({
+                    type: 'status',
+                    id: trip.id,
+                    status: 'paused',
+                    today,
+                  });
+                }}
+              />
+            ) : status === 'paused' ? (
+              <Button
+                disabled={isSaving}
+                label="Wznów poszukiwania"
+                icon="people"
+                variant="secondary"
+                onPress={() => setConfirm('publish')}
+              />
+            ) : null}
+          </View>
+          <TripActionRow
             disabled={isSaving}
             label="Duplikuj jako szkic"
             icon="copy"
-            variant="secondary"
             onPress={() => {
               void perform({ type: 'duplicate', id: trip.id }, id => {
                 if (id) router.push({ pathname: '/trip-editor', params: { id } });
@@ -148,32 +152,97 @@ export function TripActions({
             }}
           />
           {active ? (
-            <Button
-              disabled={isSaving}
-              label="Oznacz jako zakończony"
-              icon="check"
-              variant="secondary"
-              onPress={() => setConfirm('complete')}
-            />
+            <View style={[styles.actionGroup, { borderColor: theme.border }]}>
+              <AppText variant="caption" color="textSecondary" accessibilityRole="header">
+                Zakończenie wyjazdu
+              </AppText>
+              <TripActionRow
+                disabled={isSaving}
+                label="Oznacz jako zakończony"
+                description="Wyjazd odbyty. Przenieś do archiwum."
+                icon="check"
+                onPress={() => setConfirm('complete')}
+              />
+              <TripActionRow
+                disabled={isSaving}
+                label="Anuluj wyjazd"
+                description="Rezygnuję z wyjazdu. Przenieś do archiwum."
+                icon="close"
+                onPress={() => setConfirm('cancel')}
+              />
+            </View>
           ) : null}
-          {active ? (
-            <Button
+          <View style={[styles.actionGroup, { borderColor: theme.border }]}>
+            <TripActionRow
               disabled={isSaving}
-              label="Anuluj wyjazd"
-              icon="close"
-              variant="secondary"
-              onPress={() => setConfirm('cancel')}
+              label="Usuń wyjazd"
+              icon="trash"
+              destructive
+              onPress={() => setConfirm('delete')}
             />
-          ) : null}
-          <Button
-            disabled={isSaving}
-            label="Usuń wyjazd"
-            icon="trash"
-            variant="secondary"
-            onPress={() => setConfirm('delete')}
-          />
+          </View>
         </>
       )}
     </BottomSheet>
   );
 }
+
+function TripActionRow({
+  label,
+  description,
+  icon,
+  disabled,
+  destructive = false,
+  onPress,
+}: {
+  label: string;
+  description?: string;
+  icon: IconName;
+  disabled: boolean;
+  destructive?: boolean;
+  onPress: () => void;
+}) {
+  const theme = useTheme();
+  const foreground = disabled
+    ? theme.disabledText
+    : destructive ? theme.destructive : theme.text;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityHint={description}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.actionRow,
+        { backgroundColor: pressed ? theme.backgroundSelected : 'transparent' },
+      ]}
+    >
+      <Icon name={icon} size={22} color={foreground} />
+      <View style={styles.actionText}>
+        <AppText variant="label" style={{ color: foreground }}>{label}</AppText>
+        {description ? (
+          <AppText variant="caption" color={disabled ? 'disabledText' : 'textSecondary'}>
+            {description}
+          </AppText>
+        ) : null}
+      </View>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  primaryActions: { gap: 8 },
+  actionGroup: { borderTopWidth: 1, paddingTop: 12, gap: 4 },
+  actionRow: {
+    minHeight: 52,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    gap: 12,
+  },
+  actionText: { flex: 1, gap: 4 },
+});

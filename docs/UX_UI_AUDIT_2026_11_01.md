@@ -8,6 +8,11 @@ Punkt 4 uzupełniono o otwieranie wyjazdu zdjęciem i tytułem, z zachowaniem
 pozycji listy po powrocie. Zgodnie z decyzją użytkownika wielkość nagłówka
 i wygląd karty pozostają takie same; zmniejszenie ich nie jest częścią poprawki.
 
+Wdrożono też punkty 6 i 8: podpisy pod ilustracjami w wyborze transportu oraz
+hierarchię menu „Zarządzaj wyjazdem”. Edycja ma główny przycisk, zakończenie
+i anulowanie osobną grupę z opisami, a usuwanie jest oddzielone na dole
+i oznaczone czerwonym tekstem oraz koszem.
+
 Największą słabością jest hierarchia działań: użytkownik ogląda dużo treści,
 zanim zobaczy możliwość otwarcia wyjazdu lub skontaktowania się z ekipą.
 Druga istotna grupa problemów dotyczy edycji: utraty niezapisanych zmian profilu
@@ -152,7 +157,7 @@ w etykietach dostępności, ale nie są wyświetlane obok opcji. Rozróżnienie
 kampera i vana wymaga interpretacji rysunków. W formularzu wyjazdu lista
 dodatkowo przewija się poziomo, z ukrytym paskiem przewijania.
 
-Zalecenie: wyświetlić podpisy „Przyczepa”, „Kamper”, „Namiot”, „Van”,
+Zalecenie: wyświetlić podpisy „Przyczepa”, „Kamper”, „Namiot”, „Kampervan”,
 „Samochód”. Przy wyborze pojedynczej opcji pozostawić wyraźne zaznaczenie.
 Jeśli lista jest pozioma, ostatnia częściowo widoczna opcja lub inny sygnał
 powinny pokazywać możliwość jej przesunięcia.

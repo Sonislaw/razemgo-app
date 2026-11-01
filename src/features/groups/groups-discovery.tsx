@@ -13,7 +13,7 @@ import { useFavoritesStore } from '@/features/favorites/favorites-context';
 import { useMessagingSelector } from '@/features/messaging/messaging-context';
 import { isPresenceActive } from '@/features/presence/presence-context';
 import { PRESENCE_POLL_MS } from '@/features/presence/presence-controller';
-import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
+import { GROUP_KIND_OPTIONS, travelModeLabel } from '@/features/profile/profile-options';
 import { useFocusEffect } from 'expo-router';
 import {
   useCallback,
@@ -178,7 +178,7 @@ export function GroupsDiscovery({
       ? 'Dzieci ' + filters.childAgeBands.join(', ') + ' lat'
       : '',
     filters.travelModes
-      .map((mode) => (mode === 'Van' ? 'Kampervan' : mode))
+      .map(travelModeLabel)
       .join(', '),
     filters.interests.join(', '),
     filters.animalKinds.length

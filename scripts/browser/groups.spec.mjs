@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { PROFILE_AVATARS } from '../../src/features/profile/profile-avatar-data.ts';
 import {
   A,
   B,
@@ -53,7 +54,7 @@ async function groupBackend(context, store) {
       const me = groupId(id),
         other = groupId(id === A ? B : A);
       const target = body.target_group_id;
-      const otherCrew = profile(id === A ? B : A).group;
+      const otherCrew = store.profiles?.get(id === A ? B : A)?.group ?? profile(id === A ? B : A).group;
       const info = () => ({
         crew: otherCrew,
         about: store.publicProfiles.get(other)?.about ?? '',
@@ -914,6 +915,60 @@ test('unavailable migration and failed requests are retryable and distinct from 
   await expect(
     page.getByRole('button', { name: 'Zaproś do kontaktu', exact: true }),
   ).toBeVisible();
+});
+
+test('profile covers load for every avatar, follow saved changes and disappear for unavailable crews', async ({page, context}) => {
+  test.setTimeout(120000);
+  const store = state();
+  store.profiles = new Map();
+  await groupBackend(context, store);
+  await login(page);
+  const sources = new Set();
+  const loadedPhoto = async id => {
+    const cover = page.getByTestId('profile-cover-' + id);
+    await expect(cover).toBeVisible();
+    await expect.poll(() => cover.evaluate(el => {
+      const img = el.tagName === 'IMG' ? el : el.querySelector('img');
+      return !!img?.complete && img.naturalWidth >= 1000;
+    })).toBe(true);
+    return cover.evaluate(el => (el.tagName === 'IMG' ? el : el.querySelector('img')).currentSrc);
+  };
+  for (const avatar of PROFILE_AVATARS) {
+    store.profiles.set(A, {...profile(A), group: {...profile(A).group, avatar_id: avatar.id}});
+    await page.goto('/profile'); await page.reload();
+    sources.add(await loadedPhoto(avatar.id));
+    await expect(page.getByTestId('profile-identity-avatar')).toHaveAccessibleName(new RegExp('Awatar: ' + avatar.name));
+  }
+  expect(sources.size).toBe(PROFILE_AVATARS.length);
+  await page.getByRole('button', {name:'Edytuj profil',exact:true}).click();
+  await page.getByRole('button', {name:'Wybierz awatar ekipy',exact:true}).click();
+  await page.getByRole('radio', {name:'Awatar: Miś na biwaku',exact:true}).click();
+  await page.getByRole('button', {name:'Użyj tego awatara',exact:true}).click();
+  await page.getByRole('button', {name:'Zapisz zmiany',exact:true}).click();
+  await expect(page).toHaveURL('http://localhost:8085/profile');
+  await loadedPhoto('camp-bear');
+  await page.reload(); await loadedPhoto('camp-bear');
+  await page.screenshot({path:'.expo/profile-cover-bear-390.png'});
+  await page.setViewportSize({width:320,height:800});
+  await page.screenshot({path:'.expo/profile-cover-bear-320.png'});
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await expect(page.getByRole('button', {name:'Edytuj profil',exact:true})).toBeInViewport({ratio:1});
+  const card = await page.getByTestId('group-profile-card').boundingBox();
+  const avatar = await page.getByTestId('profile-identity-avatar').boundingBox();
+  expect(avatar.y).toBeLessThan(card.y);
+  expect(avatar.y + avatar.height).toBeGreaterThan(card.y);
+  store.profiles.set(B, {...profile(B), group: {...profile(B).group, avatar_id:'star-owl'}});
+  await page.goto('/crew/' + groupId(B)); await loadedPhoto('star-owl');
+  await expect(page.getByRole('button', {name:'Wróć',exact:true})).toBeInViewport({ratio:1});
+  await expect(page.getByRole('button', {name:'Opcje profilu',exact:true})).toBeInViewport({ratio:1});
+  await page.screenshot({path:'.expo/profile-cover-owl-320.png'});
+  await page.getByRole('button', {name:'Zaproś do kontaktu',exact:true}).click();
+  await expect(page.getByRole('textbox', {name:'Treść zaproszenia',exact:true})).toBeVisible();
+  await page.getByRole('button', {name:'Zamknij',exact:true}).click();
+  store.blocks.add(groupId(A));
+  await page.reload();
+  await expect(page.getByText('Ten profil jest niedostępny',{exact:true})).toBeVisible();
+  await expect(page.getByTestId('profile-cover-header')).toHaveCount(0);
 });
 
 test('crew cards retain recommendations while profiles show full facts without the matching section', async ({page, context}) => {

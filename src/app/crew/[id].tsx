@@ -10,6 +10,7 @@ import { useMessaging } from '@/features/messaging/messaging-context';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
 import { useGroupProfile } from '@/features/groups/use-group-profile';
 import { GroupProfileCard } from '@/features/groups/group-profile-card';
+import { ProfileCoverHeader } from '@/features/profile/profile-cover-header';
 import { FavoriteButton, FavoritesNotice } from '@/features/favorites/favorite-button';
 import { View } from 'react-native';
 
@@ -20,22 +21,23 @@ export default function PublicGroupScreen() {
   const blocked = state.blockedGroupIds.includes(id);
   const back = () => router.canGoBack() ? router.back() : router.replace('/explore');
   const available = !!data && !blocked;
+  const profileActions = available ? <GroupReportAction key={id} groupId={id} blockAction={{
+    busy,
+    error: actionError,
+    onConfirm: async () => { if (await setBlock(id, true)) back(); },
+  }} /> : null;
   return <CollectionScreen testID="crew-profile-screen" data={available ? data.trips : []} itemGap={24}
+    header={available ? <ProfileCoverHeader avatarId={data.group.avatarId} title="Profil ekipy" onBack={back} actions={profileActions} /> : undefined}
     keyExtractor={item => item.trip.id}
     renderItem={({ item }) => <DiscoveryTripCard {...item} onNavigate={preserveOnReturn} />}
     beforeList={<>
-    <ProfileSubpageHeader title="Profil ekipy" backLabel="Wróć" onBack={back}
-      actions={available ? <GroupReportAction key={id} groupId={id} blockAction={{
-        busy,
-        error: actionError,
-        onConfirm: async () => { if (await setBlock(id, true)) back(); },
-      }} /> : null} />
-    <FavoritesNotice />
+    {!available ? <ProfileSubpageHeader title="Profil ekipy" backLabel="Wróć" onBack={back} /> : null}
     {!data ? <DataStatus status={status} error={error} label="Wczytywanie profilu ekipy" onRetry={() => void retry()} /> : null}
     {status === 'ready' && (!data || blocked) ? <EmptyState title="Ten profil jest niedostępny"
       description="Konto ekipy mogło zostać usunięte lub dostęp do niego został ograniczony."
       action={<Button label="Wróć do Odkrywaj" onPress={() => router.dismissTo('/explore')} />} /> : data && !blocked ? <>
       <GroupProfileCard group={data.group} expanded />
+      <FavoritesNotice />
       <Card>
         <SectionTitle title="O ekipie" />
         <AppText color="textSecondary">

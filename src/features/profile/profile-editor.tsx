@@ -12,6 +12,7 @@ import {
 import { IS_DEMO_MODE } from '@/constants/app';
 import { CHILD_AGE_BANDS } from '@/constants/travel';
 import { GroupAnimalFields } from '@/features/animals/animal-fields';
+import { ChipRow } from '@/components/ui/chip-row';
 import { useAuth } from '@/features/auth/auth-context';
 import { ProfileAvatarPicker } from '@/features/profile/profile-avatar-picker';
 import { useProfile } from '@/features/profile/profile-context';
@@ -174,7 +175,7 @@ export default function ProfileEditor({
             </>
           ) : null}
           <FieldLabel required>Rodzaj ekipy</FieldLabel>
-          <View style={layout.wrap}>
+          <ChipRow horizontal label="Rodzaj ekipy">
             {GROUP_KIND_OPTIONS.map((option) => (
               <Chip
                 key={option.value}
@@ -188,7 +189,7 @@ export default function ProfileEditor({
                 }
               />
             ))}
-          </View>
+          </ChipRow>
           <ProfileCounter
             label="Dorośli"
             required
@@ -224,7 +225,7 @@ export default function ProfileEditor({
               <AppText variant="caption" color="textSecondary">
                 Wybierz przybliżone przedziały — bez imion i dat urodzenia.
               </AppText>
-              <View style={layout.wrap}>
+              <ChipRow horizontal label="Wiek dzieci">
                 {CHILD_AGE_BANDS.map((band) => (
                   <Chip
                     key={band}
@@ -245,7 +246,7 @@ export default function ProfileEditor({
                     }
                   />
                 ))}
-              </View>
+              </ChipRow>
             </View>
           ) : null}
         </Card>
@@ -254,6 +255,7 @@ export default function ProfileEditor({
         <Card>
           <SectionTitle title="Zwierzęta w mojej ekipie" />
           <GroupAnimalFields
+            horizontal
             value={draft.group.animals}
             onChange={(animals) =>
               setDraft((current) => ({
@@ -272,6 +274,7 @@ export default function ProfileEditor({
             detail="Wybierz jeden sposób podróżowania."
           />
           <TravelModePicker
+            horizontal
             value={draft.group.travelModes}
             onChange={(travelModes) =>
               setDraft((current) => ({
@@ -288,7 +291,7 @@ export default function ProfileEditor({
             title="Co lubię"
             detail="Co najchętniej robisz na wyjazdach?"
           />
-          <View style={layout.wrap}>
+          <ChipRow horizontal label="Co lubię">
             {INTEREST_OPTIONS.map((interest) => (
               <Chip
                 key={interest}
@@ -306,7 +309,7 @@ export default function ProfileEditor({
                 }
               />
             ))}
-          </View>
+          </ChipRow>
         </Card>
       ) : null}
       {errors.length ? (

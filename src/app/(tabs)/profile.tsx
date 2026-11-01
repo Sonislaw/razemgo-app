@@ -13,6 +13,7 @@ import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { useProfile } from '@/features/profile/profile-context';
 import { GroupProfileCard } from '@/features/groups/group-profile-card';
+import { ProfileCoverHeader } from '@/features/profile/profile-cover-header';
 
 export default function ProfileScreen() {
   const { profile, hasProfile } = useProfile();
@@ -46,7 +47,9 @@ export default function ProfileScreen() {
       </Screen>
     );
   return (
-    <Screen header={header}>
+    <Screen header={<ProfileCoverHeader avatarId={group.avatarId} title="Mój profil" actions={
+      <IconButton icon="settings" label="Ustawienia aplikacji" onPress={() => router.push('/settings')} />
+    } />}>
       <View style={styles.content}>
         <GroupProfileCard
           group={group}

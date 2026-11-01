@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="shade" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#10211D" stop-opacity="0.78"/>
+      <stop offset="0.3" stop-color="#10211D" stop-opacity="0.55"/>
+      <stop offset="0.7" stop-color="#10211D" stop-opacity="0"/>
+      <stop offset="1" stop-color="#10211D" stop-opacity="0.08"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#shade)"/>
+</svg>

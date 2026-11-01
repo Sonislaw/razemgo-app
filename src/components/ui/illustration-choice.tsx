@@ -2,15 +2,18 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
 import { Icon } from './icon';
+import { AppText } from './primitives';
 
 export function IllustrationChoice({
   label,
+  caption,
   selected = false,
   selectionMode = 'multiple',
   onPress,
   children,
 }: {
   label: string;
+  caption?: string;
   selected?: boolean;
   selectionMode?: 'single' | 'multiple';
   onPress: () => void;
@@ -25,25 +28,44 @@ export function IllustrationChoice({
       aria-checked={selected}
       onPress={onPress}
       style={({ pressed }) => [
-        styles.choice,
-        {
-          borderColor: selected ? theme.primaryStrong : theme.border,
-          backgroundColor: theme.backgroundElement,
-          opacity: pressed ? 0.7 : 1,
-        },
+        styles.touchTarget,
+        caption ? styles.captionedChoice : null,
+        { opacity: pressed ? 0.7 : 1 },
       ]}
     >
-      {children}
-      {selected ? (
-        <View style={[styles.check, { backgroundColor: theme.primaryStrong }]}>
-          <Icon name="check" size={12} color={theme.onPrimary} />
-        </View>
+      <View
+        style={[
+          styles.choice,
+          {
+            borderColor: selected ? theme.primaryStrong : theme.border,
+            backgroundColor: theme.backgroundElement,
+          },
+        ]}
+      >
+        {children}
+        {selected ? (
+          <View style={[styles.check, { backgroundColor: theme.primaryStrong }]}>
+            <Icon name="check" size={12} color={theme.onPrimary} />
+          </View>
+        ) : null}
+      </View>
+      {caption ? (
+        <AppText
+          variant="label"
+          color={selected ? 'primaryStrong' : 'text'}
+          style={styles.caption}
+        >
+          {caption}
+        </AppText>
       ) : null}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  touchTarget: { alignItems: 'center', flexShrink: 0 },
+  captionedChoice: { width: 80, gap: 4 },
+  caption: { textAlign: 'center', alignSelf: 'stretch' },
   choice: {
     width: 64,
     height: 64,

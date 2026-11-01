@@ -7,6 +7,10 @@ export const TRAVEL_MODE_OPTIONS = [
   'Van',
   'Samochód',
 ];
+// Keep the stored value compatible with existing profiles, trips and filters.
+export const travelModeLabel = (mode: string): string =>
+  mode === 'Van' ? 'Kampervan' : mode;
+
 export const INTEREST_OPTIONS = [
   'Rowery',
   'Spokojny wypoczynek',

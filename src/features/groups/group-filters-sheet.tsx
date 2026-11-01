@@ -20,6 +20,7 @@ import {
   GROUP_KIND_OPTIONS,
   INTEREST_OPTIONS,
   TRAVEL_MODE_OPTIONS,
+  travelModeLabel,
 } from '@/features/profile/profile-options';
 import { useEffect, useState } from 'react';
 import { Keyboard, Switch, View } from 'react-native';
@@ -227,7 +228,7 @@ export function GroupFiltersSheet({
           {TRAVEL_MODE_OPTIONS.map((mode) => (
             <Chip
               key={mode}
-              label={mode === 'Van' ? 'Kampervan' : mode}
+              label={travelModeLabel(mode)}
               selected={draft.travelModes.includes(mode)}
               onPress={() => toggle('travelModes', mode)}
             />

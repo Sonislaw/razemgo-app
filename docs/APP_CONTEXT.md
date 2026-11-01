@@ -40,6 +40,9 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   razem z nazwą i avatarem. Opis ma limit 600 znaków i jest widoczny w głównej
   karcie własnego profilu. Na ekranie innej ekipy `/crew/[id]` pełny opis ma osobną
   sekcję „O ekipie” pod główną kartą. Opis i dane ekipy zapisują się w jednej transakcji.
+  Wyjście z edycji zmienionego profilu proponuje zapis, odrzucenie zmian lub
+  kontynuację. Ochrona obejmuje nawigację wstecz i ostrzeżenie przeglądarki
+  przed przeładowaniem; nieudany zapis pozostawia formularz do poprawy.
 - **Profile ekip są zawsze dostępne dla innych zalogowanych podróżników.**
   Usunięto ekran „Profil publiczny”, przełącznik oraz odnośniki w profilu,
   ustawieniach i Odkrywaj. Dotychczas ukryte ekipy również są dostępne.
@@ -55,8 +58,11 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   jedną noc, jeden sposób podróżowania i opis długości 20–1000 znaków.
 - **Kreator ma dwa kroki:** typ/termin oraz miejsce/szczegóły, w tym uczestnicy,
   widoczność i podgląd. Nagłówek ogłoszenia powstaje z opisu. Szkic może być niepełny.
-  Podgląd używa tej samej karty co Odkrywaj, z nieaktywnymi akcjami; pełny opis
-  i adres kempingu nie są dodawane nad ekipą.
+  W drugim kroku najpierw są dane wymagane i widoczność. Kemping, dodatkowe
+  informacje oraz podgląd są rozwijane. Ukrycie sekcji zachowuje jej dane.
+  Błędy są przy właściwych polach, a publikacja przewija i przenosi fokus do
+  pierwszego błędu. Podgląd używa tej samej karty i szerokości co Odkrywaj,
+  z nieaktywnymi akcjami; pełny opis i adres nie są dodawane nad ekipą.
   Statusy zapisu: `draft`, `published`, `paused`, `completed`, `cancelled`;
   widoczność: `public` albo `private`. Prezentacja uwzględnia również upływ terminu.
 - **Odkrywaj nie ma rankingu ani etykiet dopasowania.** Wyjazdy są od najnowszych
@@ -66,9 +72,14 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
 - **Główne listy wyjazdów i ekip pobierają po pięć elementów.** Kolejna porcja
   wymaga przycisku; listy są wirtualizowane i zachowują miejsce po powrocie ze
   szczegółów. Skrzynka ma porcje po 20, historia rozmowy po 50 wiadomości.
+  Przy filtrach Odkrywaj (wyjazdy i ekipy) oraz Moich wyjazdów nie ma przycisku
+  ręcznego odświeżania. Automatyczne odświeżanie, reset filtrów i ponowienie
+  po błędzie pozostają dostępne.
 - **Akceptacja zaproszenia tworzy rozmowę.** Licznik kontaktów przy wyjeździe
   oznacza zaakceptowane rozmowy; aplikacja nie traktuje go jako listy potwierdzonych
   uczestników. Skład wyjazdu opisuje liczebność, nie imienną listę zapisów.
+  Szczegóły cudzego wyjazdu pokazują organizatora przed opisem i mapą.
+  Stały dolny pasek udostępnia aktualną akcję kontaktu również po przewinięciu.
 - Ulubione ekipy, ulubione wyjazdy, reakcje na ogłoszenia, reakcje na wiadomości
   i obecność online to odrębne mechanizmy. Zwierzęta są zwykłym kryterium;
   nie należy dodawać automatycznego wykluczania ekip z tego powodu.
@@ -251,6 +262,13 @@ Ujednolicenie podglądu kreatora z kartą Odkrywaj zweryfikowano w 10 scenariusz
 przeglądarkowych wyjazdów, uczestników i reakcji, w tym porównaniem podglądu
 z opublikowaną kartą na innym koncie. Lint, TypeScript i kontrola granic źródeł
 przeszły. Zmiana wymaga odświeżenia Dev, bez migracji i nowego APK.
+
+Pierwsze trzy poprawki z [analizy UX/UI](UX_UI_AUDIT_2026_11_01.md) obejmują
+stały kontakt, ochronę profilu i uproszczenie formularza opisane powyżej.
+Przeszło 583/583 testy Node/PGlite, 12/12 scenariuszy przeglądarkowych, lint,
+TypeScript i kontrola granic źródeł. Sprawdzono także błędy zapisu i fokusu,
+cofanie historii oraz zachowanie danych zwiniętych sekcji. Szczegóły i zakres
+kontroli są w [raporcie zmian](UX_FIRST_IMPROVEMENTS_2026_11_01.md).
 
 Repozytorium ma testy Node/PGlite rzeczywistych migracji i uprawnień, Playwright
 z kontrolowanym API oraz testy Edge Functions. CI sprawdza również eksporty,

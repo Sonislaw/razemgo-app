@@ -15,6 +15,7 @@ test('trip participants differ from the profile, survive reload and editing, and
   await page.getByRole('button', { name: 'Więcej: Dorośli na wyjeździe', exact: true }).click();
   await page.getByRole('button', { name: 'Więcej: Dorośli na wyjeździe', exact: true }).click();
   await page.getByRole('button', { name: 'Mniej: Dzieci na wyjeździe', exact: true }).click();
+  await page.getByRole('button', { name: 'Podgląd planu', exact: true }).click();
   await expect(page.getByTestId('trip-editor-preview')).toContainText('4 dorosłych');
   await expect(page.getByTestId('trip-editor-preview')).not.toContainText('Dzieci 4–6');
   await page.getByRole('button', { name: 'Opublikuj wyjazd', exact: true }).click();

@@ -31,9 +31,10 @@ import {
 import { ProfileSubpageHeader } from '@/features/profile/profile-ui';
 import { TravelModePicker } from '@/features/profile/travel-mode-ui';
 import { useTheme } from '@/hooks/use-theme';
+import { BottomSheet } from '@/components/ui/bottom-sheet';
 import type { ProfileSection } from '@/types/profile';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { router, useLocalSearchParams, usePreventRemove } from 'expo-router';
+import { useRef, useState } from 'react';
 import { Keyboard, View } from 'react-native';
 
 const titles: Record<ProfileSection, string> = {
@@ -65,8 +66,24 @@ export default function ProfileEditor({
   const { profile, saveProfile, isSaving } = useProfile();
   const { signOut } = useAuth();
   const theme = useTheme();
-  const [draft, setDraft] = useState(() => cloneProfile(profile));
+  const [initial] = useState(() => cloneProfile(profile));
+  const [draft, setDraft] = useState(() => cloneProfile(initial));
   const [errors, setErrors] = useState<string[]>([]);
+  const [leaving, setLeaving] = useState(false);
+  const [exitAction, setExitAction] = useState<(() => void) | null>(null);
+  const saving = useRef(false);
+  const dirty = JSON.stringify(draft) !== JSON.stringify(initial);
+  const disablePrevention = usePreventRemove(!onboarding && dirty && !leaving, ({ repeat }) => {
+    Keyboard.dismiss();
+    if (!saving.current) setExitAction(() => repeat);
+  });
+  const returnToProfile = () => router.dismissTo(from === 'home' ? '/' : '/profile');
+  const leave = (action = returnToProfile) => {
+    setLeaving(true);
+    disablePrevention();
+    setExitAction(null);
+    action();
+  };
   const sectionName =
     !onboarding && isProfileSection(section) ? section : undefined;
   const show = (name: ProfileSection) =>
@@ -77,20 +94,27 @@ export default function ProfileEditor({
         : true;
   const back = () => {
     Keyboard.dismiss();
-    router.dismissTo(from === 'home' ? '/' : '/profile');
+    if (saving.current) return;
+    if (dirty) setExitAction(() => returnToProfile);
+    else returnToProfile();
   };
-  const save = async () => {
-    const next = { ...draft };
-    // Other profile edits must not overwrite a description changed elsewhere.
-    if (draft.about === profile.about) delete next.about;
-    const nextErrors = await saveProfile(next);
-    setErrors(nextErrors);
-    if (!nextErrors.length) {
-      if (onboarding) router.replace('/account-loading');
-      else back();
-    }
+  const save = async (afterSave = returnToProfile) => {
+    if (saving.current) return;
+    saving.current = true;
+    try {
+      const next = { ...draft };
+      // Other profile edits must not overwrite a description changed elsewhere.
+      if (draft.about === profile.about) delete next.about;
+      const nextErrors = await saveProfile(next);
+      setErrors(nextErrors);
+      if (!nextErrors.length) {
+        if (onboarding) router.replace('/account-loading');
+        else leave(afterSave);
+      }
+    } finally { saving.current = false; }
   };
   return (
+    <>
     <Screen>
       {onboarding ? (
         <>
@@ -330,5 +354,16 @@ export default function ProfileEditor({
         </AppText>
       ) : null}
     </Screen>
+    {exitAction ? (
+      <BottomSheet title="Zapisać zmiany profilu?" onClose={() => { if (!saving.current) setExitAction(null); }}>
+        <AppText color="textSecondary">Masz niezapisane zmiany. Zapisz je przed wyjściem lub wróć do edycji.</AppText>
+        {errors.map(error => <AppText key={error} accessibilityRole="alert">{error}</AppText>)}
+        <Button label={isSaving ? 'Zapisywanie…' : 'Zapisz i wyjdź'} icon="check" disabled={isSaving}
+          onPress={() => void save(exitAction)} />
+        <Button label="Kontynuuj edycję" variant="secondary" disabled={isSaving} onPress={() => setExitAction(null)} />
+        <Button label="Odrzuć zmiany i wyjdź" variant="secondary" disabled={isSaving} onPress={() => leave(exitAction)} />
+      </BottomSheet>
+    ) : null}
+    </>
   );
 }

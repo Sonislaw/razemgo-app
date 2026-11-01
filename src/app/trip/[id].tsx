@@ -27,6 +27,9 @@ import { GroupAvatar } from '@/features/profile/group-avatar';
 import { TripReportAction } from '@/features/moderation/trip-report-action';
 import { FavoriteButton, FavoritesNotice } from '@/features/favorites/favorite-button';
 import { TripReactionsButton } from '@/features/reactions/trip-reactions';
+import { MaxContentWidth } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function generateStaticParams() {
   return AVAILABLE_PROPOSALS.map(({ trip }) => ({ id: trip.id }));
@@ -35,6 +38,8 @@ export function generateStaticParams() {
 export default function TripDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { item: proposal, status, error, refresh } = useDiscoveryTrip(id);
+  const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const back = () =>
     router.canGoBack() ? router.back() : router.replace('/explore');
   if (!proposal && status !== 'ready') return (
@@ -57,6 +62,7 @@ export default function TripDetailsScreen() {
     );
   const { trip, group } = proposal;
   return (
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
     <Screen>
       <HeaderRow>
         <IconButton icon="back" label="Wróć do listy wyjazdów" onPress={back} />
@@ -71,6 +77,19 @@ export default function TripDetailsScreen() {
       <TripCover trip={trip} variant="details" datesLabel={formatTripDates(trip)} action={<FavoriteButton kind="trip" targetId={trip.id} compact translucent />} />
       <View style={layout.stack}>
         <TripLocationSummary trip={trip} />
+        <Card testID="trip-organizer">
+          <View style={layout.row}>
+            <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={48} />
+            <View style={styles.organizerDetails}>
+              <AppText variant="caption" color="textSecondary">Organizator wyjazdu</AppText>
+              <AppText variant="heading" accessibilityRole="header" numberOfLines={2} style={styles.organizerName}>
+                {group.name}
+              </AppText>
+            </View>
+            <TravelModeBadges modes={trip.travelModes ?? group.travelModes} />
+          </View>
+          <Button label="Zobacz profil ekipy" variant="secondary" onPress={() => router.push({ pathname: '/crew/[id]', params: { id: group.id } })} />
+        </Card>
         <Card>
           <SectionTitle title="Pomysł na wspólny czas" />
           <AppText color="textSecondary">{trip.description}</AppText>
@@ -84,23 +103,17 @@ export default function TripDetailsScreen() {
       </View>
       <TripMapCard trip={trip} />
       <TripParticipantsCard value={trip.participants} animals={trip.animals} />
-      <Card>
-        <View style={layout.row}>
-          <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={48} />
-          <View style={styles.organizerDetails}>
-            <AppText variant="caption" color="textSecondary">
-              Organizator wyjazdu
-            </AppText>
-            <AppText variant="heading" accessibilityRole="header" numberOfLines={2} style={styles.organizerName}>
-              {group.name}
-            </AppText>
-          </View>
-          <TravelModeBadges modes={trip.travelModes ?? group.travelModes} />
-        </View>
-        <Button label="Zobacz profil ekipy" variant="secondary" onPress={() => router.push({ pathname: '/crew/[id]', params: { id: group.id } })} />
-      </Card>
-      <TripContactAction proposal={proposal} />
     </Screen>
+    <View testID="trip-contact-bar" style={{
+      backgroundColor: theme.backgroundElement, borderTopWidth: 1, borderTopColor: theme.border,
+      paddingTop: 8, paddingBottom: Math.max(8, insets.bottom),
+      paddingHorizontal: Math.max(16, insets.left, insets.right),
+    }}>
+      <View style={{ width: '100%', maxWidth: MaxContentWidth, alignSelf: 'center' }}>
+        <TripContactAction proposal={proposal} />
+      </View>
+    </View>
+    </View>
   );
 }
 const styles = StyleSheet.create({

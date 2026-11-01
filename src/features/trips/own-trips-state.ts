@@ -163,48 +163,55 @@ export function changeTripMode(form: TripForm, mode: TripMode): TripForm {
   );
 }
 
-export function validateTripForm(form: TripForm, step?: 1 | 2): string[] {
-  const errors: string[] = [];
+export type TripFormField = 'dates' | 'locationId' | 'description' | 'participants' | 'travelModes' | 'campgroundName' | 'campgroundAddress' | 'animals';
+export interface TripFormIssue { field: TripFormField; message: string }
+
+export function validateTripFormIssues(form: TripForm, step?: 1 | 2): TripFormIssue[] {
+  const errors: TripFormIssue[] = [];
+  const add = (field: TripFormField, message: string) => errors.push({ field, message });
   if (!step || step === 1) {
     if (!isValidDate(form.startDate) || !isValidDate(form.endDate))
-      errors.push('Wybierz poprawną datę wyjazdu i powrotu.');
+      add('dates', 'Wybierz poprawną datę wyjazdu i powrotu.');
     else if (form.endDate <= form.startDate)
-      errors.push(
+      add('dates',
         'Powrót musi przypadać po wyjeździe — zaplanuj co najmniej jedną noc.',
       );
   }
   if (!step || step === 2) {
-    errors.push(...validateAnimals(form.animals.animals));
-    errors.push(...validateTripParticipants(form.participants));
+    validateAnimals(form.animals.animals).forEach(message => add('animals', message));
+    validateTripParticipants(form.participants).forEach(message => add('participants', message));
     const location = findTripLocation(form.locationId);
     if (!location || !isLocationAllowedForTrip(location, form.mode))
-      errors.push(
+      add('locationId',
         form.mode === 'planned'
           ? PLANNED_TRIP_LOCATION_REQUIRED_ERROR
           : TRIP_LOCATION_REQUIRED_ERROR,
       );
     if (form.travelModes.length !== 1)
-      errors.push('Wybierz jeden sposób podróżowania.');
+      add('travelModes', 'Wybierz jeden sposób podróżowania.');
     if (
       form.mode === 'planned' &&
       isConcreteTripLocation(location) &&
       form.campgroundName.trim().length > 120
     )
-      errors.push('Skróć nazwę kempingu do 120 znaków.');
+      add('campgroundName', 'Skróć nazwę kempingu do 120 znaków.');
     if (
       form.mode === 'planned' &&
       isConcreteTripLocation(location) &&
       (form.campgroundAddress?.trim().length ?? 0) > 200
     )
-      errors.push('Skróć adres kempingu do 200 znaków.');
+      add('campgroundAddress', 'Skróć adres kempingu do 200 znaków.');
     if (tripDescriptionLength(form.description) < MIN_TRIP_DESCRIPTION_LENGTH)
-      errors.push(
+      add('description',
         `Opis wyjazdu musi mieć co najmniej ${MIN_TRIP_DESCRIPTION_LENGTH} znaków. Rozwiń opis swoich planów; zbędne spacje nie zwiększają długości.`,
       );
     if (form.description.trim().length > MAX_TRIP_DESCRIPTION_LENGTH)
-      errors.push(`Skróć opis do ${MAX_TRIP_DESCRIPTION_LENGTH} znaków.`);
+      add('description', `Skróć opis do ${MAX_TRIP_DESCRIPTION_LENGTH} znaków.`);
   }
   return errors;
+}
+export function validateTripForm(form: TripForm, step?: 1 | 2): string[] {
+  return validateTripFormIssues(form, step).map(issue => issue.message);
 }
 export function tripFromForm(
   form: TripForm,

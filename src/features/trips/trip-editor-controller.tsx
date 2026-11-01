@@ -22,7 +22,9 @@ import {
   toTripForm,
   todayDate,
   tripFromForm,
-  validateTripForm,
+  validateTripFormIssues,
+  type TripFormField,
+  type TripFormIssue,
 } from '@/features/trips/own-trips-state';
 import {
   TripPublicationFields,
@@ -30,11 +32,12 @@ import {
   TripTimingStep,
 } from '@/features/trips/trip-editor-steps';
 import { TripDemoNote } from '@/features/trips/trip-ui';
+import type { TripEditorFields, TripFieldTarget } from './trip-editor-field';
 import { useTheme } from '@/hooks/use-theme';
 import { createRequestKey } from '@/lib/request-key';
 import type { TripForm } from '@/types/owned-trip';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -42,6 +45,7 @@ import {
   ScrollView,
   View,
   type ScrollViewInstance,
+  type ViewInstance,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -66,15 +70,61 @@ export function TripEditorScreen() {
   ];
   const [step, setStep] = useState<1 | 2>(1);
   const [errors, setErrors] = useState<string[]>([]);
+  const [issues, setIssues] = useState<TripFormIssue[]>([]);
+  const [pendingFocus, setPendingFocus] = useState<TripFormField | null>(null);
   const [confirmExit, setConfirmExit] = useState(false);
   const [showDates, setShowDates] = useState(false);
   const submitting = useRef(false);
   const [saving, setSaving] = useState(false);
   const [requestKey] = useState(createRequestKey);
   const formScroll = useRef<ScrollViewInstance>(null);
+  const formContent = useRef<ViewInstance>(null);
+  const fieldTargets = useRef<Partial<Record<TripFormField, TripFieldTarget>>>({});
+  const registerField = useCallback((field: TripFormField, target: TripFieldTarget | null) => {
+    if (target) fieldTargets.current[field] = target;
+    else delete fieldTargets.current[field];
+  }, []);
+  const fields: TripEditorFields = {
+    errors: issues.reduce<TripEditorFields['errors']>((result, issue) => {
+      result[issue.field] = [result[issue.field], issue.message].filter(Boolean).join(' ');
+      return result;
+    }, {}),
+    register: registerField,
+  };
+  useEffect(() => {
+    if (!pendingFocus) return;
+    let active = true;
+    const frame = requestAnimationFrame(() => {
+      const target = fieldTargets.current[pendingFocus];
+      const content = formContent.current;
+      if (!target || !content) return;
+      target.node.measureLayout(content, (_x, y) => {
+        if (!active) return;
+        formScroll.current?.scrollTo({ y: Math.max(0, y + 4), animated: false });
+        if (target.focus) target.focus();
+        else target.node.focus();
+        setPendingFocus(null);
+      });
+    });
+    return () => { active = false; cancelAnimationFrame(frame); };
+  }, [pendingFocus, step]);
+  const clearFieldErrors = (field: string) => {
+    setIssues(current => current.filter(issue => issue.field !== field));
+    setErrors([]);
+  };
+  const showIssues = (validation: TripFormIssue[]) => {
+    setIssues(validation);
+    setErrors([]);
+    const first = (['dates', 'locationId', 'description', 'participants', 'travelModes',
+      'campgroundName', 'campgroundAddress', 'animals'] as const).find(field => validation.some(issue => issue.field === field));
+    if (first) {
+      setStep(first === 'dates' ? 1 : 2);
+      setPendingFocus(first);
+    }
+  };
   const update = <K extends keyof TripForm>(key: K, value: TripForm[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
-    setErrors([]);
+    clearFieldErrors(key === 'startDate' || key === 'endDate' ? 'dates' : key);
   };
   const close = () => {
     Keyboard.dismiss();
@@ -116,6 +166,13 @@ export function TripEditorScreen() {
   );
   const save = async (draft: boolean) => {
     if (submitting.current) return;
+    if (!draft) {
+      const validation = validateTripFormIssues(form);
+      if (previousStatus !== 'completed' && previousStatus !== 'cancelled' && form.endDate && form.endDate <= todayDate())
+        validation.push({ field: 'dates', message: 'Wybierz termin z powrotem w przyszłości.' });
+      if (validation.length) { showIssues(validation); return; }
+    }
+    setIssues([]);
     submitting.current = true;
     setSaving(true);
     const result = await saveTrip(form, id, draft, requestKey);
@@ -131,7 +188,7 @@ export function TripEditorScreen() {
     router.dismissTo('/trips');
   };
   const next = () => {
-    const validation = validateTripForm(form, step);
+    const validation = validateTripFormIssues(form, 1);
     if (
       step === 1 &&
       previousStatus !== 'completed' &&
@@ -139,10 +196,8 @@ export function TripEditorScreen() {
       form.endDate &&
       form.endDate <= todayDate()
     )
-      validation.push('Wybierz termin z powrotem w przyszłości.');
-    setErrors(validation);
-    if (validation.length)
-      formScroll.current?.scrollTo({ y: 0, animated: true });
+      validation.push({ field: 'dates', message: 'Wybierz termin z powrotem w przyszłości.' });
+    showIssues(validation);
     if (!validation.length) {
       Keyboard.dismiss();
       setStep(2);
@@ -166,6 +221,8 @@ export function TripEditorScreen() {
         >
           <ScenicHeaderBackground style={{ top: insets.top + 4 }} />
           <View
+            ref={formContent}
+            collapsable={false}
             style={{
               width: '100%',
               maxWidth: MaxContentWidth,
@@ -264,7 +321,9 @@ export function TripEditorScreen() {
           contentInsetAdjustmentBehavior="never"
           automaticallyAdjustKeyboardInsets={false}
           keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
+          // RN Web also dismisses focus during programmatic scrolling to an error.
+          keyboardDismissMode={Platform.OS === 'web' ? 'none' : 'on-drag'}
+          testID="trip-editor-form"
           contentContainerStyle={{
             flexGrow: 1,
             paddingTop: 16,
@@ -299,9 +358,10 @@ export function TripEditorScreen() {
             {step === 1 ? (
               <TripTimingStep
                 form={form}
+                fields={fields}
                 onModeChange={(mode) => {
                   setForm((current) => changeTripMode(current, mode));
-                  setErrors([]);
+                  clearFieldErrors('locationId');
                 }}
                 onDates={() => {
                   Keyboard.dismiss();
@@ -312,10 +372,11 @@ export function TripEditorScreen() {
               <>
                 <TripDestinationStep
                   form={form}
+                  fields={fields}
                   update={update}
                   onLocationChange={(id) => {
                     setForm((current) => changeTripLocation(current, id));
-                    setErrors([]);
+                    clearFieldErrors('locationId');
                   }}
                 />
                 <TripPublicationFields
@@ -324,6 +385,7 @@ export function TripEditorScreen() {
                   previousStatus={previousStatus}
                   preview={preview}
                   profile={profile}
+                  fields={fields}
                 />
               </>
             )}
@@ -390,7 +452,7 @@ export function TripEditorScreen() {
           onClose={() => setShowDates(false)}
           onApply={(range) => {
             setForm((current) => ({ ...current, ...range }));
-            setErrors([]);
+            clearFieldErrors('dates');
             setShowDates(false);
           }}
         />

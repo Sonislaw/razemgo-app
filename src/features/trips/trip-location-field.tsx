@@ -1,6 +1,7 @@
-import { useMemo, useRef, useState } from 'react';
+import { useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import type { TextInputInstance } from 'react-native';
+import type { Ref } from 'react';
 import { AppText, FieldLabel, layout } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { Fonts, Radius, Typography } from '@/constants/theme';
@@ -15,6 +16,8 @@ import {
   MIN_LOCATION_QUERY_LENGTH,
 } from './trip-locations';
 
+export interface TripLocationFieldHandle { focus: () => void }
+
 export function TripLocationField({
   value,
   mode,
@@ -24,6 +27,8 @@ export function TripLocationField({
   hint,
   query: controlledQuery,
   onQueryChange,
+  inputRef,
+  errorId,
 }: {
   value: string;
   mode: TripMode;
@@ -33,12 +38,15 @@ export function TripLocationField({
   hint?: string;
   query?: string;
   onQueryChange?: (query: string) => void;
+  inputRef?: Ref<TripLocationFieldHandle>;
+  errorId?: string;
 }) {
   const theme = useTheme();
   const label =
     customLabel ??
     (mode === 'planned' ? 'Miasto lub wieś' : 'Miejscowość, region lub kraj');
   const input = useRef<TextInputInstance>(null);
+  useImperativeHandle(inputRef, () => ({ focus: () => input.current?.focus() }), []);
   const [localQuery, setLocalQuery] = useState('');
   const query = controlledQuery ?? localQuery;
   const setQuery = (text: string) => {
@@ -75,6 +83,8 @@ export function TripLocationField({
         <Icon name="search" size={20} />
         <TextInput
           ref={input}
+          aria-invalid={!!errorId}
+          aria-describedby={errorId}
           accessibilityLabel={label}
           accessibilityHint={
             (required ? 'Pole wymagane. ' : '') +

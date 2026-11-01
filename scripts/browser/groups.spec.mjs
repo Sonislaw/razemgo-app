@@ -829,6 +829,59 @@ test('crew descriptions edit with the main profile and persist without public pr
   await expect(page.getByRole('button', { name: 'Ustaw widoczność mojej ekipy', exact: true })).toHaveCount(0);
 });
 
+test('profile exit protects changes across back navigation, discard and failed save', async ({ page, context }) => {
+  const store = state(); await groupBackend(context, store); await login(page);
+  await page.goto('/profile');
+  const edit = () => page.getByRole('button', { name: 'Edytuj profil', exact: true }).click();
+  const name = page.getByRole('textbox', { name: 'Nazwa ekipy', exact: true });
+  const about = page.getByRole('textbox', { name: 'O mojej ekipie', exact: true });
+  const dialog = page.getByRole('dialog', { name: 'Zapisać zmiany profilu?', exact: true });
+  await edit(); await name.fill('Nowa ekipa'); await about.fill('Opis zachowany podczas cofania i błędu zapisu.');
+  await page.getByRole('button', { name: 'Wróć do profilu', exact: true }).click();
+  await expect(dialog).toBeVisible();
+  await page.screenshot({path:'.expo/ux-first-three-profile-exit.png'});
+  await dialog.getByRole('button', { name: 'Kontynuuj edycję', exact: true }).click();
+  await expect(name).toHaveValue('Nowa ekipa'); await expect(about).toHaveValue('Opis zachowany podczas cofania i błędu zapisu.');
+  await page.evaluate(() => history.back());
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Odrzuć zmiany i wyjdź', exact: true }).click();
+  await expect(page).toHaveURL('http://localhost:8085/profile');
+  await edit(); await expect(name).toHaveValue('Ekipa A');
+  await name.fill('Zapisana ekipa'); await about.fill('Opis, który ma przetrwać nieudaną próbę zapisu.');
+  await page.getByRole('button', { name: 'Wróć do profilu', exact: true }).click();
+  store.failProfileSave = true;
+  await dialog.getByRole('button', { name: 'Zapisz i wyjdź', exact: true }).click();
+  await expect(dialog.getByRole('alert')).toContainText('Nie udało się zapisać');
+  await expect(page).toHaveURL('http://localhost:8085/edit-profile');
+  store.failProfileSave = false;
+  await dialog.getByRole('button', { name: 'Zapisz i wyjdź', exact: true }).click();
+  await expect(page).toHaveURL('http://localhost:8085/profile');
+  await expect(page.getByTestId('group-profile-card')).toContainText('Zapisana ekipa');
+  await expect(page.getByTestId('group-profile-card')).toContainText('Opis, który ma przetrwać nieudaną próbę zapisu.');
+  await edit(); await page.getByRole('button', { name: 'Wróć do profilu', exact: true }).click();
+  await expect(page).toHaveURL('http://localhost:8085/profile'); await expect(dialog).toHaveCount(0);
+});
+
+test('profile exit rejects invalid data and browser refresh can keep the draft', async ({ page, context }) => {
+  const store = state(); await groupBackend(context, store); await login(page);
+  await page.goto('/profile'); await page.getByRole('button', { name: 'Edytuj profil', exact: true }).click();
+  const name = page.getByRole('textbox', { name: 'Nazwa ekipy', exact: true });
+  await name.fill('');
+  const unloadDialog = page.waitForEvent('dialog');
+  const reload = page.reload({ timeout: 3000 }).catch(() => undefined);
+  const browserDialog = await unloadDialog;
+  expect(browserDialog.type()).toBe('beforeunload'); await browserDialog.dismiss(); await reload;
+  await expect(name).toHaveValue('');
+  await page.getByRole('button', { name: 'Wróć do profilu', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Zapisać zmiany profilu?', exact: true });
+  await dialog.getByRole('button', { name: 'Zapisz i wyjdź', exact: true }).click();
+  await expect(dialog.getByRole('alert')).toContainText('Nazwa');
+  await dialog.getByRole('button', { name: 'Kontynuuj edycję', exact: true }).click();
+  await expect(name).toHaveValue('');
+  await name.fill('Poprawna ekipa'); await page.getByRole('button', { name: 'Zapisz zmiany', exact: true }).click();
+  await expect(page).toHaveURL('http://localhost:8085/profile');
+});
+
 test('unavailable migration and failed requests are retryable and distinct from empty results', async ({
   page,
   context,

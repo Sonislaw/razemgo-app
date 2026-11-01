@@ -35,7 +35,7 @@ export default function ExploreScreen() {
   const [view, setView] = useState<'trips' | 'groups'>('trips');
   const theme = useTheme();
   const { filters, setFilters } = useDiscovery();
-  const { items: proposals, totalCount, hasMore, status, loadingMore, error, refresh, retry, loadMore, preserveOnReturn } = useTripSearch(filters, TRIP_SEARCH_PAGE_SIZE, view === 'trips');
+  const { items: proposals, totalCount, hasMore, status, loadingMore, error, retry, loadMore, preserveOnReturn } = useTripSearch(filters, TRIP_SEARCH_PAGE_SIZE, view === 'trips');
   const { state: ownTrips } = useOwnTrips();
   const sourceTrip = ownTrips.trips.find(
     (trip) => trip.id === filters.sourceTripId,
@@ -144,8 +144,8 @@ export default function ExploreScreen() {
           </View>
         ) : null}
         <DiscoveryFilterBar activeCount={activeCount} summary={summary} placeholder="Typ, termin, miejsce i klimat"
-          filterHint="Wybierz typ ogłoszenia, klimat, termin, miejsce i wiek dzieci" refreshLabel="Odśwież ogłoszenia"
-          onClear={reset} onRefresh={() => void refresh()}
+          filterHint="Wybierz typ ogłoszenia, klimat, termin, miejsce i wiek dzieci"
+          onClear={reset}
           renderFilters={(onClose) => (
             <DiscoveryFiltersSheet initialFilters={filters} onClose={onClose}
               onApply={(nextFilters) => { setFilters(nextFilters); onClose(); }} />

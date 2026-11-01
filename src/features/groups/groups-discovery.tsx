@@ -216,7 +216,6 @@ export function GroupsDiscovery({
             filterLabel="Filtry ekip"
             filterHint="Wybierz nazwę, rodzaj ekipy, wiek dzieci i sposób podróżowania"
             clearLabel="Wyczyść filtry ekip"
-            refreshLabel="Odśwież ekipy"
             renderFilters={(onClose) => (
               <GroupFiltersSheet
                 filters={filters}
@@ -228,7 +227,6 @@ export function GroupsDiscovery({
               />
             )}
             onClear={reset}
-            onRefresh={() => void load()}
           />
           <DiscoveryResultsHeader
             title={hasLoaded ? 'Ekipy · ' + page.totalCount : 'Ekipy'}

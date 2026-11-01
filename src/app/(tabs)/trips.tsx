@@ -228,13 +228,6 @@ function TripsContent() {
                 label="Filtruj moje wyjazdy"
                 onPress={() => setFilterOpen(true)}
               />
-              <IconButton
-                label="Odśwież wyjazdy"
-                icon="refresh"
-                onPress={() => {
-                  void refresh();
-                }}
-              />
             </View>
             {filtered ? (
               <View style={layout.row}>
@@ -308,7 +301,7 @@ function TripsContent() {
                         ? 'Zobacz aktywne wyjazdy'
                         : 'Zaplanuj pierwszy wyjazd'
                   }
-                  icon={filtered ? 'refresh' : archived ? 'trips' : 'plus'}
+                  icon={filtered ? 'filters' : archived ? 'trips' : 'plus'}
                   onPress={() =>
                     filtered
                       ? setFilters({ ...EMPTY_TRIP_FILTERS })

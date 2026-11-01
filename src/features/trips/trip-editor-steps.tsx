@@ -2,6 +2,7 @@ import { TripParticipantsFields } from './trip-participants-fields';
 import { DateRangeField } from '@/components/trips/date-range-field';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
 import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
+import { ExpandableSection } from '@/components/ui/expandable-section';
 import { ChipRow } from '@/components/ui/chip-row';
 import { Icon } from '@/components/ui/icon';
 import { AppText, Chip, FieldLabel, layout } from '@/components/ui/primitives';
@@ -15,7 +16,7 @@ import {
   tripDescriptionLength,
 } from '@/features/trips/own-trips-state';
 import { TripLandscapePicker } from '@/features/trips/trip-landscape-picker';
-import { TripLocationField } from '@/features/trips/trip-location-field';
+import { TripLocationField, type TripLocationFieldHandle } from '@/features/trips/trip-location-field';
 import {
   findTripLocation,
   isConcreteTripLocation,
@@ -26,8 +27,12 @@ import {
 } from '@/features/trips/trip-ui';
 import { useTheme } from '@/hooks/use-theme';
 import type { TripForm, OwnedTrip, TripStatus } from '@/types/owned-trip';
+import { TripEditorField, tripFieldErrorId, type TripEditorFields } from './trip-editor-field';
+import { tripAnimalSummary } from '@/features/animals/animal-data';
+import { LANDSCAPE_OPTIONS } from '@/constants/landscape-options';
+import { useRef, useState } from 'react';
 
-import { Pressable, View } from 'react-native';
+import { Pressable, View, type TextInputInstance, type ViewInstance } from 'react-native';
 
 import type { TravelerProfile } from '@/types/profile';
 const toggle = <T,>(values: T[], value: T): T[] =>
@@ -39,12 +44,15 @@ export function TripTimingStep({
   form,
   onModeChange,
   onDates,
+  fields,
 }: {
   form: TripForm;
   onModeChange: (mode: TripForm['mode']) => void;
   onDates: () => void;
+  fields: TripEditorFields;
 }) {
   const theme = useTheme();
+  const dateButton = useRef<ViewInstance>(null);
   return (
     <>
       <View
@@ -106,16 +114,17 @@ export function TripTimingStep({
           </Pressable>
         ))}
       </View>
-      <View style={{ gap: 8 }}>
+      <TripEditorField name="dates" label="Termin wyjazdu" fields={fields} focus={() => dateButton.current?.focus()}>
         <FieldLabel required>Termin wyjazdu</FieldLabel>
         <DateRangeField
+          buttonRef={dateButton}
           leadingIcon={<TripPlanningIcon kind="dates" size={40} />}
           range={{ startDate: form.startDate, endDate: form.endDate }}
           onPress={() => {
             onDates();
           }}
         />
-      </View>
+      </TripEditorField>
     </>
   );
 }
@@ -123,14 +132,21 @@ export function TripDestinationStep({
   form,
   update,
   onLocationChange,
+  fields,
 }: {
   form: TripForm;
   update: Update;
   onLocationChange: (id: string) => void;
+  fields: TripEditorFields;
 }) {
+  const locationInput = useRef<TripLocationFieldHandle>(null);
+  const descriptionInput = useRef<TextInputInstance>(null);
   return (
     <>
+      <TripEditorField name="locationId" label="Miejsce wyjazdu" fields={fields} focus={() => locationInput.current?.focus()}>
       <TripLocationField
+        inputRef={locationInput}
+        errorId={fields.errors.locationId ? tripFieldErrorId('locationId') : undefined}
         mode={form.mode}
         value={form.locationId}
         label={
@@ -145,26 +161,11 @@ export function TripDestinationStep({
           onLocationChange(id);
         }}
       />
-      {form.mode === 'planned' &&
-      isConcreteTripLocation(findTripLocation(form.locationId)) ? (
-        <>
-          <ProfileTextField
-            label="Nazwa kempingu"
-            value={form.campgroundName}
-            onChangeText={(value) => update('campgroundName', value)}
-            maxLength={120}
-            hint="Jeśli wiesz już, gdzie się zatrzymasz."
-          />
-          <ProfileTextField
-            label="Adres kempingu"
-            value={form.campgroundAddress ?? ''}
-            onChangeText={(value) => update('campgroundAddress', value)}
-            maxLength={200}
-            hint="Ulica i numer. Adres pomoże dokładniej wskazać miejsce na mapie."
-          />
-        </>
-      ) : null}
+      </TripEditorField>
+      <TripEditorField name="description" label="Opis wyjazdu" fields={fields} focus={() => descriptionInput.current?.focus()}>
       <ProfileTextField
+        inputRef={descriptionInput}
+        errorId={fields.errors.description ? tripFieldErrorId('description') : undefined}
         label="Opis wyjazdu"
         required
         value={form.description}
@@ -173,57 +174,84 @@ export function TripDestinationStep({
         multiline
         hint={`Min. ${MIN_TRIP_DESCRIPTION_LENGTH} znaków · ${tripDescriptionLength(form.description)}/${MAX_TRIP_DESCRIPTION_LENGTH}. Początek opisu pokażemy na karcie wyjazdu.`}
       />
-      <TripParticipantsFields value={form.participants} onChange={value => update('participants', value)} />
-      <View style={{ gap: 8 }}>
+      </TripEditorField>
+      <TripEditorField name="participants" label="Kto jedzie?" fields={fields}>
+        <TripParticipantsFields value={form.participants} onChange={value => update('participants', value)} />
+      </TripEditorField>
+      <TripEditorField name="travelModes" label="Sposób podróżowania" fields={fields}>
         <FieldLabel required>Jak podróżujesz na ten wyjazd?</FieldLabel>
         <TravelModePicker
           horizontal
           value={form.travelModes}
           onChange={(travelModes) => update('travelModes', travelModes)}
         />
-      </View>
+      </TripEditorField>
+    </>
+  );
+}
+
+function TripOptionalFields({ form, update, fields }: { form: TripForm; update: Update; fields: TripEditorFields }) {
+  const [campgroundOpen, setCampgroundOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const campgroundName = useRef<TextInputInstance>(null);
+  const campgroundAddress = useRef<TextInputInstance>(null);
+  const detailsSummary = [
+    LANDSCAPE_OPTIONS.find(option => option.value === form.landscape)?.label,
+    ...form.interests, tripAnimalSummary(form.animals),
+  ].filter(Boolean).join(' · ');
+  return <>
+    {form.mode === 'planned' && isConcreteTripLocation(findTripLocation(form.locationId)) ? (
+      <ExpandableSection title="Szczegóły kempingu" summary={form.campgroundName.trim() || 'Opcjonalnie: nazwa i adres'}
+        expanded={campgroundOpen || !!fields.errors.campgroundName || !!fields.errors.campgroundAddress}
+        onToggle={() => setCampgroundOpen(value => !value)}>
+        <TripEditorField name="campgroundName" label="Nazwa kempingu" fields={fields} focus={() => campgroundName.current?.focus()}>
+          <ProfileTextField label="Nazwa kempingu" value={form.campgroundName} inputRef={campgroundName}
+            errorId={fields.errors.campgroundName ? tripFieldErrorId('campgroundName') : undefined}
+            onChangeText={value => update('campgroundName', value)} maxLength={120} hint="Jeśli wiesz już, gdzie się zatrzymasz." />
+        </TripEditorField>
+        <TripEditorField name="campgroundAddress" label="Adres kempingu" fields={fields} focus={() => campgroundAddress.current?.focus()}>
+          <ProfileTextField label="Adres kempingu" value={form.campgroundAddress ?? ''} inputRef={campgroundAddress}
+            errorId={fields.errors.campgroundAddress ? tripFieldErrorId('campgroundAddress') : undefined}
+            onChangeText={value => update('campgroundAddress', value)} maxLength={200} hint="Ulica i numer. Adres pomoże wskazać miejsce na mapie." />
+        </TripEditorField>
+      </ExpandableSection>
+    ) : null}
+    <ExpandableSection title="Dodatkowe informacje" summary={detailsSummary}
+      expanded={detailsOpen || !!fields.errors.animals} onToggle={() => setDetailsOpen(value => !value)}>
       <View style={{ gap: 8 }}>
         <FieldLabel>Co chcesz robić?</FieldLabel>
         <ChipRow horizontal label="Zainteresowania">
-          {INTEREST_OPTIONS.map((interest) => (
-            <Chip
-              key={interest}
-              label={interest}
-              selected={form.interests.includes(interest)}
-              onPress={() =>
-                update('interests', toggle(form.interests, interest))
-              }
-            />
-          ))}
+          {INTEREST_OPTIONS.map(interest => <Chip key={interest} label={interest} selected={form.interests.includes(interest)}
+            onPress={() => update('interests', toggle(form.interests, interest))} />)}
         </ChipRow>
       </View>
       <View style={{ gap: 8 }}>
         <FieldLabel>Klimat wyjazdu</FieldLabel>
-        <TripLandscapePicker
-          value={form.landscape}
-          onChange={(value) => update('landscape', value)}
-        />
+        <TripLandscapePicker value={form.landscape} onChange={value => update('landscape', value)} />
       </View>
-      <TripAnimalFields
-        value={form.animals}
-        onChange={(animals) => update('animals', animals)}
-      />
-    </>
-  );
+      <TripEditorField name="animals" label="Zwierzęta na wyjeździe" fields={fields}>
+        <TripAnimalFields value={form.animals} onChange={animals => update('animals', animals)} />
+      </TripEditorField>
+    </ExpandableSection>
+  </>;
 }
+
 export function TripPublicationFields({
   form,
   update,
   previousStatus,
   preview,
   profile,
+  fields,
 }: {
   form: TripForm;
   update: Update;
   previousStatus: TripStatus;
   preview: OwnedTrip;
   profile: TravelerProfile;
+  fields: TripEditorFields;
 }) {
+  const [previewOpen, setPreviewOpen] = useState(false);
   return (
     <>
       <View style={{ gap: 8 }}>
@@ -253,10 +281,9 @@ export function TripPublicationFields({
                 : 'Opublikowany plan będzie otwarty na zaproszenia.'}
         </AppText>
       </View>
-      <View style={{ gap: 8 }}>
-        <AppText variant="caption" color="textSecondary">
-          PODGLĄD PLANU
-        </AppText>
+      <TripOptionalFields form={form} update={update} fields={fields} />
+      <ExpandableSection title="Podgląd planu" summary="Zobacz, jak Twoje ogłoszenie będzie wyglądać w Odkrywaj." fullWidthContent
+        expanded={previewOpen} onToggle={() => setPreviewOpen(value => !value)}>
         <DiscoveryTripCard
           preview
           testID="trip-editor-preview"
@@ -265,7 +292,7 @@ export function TripPublicationFields({
           locationLabel={ownTripPlace(preview)}
           datesLabel={ownTripDates(preview)}
         />
-      </View>
+      </ExpandableSection>
     </>
   );
 }

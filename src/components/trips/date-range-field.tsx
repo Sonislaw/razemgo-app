@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import type { ReactNode, Ref } from 'react';
+import { Pressable, StyleSheet, View, type ViewInstance } from 'react-native';
 import { AppText } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { Radius } from '@/constants/theme';
@@ -15,11 +15,13 @@ export function DateRangeField({
   caption,
   leadingIcon,
   onPress,
+  buttonRef,
 }: {
   range?: DateRange;
   caption?: string;
   leadingIcon?: ReactNode;
   onPress: () => void;
+  buttonRef?: Ref<ViewInstance>;
 }) {
   const theme = useTheme();
   const title =
@@ -29,6 +31,7 @@ export function DateRangeField({
   const detail = caption ?? 'Dzień wyjazdu i powrotu';
   return (
     <Pressable
+      ref={buttonRef}
       accessibilityRole="button"
       accessibilityLabel="Wybierz zakres dat"
       accessibilityHint={title + ', ' + detail}

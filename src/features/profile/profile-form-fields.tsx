@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View, type TextInputInstance } from 'react-native';
+import type { Ref } from 'react';
 import { AppText, FieldLabel, layout } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { Fonts, Radius, Typography } from '@/constants/theme';
@@ -12,6 +13,8 @@ export function ProfileTextField({
   multiline = false,
   hint,
   required = false,
+  inputRef,
+  errorId,
 }: {
   label: string;
   value: string;
@@ -20,12 +23,17 @@ export function ProfileTextField({
   multiline?: boolean;
   hint?: string;
   required?: boolean;
+  inputRef?: Ref<TextInputInstance>;
+  errorId?: string;
 }) {
   const theme = useTheme();
   return (
     <View style={styles.field}>
       <FieldLabel required={required}>{label}</FieldLabel>
       <TextInput
+        ref={inputRef}
+        aria-invalid={!!errorId}
+        aria-describedby={errorId}
         accessibilityLabel={label}
         accessibilityHint={required ? 'Pole wymagane.' : undefined}
         value={value}

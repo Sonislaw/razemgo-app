@@ -14,6 +14,7 @@ test('real API flow: create, failed save, reload, second device, discovery, life
   await page.getByRole('button',{name:'Dalej',exact:true}).click();
   await page.getByRole('textbox',{name:'Miasto lub wieś',exact:true}).fill('Chłapowo pomorskie');
   await page.getByRole('button',{name:/^Wybierz lokalizację: Chłapowo,/}).first().click();
+  await page.getByRole('button',{name:'Szczegóły kempingu',exact:true}).click();
   await page.getByRole('textbox',{name:'Nazwa kempingu',exact:true}).fill('Kemping Testowy');
   await page.getByRole('textbox',{name:'Adres kempingu',exact:true}).fill('Testowa 12');
   const description='Spokojny wyjazd nad morze, rowery i wspolne ognisko. Zabieramy gry planszowe na wieczory.';
@@ -22,6 +23,7 @@ test('real API flow: create, failed save, reload, second device, discovery, life
   await expect(page.getByRole('button',{name:'Dalej',exact:true})).toHaveCount(0);
   await expect(page.getByRole('heading',{name:'Kogo chcesz poznać?',exact:true})).toHaveCount(0);
   await expect(page.getByRole('textbox',{name:'Opis wyjazdu',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Podgląd planu',exact:true}).click();
   const preview=page.getByTestId('trip-editor-preview');
   await expect(preview).toContainText('Kemping Testowy');
   await expect(preview).not.toContainText(description);
@@ -117,7 +119,7 @@ test('flexible trips publish and edit in two steps with visibility and preview i
   await expect(page.getByText('Towarzystwo na wyjazd',{exact:true})).toHaveCount(0);
   await expect(page.getByText('Preferowany wiek dzieci',{exact:true})).toHaveCount(0);
   await page.getByRole('button',{name:'Opublikuj wyjazd',exact:true}).click();
-  await expect(page.getByRole('alert')).toContainText('Wybierz');
+  await expect(page.getByTestId('trip-field-locationId').getByRole('alert')).toContainText('Wybierz');
   await page.getByRole('textbox',{name:'Preferowany obszar wyjazdu',exact:true}).fill('Chłapowo pomorskie');
   await page.getByRole('button',{name:/^Wybierz lokalizację: Chłapowo,/}).first().click();
   await page.getByRole('textbox',{name:'Opis wyjazdu',exact:true}).fill('Szukam inspiracji na wspólny wyjazd nad morze.');

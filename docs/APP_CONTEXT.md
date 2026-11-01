@@ -37,9 +37,11 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   dorosłych, dzieci i ich przedziały wieku, transport, zainteresowania i zwierzęta.
   Nazwa ma 2–20 znaków; numer ekipy służy prezentacji i wyszukiwaniu.
 - **„O mojej ekipie” edytuje się w „Mój profil → Edytuj profil → Moja ekipa”**,
-  razem z nazwą i avatarem. Opis ma limit 600 znaków i jest widoczny w głównej
-  karcie własnego profilu. Na ekranie innej ekipy `/crew/[id]` pełny opis ma osobną
-  sekcję „O ekipie” pod główną kartą. Opis i dane ekipy zapisują się w jednej transakcji.
+  razem z nazwą i avatarem. Opis ma limit 600 znaków. Własny profil i ekran
+  innej ekipy `/crew/[id]` pokazują pełny opis w osobnej sekcji „O ekipie”
+  pod główną kartą. Własna karta pokazuje wszystkie zainteresowania, tak jak
+  profil innej ekipy; przycisk „Edytuj profil” jest na dole pod opisem.
+  Opis i dane ekipy zapisują się w jednej transakcji.
   Wyjście z edycji zmienionego profilu proponuje zapis, odrzucenie zmian lub
   kontynuację. Ochrona obejmuje nawigację wstecz i ostrzeżenie przeglądarki
   przed przeładowaniem; nieudany zapis pozostawia formularz do poprawy.

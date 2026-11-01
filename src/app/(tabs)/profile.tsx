@@ -13,6 +13,7 @@ import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { useProfile } from '@/features/profile/profile-context';
 import { GroupProfileCard } from '@/features/groups/group-profile-card';
+import { GroupAboutCard } from '@/features/groups/group-about-card';
 import { ProfileCoverHeader } from '@/features/profile/profile-cover-header';
 
 export default function ProfileScreen() {
@@ -53,11 +54,10 @@ export default function ProfileScreen() {
       <View style={styles.content}>
         <GroupProfileCard
           group={group}
-          about={profile.about}
-          aboutLabel="O mojej ekipie"
           avatarTestID="profile-identity-avatar"
-          headerAction={<Button label="Edytuj profil" icon="edit" variant="secondary" onPress={edit} />}
+          expanded
         />
+        <GroupAboutCard about={profile.about} own />
         {IS_DEMO_MODE ? (
           <View style={styles.demo}>
             <DemoBadge />
@@ -67,12 +67,13 @@ export default function ProfileScreen() {
             </AppText>
           </View>
         ) : null}
+        <Button label="Edytuj profil" icon="edit" variant="secondary" onPress={edit} />
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { gap: 12 },
+  content: { gap: 24 },
   demo: { gap: 8, paddingTop: 4 },
 });

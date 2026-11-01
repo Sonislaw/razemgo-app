@@ -10,6 +10,7 @@ import { useMessaging } from '@/features/messaging/messaging-context';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
 import { useGroupProfile } from '@/features/groups/use-group-profile';
 import { GroupProfileCard } from '@/features/groups/group-profile-card';
+import { GroupAboutCard } from '@/features/groups/group-about-card';
 import { ProfileCoverHeader } from '@/features/profile/profile-cover-header';
 import { FavoriteButton, FavoritesNotice } from '@/features/favorites/favorite-button';
 import { View } from 'react-native';
@@ -38,12 +39,7 @@ export default function PublicGroupScreen() {
       action={<Button label="Wróć do Odkrywaj" onPress={() => router.dismissTo('/explore')} />} /> : data && !blocked ? <>
       <GroupProfileCard group={data.group} expanded />
       <FavoritesNotice />
-      <Card>
-        <SectionTitle title="O ekipie" />
-        <AppText color="textSecondary">
-          {data.about.trim() || 'Ekipa nie dodała jeszcze opisu.'}
-        </AppText>
-      </Card>
+      <GroupAboutCard about={data.about} />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <FavoriteButton kind="group" targetId={data.group.id} />
         <View style={{ flex: 1, minWidth: 0 }}>

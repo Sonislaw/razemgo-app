@@ -789,8 +789,9 @@ test('crew descriptions edit with the main profile and persist without public pr
   await login(page);
   await page.goto('/profile');
   const ownProfile = page.getByTestId('group-profile-card');
-  await expect(ownProfile).toContainText('O mojej ekipie');
-  await expect(ownProfile).toContainText('Dotychczasowy opis ekipy.');
+  const ownAbout = page.getByTestId('group-about-card');
+  await expect(ownAbout).toContainText('O ekipie');
+  await expect(ownAbout).toContainText('Dotychczasowy opis ekipy.');
   await page.getByRole('button', { name: 'Edytuj profil', exact: true }).click();
   const aboutField = page.getByRole('textbox', { name: 'O mojej ekipie', exact: true });
   await expect(aboutField).toHaveValue('Dotychczasowy opis ekipy.');
@@ -805,10 +806,10 @@ test('crew descriptions edit with the main profile and persist without public pr
   store.failProfileSave = false;
   await page.getByRole('button', { name: 'Zapisz zmiany', exact: true }).click();
   await expect(page).toHaveURL('http://localhost:8085/profile');
-  await expect(ownProfile).toContainText('Kamper, książki i leśne ścieżki.');
+  await expect(ownAbout).toContainText('Kamper, książki i leśne ścieżki.');
   await expect(ownProfile).toContainText('Ekipa po zmianie');
   await page.reload();
-  await expect(ownProfile).toContainText('Kamper, książki i leśne ścieżki.');
+  await expect(ownAbout).toContainText('Kamper, książki i leśne ścieżki.');
   await expect(page.getByRole('button', { name: 'Edytuj: Profil publiczny', exact: true })).toHaveCount(0);
   await page.goto('/settings');
   await expect(page.getByRole('button', { name: 'Widoczność profilu', exact: true })).toHaveCount(0);
@@ -816,7 +817,7 @@ test('crew descriptions edit with the main profile and persist without public pr
   store.publicProfiles.get(groupId(A)).about = 'Nowszy opis z drugiego urządzenia.';
   await page.goto('/profile');
   await page.reload();
-  await expect(ownProfile).toContainText('Nowszy opis z drugiego urządzenia.');
+  await expect(ownAbout).toContainText('Nowszy opis z drugiego urządzenia.');
   await expect(ownProfile).toContainText('Ekipa po zmianie');
   await expect(ownProfile).toContainText('Dzieci 4–6 lat');
   await expect(ownProfile).toContainText('Rowery');
@@ -824,7 +825,7 @@ test('crew descriptions edit with the main profile and persist without public pr
   await expect(aboutField).toHaveValue('Nowszy opis z drugiego urządzenia.');
   await aboutField.fill('');
   await page.getByRole('button', { name: 'Zapisz zmiany', exact: true }).click();
-  await expect(ownProfile).toContainText('Przedstaw swoją ekipę w edycji profilu.');
+  await expect(ownAbout).toContainText('Przedstaw swoją ekipę w edycji profilu.');
   await page.goto('/explore');
   await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Ustaw widoczność mojej ekipy', exact: true })).toHaveCount(0);
@@ -858,7 +859,7 @@ test('profile exit protects changes across back navigation, discard and failed s
   await dialog.getByRole('button', { name: 'Zapisz i wyjdź', exact: true }).click();
   await expect(page).toHaveURL('http://localhost:8085/profile');
   await expect(page.getByTestId('group-profile-card')).toContainText('Zapisana ekipa');
-  await expect(page.getByTestId('group-profile-card')).toContainText('Opis, który ma przetrwać nieudaną próbę zapisu.');
+  await expect(page.getByTestId('group-about-card')).toContainText('Opis, który ma przetrwać nieudaną próbę zapisu.');
   await edit(); await page.getByRole('button', { name: 'Wróć do profilu', exact: true }).click();
   await expect(page).toHaveURL('http://localhost:8085/profile'); await expect(dialog).toHaveCount(0);
 });
@@ -952,11 +953,13 @@ test('profile covers load for every avatar, follow saved changes and disappear f
   await page.setViewportSize({width:320,height:800});
   await page.screenshot({path:'.expo/profile-cover-bear-320.png'});
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  await expect(page.getByRole('button', {name:'Edytuj profil',exact:true})).toBeInViewport({ratio:1});
   const card = await page.getByTestId('group-profile-card').boundingBox();
   const avatar = await page.getByTestId('profile-identity-avatar').boundingBox();
   expect(avatar.y).toBeLessThan(card.y);
   expect(avatar.y + avatar.height).toBeGreaterThan(card.y);
+  const edit = page.getByRole('button', {name:'Edytuj profil',exact:true});
+  await edit.scrollIntoViewIfNeeded();
+  await expect(edit).toBeInViewport({ratio:1});
   store.profiles.set(B, {...profile(B), group: {...profile(B).group, avatar_id:'star-owl'}});
   await page.goto('/crew/' + groupId(B)); await loadedPhoto('star-owl');
   await expect(page.getByRole('button', {name:'Wróć',exact:true})).toBeInViewport({ratio:1});

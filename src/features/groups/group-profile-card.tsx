@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AppText, Card, layout } from '@/components/ui/primitives';
 import { InterestTag, ListingTag } from '@/components/ui/listing-tag';
@@ -24,13 +23,11 @@ interface GroupCardContentProps {
 
 type GroupProfileCardProps = Pick<
   GroupCardContentProps,
-  'group' | 'about' | 'aboutLabel' | 'avatarTestID' | 'expanded'
-> & {
-  headerAction?: ReactNode;
-};
+  'group' | 'avatarTestID' | 'expanded'
+>;
 
 export function GroupProfileCard({
-  group, about, aboutLabel, avatarTestID, headerAction, expanded = false,
+  group, avatarTestID, expanded = false,
 }: GroupProfileCardProps) {
   const theme = useTheme();
   return (
@@ -60,15 +57,6 @@ export function GroupProfileCard({
         <TravelModeBadges modes={group.travelModes} />
       </View>
       <GroupCardFacts group={group} expanded={expanded} />
-      {about || aboutLabel ? (
-        <View style={styles.about}>
-          {aboutLabel ? <AppText variant="label">{aboutLabel}</AppText> : null}
-          <AppText color="textSecondary" numberOfLines={expanded ? undefined : 3}>
-            {about || 'Przedstaw swoją ekipę w edycji profilu.'}
-          </AppText>
-        </View>
-      ) : null}
-      {headerAction}
     </Card>
   );
 }
@@ -148,5 +136,4 @@ const styles = StyleSheet.create({
   identity: { alignItems: 'center', gap: 4 },
   name: { textAlign: 'center', fontSize: 28, lineHeight: 34, fontWeight: '800' },
   details: { flex: 1, gap: 4 },
-  about: { gap: 4 },
 });

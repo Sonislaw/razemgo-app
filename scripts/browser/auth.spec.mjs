@@ -174,8 +174,6 @@ async function backend(context, existingState) {
         suspended: false,
         hidden_trip_ids: [],
       });
-    if (url.pathname === '/rest/v1/rpc/get_my_group_visibility')
-      return respond({ discoverable: true, about: '' });
     if (url.pathname.endsWith('/user')) {
       if (state.deleted.includes(id))
         return respond(
@@ -224,7 +222,10 @@ async function backend(context, existingState) {
       if (state.loadFail)
         return respond({ message: 'Temporarily unavailable' }, 503);
       return respond(
-        state.profiles.has(id) ? [state.profiles.get(id).group] : [],
+        state.profiles.has(id) ? [{
+          ...state.profiles.get(id).group,
+          group_public_profiles: { about: state.profiles.get(id).about ?? '' },
+        }] : [],
       );
     }
     if (url.pathname === '/rest/v1/group_preferences')
@@ -236,6 +237,7 @@ async function backend(context, existingState) {
       const saved = {
         group: { ...group, id: 'group-' + id, owner_user_id: id },
         preferences: { group_kinds: [], child_age_bands: [], description: '', group_id: 'group-' + id },
+        about: group.about ?? state.profiles.get(id)?.about ?? '',
       };
       state.profiles.set(id, saved);
       return respond(saved);
@@ -354,7 +356,7 @@ test('profile persists, failed saves retain the form, reload errors retry and ac
   await page.goto('/profile');
   await expect(page.getByText('Ekipa A', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Edytuj: Kogo chcę poznać?', exact: true })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Edytuj: Profil publiczny', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Edytuj: Profil publiczny', exact: true })).toHaveCount(0);
   await page
     .getByRole('button', { name: 'Edytuj profil', exact: true })
     .click();

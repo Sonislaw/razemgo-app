@@ -1,7 +1,7 @@
 import { PGlite } from '@electric-sql/pglite';
 import { readFile, readdir } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
-export async function testDatabase() {
+export async function testDatabase({ before } = {}) {
   const db = new PGlite();
   await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;
     create table auth.users(id uuid primary key);create table auth.sessions(id uuid primary key,user_id uuid references auth.users on delete cascade,not_after timestamptz);
@@ -13,7 +13,7 @@ export async function testDatabase() {
     alter default privileges in schema public grant execute on functions to anon,authenticated;`);
   const directory = new URL('../../supabase/migrations/', import.meta.url);
   for (const file of (await readdir(directory))
-    .filter((file) => file.endsWith('.sql'))
+    .filter((file) => file.endsWith('.sql') && (!before || file < before))
     .sort())
     await db.exec(await readFile(new URL(file, directory), 'utf8'));
   return db;

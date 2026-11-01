@@ -17,6 +17,7 @@ import { ProfileAvatarPicker } from '@/features/profile/profile-avatar-picker';
 import { useProfile } from '@/features/profile/profile-context';
 import {
   cloneProfile,
+  MAX_GROUP_ABOUT_LENGTH,
   MAX_GROUP_NAME_LENGTH,
 } from '@/features/profile/profile-data';
 import {
@@ -79,7 +80,10 @@ export default function ProfileEditor({
     router.dismissTo(from === 'home' ? '/' : '/profile');
   };
   const save = async () => {
-    const nextErrors = await saveProfile(draft);
+    const next = { ...draft };
+    // Other profile edits must not overwrite a description changed elsewhere.
+    if (draft.about === profile.about) delete next.about;
+    const nextErrors = await saveProfile(next);
     setErrors(nextErrors);
     if (!nextErrors.length) {
       if (onboarding) router.replace('/account-loading');
@@ -128,6 +132,23 @@ export default function ProfileEditor({
               }))
             }
           />
+          {!onboarding ? (
+            <>
+              <ProfileTextField
+                label="O mojej ekipie"
+                value={draft.about ?? ''}
+                maxLength={MAX_GROUP_ABOUT_LENGTH}
+                multiline
+                onChangeText={(about) =>
+                  setDraft((current) => ({ ...current, about }))
+                }
+                hint="Publiczny opis: co lubisz i jak podróżujesz? Bez adresu zamieszkania, danych kontaktowych i szczegółowych danych dzieci."
+              />
+              <AppText variant="caption" color="textSecondary">
+                {(draft.about ?? '').length}/{MAX_GROUP_ABOUT_LENGTH}
+              </AppText>
+            </>
+          ) : null}
           <FieldLabel required>Rodzaj ekipy</FieldLabel>
           <View style={layout.wrap}>
             {GROUP_KIND_OPTIONS.map((option) => (

@@ -15,7 +15,7 @@ async function groupBackend(context, store) {
   store.publicProfiles ??= new Map([
     [
       groupId(B),
-      { discoverable: true, about: 'Lubimy rowery i podróże bez pośpiechu.' },
+      { about: 'Lubimy rowery i podróże bez pośpiechu.' },
     ],
   ]);
   await context.route(
@@ -29,8 +29,7 @@ async function groupBackend(context, store) {
           'refresh_public_group_results_v3',
           'count_public_groups',
           'get_public_group_v3',
-          'get_my_group_visibility',
-          'save_my_group_visibility',
+          'save_my_profile',
           'send_profile_invitation',
           'report_profile',
         ].includes(name)
@@ -92,7 +91,6 @@ async function groupBackend(context, store) {
         const f = body.filters;
         const query = f.name?.trim() ?? '';
         const match =
-          (store.publicProfiles.get(other)?.discoverable ?? true) &&
           (!query ||
             (/^#?\s*\d+$/.test(query)
               ? Number(query.replace(/^#?\s*/, '')) === otherCrew.crew_number
@@ -128,17 +126,17 @@ async function groupBackend(context, store) {
           return respond(null);
         return respond(info());
       }
-      if (name === 'get_my_group_visibility')
-        return respond(
-          store.publicProfiles.get(me) ?? { discoverable: true, about: '' },
-        );
-      if (name === 'save_my_group_visibility') {
-        if (store.failVisibilitySave) return respond({ code: '503' }, 503);
+      if (name === 'save_my_profile') {
+        if (store.failProfileSave) return respond({ code: '503' }, 503);
+        const previous = store.publicProfiles.get(me) ?? { about: '' };
+        const about = body.profile_data.about?.trim() ?? previous.about;
         const saved = {
-          discoverable: body.is_discoverable,
-          about: body.about_text,
+          group: { ...profile(id).group, ...body.profile_data, id: me, owner_user_id: id },
+          preferences: { ...profile(id).preferences, group_kinds: [], child_age_bands: [], description: '' },
+          about,
         };
-        store.publicProfiles.set(me, saved);
+        (store.profiles ??= new Map()).set(id, saved);
+        store.publicProfiles.set(me, { ...previous, about });
         return respond(saved);
       }
       if (name === 'report_profile')
@@ -780,49 +778,55 @@ test('live profile counts follow draft filters, ignore stale replies and recover
   expect(store.lastGroupFilters.name).toBe('Nieistniejąca');
 });
 
-test('public profile settings save only after backend confirmation and survive reload', async ({
+test('crew descriptions edit with the main profile and persist without public profile controls', async ({
   page,
   context,
 }) => {
   const store = state();
   await groupBackend(context, store);
+  store.publicProfiles.set(groupId(A), { about: 'Dotychczasowy opis ekipy.' });
   await login(page);
   await page.goto('/profile');
-  await page
-    .getByRole('button', { name: 'Edytuj: Profil publiczny', exact: true })
-    .click();
-  await expect(
-    page.getByRole('switch', { name: 'Pokaż moją ekipę w wyszukiwarce' }),
-  ).toBeChecked();
-  await page
-    .getByRole('textbox', { name: 'O mojej ekipie', exact: true })
-    .fill('Kamper, książki i leśne ścieżki.');
-  await page
-    .getByRole('switch', { name: 'Pokaż moją ekipę w wyszukiwarce' })
-    .click();
-  store.failVisibilitySave = true;
-  await page
-    .getByRole('button', { name: 'Zapisz widoczność profilu', exact: true })
-    .click();
-  await expect(page.getByRole('alert')).toContainText('Nie udało się zapisać');
-  expect(store.publicProfiles.has(groupId(A))).toBe(false);
-  store.failVisibilitySave = false;
-  await page
-    .getByRole('button', { name: 'Zapisz widoczność profilu', exact: true })
-    .click();
-  await expect(page).toHaveURL('http://localhost:8085/profile');
   const ownProfile = page.getByTestId('group-profile-card');
+  await expect(ownProfile).toContainText('O mojej ekipie');
+  await expect(ownProfile).toContainText('Dotychczasowy opis ekipy.');
+  await page.getByRole('button', { name: 'Edytuj profil', exact: true }).click();
+  const aboutField = page.getByRole('textbox', { name: 'O mojej ekipie', exact: true });
+  await expect(aboutField).toHaveValue('Dotychczasowy opis ekipy.');
+  await expect(aboutField).toHaveAttribute('maxlength', '600');
+  await aboutField.fill('Kamper, książki i leśne ścieżki.');
+  await page.getByRole('textbox', { name: 'Nazwa ekipy', exact: true }).fill('Ekipa po zmianie');
+  store.failProfileSave = true;
+  await page.getByRole('button', { name: 'Zapisz zmiany', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('Nie udało się zapisać');
+  await expect(aboutField).toHaveValue('Kamper, książki i leśne ścieżki.');
+  expect(store.publicProfiles.get(groupId(A))).toEqual({ about: 'Dotychczasowy opis ekipy.' });
+  store.failProfileSave = false;
+  await page.getByRole('button', { name: 'Zapisz zmiany', exact: true }).click();
+  await expect(page).toHaveURL('http://localhost:8085/profile');
   await expect(ownProfile).toContainText('Kamper, książki i leśne ścieżki.');
-  await expect(ownProfile).toContainText('Ekipa A');
+  await expect(ownProfile).toContainText('Ekipa po zmianie');
+  await page.reload();
+  await expect(ownProfile).toContainText('Kamper, książki i leśne ścieżki.');
+  await expect(page.getByRole('button', { name: 'Edytuj: Profil publiczny', exact: true })).toHaveCount(0);
+  await page.goto('/settings');
+  await expect(page.getByRole('button', { name: 'Widoczność profilu', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('switch', { name: 'Pokaż moją ekipę w wyszukiwarce' })).toHaveCount(0);
+  store.publicProfiles.get(groupId(A)).about = 'Nowszy opis z drugiego urządzenia.';
+  await page.goto('/profile');
+  await page.reload();
+  await expect(ownProfile).toContainText('Nowszy opis z drugiego urządzenia.');
+  await expect(ownProfile).toContainText('Ekipa po zmianie');
   await expect(ownProfile).toContainText('Dzieci 4–6 lat');
   await expect(ownProfile).toContainText('Rowery');
-  await page.goto('/group-visibility');
-  await expect(
-    page.getByRole('textbox', { name: 'O mojej ekipie', exact: true }),
-  ).toHaveValue('Kamper, książki i leśne ścieżki.');
-  await expect(
-    page.getByRole('switch', { name: 'Pokaż moją ekipę w wyszukiwarce' }),
-  ).not.toBeChecked();
+  await page.getByRole('button', { name: 'Edytuj profil', exact: true }).click();
+  await expect(aboutField).toHaveValue('Nowszy opis z drugiego urządzenia.');
+  await aboutField.fill('');
+  await page.getByRole('button', { name: 'Zapisz zmiany', exact: true }).click();
+  await expect(ownProfile).toContainText('Przedstaw swoją ekipę w edycji profilu.');
+  await page.goto('/explore');
+  await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Ustaw widoczność mojej ekipy', exact: true })).toHaveCount(0);
 });
 
 test('unavailable migration and failed requests are retryable and distinct from empty results', async ({

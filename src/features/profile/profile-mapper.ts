@@ -23,6 +23,7 @@ export function profileFromRows(groupInput: unknown): TravelerProfile {
 }
 export function profileToPayload(profile: TravelerProfile) {
   return {
+    ...(profile.about !== undefined ? { about: profile.about.trim() } : {}),
     name: profile.group.name.trim(),
     avatar_id: profile.group.avatarId,
     kind: profile.group.kind,

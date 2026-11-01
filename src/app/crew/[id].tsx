@@ -33,9 +33,15 @@ export default function PublicGroupScreen() {
     <FavoritesNotice />
     {!data ? <DataStatus status={status} error={error} label="Wczytywanie profilu ekipy" onRetry={() => void retry()} /> : null}
     {status === 'ready' && (!data || blocked) ? <EmptyState title="Ten profil jest niedostępny"
-      description="Ekipa mogła wyłączyć widoczność, usunąć konto lub ograniczyć kontakt."
+      description="Konto ekipy mogło zostać usunięte lub dostęp do niego został ograniczony."
       action={<Button label="Wróć do Odkrywaj" onPress={() => router.dismissTo('/explore')} />} /> : data && !blocked ? <>
-      <GroupProfileCard group={data.group} about={data.about} expanded />
+      <GroupProfileCard group={data.group} expanded />
+      <Card>
+        <SectionTitle title="O ekipie" />
+        <AppText color="textSecondary">
+          {data.about.trim() || 'Ekipa nie dodała jeszcze opisu.'}
+        </AppText>
+      </Card>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <FavoriteButton kind="group" targetId={data.group.id} />
         <View style={{ flex: 1, minWidth: 0 }}>

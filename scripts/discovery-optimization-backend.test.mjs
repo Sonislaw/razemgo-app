@@ -66,7 +66,8 @@ test('optimized discovery retains complete legacy pages, scores, reasons and cur
       update public.trip_plans set status='paused' where id=md5('synthetic-trip-10')::uuid;
       update public.trip_plans set status='draft',visibility='private' where id=md5('synthetic-trip-11')::uuid;
       alter table public.trip_plans enable trigger user;
-      update public.group_public_profiles set discoverable=false where group_id=md5('synthetic-group-4')::uuid;
+      insert into moderation_private.suspended_accounts(user_id)
+        select owner_user_id from public.travel_groups where id=md5('synthetic-group-4')::uuid;
       insert into public.group_blocks(blocker_group_id,blocked_group_id) values(md5('synthetic-group-1')::uuid,md5('synthetic-group-2')::uuid);
       insert into favorites_private.trip_favorites(owner_group_id,target_trip_id)
         values(md5('synthetic-group-1')::uuid,md5('synthetic-trip-35')::uuid);

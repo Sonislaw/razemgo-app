@@ -66,13 +66,13 @@ test('crew trip pages use bounded SQL, stable cursors and the existing profile/t
       await as(0);const result=await page(null,20);assert.equal(result.active_trip_count,17);assert.equal(result.trips.length,17);
       assert.equal(result.has_more,false);assert.ok(result.trips.every(item=>!live.slice(0,7).some(row=>row.id===item.trip.id)));
     });
-    await t.test('blocks, hidden profiles, suspended accounts and anonymous access never bypass visibility',async()=>{
+    await t.test('profiles stay available without trips while blocks, suspension and anonymous restrictions remain',async()=>{
       await as(0);const first=await page();await rpc('set_group_block',[groups[1],true]);assert.equal(await page(first.cursor),null);
       await rpc('set_group_block',[groups[1],false]);await as(1);await rpc('set_group_block',[groups[0],true]);await as(0);assert.equal(await page(),null);
       await as(1);await rpc('set_group_block',[groups[0],false]);await rpc('save_my_group_visibility',[false,'']);
       await as(0);assert.ok(await page()); // A public trip still permits the profile.
       await root();await db.query("update public.trip_plans set status='paused' where group_id=$1 and status='published' and end_date>current_date",[groups[1]]);
-      await as(0);assert.equal(await page(),null);assert.equal(await page(null,5,groups[0]),null);
+      await as(0);assert.equal((await page()).trips.length,0);assert.equal(await page(null,5,groups[0]),null);
       await as(1);await rpc('save_my_group_visibility',[true,'']);await as(0);const empty=await page();assert.equal(empty.trips.length,0);assert.equal(empty.active_trip_count,0);
       await root();await db.query('insert into moderation_private.suspended_accounts(user_id) values($1)',[users[1]]);
       await as(0);assert.equal(await page(),null);

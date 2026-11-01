@@ -1,15 +1,13 @@
 import {test,expect} from '@playwright/test';
 import {A,B,groupId,state,backend,login} from './trip-fixtures.mjs';
 
-test('privacy settings link to real visibility and blocked-crew screens without future promises',async({page,context})=>{
+test('privacy settings expose blocked crews without profile visibility controls',async({page,context})=>{
   const store=state();await backend(context,store);await login(page);await page.goto('/settings');
   await expect(page.getByRole('heading',{name:'Prywatność',exact:true})).toBeVisible();
   await expect(page.getByText('Wkrótce',{exact:true})).toHaveCount(0);
   await expect(page.getByText(/wyboru motywu pojawi/)).toHaveCount(0);
-  await page.getByRole('button',{name:'Widoczność profilu',exact:true}).click();
-  await expect(page).toHaveURL('http://localhost:8085/group-visibility');
-  await expect(page.getByRole('heading',{name:'Profil publiczny',exact:true})).toBeVisible();
-  await page.goBack();await expect(page).toHaveURL('http://localhost:8085/settings');
+  await expect(page.getByRole('button',{name:'Widoczność profilu',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('switch',{name:'Pokaż moją ekipę w wyszukiwarce'})).toHaveCount(0);
   await page.getByRole('button',{name:'Zablokowane ekipy',exact:true}).click();
   await expect(page).toHaveURL('http://localhost:8085/messaging-safety?from=settings');
   await expect(page.getByRole('heading',{name:'Zablokowane ekipy · 0',exact:true})).toBeVisible();

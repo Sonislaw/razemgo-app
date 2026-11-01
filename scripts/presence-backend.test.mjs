@@ -64,9 +64,9 @@ test('presence backend: sessions, privacy, expiry, blocks and account isolation'
       await as(1); await beat(randomUUID());
       await as(0); assert.deepEqual(await lookup(), [groups[1]]);
     });
-    await t.test('hidden crews stay private; existing invitations may see activity; blocks work in both directions', async () => {
+    await t.test('legacy hide requests preserve presence; blocks work in both directions', async () => {
       await as(1); await rpc('save_my_group_visibility', [false, '']);
-      await as(0); assert.deepEqual(await lookup(), []);
+      await as(0); assert.deepEqual(await lookup(), [groups[1]]);
       await as(1); await rpc('save_my_group_visibility', [true, '']);
       await as(0); await rpc('send_profile_invitation', [groups[1], 'Hello from presence test', randomUUID()]);
       await as(1); await rpc('save_my_group_visibility', [false, '']);
@@ -100,8 +100,8 @@ test('presence backend: sessions, privacy, expiry, blocks and account isolation'
       await as(0); await rpc('send_profile_invitation', [groups[1], 'Presence filter contact', randomUUID()]);
       await as(1); await rpc('save_my_group_visibility', [false, '']);
       await as(0); assert.ok((await lookup()).includes(groups[1])); // Existing contact can still see the dot.
-      assert.equal(await count({ online_only: true }), 0); // A hidden profile never enters the directory.
-      assert.equal((await ranked({ online_only: true })).items.length, 0);
+      assert.equal(await count({ online_only: true }), 1); // Legacy hide requests cannot remove a crew.
+      assert.equal((await ranked({ online_only: true })).items.length, 1);
       await as(1); await rpc('save_my_group_visibility', [true, '']);
       await as(0); await rpc('set_group_block', [groups[1], true]);
       assert.equal(await count({ online_only: true }), 0);

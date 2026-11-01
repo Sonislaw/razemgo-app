@@ -12,9 +12,9 @@ select md5('synthetic-group-'||n)::uuid,md5('synthetic-user-'||n)::uuid,'Ekipa '
 from generate_series(1,10000) n;
 insert into public.group_preferences(group_id,group_kinds,child_age_bands,description)
 select md5('synthetic-group-'||n)::uuid,array['family'],array['4–6'],'' from generate_series(1,10000) n;
-insert into public.group_public_profiles(group_id,discoverable,about)
-select md5('synthetic-group-'||n)::uuid,true,'Syntetyczny profil do pomiarów.' from generate_series(1,10000) n
-on conflict(group_id) do update set discoverable=true,about=excluded.about;
+insert into public.group_public_profiles(group_id,about)
+select md5('synthetic-group-'||n)::uuid,'Syntetyczny profil do pomiarów.' from generate_series(1,10000) n
+on conflict(group_id) do update set about=excluded.about;
 alter table public.trip_plans disable trigger user;
 insert into public.trip_plans(id,group_id,mode,status,visibility,start_date,end_date,location_id,location_name,location_region,location_kind,
   campground_name,description,travel_mode,landscape,interests,animal_kinds,matching_group_kinds,matching_child_age_bands,published_at,adult_count,child_count,child_age_bands)

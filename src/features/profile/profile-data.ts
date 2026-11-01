@@ -10,9 +10,11 @@ import {
 } from '../animals/animal-data.ts';
 
 export const MAX_GROUP_NAME_LENGTH = 20;
+export const MAX_GROUP_ABOUT_LENGTH = 600;
 
 export function createEmptyProfile(): TravelerProfile {
   return {
+    about: '',
     group: {
       id: '',
       name: '',
@@ -30,6 +32,7 @@ export function createEmptyProfile(): TravelerProfile {
 
 export function cloneProfile(profile: TravelerProfile): TravelerProfile {
   return {
+    ...(profile.about !== undefined ? { about: profile.about } : {}),
     group: {
       id: profile.group.id,
       ...(profile.group.crewNumber ? { crewNumber: profile.group.crewNumber } : {}),
@@ -49,6 +52,7 @@ export function cloneProfile(profile: TravelerProfile): TravelerProfile {
 export function normalizeProfile(profile: TravelerProfile): TravelerProfile {
   const normalized = cloneProfile(profile);
   normalized.group.name = normalized.group.name.trim();
+  if (normalized.about !== undefined) normalized.about = normalized.about.trim();
   if (normalized.group.childCount === 0) normalized.group.childAgeBands = [];
   return normalized;
 }
@@ -56,6 +60,8 @@ export function normalizeProfile(profile: TravelerProfile): TravelerProfile {
 export function validateProfile(profile: TravelerProfile): string[] {
   const errors: string[] = [];
   const { group } = profile;
+  if ((profile.about?.trim().length ?? 0) > MAX_GROUP_ABOUT_LENGTH)
+    errors.push(`Skróć opis ekipy do ${MAX_GROUP_ABOUT_LENGTH} znaków.`);
   errors.push(...validateAnimals(group.animals.animals));
   if (
     group.name.trim().length < 2 ||

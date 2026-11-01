@@ -33,10 +33,6 @@ export interface PublicGroupPage extends PublicGroupDetail {
   cursor: GroupTripCursor | null;
 }
 export const GROUP_TRIP_PAGE_SIZE = 5;
-export interface GroupVisibility {
-  discoverable: boolean;
-  about: string;
-}
 export interface GroupFilters {
   name: string;
   groupKinds: TravelGroup['kind'][];

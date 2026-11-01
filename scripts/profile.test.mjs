@@ -57,6 +57,21 @@ test('editing a draft does not mutate the current profile or mock arrays', () =>
   assert.equal(JSON.stringify(example), before);
 });
 
+test('crew descriptions retain edits, trim on save and enforce the public 600-character limit', () => {
+  const original = { ...example, about: 'Dotychczasowy opis.' };
+  const draft = cloneProfile(original);
+  draft.about = '  Nowy opis ekipy.  ';
+  const saved = normalizeProfile(draft);
+  assert.equal(saved.about, 'Nowy opis ekipy.');
+  assert.equal(profileToPayload(saved).about, saved.about);
+  assert.equal(cloneProfile(saved).about, saved.about);
+  assert.equal(original.about, 'Dotychczasowy opis.');
+  assert.equal(Object.hasOwn(profileToPayload(example), 'about'), false);
+  assert.deepEqual(validateProfile({ ...saved, about: 'ą'.repeat(600) }), []);
+  assert.deepEqual(validateProfile({ ...saved, about: 'ą'.repeat(601) }), ['Skróć opis ekipy do 600 znaków.']);
+  assert.equal(normalizeProfile({ ...saved, about: '  ' }).about, '');
+});
+
 test('two children may share one age band or leave age unspecified', () => {
   const draft = cloneProfile(example);
   draft.group.childAgeBands = ['4–6'];

@@ -26,6 +26,8 @@ test('crew numbers: backfill, immutable server assignment, exact directory searc
       await as(i);const saved=await rpc('save_my_profile',[payload]);groups.push(saved.group.id);numbers.push(saved.group.crew_number);return i;};
     for(let i=0;i<4;i++)await create();
     await admin();await db.exec(await readFile(new URL(migration,directory),'utf8'));
+    // Verify the backfilled numbers against the current schema and access rules.
+    for(const file of(await readdir(directory)).filter(f=>f.endsWith('.sql')&&f>migration).sort())await db.exec(await readFile(new URL(file,directory),'utf8'));
     for(let i=0;i<4;i++){await as(i);numbers[i]=(await db.query('select crew_number from public.travel_groups where id=$1',[groups[i]])).rows[0].crew_number;}
     const list=(query,sort='compatibility',cursor=null)=>rpc('list_ranked_public_groups',[{name:query},sort,cursor]);
     const count=query=>rpc('count_public_groups',[{name:query}]);
@@ -62,9 +64,9 @@ test('crew numbers: backfill, immutable server assignment, exact directory searc
       assert.equal(await rpc('count_public_groups',[{name:'#'+numbers[1],travel_modes:['Namiot']}]),0);
       assert.equal(await rpc('count_public_groups',[{name:'#'+numbers[1],has_trips:true}]),0);
     });
-    await t.test('a known number never bypasses hidden profiles, bilateral blocks, favorites or suspension',async()=>{
-      await as(1);await rpc('save_my_group_visibility',[false,'']);await as(0);assert.equal(await count('#'+numbers[1]),0);
-      assert.equal((await list('#'+numbers[1])).items.length,0);
+    await t.test('legacy hide requests preserve number lookup; blocks, favorites and suspension still filter results',async()=>{
+      await as(1);await rpc('save_my_group_visibility',[false,'']);await as(0);assert.equal(await count('#'+numbers[1]),1);
+      assert.equal((await list('#'+numbers[1])).items.length,1);
       await as(1);await rpc('save_my_group_visibility',[true,'']);
       for(const blocker of [0,1]){await as(blocker);await rpc('set_group_block',[groups[blocker===0?1:0],true]);
         await as(0);assert.equal(await count('#'+numbers[1]),0);assert.equal((await list('#'+numbers[1])).items.length,0);

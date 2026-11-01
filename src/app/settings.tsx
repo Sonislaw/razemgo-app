@@ -85,10 +85,9 @@ export default function SettingsScreen() {
             </AppText>
           </View>
           <AppText variant="caption" color="textSecondary">
-            Zarządzaj widocznością profilu i blokadami. Widoczność konkretnego
+            Zarządzaj blokadami ekip. Widoczność konkretnego
             wyjazdu zmienisz w jego edycji. Wiek dzieci pokazujemy w przedziałach.
           </AppText>
-          <Button label="Widoczność profilu" icon="people" variant="secondary" onPress={() => router.push('/group-visibility')} />
           <Button label="Zablokowane ekipy" icon="block" variant="secondary" onPress={openSafety} />
         </Card>
         <PushPermissionCard />

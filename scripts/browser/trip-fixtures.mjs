@@ -326,8 +326,6 @@ async function backend(context, store) {
         suspended: store.suspended === id,
         hidden_trip_ids: [],
       });
-    if (url.pathname === '/rest/v1/rpc/get_my_group_visibility')
-      return respond({ discoverable: true, about: '' });
     const reactionSummary = (tripId) => {
       const trip = store.trips.get(tripId),
         rows = [...store.reactions.values()].filter(
@@ -469,7 +467,10 @@ async function backend(context, store) {
         ),
       ]);
     if (url.pathname === '/rest/v1/travel_groups')
-      return respond([profile(id).group]);
+      return respond([{
+        ...(store.profiles?.get(id)?.group ?? profile(id).group),
+        group_public_profiles: { about: store.publicProfiles?.get(groupId(id))?.about ?? '' },
+      }]);
     if (url.pathname === '/rest/v1/group_preferences')
       return respond(profile(id).preferences);
     if (url.pathname === '/rest/v1/rpc/get_my_notifications') {

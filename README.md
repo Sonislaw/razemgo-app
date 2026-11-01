@@ -14,7 +14,9 @@ Aplikacja do poznawania osób podróżujących kamperem, przyczepą, kampervanem
 
 Pracujemy w Dev. Preview ma własne konta, dane i samodzielny APK dla testerów. Zmiana kodu lub wdrożenie do Dev nie aktualizuje Preview. Procedura wydawania: [ENVIRONMENTS.md](docs/ENVIRONMENTS.md).
 
-Aktualne wydanie: [Preview 1.4.0 i Dev 1.4.0](docs/RELEASE_1.4.0.md). Preview działa samodzielnie, a Dev korzysta z klienta deweloperskiego z Metro. Oba backendy mają 42 migracje. Wydanie obejmuje [skład uczestników konkretnego wyjazdu](docs/TRIP_PARTICIPANTS.md), [wyszukiwanie bez etykiet i rankingu](docs/UNRANKED_DISCOVERY.md) oraz [poprawki architektury, synchronizacji i paginacji](docs/ARCHITECTURE_FIXES_2026_10_31.md). Starsze APK wymagają aktualizacji do publikowania i edycji treści wyjazdów; istniejące dane testerów zachowano.
+Aktualne wydanie: [Preview 1.4.0 i Dev 1.4.0](docs/RELEASE_1.4.0.md). Preview działa samodzielnie, a Dev korzysta z klienta deweloperskiego z Metro. Na moment tego wydania oba backendy miały 42 migracje. Wydanie obejmuje [skład uczestników konkretnego wyjazdu](docs/TRIP_PARTICIPANTS.md), [wyszukiwanie bez etykiet i rankingu](docs/UNRANKED_DISCOVERY.md) oraz [poprawki architektury, synchronizacji i paginacji](docs/ARCHITECTURE_FIXES_2026_10_31.md). Starsze APK wymagają aktualizacji do publikowania i edycji treści wyjazdów; istniejące dane testerów zachowano.
+
+1.11.2026 Dev otrzymał edycję „O mojej ekipie” w **Mój profil → Edytuj profil**, ze wspólnym zapisem opisu i danych ekipy. Usunięto ekran „Profil publiczny” i wybór widoczności: profile są zawsze dostępne dla innych zalogowanych podróżników, z zachowaniem blokad i moderacji. Backend Dev ma 44 migracje; Preview pozostaje przy 42. Zmiany wymagają odświeżenia aplikacji Dev, bez nowego APK. [Opis i zgodność zapisu](docs/GROUPS.md).
 
 ## Uruchomienie
 

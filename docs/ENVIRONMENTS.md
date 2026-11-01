@@ -1,6 +1,8 @@
 # RazemGo Dev i Preview
 
-Aktualny stan po wydaniu **1.4.0** z 31.10.2026: oba backendy mają **42 migracje**, do `202610310007_sync_domains.sql`. Preview otrzymało siedem migracji z Dev, bez resetu i kopiowania danych. Nowe APK to **Preview 1.4.0 (7)** oraz **Dev 1.4.0 (3)**; oba zachowują swoje pakiety i podpisy. Zaktualizowane moduły natywne wymagają instalacji nowego APK Dev. [Linki, kontrole i ograniczenia wydania](RELEASE_1.4.0.md).
+**Bieżące zmiany Dev — 1.11.2026:** edycja „O mojej ekipie” znajduje się w głównej sekcji **Mój profil → Edytuj profil**. Ekran „Profil publiczny” i wybór widoczności zostały usunięte. Każdy profil jest dostępny dla innych zalogowanych podróżników; blokady i moderacja nadal obowiązują. Migracje `202611010001_profile_about.sql` i `202611010002_always_visible_groups.sql` wdrożono wyłącznie na Dev: ma 44 migracje, Preview zachowuje 42. Zmiany wymagają odświeżenia aplikacji, bez nowego APK Dev. Przy przyszłej promocji do Preview należy uwzględnić obie migracje. [Kontrakty zapisu i dostępności](GROUPS.md).
+
+Stan wydania **1.4.0** z 31.10.2026: oba backendy miały **42 migracje**, do `202610310007_sync_domains.sql`. Preview otrzymało siedem migracji z Dev, bez resetu i kopiowania danych. Nowe APK to **Preview 1.4.0 (7)** oraz **Dev 1.4.0 (3)**; oba zachowują swoje pakiety i podpisy. Zaktualizowane moduły natywne wymagają instalacji nowego APK Dev. [Linki, kontrole i ograniczenia wydania](RELEASE_1.4.0.md).
 
 Oba środowiska korzystają z odczytów V3 bez etykiet i rankingu. Zachowano filtry, strony po pięć oraz automatyczne powiadomienia o propozycjach. Historyczne ogłoszenia nie otrzymują wymyślonego składu; przy edycji należy go uzupełnić. Starsze APK wymagają aktualizacji do publikowania i edycji treści wyjazdu. [Zakres i kontrakty](UNRANKED_DISCOVERY.md), [zgodność wydań](API_COMPATIBILITY.md).
 

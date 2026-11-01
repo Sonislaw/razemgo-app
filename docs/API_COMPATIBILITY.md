@@ -11,3 +11,12 @@ Stare RPC i pola bazy zachowano dla zainstalowanych klientów i procesu propozyc
 Dodanie obowiązkowego składu wyjazdu jest wcześniejszą zmianą Dev promowaną w 1.4.0: starsze APK bez tego formularza wymagają aktualizacji do publikowania i edycji treści wyjazdu. Odczyt starszych ogłoszeń, pauzowanie i archiwizacja pozostają obsługiwane; nie przypisujemy historycznym wyjazdom składu z dzisiejszego profilu. Przy edycji należy go uzupełnić.
 
 Nie usuwać V1/V2 ani dawnych kolumn bez osobnej decyzji o zakończeniu obsługi starszych wydań. Rewizja strony jest optymalizacją cache, nie uprawnieniem; każdy odczyt nadal sprawdza sesję, widoczność, zawieszenie i blokady.
+
+1.11.2026 Dev otrzymał migracje `202611010001_profile_about.sql` i
+`202611010002_always_visible_groups.sql`. `save_my_profile` zapisuje opcjonalny
+opis `about` w tej samej transakcji i zwraca go w odpowiedzi. Profile są zawsze
+dostępne dla zalogowanych użytkowników, z zachowaniem blokad i moderacji.
+Stare RPC ustawień profilu zachowują sygnatury i zapis opisu, ale ignorują żądanie
+ukrycia oraz zwracają `discoverable=true`. Kolumnę zabezpiecza ograniczenie bazy;
+bieżący klient nie korzysta z tego ustawienia ani jego RPC. Preview pozostaje
+przy backendzie wydania 1.4.0 i wymaga obu migracji przy przyszłej promocji.

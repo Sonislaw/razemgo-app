@@ -14,7 +14,7 @@ import { useMessagingSelector } from '@/features/messaging/messaging-context';
 import { isPresenceActive } from '@/features/presence/presence-context';
 import { PRESENCE_POLL_MS } from '@/features/presence/presence-controller';
 import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
-import { router, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import {
   useCallback,
   useRef,
@@ -246,7 +246,7 @@ export function GroupsDiscovery({
           {status === 'ready' && !items.length ? (
             <EmptyState
               title="Jeszcze nie ma tu ekip"
-              description="Zmień filtry albo wróć później. W wyszukiwarce pojawiają się widoczne profile ekip."
+              description="Zmień filtry albo wróć później. Nowe ekipy pojawiają się po uzupełnieniu profilu."
               action={<Button label="Pokaż wszystkie ekipy" onPress={reset} />}
             />
           ) : null}
@@ -259,11 +259,6 @@ export function GroupsDiscovery({
               onPress={() => void more()}
             />
           ) : null}
-          <Button
-            label="Ustaw widoczność mojej ekipy"
-            variant="secondary"
-            onPress={() => router.push('/group-visibility')}
-          />
         </>
       }
     />

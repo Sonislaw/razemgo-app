@@ -72,12 +72,12 @@ test('trip reactions: real SQL ownership, aggregates, notification deduplication
       assert.deepEqual((await summaries(trip.id))[0].counts, { curious: 1 });
       assert.equal((await settle()).length, 0);
     });
-    await t.test('separate accounts keep separate choices; owner-only identities respect profile visibility', async () => {
+    await t.test('separate accounts keep separate choices; reactor profiles remain available only in the owner roster', async () => {
       await as(2); await react(trip.id, 'applause');
       await assert.rejects(roster(trip.id), e => e.code === 'P0002');
       await as(0); await rpc('save_my_group_visibility', [false, '']);
       await as(1); const list = await roster(trip.id);
-      assert.equal(list.items.length, 2); assert.equal(list.items.find(p => p.group_id === groups[0]).profile_available, false);
+      assert.equal(list.items.length, 2); assert.equal(list.items.find(p => p.group_id === groups[0]).profile_available, true);
       assert.deepEqual((await summaries(trip.id))[0].counts, { curious: 1, applause: 1 });
       await as(0); await rpc('save_my_group_visibility', [true, '']);
       await settle();

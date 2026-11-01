@@ -18,8 +18,7 @@ test('group directory and profile invitations: real local SQL, privacy, safety a
       alter default privileges in schema public grant all on tables to anon,authenticated;
       alter default privileges in schema public grant execute on functions to anon,authenticated;`);
     const migrations = new URL('../supabase/migrations/', import.meta.url);
-    const defaultVisibilityMigration = '202610250002_default_group_visibility.sql';
-    for (const file of (await readdir(migrations)).filter(f => f.endsWith('.sql') && f !== defaultVisibilityMigration).sort())
+    for (const file of (await readdir(migrations)).filter(f => f.endsWith('.sql')).sort())
       await db.exec(await readFile(new URL(file, migrations), 'utf8'));
     const root = () => db.exec('reset role');
     const as = async i => {
@@ -45,16 +44,15 @@ test('group directory and profile invitations: real local SQL, privacy, safety a
       location_name: 'Chłapowo', location_region: 'Pomorskie', location_kind: 'village', travel_mode: 'Kamper',
       description: 'Spokojny wyjazd nad morze i wspólne ognisko.', landscape: 'coast', interests: ['Rowery'], animal_kinds: [], matching_group_kinds: [], matching_child_age_bands: [] };
 
-    await t.test('migration defaults existing unset profiles to visible and preserves explicit hidden settings', async () => {
-      await as(3); await visible(false, 'Zachowaj ukryty profil i opis.');
-      await root(); await db.exec(await readFile(new URL(defaultVisibilityMigration, migrations), 'utf8'));
+    await t.test('every profile is listed and legacy visibility writes cannot hide a crew', async () => {
+      await as(3); await visible(false, 'Zachowaj dotychczasowy opis.');
       await as(0); assert.equal((await rpc('get_my_group_visibility')).discoverable, true);
-      assert.equal((await list()).items.length, 2);
+      assert.equal((await list()).items.length, 3);
       assert.ok(await detail(groups[1]));
-      await as(3); assert.deepEqual(await rpc('get_my_group_visibility'), { discoverable: false, about: 'Zachowaj ukryty profil i opis.' });
+      await as(3); assert.deepEqual(await rpc('get_my_group_visibility'), { discoverable: true, about: 'Zachowaj dotychczasowy opis.' });
       await as(1); await visible(false); await as(2); await visible(false); await as(0); await visible(false, '');
     });
-    await t.test('new profiles are immediately searchable; subsequent edits preserve a choice to hide', async () => {
+    await t.test('new profiles and edited profiles remain searchable after legacy hide requests', async () => {
       const index = users.length; users.push(randomUUID()); sessions.push(randomUUID());
       await root(); await db.query('insert into auth.users values($1)', [users[index]]);
       await db.query('insert into auth.sessions values($1,$2,null)', [sessions[index], users[index]]);
@@ -63,17 +61,17 @@ test('group directory and profile invitations: real local SQL, privacy, safety a
       await as(0); assert.ok((await list()).items.some(x => x.crew.id === saved.group.id));
       await as(index); await visible(false, 'Opis ukrytej ekipy.');
       await rpc('save_my_profile', [{ ...profile, name: 'Nowa nazwa ukrytej' }]);
-      assert.deepEqual(await rpc('get_my_group_visibility'), { discoverable: false, about: 'Opis ukrytej ekipy.' });
-      await as(0); assert.equal((await list()).items.some(x => x.crew.id === saved.group.id), false);
+      assert.deepEqual(await rpc('get_my_group_visibility'), { discoverable: true, about: 'Opis ukrytej ekipy.' });
+      await as(0); assert.equal((await list()).items.some(x => x.crew.id === saved.group.id), true);
       await root(); await db.query('delete from auth.users where id=$1', [users[index]]);
     });
-    await t.test('explicit hidden settings control visibility and public profiles omit private preferences', async () => {
-      await as(0); assert.deepEqual((await list()).items, []); assert.equal(await detail(groups[1]), null);
-      assert.deepEqual(await rpc('get_my_group_visibility'), { about: '', discoverable: false });
+    await t.test('profiles stay available without trips and omit private preferences', async () => {
+      await as(0); assert.equal((await list()).items.length, 3); assert.ok(await detail(groups[1]));
+      assert.deepEqual(await rpc('get_my_group_visibility'), { about: '', discoverable: true });
       await as(1); await visible(true, '  Rowery, natura i kawa.  ');
       await rpc('register_my_push_device', [randomUUID(), randomUUID(), 'ExpoPushToken[local_test_device_123]', 'android', 'b7305e7b-7e1c-4b12-9123-caa0587f49b0']);
       await as(2); await visible(true);
-      await as(0); const page = await list(); assert.equal(page.items.length, 2);
+      await as(0); const page = await list(); assert.equal(page.items.length, 3);
       const family = page.items.find(x => x.crew.id === groups[1]); assert.equal(family.about, 'Rowery, natura i kawa.');
       assert.equal(family.active_trip_count, 0); assert.equal(family.crew.owner_user_id, undefined);
       assert.equal(JSON.stringify(page).includes('SECRET'), false);
@@ -94,9 +92,9 @@ test('group directory and profile invitations: real local SQL, privacy, safety a
     });
     await t.test('visibility save validates at database boundary and cannot change ownership', async () => {
       await as(1); await assert.rejects(visible(true, 'x'.repeat(601)), e => e.code === '22023');
-      await assert.rejects(visible(null), e => e.code === '22023');
+      await assert.rejects(visible(null, null), e => e.code === '22023');
       assert.equal((await rpc('get_my_group_visibility')).about, 'Rowery, natura i kawa.');
-      await as(0); assert.equal((await rpc('get_my_group_visibility')).discoverable, false);
+      await as(0); assert.equal((await rpc('get_my_group_visibility')).discoverable, true);
       await assert.rejects(db.query('select messaging_private.public_trip_count($1)', [groups[1]]));
     });
     let invitation, chat;
@@ -120,7 +118,7 @@ test('group directory and profile invitations: real local SQL, privacy, safety a
       assert.equal(box.invitations[0].trip_snapshot, null); assert.equal(box.conversations.length, 0);
       assert.equal(JSON.stringify(box).includes('SECRET'), false);
       await assert.rejects(invite(groups[0]), e => e.code === 'P0002');
-      await assert.rejects(invite(groups[3]), e => e.code === 'P0002');
+      await assert.rejects(invite(randomUUID()), e => e.code === 'P0002');
       await assert.rejects(invite(groups[2], request), e => e.code === '22023');
       await assert.rejects(invite(groups[2], randomUUID(), ''), e => e.code === '22023');
       await assert.rejects(invite(groups[2], randomUUID(), 'x'.repeat(501)), e => e.code === '22023');
@@ -128,11 +126,11 @@ test('group directory and profile invitations: real local SQL, privacy, safety a
       await as(1); assert.equal((await rpc('get_my_notifications')).items[0].kind, 'invitation_received');
       await root(); assert.equal((await db.query("select count(*)::int n from push_private.events where kind='invitation_received'")).rows[0].n, 1);
     });
-    await t.test('pending profile invitations stay accessible after hiding; reciprocal invitations reuse the request', async () => {
+    await t.test('legacy hide requests preserve profiles and pending invitations; reciprocal invitations reuse the request', async () => {
       await as(1); assert.equal(await invite(groups[0]), invitation); await visible(false);
       assert.ok(await detail(groups[0]));
-      await as(2); assert.equal(await detail(groups[1]), null); await assert.rejects(invite(groups[1]));
-      await as(0); assert.equal((await list()).items.length, 1); assert.ok(await detail(groups[1]));
+      await as(2); assert.ok(await detail(groups[1]));
+      await as(0); assert.equal((await list()).items.length, 3); assert.ok(await detail(groups[1]));
       await assert.rejects(respond(invitation, 'accepted'), e => e.code === '42501');
     });
     await t.test('acceptance yields one durable conversation, with unread/read states and ordinary chat', async () => {

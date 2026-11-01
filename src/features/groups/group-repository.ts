@@ -10,7 +10,6 @@ import {
   type GroupFilters,
   type GroupPage,
   type GroupTripCursor,
-  type GroupVisibility,
   type PublicGroupPage,
   type PublicGroupRow,
   type RankedGroupCursor,
@@ -138,31 +137,4 @@ export async function refreshGroupResults(
     items.push(...data.map(publicGroupFromRow));
   }
   return items;
-}
-export async function fetchGroupVisibility(): Promise<GroupVisibility> {
-  const { data, error } = await backendRequest(
-    (signal) =>
-      getSupabase().rpc('get_my_group_visibility').abortSignal(signal),
-    'groups.visibility',
-  );
-  if (error) throw error;
-  if (!data) throw new Error('Missing visibility');
-  return data;
-}
-export async function saveGroupVisibility(
-  value: GroupVisibility,
-): Promise<GroupVisibility> {
-  const { data, error } = await backendRequest(
-    (signal) =>
-      getSupabase()
-        .rpc('save_my_group_visibility', {
-          is_discoverable: value.discoverable,
-          about_text: value.about.trim(),
-        })
-        .abortSignal(signal),
-    'groups.save_visibility',
-  );
-  if (error) throw error;
-  if (!data) throw new Error('Missing visibility');
-  return data;
 }

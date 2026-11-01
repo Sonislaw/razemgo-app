@@ -138,14 +138,14 @@ test('profile ranking: server parity, actual shared characteristics, global pagi
         {child_age_bands:['18–20']},{travel_modes:['plane']},{interests:['unknown']},{animal_kinds:['other']}])
         await assert.rejects(count(bad),e=>e.code==='22023');
     });
-    await t.test('invalid sorting and cursors fail; hidden, blocked and suspended crews never enter ranking or detail',async()=>{
+    await t.test('invalid cursors fail, legacy hide requests are ignored, and blocks or suspensions prevent access',async()=>{
       await as(0);
       for(const sort of ['unknown',null]) await assert.rejects(list({},sort),e=>e.code==='22023');
       const cursor=(await list()).cursor;
       for(const bad of [{}, {...cursor,score:101}, {...cursor,score:-1}, {...cursor,id:'not-uuid'}, {...cursor,sort:'alphabetical'}])
         await assert.rejects(list({},'compatibility',bad),e=>e.code==='22023');
       await save(1,{...base,name:'Zeta best match'}); await rpc('save_my_group_visibility',[false,'']);
-      await as(0); assert.equal((await list({name:'Zeta'})).items.length,0); assert.equal(await detail(1),null); assert.equal(await count({name:'Zeta'}),0);
+      await as(0); assert.equal((await list({name:'Zeta'})).items.length,1); assert.ok(await detail(1)); assert.equal(await count({name:'Zeta'}),1);
       await as(1); await rpc('save_my_group_visibility',[true,'']); await as(0); await rpc('set_group_block',[profiles[1].group.id,true]);
       assert.equal((await list({name:'Zeta'})).items.length,0); assert.equal(await detail(1),null); assert.equal(await count({name:'Zeta'}),0);
       await rpc('set_group_block',[profiles[1].group.id,false]);

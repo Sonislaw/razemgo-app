@@ -1,5 +1,11 @@
 # Wyszukiwanie ekip
 
+**Bieżąca zmiana Dev 1.11.2026:** każdy profil ekipy jest dostępny dla innych
+zalogowanych podróżników. Usunięto ekran „Profil publiczny” i wszystkie kontrolki
+wyboru widoczności. Opis „O mojej ekipie” pozostaje w **Mój profil → Edytuj profil**.
+Blokady obu stron, zawieszenia kont, prywatność danych konta i widoczność wyjazdów
+zachowują dotychczasowe reguły. Preview pozostaje osobnym środowiskiem.
+
 **Bieżący Dev 31.10.2026:** aplikacja korzysta z katalogu V3, uporządkowanego
 alfabetycznie. Usunięto etykiety, ranking, sortowanie „Polecane” oraz obliczanie
 zgodności. Zwykłe filtry, ulubione, online i strony po pięć są zachowane.
@@ -14,13 +20,13 @@ Funkcja działa w **RazemGo Dev** na osobnym backendzie **`kswuakzcnoqgovnwejhb`
 
 Uruchom `npm run start:dev` i otwórz **RazemGo Dev** z Metro na porcie **8081**. Aplikacja korzysta z `.env.local` i prawdziwego Supabase Dev, przy `EXPO_PUBLIC_ENABLE_DEMO=false`. Wystarczy odświeżyć aplikację — ten etap nie dodaje bibliotek natywnych ani nie zmienia konfiguracji APK.
 
-W **Odkrywaj → Ekipy** wyszukujesz prawdziwe profile Dev. Profile są **domyślnie widoczne**: nowe ekipy pojawiają się po zapisaniu podstawowego profilu, a istniejące ekipy bez zapisanego ustawienia otrzymują tę samą wartość. Właściciel może ukryć ekipę przez **Mój profil → Profil publiczny → Pokaż moją ekipę w wyszukiwarce**. Wcześniejsze świadome wyłączenia widoczności pozostają zachowane.
+W **Odkrywaj → Ekipy** wyszukujesz prawdziwe profile Dev. Profile są **zawsze dostępne** po zapisaniu podstawowych danych ekipy. Użytkownik nie wybiera ich widoczności. Dotychczas ukryte ekipy również są dostępne; blokady i moderacja nadal ograniczają wzajemny dostęp.
 
 ## Opcjonalny podgląd bez zdalnego backendu
 
 Uruchom `npm run start:demo`. To osobny serwer Metro na porcie **8090**, używający aplikacji **RazemGo Dev** i schematu `razemgo-dev`. Na komputerze otwórz `http://localhost:8090/explore`; na telefonie połącz Dev z adresem tego serwera. Podgląd korzysta z przykładów w pamięci, pomija logowanie i nie czyta `.env.local`. Monitorowanie oraz połączenia z prawdziwym Supabase są wyłączone.
 
-W Odkrywaj wybierz **Ekipy**. Przykłady obejmują rodziny, parę oraz ekipę bez ogłoszeń. Filtry działają lokalnie, można otworzyć profil i przygotować zaproszenie. Zmiany znikają po przeładowaniu. Zapis widoczności do bazy jest w podglądzie wyłączony; nie pokazujemy pozornego potwierdzenia zapisu.
+W Odkrywaj wybierz **Ekipy**. Przykłady obejmują rodziny, parę oraz ekipę bez ogłoszeń. Filtry działają lokalnie, można otworzyć profil i przygotować zaproszenie. Zmiany znikają po przeładowaniu.
 
 Podgląd `start:demo` nie jest zwykłym trybem pracy nad aplikacją. Po podłączeniu funkcji do Dev serwer demonstracyjny został zatrzymany; standardowo pracujemy przez `start:dev` na porcie 8081.
 
@@ -33,12 +39,26 @@ Podgląd `start:demo` nie jest zwykłym trybem pracy nad aplikacją. Po podłąc
 - Nazwa ekipy jest wpisywana w panelu filtrów. Przycisk „Pokaż wyniki · N” aktualizuje liczbę podczas zmieniania kryteriów, po 250 ms przerwy. RPC `count_public_groups` zlicza wszystkie pasujące profile, z tymi samymi zasadami widoczności, blokad i zawieszenia kont co lista. Nie ogranicza licznika do wczytanych profili i nie pobiera ich danych. Podczas liczenia pojawia się „…”, a błąd pozwala ponowić zliczanie lub zastosować filtry. Opóźnione odpowiedzi dla poprzednich ustawień są ignorowane.
 - Przełącznik **Tylko online** jest domyślnie wyłączony i zeruje się razem z pozostałymi filtrami. Gdy jest włączony, lista oraz licznik uwzględniają tylko ekipy z aktywnym połączeniem aplikacji. Warunek jest sprawdzany w bazie przed sortowaniem i limitem strony, przy tych samych regułach sesji i wygasania co kropki na avatarach. Aktywny widok i otwarty panel z tym filtrem odświeżają dane co 15 sekund. Odświeżenie listy zachowuje liczbę wczytanych stron i nie usuwa kart na czas pobierania. Podgląd demonstracyjny nie symuluje aktywnych sesji.
 - Serduszko zapisuje prywatne ulubione ekipy i wyjazdy. Filtr **Tylko ulubione** działa osobno w obu widokach i łączy się z pozostałymi kryteriami. Katalog Ekip i jego licznik filtrują ulubione w SQL przed stronicowaniem. Szczegóły zapisu, uprawnień i weryfikacji opisuje [FAVORITES.md](FAVORITES.md).
-- Profil ekipy pokazuje avatar, opis publiczny, skład, sposób podróżowania, zainteresowania, zwierzęta i tylko aktywne publiczne ogłoszenia. Nie zawiera miejsca zamieszkania, e-maila, identyfikatora właściciela ani prywatnych preferencji dopasowań.
+- Profil ekipy pokazuje avatar, skład, sposób podróżowania, zainteresowania i zwierzęta, a pod główną kartą osobną sekcję **O ekipie** z pełnym opisem. Jeśli opis jest pusty, pojawia się „Ekipa nie dodała jeszcze opisu”. Dalej są kontakt i aktywne publiczne ogłoszenia. Profil nie zawiera miejsca zamieszkania, e-maila, identyfikatora właściciela ani prywatnych preferencji dopasowań.
 - **Profil ekipy → Ogłoszenia ekipy** pobiera pierwsze 5 wyjazdów. „Pokaż więcej wyjazdów” pobiera kolejnych 5; podczas żądania pokazuje „Wczytywanie ogłoszeń”, kręciołek i blokuje kolejne kliknięcie. Nagłówek pokazuje pełną liczbę aktywnych ogłoszeń. Błąd zachowuje karty i pozwala ponowić tę samą stronę. Powrót ze szczegółów wyjazdu odświeża wcześniej obejrzane porcje bez usuwania kart i zachowuje przewinięcie. Nowe otwarcie profilu zaczyna od 5.
 - Nowe przeciążenie `get_public_group(target_group_id, after_cursor, page_size)` zwraca profil, pełną liczbę ogłoszeń, ograniczoną tablicę `trips`, `has_more` i `cursor`. Strony mają 1–20 elementów, aplikacja wybiera 5. Kolejność to najnowsza publikacja, następnie ID; kursor działa również po usunięciu jego wyjazdu i jest przypisany do oglądającego konta oraz ekipy. Indeks po ekipie i publikacji pozwala ograniczyć wyniki przed budowaniem kart. Dotychczasowe wywołanie z jednym argumentem pozostaje dostępne dla starszych klientów. Obie wersje zachowują reguły widoczności, kontaktów, blokad i moderacji; nowe wywołanie wymaga aktywnej sesji.
-- **Mój profil → Profil publiczny** udostępnia opis i ustawienie widoczności, domyślnie włączone. Wyłączenie widoczności nie usuwa publicznych ogłoszeń ani już nawiązanych kontaktów. Edycja pozostałych danych ekipy nie włącza ponownie ukrytego profilu.
+- **Mój profil → Edytuj profil → Moja ekipa** udostępnia pole „O mojej ekipie” z limitem 600 znaków. Opis jest widoczny w głównej karcie obok danych ekipy i zapisuje się razem z profilem. Ekran „Profil publiczny”, przełącznik i odnośniki wyboru widoczności zostały usunięte. Profil można przeglądać i zaprosić ekipę do kontaktu również bez publicznego wyjazdu.
 - Kontakt z profilu nie wymaga wyjazdu. Pierwsza wiadomość trafia do **Zaproszeń**; dopiero akceptacja tworzy rozmowę. Istniejące zaproszenia i rozmowy z daną ekipą są wykorzystywane ponownie. Historia kontaktu nie zmienia się w fikcyjny wyjazd.
 - Blokady obu stron i zawieszenie konta obowiązują w wyszukiwarce, profilach i czacie. Zgłoszenia profilu trafiają do istniejącego panelu moderacji z kopią publicznego opisu. Zaproszenia i wiadomości korzystają z obecnej kolejki powiadomień oraz push; ten etap nie zmienia wdrożonych funkcji wysyłki.
+
+Przeniesienie opisu 1.11.2026 wymaga migracji `202611010001_profile_about.sql`,
+wdrożonej wyłącznie na Dev. `save_my_profile` przyjmuje opcjonalne pole JSON `about`
+i zwraca zapisany opis; pominięcie pola zachowuje poprzednią treść.
+Kolejna migracja `202611010002_always_visible_groups.sql` uzupełnia brakujące
+rekordy opisów i ustawia wszystkie dotychczas ukryte ekipy jako dostępne.
+Ograniczenie bazy zabrania zapisania `discoverable=false`. Dawna kolumna oraz
+RPC `get_my_group_visibility` / `save_my_group_visibility` pozostają wyłącznie
+dla zainstalowanych klientów i wewnętrznego zapisu opisu w transakcji profilu.
+Zwracają stałe `discoverable=true`, a żądanie ukrycia jest ignorowane. Opis można
+nadal zapisać; jego pominięcie zachowuje poprzednią treść. Bieżący klient nie
+wywołuje tych RPC i nie zawiera modelu ustawień widoczności. Sygnatury i uprawnienia
+są zachowane; istniejące opisy pozostają bez zmian. Preview wymaga obu migracji
+przy przyszłym wydaniu.
 
 ## Rekomendacje ekip
 
@@ -50,9 +70,9 @@ Starsze API pozostaje dostępne ze zgodnym kształtem odpowiedzi. Wycofane warto
 
 ## Sprawdzenie
 
-`npm run test:groups` uruchamia testy modelu i pełny zestaw migracji w lokalnym PostgreSQL PGlite. Sprawdza izolację kont, RLS/RPC, domyślną widoczność i zachowanie wyłączeń, filtry, stronicowanie, brak wycieku prywatnych preferencji, kontakt bez wyjazdu, ponowienia, blokady, moderację, kolejkę push i zgodność dotychczasowego API wyjazdów. Nie wymaga danych ani połączenia z Supabase.
+`npm run test:groups` uruchamia testy modelu i pełny zestaw migracji w lokalnym PostgreSQL PGlite. Sprawdza izolację kont, RLS/RPC, stałą dostępność profili, filtry, stronicowanie, brak wycieku prywatnych preferencji, kontakt bez wyjazdu, ponowienia, blokady, moderację, kolejkę push i zgodność dotychczasowego API wyjazdów. `npm test` obejmuje też migrację istniejących ukrytych profili, zachowanie opisów i odrzucanie bezpośrednich prób przywrócenia ukrycia. Nie wymaga danych ani połączenia z Supabase.
 
-`npm run test:web` używa osobnego Metro na porcie 8085 i przechwytuje żądania do lokalnego API. Scenariusze obejmują filtry, profil bez ogłoszeń, przerwaną odpowiedź zaproszenia, akceptację i czat na dwóch kontach, nieudany zapis widoczności oraz brak migracji. Nie wysyła danych do zdalnych projektów.
+`npm run test:web` używa osobnego Metro na porcie 8085 i przechwytuje żądania do lokalnego API. Scenariusze obejmują filtry, profil bez ogłoszeń, przerwaną odpowiedź zaproszenia, akceptację i czat na dwóch kontach, zapis opisu oraz brak kontrolek widoczności w profilu, ustawieniach i Odkrywaj. Nie wysyła danych do zdalnych projektów.
 
 Codzienną pracę prowadzimy w Dev. Preview aktualizujemy wyłącznie w ramach zatwierdzonego wydania; ostatnim takim wdrożeniem jest 1.2.0. Testy na fizycznych telefonach raportujemy oddzielnie od kontroli API i przeglądarki. Poniższe wyniki z 25.10 opisują wcześniejsze wdrożenie Dev; bieżące wyniki Preview są w dokumencie wydania.
 

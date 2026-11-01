@@ -72,14 +72,14 @@ test('unranked discovery: stable five-item pages, explicit filters and authorize
       await assert.rejects(rpc('list_public_groups_v3', [{ name: 'Ekipa 11' }, first.cursor]), e => e.code === '22023');
       await as(2); await assert.rejects(rpc('list_public_groups_v3', [{}, first.cursor]), e => e.code === '22023'); await as(0);
     });
-    await t.test('filters, bounded refresh, hidden profiles and blocks remain enforced', async () => {
+    await t.test('filters and bounded refresh remain enforced; legacy hide requests preserve profiles and blocks restrict access', async () => {
       const page = await rpc('search_public_trips_v3', [{ child_age_bands: ['4–6'] }]);
       assert.deepEqual(page.items.map(row => row.trip.id), [trips[0].id]);
       await assert.rejects(rpc('refresh_public_trip_results_v3', [Array(101).fill(trips[0].id)]), e => e.code === '22023');
       await assert.rejects(rpc('list_public_groups_v3', [{ interests: ['not-a-valid-interest'] }]), e => e.code === '22023');
       await as(2); await rpc('save_my_group_visibility', [false, '']); await as(0);
-      assert.equal(await rpc('get_public_group_v3', [groups[2]]), null);
-      assert.equal((await rpc('refresh_public_group_results_v3', [[groups[2]]])).length, 0);
+      assert.ok(await rpc('get_public_group_v3', [groups[2]]));
+      assert.equal((await rpc('refresh_public_group_results_v3', [[groups[2]]])).length, 1);
       await db.exec('reset role');
       await db.query('insert into public.group_blocks(blocker_group_id,blocked_group_id) values($1,$2)', [groups[0], groups[1]]);
       await as(0);

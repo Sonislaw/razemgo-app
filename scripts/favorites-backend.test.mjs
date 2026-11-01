@@ -45,12 +45,12 @@ test('favorites backend: persistence, privacy, unavailable targets, filtering an
       await assert.rejects(favGroup(0), e => e.code === 'P0002'); await assert.rejects(favTrip(0), e => e.code === 'P0002');
       await assert.rejects(rpc('set_my_group_favorite', [randomUUID(), true]), e => e.code === 'P0002');
     });
-    await t.test('saved favorites never bypass hidden profiles, paused trips, bilateral blocks or moderation', async () => {
+    await t.test('crew favorites remain available; paused trips, bilateral blocks and moderation still restrict access', async () => {
       await as(1); await rpc('save_my_group_visibility', [false, '']);
-      await as(0); assert.deepEqual((await get()).group_ids, [groups[1]]); assert.equal(await count({ favorites_only: true }), 0);
+      await as(0); assert.deepEqual((await get()).group_ids, [groups[1]]); assert.equal(await count({ favorites_only: true }), 1);
       await as(1); await rpc('change_my_trip_status', [trips[1], 'paused']);
-      await as(0); assert.deepEqual(await get(), { group_ids: [], trip_ids: [] });
-      await assert.rejects(favGroup(1), e => e.code === 'P0002'); await assert.rejects(favTrip(1), e => e.code === 'P0002');
+      await as(0); assert.deepEqual(await get(), { group_ids: [groups[1]], trip_ids: [] });
+      assert.equal(await favGroup(1), true); await assert.rejects(favTrip(1), e => e.code === 'P0002');
       await as(1); await rpc('save_my_group_visibility', [true, '']); await rpc('change_my_trip_status', [trips[1], 'published']);
       await as(0); await rpc('set_group_block', [groups[1], true]); assert.deepEqual(await get(), { group_ids: [], trip_ids: [] });
       assert.equal(await count({ favorites_only: true }), 0); await rpc('set_group_block', [groups[1], false]);

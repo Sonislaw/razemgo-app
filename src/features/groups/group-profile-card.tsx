@@ -13,6 +13,7 @@ import { crewNumberText } from '@/features/profile/crew-number';
 interface GroupCardContentProps {
   group: TravelGroup;
   about?: string;
+  aboutLabel?: string;
   avatarTestID?: string;
   decorativeAvatar?: boolean;
   expanded?: boolean;
@@ -22,23 +23,23 @@ interface GroupCardContentProps {
 
 type GroupProfileCardProps = Pick<
   GroupCardContentProps,
-  'group' | 'about' | 'avatarTestID' | 'expanded'
+  'group' | 'about' | 'aboutLabel' | 'avatarTestID' | 'expanded'
 > & {
   headerAction?: ReactNode;
 };
 
 export function GroupProfileCard({
-  group, about, avatarTestID, headerAction, expanded = false,
+  group, about, aboutLabel, avatarTestID, headerAction, expanded = false,
 }: GroupProfileCardProps) {
   return (
     <Card testID="group-profile-card" style={groupCardStyles.frame}>
       {headerAction}
-      <GroupCardContent group={group} about={about} avatarTestID={avatarTestID} expanded={expanded} showCrewNumber />
+      <GroupCardContent group={group} about={about} aboutLabel={aboutLabel} avatarTestID={avatarTestID} expanded={expanded} showCrewNumber />
     </Card>
   );
 }
 
-export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar = false, expanded = false, showCrewNumber = false, showTravelModeLabel = true }: GroupCardContentProps) {
+export function GroupCardContent({ group, about, aboutLabel, avatarTestID, decorativeAvatar = false, expanded = false, showCrewNumber = false, showTravelModeLabel = true }: GroupCardContentProps) {
   const interests = group.interests;
   const ages = group.childAgeBands;
   return (
@@ -60,7 +61,14 @@ export function GroupCardContent({ group, about, avatarTestID, decorativeAvatar 
         </View>
         <TravelModeBadges modes={group.travelModes} />
       </View>
-      {about ? <AppText color="textSecondary" numberOfLines={expanded ? undefined : 3}>{about}</AppText> : null}
+      {about || aboutLabel ? (
+        <View style={{ gap: 4 }}>
+          {aboutLabel ? <AppText variant="label">{aboutLabel}</AppText> : null}
+          <AppText color="textSecondary" numberOfLines={expanded ? undefined : 3}>
+            {about || 'Przedstaw swoją ekipę w edycji profilu.'}
+          </AppText>
+        </View>
+      ) : null}
       <View style={groupCardStyles.tags}>
         {ages.length ? <ListingTag icon="people" tone="warm" label={'Dzieci ' + ages.join(', ') + ' lat'} /> : null}
         {group.animals.animals.length ? (

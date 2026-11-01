@@ -3,7 +3,6 @@ import type {
   GroupCursor,
   GroupSort,
   GroupTripCursor,
-  GroupVisibility,
   PublicGroupRow,
   RankedGroupCursor,
   groupFiltersPayload,
@@ -234,14 +233,6 @@ export interface ClientDatabase {
         Returns: undefined;
       };
       get_online_groups: { Args: { group_ids: string[] }; Returns: string[] };
-      get_my_group_visibility: {
-        Args: Record<never, never>;
-        Returns: GroupVisibility;
-      };
-      save_my_group_visibility: {
-        Args: { is_discoverable: boolean; about_text: string };
-        Returns: GroupVisibility;
-      };
       list_public_groups: {
         Args: {
           filters?: ReturnType<typeof groupFiltersPayload>;
@@ -481,7 +472,7 @@ export interface ClientDatabase {
       };
       save_my_profile: {
         Args: { profile_data: ReturnType<typeof profileToPayload> };
-        Returns: { group: GroupRow; preferences: PreferencesRow };
+        Returns: { group: GroupRow; preferences: PreferencesRow; about: string };
       };
     };
     Enums: Record<never, never>;

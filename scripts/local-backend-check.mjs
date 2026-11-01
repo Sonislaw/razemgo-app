@@ -168,6 +168,9 @@ if (process.argv[1]?.endsWith('local-backend-check.mjs')) {
       'list_my_trip_page',
       'admin_list_reports',
       'get_push_health',
+      'search_public_trips_v3',
+      'list_public_groups_v3',
+      'count_public_groups',
     ]) {
       await denied(
         await localRpc(config, config.ANON_KEY, name),
@@ -201,6 +204,9 @@ if (process.argv[1]?.endsWith('local-backend-check.mjs')) {
     for (let n = 0; n < 6; n++) {
       const saved = await localRpc(config, tokens[1], 'save_my_trip', {
         trip_data: {
+          adult_count: 2,
+          child_count: 0,
+          child_age_bands: [],
           mode: 'planned',
           visibility: 'public',
           start_date: '2099-05-21',
@@ -226,6 +232,16 @@ if (process.argv[1]?.endsWith('local-backend-check.mjs')) {
       if (!saved.ok) throw Error('Local trip fixture failed');
       trips.push((await saved.json()).id);
     }
+    const firstResponse = await localRpc(config, tokens[0], 'search_public_trips_v3', {page_size:5});
+    if (!firstResponse.ok) throw Error('Current discovery contract failed');
+    const firstPage = await firstResponse.json();
+    if (firstPage.items.length!==5 || firstPage.total_count!==6 || !firstPage.has_more ||
+        !/^[a-f0-9]{32}$/.test(firstPage.result_revision)) throw Error('Invalid current discovery page');
+    const nextResponse = await localRpc(config, tokens[0], 'search_public_trips_v3', {page_size:5,after_cursor:firstPage.cursor});
+    if (!nextResponse.ok) throw Error('Current discovery cursor failed');
+    const nextPage = await nextResponse.json();
+    if (nextPage.items.length!==1 || nextPage.has_more || nextPage.result_revision!==firstPage.result_revision)
+      throw Error('Current discovery cursor lost the result boundary');
     const foreign = await localRpc(config, tokens[0], 'get_my_trip', {
       target_trip_id: trips[0],
     });

@@ -1,10 +1,12 @@
 # RazemGo Dev i Preview
 
-31.10.2026 Dev otrzymał migrację `202610310005_unranked_discovery.sql`: **40 migracji**, odczyty V3 bez obliczania dopasowania. Usunięto etykiety i ranking; zachowano filtry, stronicowanie oraz automatyczne powiadomienia o propozycjach. Preview zachowuje **35 migracji** i APK 1.3.0. Zmiana nie wymaga nowych modułów natywnych. [Zakres i kontrakty](UNRANKED_DISCOVERY.md).
+Aktualny stan po wydaniu **1.4.0** z 31.10.2026: oba backendy mają **42 migracje**, do `202610310007_sync_domains.sql`. Preview otrzymało siedem migracji z Dev, bez resetu i kopiowania danych. Nowe APK to **Preview 1.4.0 (7)** oraz **Dev 1.4.0 (3)**; oba zachowują swoje pakiety i podpisy. Zaktualizowane moduły natywne wymagają instalacji nowego APK Dev. [Linki, kontrole i ograniczenia wydania](RELEASE_1.4.0.md).
+
+Oba środowiska korzystają z odczytów V3 bez etykiet i rankingu. Zachowano filtry, strony po pięć oraz automatyczne powiadomienia o propozycjach. Historyczne ogłoszenia nie otrzymują wymyślonego składu; przy edycji należy go uzupełnić. Starsze APK wymagają aktualizacji do publikowania i edycji treści wyjazdu. [Zakres i kontrakty](UNRANKED_DISCOVERY.md), [zgodność wydań](API_COMPATIBILITY.md).
 
 Dwie aplikacje mają osobne identyfikatory, schematy linków logowania i konfiguracje Firebase. Można zainstalować je obok siebie. Współdzielą kod źródłowy i projekt EAS; każda ma osobny profil budowania i środowisko zmiennych EAS. Zmiana kodu ani uruchomienie Metro nie aktualizują samodzielnego APK Preview u testerów.
 
-**Stan po wydaniu 1.3.0:** oba backendy mają **35 migracji**, przez `202610280009_relative_ranking_keys.sql`. Preview otrzymało 12 brakujących migracji i aktualne trzy Edge Functions, z zachowaniem danych testerów. Dev używa profilu `development` z `developmentClient=true` i Metro na porcie 8081. Preview pozostaje samodzielnym APK. Linki i kontrole wydania: [RELEASE_1.3.0.md](RELEASE_1.3.0.md). Niżej zachowano historię wcześniejszych wdrożeń.
+**Historia — wydanie 1.3.0:** oba backendy miały **35 migracji**, przez `202610280009_relative_ranking_keys.sql`. Preview otrzymało wtedy 12 brakujących migracji i aktualne trzy Edge Functions, z zachowaniem danych testerów. Dev nadal używa profilu `development` z `developmentClient=true` i Metro na porcie 8081. Preview pozostaje samodzielnym APK. Linki i kontrole wcześniejszego wydania: [RELEASE_1.3.0.md](RELEASE_1.3.0.md). Niżej zachowano historię wdrożeń.
 
 | | Dev | Preview |
 | --- | --- | --- |

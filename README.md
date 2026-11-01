@@ -14,7 +14,7 @@ Aplikacja do poznawania osób podróżujących kamperem, przyczepą, kampervanem
 
 Pracujemy w Dev. Preview ma własne konta, dane i samodzielny APK dla testerów. Zmiana kodu lub wdrożenie do Dev nie aktualizuje Preview. Procedura wydawania: [ENVIRONMENTS.md](docs/ENVIRONMENTS.md).
 
-Aktualne wydanie: [Preview 1.3.0 i Dev 1.3.0](docs/RELEASE_1.3.0.md). Preview działa samodzielnie, a Dev korzysta z klienta deweloperskiego z Metro. Dev ma 40 migracji, Preview zachowuje 35. Najnowsze zmiany Dev to [skład uczestników konkretnego wyjazdu](docs/TRIP_PARTICIPANTS.md) oraz [wyszukiwanie bez etykiet i rankingu](docs/UNRANKED_DISCOVERY.md). Raport techniczny: [architektura, wydajność i bezpieczeństwo](docs/ARCHITECTURE_HARDENING.md).
+Aktualne wydanie: [Preview 1.4.0 i Dev 1.4.0](docs/RELEASE_1.4.0.md). Preview działa samodzielnie, a Dev korzysta z klienta deweloperskiego z Metro. Oba backendy mają 42 migracje. Wydanie obejmuje [skład uczestników konkretnego wyjazdu](docs/TRIP_PARTICIPANTS.md), [wyszukiwanie bez etykiet i rankingu](docs/UNRANKED_DISCOVERY.md) oraz [poprawki architektury, synchronizacji i paginacji](docs/ARCHITECTURE_FIXES_2026_10_31.md). Starsze APK wymagają aktualizacji do publikowania i edycji treści wyjazdów; istniejące dane testerów zachowano.
 
 ## Uruchomienie
 
@@ -36,7 +36,7 @@ Do `EXPO_PUBLIC_*` trafiają wyłącznie publiczne dane konfiguracji. Sekrety Go
 - **Konto i profil:** Google lub e-mail/hasło, potwierdzenie adresu, reset hasła, onboarding, trwała sesja, wylogowanie i usuwanie konta. Jedno konto zarządza jedną ekipą. Profile mają ilustrowany avatar, nazwę do 20 znaków i numer widoczny w szczegółach profilu.
 - **Start:** dwa główne skróty, najnowsze dostępne ogłoszenie i dzwonek. „Znajdź ekipę” otwiera Odkrywaj z wyzerowanymi filtrami.
 - **Wyjazdy:** „Mam plan” i „Szukam pomysłu”, szkice, publikacja, edycja, pauza, wznowienie, zakończenie, anulowanie, duplikowanie i usuwanie. Nagłówek powstaje z opisu. Tolerancja dat występuje wyłącznie w wyszukiwaniu. Mapa i oś czasu uzupełniają szczegóły.
-- **Odkrywaj:** aktualne wyjazdy i widoczne ekipy. Filtry i liczniki oblicza Supabase. Dev pokazuje wyjazdy od najnowszych i ekipy alfabetycznie, bez dopasowania i etykiet. Listy pobierają po pięć elementów, są wirtualizowane i zachowują miejsce po powrocie ze szczegółów. [Wyjazdy](docs/TRIP_DISCOVERY.md), [ekipy](docs/GROUPS.md), [wydajność list](docs/LIST_PERFORMANCE.md).
+- **Odkrywaj:** aktualne wyjazdy i widoczne ekipy. Filtry i liczniki oblicza Supabase. Aplikacja pokazuje wyjazdy od najnowszych i ekipy alfabetycznie, bez dopasowania i etykiet. Listy pobierają po pięć elementów, są wirtualizowane i zachowują miejsce po powrocie ze szczegółów. [Wyjazdy](docs/TRIP_DISCOVERY.md), [ekipy](docs/GROUPS.md), [wydajność list](docs/LIST_PERFORMANCE.md).
 - **Społeczność:** obecność online, ulubione ekipy i wyjazdy, pozytywne reakcje na ogłoszenia. Zwierzęta są zwykłą preferencją, bez automatycznego wykluczania ekip. [Obecność](docs/PRESENCE.md), [ulubione](docs/FAVORITES.md), [reakcje](docs/REACTIONS.md).
 - **Kontakt:** zaproszenia z wyjazdu lub profilu, rozmowa po akceptacji, historia, odczyty, ponawianie wysyłki, blokady i zgłoszenia. Kontakty w szczegółach wyjazdu oznaczają zaakceptowane rozmowy, nie potwierdzone uczestnictwo.
 - **Powiadomienia:** trwała historia, synchronizacja odczytu i ustawień, push o wiadomościach, zaproszeniach, reakcjach i ogłoszeniach ulubionych ekip. Dostarczanie ma kolejkę, rezerwacje, retry i kontrolę receipts. [Instrukcja push](supabase/PUSH.md).
@@ -45,7 +45,7 @@ Do `EXPO_PUBLIC_*` trafiają wyłącznie publiczne dane konfiguracji. Sekrety Go
 
 Preview 1.3.0 zawiera również reakcje na wiadomości, automatyczne propozycje tworzone co minutę, zbiorcze push co pięć minut oraz rozszerzony monitoring. [Reakcje wiadomości](docs/CHAT_REACTIONS.md), [propozycje](docs/PROPOSAL_NOTIFICATIONS.md), [etap 0](docs/STAGE_0.md).
 
-W bazie obowiązują RLS i serwerowa kontrola uprawnień. Zapis jest potwierdzany po odpowiedzi backendu. Prywatne preferencje nie są udostępniane innym kontom; jawne dane zwracają osobne funkcje wyszukiwania. Nowe konta zaczynają bez własnych przykładowych wyjazdów i rozmów.
+W bazie obowiązują RLS i serwerowa kontrola uprawnień. Zapis jest potwierdzany po odpowiedzi backendu. Prywatne dane i ustawienia nie są udostępniane innym kontom; jawne dane zwracają osobne funkcje wyszukiwania. Nowe konta zaczynają bez własnych przykładowych wyjazdów i rozmów.
 
 ## Kontrole i CI
 

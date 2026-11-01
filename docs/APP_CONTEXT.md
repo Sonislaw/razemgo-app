@@ -1,7 +1,7 @@
 # Kontekst aplikacji RazemGo
 
 Stan rozpoznania: **1.11.2026**, wersja kodu **1.4.0**, bazowy commit `d5765b2`
-z późniejszymi zmianami edycji opisu i stałej dostępności profili ekip.
+z późniejszymi zmianami edycji opisu, stałej dostępności profili ekip i propozycji.
 Pierwsze rozpoznanie obejmowało lokalny kod, migracje, konfigurację i dokumentację.
 Informacje o wdrożonych APK pochodzą z dokumentacji wydania. Późniejsze zmiany Dev
 z 1.11.2026 zweryfikowano również odczytem metadanych hostowanego backendu.
@@ -55,6 +55,8 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   jedną noc, jeden sposób podróżowania i opis długości 20–1000 znaków.
 - **Kreator ma dwa kroki:** typ/termin oraz miejsce/szczegóły, w tym uczestnicy,
   widoczność i podgląd. Nagłówek ogłoszenia powstaje z opisu. Szkic może być niepełny.
+  Podgląd używa tej samej karty co Odkrywaj, z nieaktywnymi akcjami; pełny opis
+  i adres kempingu nie są dodawane nad ekipą.
   Statusy zapisu: `draft`, `published`, `paused`, `completed`, `cancelled`;
   widoczność: `public` albo `private`. Prezentacja uwzględnia również upływ terminu.
 - **Odkrywaj nie ma rankingu ani etykiet dopasowania.** Wyjazdy są od najnowszych
@@ -73,6 +75,12 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
 - Automatyczne **powiadomienia o propozycjach pozostają aktywne**, mimo usunięcia
   rankingu z list. Procesor działa według harmonogramu co minutę, a push propozycji
   jest grupowany w okna pięciominutowe. To osobny przepływ od wyszukiwania V3.
+  Migracja `202611010003_proposal_criteria.sql` z 1.11.2026 usuwa dawne preferencje
+  rodzaju ekipy i wieku dzieci z `proposal_matches`. Kryteriami są nakładający się
+  termin i kierunek/region; obowiązują aktualność, publiczna widoczność, blokady
+  i moderacja obu stron. Stare wartości w ogłoszeniach nie ograniczają propozycji.
+  Opis ustawienia push odpowiada tej regule. Migracja zachowuje historię i stan
+  wysyłek; nie odtwarza starych alertów ani nie zleca masowego przeliczenia.
 
 ## Architektura i miejsca w kodzie
 
@@ -94,7 +102,7 @@ Główny podział odpowiedzialności:
 | [`database.generated.ts`](../src/types/database.generated.ts) | Schemat generowany z lokalnego Supabase; nie zastępuje walidacji JSON. |
 | [`src/lib/`](../src/lib/) | Klient Supabase, cykl żądań, synchronizacja, paginacja, magazyny, daty, sesja i monitoring. |
 | [`src/components/`](../src/components/) | Wspólne UI, karty, mapy i oś czasu; warianty `.web.tsx` dla różnic platform. |
-| [`supabase/migrations/`](../supabase/migrations/) | Historia bazy i końcowe definicje RPC. Obecnie 44 migracje; najnowsza to `202611010002_always_visible_groups.sql`. |
+| [`supabase/migrations/`](../supabase/migrations/) | Historia bazy i końcowe definicje RPC. Obecnie 45 migracji; najnowsza to `202611010003_proposal_criteria.sql`. |
 | [`supabase/functions/`](../supabase/functions/) | Edge Functions: `delete-account`, `dispatch-push`, `monitor-push`. |
 | [`scripts/`](../scripts/) | Testy Node/PGlite i Playwright, kontrole, generatory, diagnostyka, benchmarki i wdrażanie środowisk. |
 
@@ -150,7 +158,7 @@ schematy domenowe. Nowa `messaging_private.sync_revisions` przechowuje liczniki 
   `get_public_group_v3`, `refresh_public_group_results_v3`. Liczniki korzystają
   z `count_public_trips` i `count_public_groups`.
 - V1/V2, `group_preferences` i dawne pola porównania pozostają dla zgodności
-  starszych kontraktów oraz procesu propozycji. Bieżący model UI nie ma `matching`.
+  starszych kontraktów. Proces propozycji je ignoruje; bieżący model UI nie ma `matching`.
   Nie usuwać tych elementów na podstawie samego braku użycia przez aktualny ekran.
 - Kolumna `group_public_profiles.discoverable` jest stale prawdziwa i chroniona
   ograniczeniem bazy. Stare RPC widoczności pozostały dla zainstalowanych klientów
@@ -177,8 +185,8 @@ Przygotowanie tego środowiska i wydania pozostaje na późniejszy etap.
 
 Obecnie skonfigurowane są dwa środowiska:
 
-Po przeniesieniu edycji opisu i wycofaniu wyboru widoczności 1.11.2026 Dev ma
-44 migracje. Preview pozostaje przy 42 i wydaniu 1.4.0; obie nowe migracje trzeba
+Po przeniesieniu edycji opisu, wycofaniu wyboru widoczności i poprawce propozycji
+1.11.2026 Dev ma 45 migracji. Preview pozostaje przy 42 i wydaniu 1.4.0; trzy nowe migracje trzeba
 uwzględnić przy przyszłej promocji.
 
 | | Dev | Preview |
@@ -230,6 +238,19 @@ granic źródeł przeszły. Odczyt metadanych Dev potwierdził 44 migracje, zero
 profili, aktywne ograniczenie stałej dostępności i brak anonimowych uprawnień do
 starych RPC. Testy sprawdzają zachowanie opisów, nowych kont i starszych klientów
 oraz działanie zaproszeń, ulubionych, reakcji, obecności, blokad i moderacji.
+
+Po poprawce kryteriów propozycji przeszło 583/583 testy Node/PGlite, w tym
+scenariusze migracji zachowującej historię, deduplikacji, grupowania i ignorowania
+starych preferencji. Przeszły dwa scenariusze przeglądarkowe powiadomień, lint,
+TypeScript i kontrola granic źródeł. Odczyt metadanych Dev potwierdził 45 migracji,
+nowy matcher, usunięcie wyzwalacza zmian składu profilu oraz brak uprawnień
+zwykłego klienta do procesora i prywatnego matchera. Dawne wartości w 179 ze 180
+aktywnych publicznych wyjazdów zachowano; nie wpływają na propozycje.
+
+Ujednolicenie podglądu kreatora z kartą Odkrywaj zweryfikowano w 10 scenariuszach
+przeglądarkowych wyjazdów, uczestników i reakcji, w tym porównaniem podglądu
+z opublikowaną kartą na innym koncie. Lint, TypeScript i kontrola granic źródeł
+przeszły. Zmiana wymaga odświeżenia Dev, bez migracji i nowego APK.
 
 Repozytorium ma testy Node/PGlite rzeczywistych migracji i uprawnień, Playwright
 z kontrolowanym API oraz testy Edge Functions. CI sprawdza również eksporty,

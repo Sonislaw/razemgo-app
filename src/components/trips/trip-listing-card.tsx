@@ -33,6 +33,7 @@ interface TripListingCardProps {
   testID?: string;
   nativeID?: string;
   favoriteAction?: ReactNode;
+  disabled?: boolean;
 }
 
 export function TripListingCard({
@@ -51,6 +52,7 @@ export function TripListingCard({
   testID,
   nativeID,
   favoriteAction,
+  disabled = false,
 }: TripListingCardProps) {
   const theme = useTheme();
   const ageBands = trip.participants?.childCount ? trip.participants.childAgeBands : [];
@@ -100,7 +102,7 @@ export function TripListingCard({
         {children}
         {group ? (
           <Pressable accessibilityRole={onPressGroup ? 'button' : undefined} accessibilityLabel={onPressGroup ? 'Zobacz profil: ' + group.name + (online ? '. Online' : '') : undefined}
-            disabled={!onPressGroup} onPress={onPressGroup} style={[styles.crew, { borderColor: theme.border }]}>
+            disabled={disabled || !onPressGroup} accessibilityState={{ disabled: disabled || !onPressGroup }} onPress={onPressGroup} style={[styles.crew, { borderColor: theme.border }]}>
             <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={44} decorative />
             <View style={styles.flex}>
               <AppText variant="label">{group.name}</AppText>
@@ -127,6 +129,7 @@ export function TripListingCard({
   if (onPress) return (
     <View testID={testID} nativeID={nativeID} style={cardStyle}>
       <Pressable accessibilityRole="button"
+        disabled={disabled} accessibilityState={{ disabled }}
         accessibilityLabel={accessibilityLabel ? accessibilityLabel + (online ? '. Ekipa online' : '') : undefined}
         accessibilityHint={accessibilityHint} onPress={onPress}
         style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>{content}</Pressable>

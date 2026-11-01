@@ -9,9 +9,37 @@ import { useAuth } from '@/features/auth/auth-context';
 import { useProfile } from '@/features/profile/profile-context';
 import { GroupAvatar } from '@/features/profile/group-avatar';
 import { isPresenceActive } from '@/features/presence/presence-context';
-import { REACTIONS, reactionOption, reactionTotal, topReactions, type ReactionKind, type ReactorsPage, type TripReactor } from './reaction-data';
+import { REACTIONS, reactionOption, reactionTotal, topReactions, type ReactionKind, type ReactionSummary, type ReactorsPage, type TripReactor } from './reaction-data';
 import { useTripReactions } from './reactions-context';
 import { fetchTripReactors } from './reactions-repository';
+
+function TripReactionsTrigger({ tripId, summary, owner = false, compact = false, busy = false, loading = false, open = false, onPress }: {
+  tripId?: string; summary?: ReactionSummary; owner?: boolean; compact?: boolean;
+  busy?: boolean; loading?: boolean; open?: boolean; onPress?: () => void;
+}) {
+  const theme = useTheme();
+  const total = reactionTotal(summary), mine = summary?.mine;
+  const label = owner ? 'Zobacz reakcje' : mine ? 'Twoja reakcja: ' + reactionOption(mine).label : 'Dodaj reakcję';
+  return <Pressable testID={tripId ? 'trip-reactions-' + tripId : undefined} accessibilityRole="button"
+    accessibilityLabel={label + (summary ? '. Liczba reakcji: ' + total : '')}
+    accessibilityState={{ expanded: open, selected: !!mine, busy: busy || loading, disabled: !onPress }}
+    disabled={!onPress}
+    hitSlop={compact ? { top: 12, bottom: 12, left: 0, right: 12 } : undefined}
+    onPress={onPress}
+    style={({ pressed }) => ({ minHeight: compact ? 24 : 48, paddingVertical: compact ? 0 : 8,
+      flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start',
+      opacity: pressed ? 0.7 : 1 })}>
+    <AppText aria-hidden style={{ fontSize: 18 }}>
+      {mine ? reactionOption(mine).emoji : summary && total ? topReactions(summary).map(option => option.emoji).join(' ') : '☺'}
+    </AppText>
+    {busy || loading && !summary ? <ActivityIndicator size="small" color={theme.primaryStrong} accessibilityLabel="Wczytywanie reakcji" /> :
+      <AppText variant="caption" color="primaryStrong" style={{ fontWeight: '700' }}>{summary && total ? total : owner ? 'Reakcje' : 'Reaguj'}</AppText>}
+  </Pressable>;
+}
+
+export function TripReactionsPreview() {
+  return <TripReactionsTrigger />;
+}
 
 export function TripReactionsButton({ tripId, ownerGroupId, compact = false }: { tripId: string; ownerGroupId: string; compact?: boolean }) {
   const theme = useTheme();
@@ -45,29 +73,16 @@ export function TripReactionsButton({ tripId, ownerGroupId, compact = false }: {
     return () => { version.current = current + 1; clearInterval(timer); };
   }, [open, owner, loadPeople]);
   if (!store || summary?.available === false) return null;
-  const total = reactionTotal(summary), mine = summary?.mine;
-  const label = owner ? 'Zobacz reakcje' : mine ? 'Twoja reakcja: ' + reactionOption(mine).label : 'Dodaj reakcję';
+  const mine = summary?.mine;
   const save = async (kind: ReactionKind | null) => {
     setFailedKind(undefined);
     if (await store.setReaction(tripId, kind)) setOpen(false);
     else setFailedKind(kind);
   };
   return <>
-    <Pressable testID={'trip-reactions-' + tripId} accessibilityRole="button"
-      accessibilityLabel={label + (summary ? '. Liczba reakcji: ' + total : '')}
-      accessibilityState={{ expanded: open, selected: !!mine, busy: busy || loading }}
-      hitSlop={compact ? { top: 12, bottom: 12, left: 0, right: 12 } : undefined}
+    <TripReactionsTrigger tripId={tripId} summary={summary} owner={owner} compact={compact} busy={busy} loading={loading} open={open}
       onPress={() => { setFailedKind(undefined); setPeople(null); setPeopleError(false); setPeopleBusy(false);
-        fetching.current = false; setOpen(true); void store.refresh(); }}
-      style={({ pressed }) => ({ minHeight: compact ? 24 : 48, paddingVertical: compact ? 0 : 8,
-        flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start',
-        opacity: pressed ? 0.7 : 1 })}>
-      <AppText aria-hidden style={{ fontSize: 18 }}>
-        {mine ? reactionOption(mine).emoji : summary && total ? topReactions(summary).map(option => option.emoji).join(' ') : '☺'}
-      </AppText>
-      {busy || loading && !summary ? <ActivityIndicator size="small" color={theme.primaryStrong} accessibilityLabel="Wczytywanie reakcji" /> :
-        <AppText variant="caption" color="primaryStrong" style={{ fontWeight: '700' }}>{summary && total ? total : owner ? 'Reakcje' : 'Reaguj'}</AppText>}
-    </Pressable>
+        fetching.current = false; setOpen(true); void store.refresh(); }} />
     {open ? <BottomSheet title={owner ? 'Reakcje na Twoje ogłoszenie' : 'Reakcje na ogłoszenie'} onClose={() => { if (!busy) setOpen(false); }}>
       <AppText color="textSecondary">{owner ? 'Zobacz, komu podoba się Twój plan.' : 'Wybierz jedną emocję. Możesz ją później zmienić lub cofnąć.'}</AppText>
       {!summary && !error ? <ActivityIndicator accessibilityLabel="Wczytywanie reakcji" color={theme.primaryStrong} /> : null}

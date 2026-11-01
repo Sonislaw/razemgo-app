@@ -6,7 +6,7 @@
 | Dev z 31.10 przed 1.4.0 | V3: `search_public_trips_v3`, `list_public_groups_v3`, `get_discovery_trip_v3`, `get_public_group_v3`, odświeżenia V3 |
 | 1.4.0 | Te same V3 z dodatkowym `result_revision`; `list_my_trip_page` z rewizją; `get_my_sync_state` z osobnymi domenami zmian |
 
-Stare RPC i pola bazy zachowano dla zainstalowanych klientów i procesu propozycji. Modele aktualnego interfejsu nie przywracają preferencji `matching`; referencyjne testy V1 robią to przez adapter w `scripts/support/legacy-matching`.
+Stare RPC i pola bazy zachowano dla zainstalowanych klientów. Proces propozycji na Dev ignoruje dawne preferencje; modele aktualnego interfejsu nie przywracają `matching`. Referencyjne testy V1 robią to przez adapter w `scripts/support/legacy-matching`.
 
 Dodanie obowiązkowego składu wyjazdu jest wcześniejszą zmianą Dev promowaną w 1.4.0: starsze APK bez tego formularza wymagają aktualizacji do publikowania i edycji treści wyjazdu. Odczyt starszych ogłoszeń, pauzowanie i archiwizacja pozostają obsługiwane; nie przypisujemy historycznym wyjazdom składu z dzisiejszego profilu. Przy edycji należy go uzupełnić.
 
@@ -19,4 +19,11 @@ dostępne dla zalogowanych użytkowników, z zachowaniem blokad i moderacji.
 Stare RPC ustawień profilu zachowują sygnatury i zapis opisu, ale ignorują żądanie
 ukrycia oraz zwracają `discoverable=true`. Kolumnę zabezpiecza ograniczenie bazy;
 bieżący klient nie korzysta z tego ustawienia ani jego RPC. Preview pozostaje
-przy backendzie wydania 1.4.0 i wymaga obu migracji przy przyszłej promocji.
+przy backendzie wydania 1.4.0.
+
+Migracja Dev `202611010003_proposal_criteria.sql` usuwa z automatycznych propozycji
+warunki rodzaju ekipy i wieku dzieci, bez zmiany sygnatur publicznych RPC ani
+usuwania starych kolumn. Aktualizuje prywatny matcher i wyzwalacz wyjazdów oraz
+usuwa zbędny wyzwalacz profilu z jego prywatną funkcją. Historia i kolejka
+pozostają zachowane; nie ma odtworzenia starych alertów. Przy przyszłej promocji
+do Preview należy uwzględnić wszystkie trzy migracje z 1.11.2026.

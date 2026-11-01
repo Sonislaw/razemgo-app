@@ -4,7 +4,7 @@ import {randomUUID} from 'node:crypto';
 import {test} from 'node:test';
 import {PGlite} from '@electric-sql/pglite';
 
-test('background proposals: closed-app discovery, grouped delivery, privacy and bounded retries',async t=>{
+test('historical background proposal migration: closed-app discovery, grouped delivery, privacy and bounded retries',async t=>{
   const db=new PGlite(),users=Array.from({length:4},randomUUID),groups=[];
   const migration='202610270002_background_proposals.sql';
   const plan={adult_count:2,child_count:1,child_age_bands:['4–6'],mode:'planned',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-25',

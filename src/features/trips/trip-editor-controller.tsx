@@ -323,7 +323,6 @@ export function TripEditorScreen() {
                   update={update}
                   previousStatus={previousStatus}
                   preview={preview}
-                  previewStatus={previewStatus}
                   profile={profile}
                 />
               </>

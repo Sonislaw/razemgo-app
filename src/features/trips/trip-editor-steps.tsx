@@ -1,6 +1,6 @@
 import { TripParticipantsFields } from './trip-participants-fields';
 import { DateRangeField } from '@/components/trips/date-range-field';
-import { TripListingCard } from '@/components/trips/trip-listing-card';
+import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
 import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
 import { ChipRow } from '@/components/ui/chip-row';
 import { Icon } from '@/components/ui/icon';
@@ -21,7 +21,6 @@ import {
   isConcreteTripLocation,
 } from '@/features/trips/trip-locations';
 import {
-  TripStatusBadge,
   ownTripDates,
   ownTripPlace,
 } from '@/features/trips/trip-ui';
@@ -217,14 +216,12 @@ export function TripPublicationFields({
   update,
   previousStatus,
   preview,
-  previewStatus,
   profile,
 }: {
   form: TripForm;
   update: Update;
   previousStatus: TripStatus;
   preview: OwnedTrip;
-  previewStatus: TripStatus;
   profile: TravelerProfile;
 }) {
   return (
@@ -260,33 +257,14 @@ export function TripPublicationFields({
         <AppText variant="caption" color="textSecondary">
           PODGLĄD PLANU
         </AppText>
-        <TripListingCard
+        <DiscoveryTripCard
+          preview
           testID="trip-editor-preview"
           trip={preview}
           group={profile.group}
-          travelModes={form.travelModes}
           locationLabel={ownTripPlace(preview)}
           datesLabel={ownTripDates(preview)}
-          rightBadge={<TripStatusBadge status={previewStatus} />}
-          footer={
-            <AppText variant="caption" color="textSecondary">
-              {form.visibility === 'private'
-                ? 'Prywatny plan'
-                : 'Dla społeczności'}
-            </AppText>
-          }
-        >
-          {preview.mode === 'planned' && preview.campgroundAddress ? (
-            <AppText variant="caption" color="textSecondary">
-              {preview.campgroundAddress}
-            </AppText>
-          ) : null}
-          {form.description ? (
-            <AppText style={{ fontSize: 14, lineHeight: 21 }}>
-              {form.description}
-            </AppText>
-          ) : null}
-        </TripListingCard>
+        />
       </View>
     </>
   );

@@ -1,5 +1,7 @@
 # Ilustracje ekranu Start
 
+Aktualne pełne tła kafli „Znajdź ekipę” i „Dodaj wyjazd” oraz ich prompty opisano w [scenic/README.md](scenic/README.md). Poniższe przezroczyste ilustracje pozostają wykorzystywane na ekranie powitalnym.
+
 Pliki `find-crew.png` i `plan-trip.png` zostały wygenerowane wbudowanym narzędziem `image_gen` (skill `imagegen`). Lokalny `scenic-footer.png` był wyłącznie odniesieniem stylistycznym. Pliki produkcyjne mają 512 × 512 px; zachowano przezroczystość.
 
 ## Prompty

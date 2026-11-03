@@ -1,13 +1,10 @@
-import { TripParticipantsCard } from '@/components/trips/trip-participants-card';
+import { TripDetailsContent } from '@/components/trips/trip-details-content';
 import { TripCover } from '@/components/trips/trip-cover';
-import { TripMapCard } from '@/components/trips/trip-map-card';
-import { TripLocationSummary } from '@/components/trips/trip-location-summary';
 import { DataStatus } from '@/components/ui/data-status';
 import {
   AppText,
   Button,
   Card,
-  Chip,
   layout,
   Screen,
 } from '@/components/ui/primitives';
@@ -21,8 +18,6 @@ import { GroupAvatar } from '@/features/messaging/messaging-ui';
 import { useTripContactCounts } from '@/features/messaging/use-trip-contact-counts';
 import { useAccountAccess } from '@/features/moderation/account-access-context';
 import { useProfile } from '@/features/profile/profile-context';
-import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
-import { TripReactionsButton } from '@/features/reactions/trip-reactions';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import {
   discoveryFiltersForTrip,
@@ -191,53 +186,19 @@ export default function OwnTripDetailsScreen() {
             </Card>
           ) : null}
           <TripCover trip={trip} variant="details" datesLabel={ownTripDates(trip)} />
-          <View style={{ gap: 12 }}>
-            {status !== 'published' ? <TripStatusBadge status={status} /> : null}
-            {trip.visibility === 'private' ? <AppText variant="caption" color="primaryStrong">Prywatny plan</AppText> : null}
-            <TripLocationSummary trip={trip} locationLabel={ownTripPlace(trip)} />
-            <Card style={{ gap: 12 }}>
-              <AppText variant="heading" accessibilityRole="header">
-                O wyjeździe
-              </AppText>
-              <AppText color="textSecondary">
-                {trip.description ||
-                  'Jeszcze bez opisu. Możesz uzupełnić go w edycji.'}
-              </AppText>
-              <TripReactionsButton
-                tripId={trip.id}
-                ownerGroupId={trip.groupId}
-                compact
-              />
-              {!trip.travelModes.length ? (
-                <AppText variant="label">
-                  Sposób podróżowania do uzupełnienia
-                </AppText>
-              ) : null}
-              {trip.interests.length ? (
-                <View style={layout.wrap}>
-                  {trip.interests.map((value) => (
-                    <Chip key={value} label={value} />
-                  ))}
-                </View>
-              ) : null}
-            </Card>
-          </View>
-          <TripMapCard trip={trip} />
-          <TripParticipantsCard value={trip.participants} animals={trip.animals} />
-          <Card>
-            <View style={layout.row}>
-              <GroupAvatar groupId={trip.groupId} size={48} />
-              <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
-                <AppText variant="caption" color="textSecondary">
-                  Organizator wyjazdu
-                </AppText>
-                <AppText variant="heading" numberOfLines={2} style={{ fontSize: 16, lineHeight: 22 }}>
-                  {profile.group.name}
-                </AppText>
-              </View>
-              <TravelModeBadges modes={trip.travelModes} />
+          {status !== 'published' || trip.visibility === 'private' ? (
+            <View style={{ gap: 12 }}>
+              {status !== 'published' ? <TripStatusBadge status={status} /> : null}
+              {trip.visibility === 'private' ? <AppText variant="caption" color="primaryStrong">Prywatny plan</AppText> : null}
             </View>
-          </Card>
+          ) : null}
+          <TripDetailsContent
+            trip={trip}
+            group={profile.group}
+            locationLabel={ownTripPlace(trip)}
+            isOwn
+            onOpenGroup={() => router.push('/profile')}
+          />
           <Card style={{ gap: 12 }}>
             <AppText variant="heading" accessibilityRole="header">
               Towarzystwo na wyjazd

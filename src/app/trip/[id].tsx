@@ -1,4 +1,4 @@
-import { TripParticipantsCard } from '@/components/trips/trip-participants-card';
+import { TripDetailsContent } from '@/components/trips/trip-details-content';
 import { DataStatus } from '@/components/ui/data-status';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useDiscoveryTrip } from '@/features/discovery/use-trip-search';
@@ -6,27 +6,18 @@ import { StyleSheet, View } from 'react-native';
 import {
   AppText,
   Button,
-  Card,
-  Chip,
   DemoBadge,
   EmptyState,
   HeaderRow,
   IconButton,
   Screen,
-  SectionTitle,
-  layout,
 } from '@/components/ui/primitives';
 import { TripCover } from '@/components/trips/trip-cover';
-import { TripMapCard } from '@/components/trips/trip-map-card';
-import { TripLocationSummary } from '@/components/trips/trip-location-summary';
 import { AVAILABLE_PROPOSALS } from '@/data/proposals';
 import { formatTripDates } from '@/features/discovery/filter-trips';
 import { TripContactAction } from '@/features/messaging/trip-contact-action';
-import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
-import { GroupAvatar } from '@/features/profile/group-avatar';
 import { TripReportAction } from '@/features/moderation/trip-report-action';
 import { FavoriteButton, FavoritesNotice } from '@/features/favorites/favorite-button';
-import { TripReactionsButton } from '@/features/reactions/trip-reactions';
 import { MaxContentWidth } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -77,34 +68,11 @@ export default function TripDetailsScreen() {
       <FavoritesNotice />
       <DataStatus status={status} error={error} onRetry={() => { void refresh(); }} label="Odświeżanie wyjazdu" />
       <TripCover trip={trip} variant="details" datesLabel={formatTripDates(trip)} action={<FavoriteButton kind="trip" targetId={trip.id} compact translucent />} />
-      <View style={layout.stack}>
-        <TripLocationSummary trip={trip} />
-        <Card testID="trip-organizer">
-          <View style={layout.row}>
-            <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={48} />
-            <View style={styles.organizerDetails}>
-              <AppText variant="caption" color="textSecondary">Organizator wyjazdu</AppText>
-              <AppText variant="heading" accessibilityRole="header" numberOfLines={2} style={styles.organizerName}>
-                {group.name}
-              </AppText>
-            </View>
-            <TravelModeBadges modes={trip.travelModes ?? group.travelModes} />
-          </View>
-          <Button label="Zobacz profil ekipy" variant="secondary" onPress={() => router.push({ pathname: '/crew/[id]', params: { id: group.id } })} />
-        </Card>
-        <Card>
-          <SectionTitle title="Pomysł na wspólny czas" />
-          <AppText color="textSecondary">{trip.description}</AppText>
-          <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} compact />
-          {trip.interests.length ? <View style={layout.wrap}>
-            {trip.interests.map((interest) => (
-              <Chip key={interest} label={interest} />
-            ))}
-          </View> : null}
-        </Card>
-      </View>
-      <TripMapCard trip={trip} />
-      <TripParticipantsCard value={trip.participants} animals={trip.animals} />
+      <TripDetailsContent
+        trip={trip}
+        group={group}
+        onOpenGroup={() => router.push({ pathname: '/crew/[id]', params: { id: group.id } })}
+      />
     </Screen>
     <View testID="trip-contact-bar" style={{
       backgroundColor: theme.backgroundElement, borderTopWidth: 1, borderTopColor: theme.border,
@@ -120,6 +88,4 @@ export default function TripDetailsScreen() {
 }
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  organizerDetails: { flex: 1, minWidth: 0, gap: 4 },
-  organizerName: { fontSize: 16, lineHeight: 22 },
 });

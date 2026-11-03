@@ -7,7 +7,7 @@ import { useTripSearch } from '@/features/discovery/use-trip-search';
 import { HomeDemoControls } from '@/features/home/home-demo-controls';
 import { HomeHeader } from '@/features/home/home-header';
 import { HomeLatestListing } from '@/features/home/home-latest-listing';
-import { HomeAction } from '@/features/home/home-ui';
+import { HomeScenicAction } from '@/features/home/home-scenic-action';
 import { selectLatestListing } from '@/features/home/latest-listing';
 import { useMessaging } from '@/features/messaging/messaging-context';
 import { useProfile } from '@/features/profile/profile-context';
@@ -15,10 +15,9 @@ import { useOwnTrips } from '@/features/trips/own-trips-context';
 import { todayDate } from '@/features/trips/own-trips-state';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 export default function HomeScreen() {
-  const { width } = useWindowDimensions();
   const { hasProfile, profile } = useProfile();
   const { setFilters } = useDiscovery();
   const {
@@ -69,19 +68,9 @@ export default function HomeScreen() {
           />
         ) : null}
         <View testID="home-actions" style={styles.actions}>
-          <HomeAction
-            label="Znajdź ekipę"
-            description="Poznaj podróżników z podobnymi planami."
-            illustration={require('@/assets/images/home/find-crew.webp')}
-            density={width < 360 ? 'compact' : 'regular'}
-            onPress={discover}
-          />
-          <HomeAction
-            label="Dodaj wyjazd"
-            description="Zaplanuj wyjazd i znajdź towarzystwo."
-            illustration={require('@/assets/images/home/plan-trip.webp')}
-            density={width < 360 ? 'compact' : 'regular'}
-            variant="secondary"
+          <HomeScenicAction kind="crew" onPress={discover} />
+          <HomeScenicAction
+            kind="trip"
             onPress={() => router.push('/trip-editor')}
           />
         </View>

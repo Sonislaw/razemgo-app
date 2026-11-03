@@ -1,6 +1,16 @@
 [
   {
     "schema": "discovery_private",
+    "name": "cancel_filter_alerts",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
     "name": "candidates",
     "arguments": "f jsonb, me uuid",
     "definer": false,
@@ -12,6 +22,36 @@
     "name": "directory_candidates",
     "arguments": "f jsonb, me uuid, ids uuid[]",
     "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "filter_alert_settings",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "filter_set_payload",
+    "arguments": "filter_kind text, payload jsonb, me uuid",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "filter_sets_changed",
+    "arguments": "",
+    "definer": true,
     "settings": [
       "search_path=\"\""
     ],
@@ -465,6 +505,26 @@
   },
   {
     "schema": "notifications_private",
+    "name": "filter_alert_count",
+    "arguments": "batch uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "get_notifications_before_filter_alerts",
+    "arguments": "before_at timestamp with time zone, before_id uuid, page_size integer, only_unread boolean",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
     "name": "invitation_resolved",
     "arguments": "",
     "definer": true,
@@ -527,6 +587,26 @@
   },
   {
     "schema": "notifications_private",
+    "name": "push_allowed_before_filter_alerts",
+    "arguments": "recipient uuid, event_kind text",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "queue_filter_publication",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
     "name": "queue_proposal_trip",
     "arguments": "",
     "definer": true,
@@ -539,6 +619,16 @@
     "schema": "notifications_private",
     "name": "refresh_proposals",
     "arguments": "me uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
+    "name": "save_preference_before_filter_alerts",
+    "arguments": "preference_key text, enabled boolean",
     "definer": true,
     "settings": [
       "search_path=\"\""
@@ -655,6 +745,18 @@
     "schema": "public",
     "name": "count_public_trips",
     "arguments": "filters jsonb",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "delete_my_filter_set",
+    "arguments": "target_id uuid",
     "definer": true,
     "settings": [
       "search_path=\"\""
@@ -1021,6 +1123,18 @@
   },
   {
     "schema": "public",
+    "name": "list_my_filter_sets",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
     "name": "list_my_trip_page",
     "arguments": "archived boolean, filters jsonb, after_cursor jsonb, page_size integer",
     "definer": true,
@@ -1114,6 +1228,18 @@
     ],
     "roles": [
       "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "process_filter_notifications",
+    "arguments": "batch_size integer",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
     ]
   },
   {
@@ -1274,6 +1400,18 @@
   },
   {
     "schema": "public",
+    "name": "save_my_filter_set",
+    "arguments": "target_id uuid, filter_kind text, set_name text, filter_payload jsonb",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
     "name": "save_my_group_visibility",
     "arguments": "is_discoverable boolean, about_text text",
     "definer": true,
@@ -1420,6 +1558,18 @@
   },
   {
     "schema": "public",
+    "name": "set_my_filter_set_notifications",
+    "arguments": "target_id uuid, enabled boolean",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
     "name": "set_my_group_favorite",
     "arguments": "target_group_id uuid, is_favorite boolean",
     "definer": true,
@@ -1480,6 +1630,18 @@
   },
   {
     "schema": "push_private",
+    "name": "claim_before_filter_alerts",
+    "arguments": "batch_size integer",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
+    ]
+  },
+  {
+    "schema": "push_private",
     "name": "conversation_inserted",
     "arguments": "",
     "definer": true,
@@ -1491,6 +1653,16 @@
   {
     "schema": "push_private",
     "name": "deliverable",
+    "arguments": "delivery uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "push_private",
+    "name": "deliverable_before_filter_alerts",
     "arguments": "delivery uuid",
     "definer": true,
     "settings": [

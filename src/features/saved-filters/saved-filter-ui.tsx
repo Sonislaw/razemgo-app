@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, Switch, View } from 'react-native';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { Icon } from '@/components/ui/icon';
 import { AppText, Button, Chip, IconButton, layout } from '@/components/ui/primitives';
@@ -114,14 +114,24 @@ function SavedFilterListSheet({ kind, onClose, onApply }: {
   const theme = useTheme();
   const today = useCurrentDate();
   const [managedId, setManagedId] = useState<string>();
+  const [error, setError] = useState<string | null>(null);
   const selected = items.find(item => item.id === managedId);
   const siblings = items.filter(item => item.kind === kind);
   useEffect(() => { void store?.refresh(); }, [store]);
+  const toggleNotifications = async (item: SavedFilterSet, enabled: boolean) => {
+    setError(null);
+    const result = await store?.setNotifications(item.id, enabled);
+    if (result?.error) setError(result.error);
+  };
   if (selected) return <ManageFilterSetSheet key={selected.id} item={selected} onClose={() => setManagedId(undefined)} />;
   return <BottomSheet title={kind === 'trips' ? 'Zapisane filtry wyjazdów' : 'Zapisane filtry ekip'} onClose={onClose}>
     <CatalogStatus />
+    {kind === 'trips' && siblings.length ? <AppText variant="caption" color="textSecondary">
+      Powiadomienia obejmują przyszłe publikacje. Nowe wyniki zestawu zbieramy w pięciominutowych oknach; alert otwiera jego filtry.
+    </AppText> : null}
+    {error ? <AppText accessibilityRole="alert">{error}</AppText> : null}
     {status === 'ready' && !siblings.length ? <AppText color="textSecondary">Nie masz jeszcze zapisanych zestawów. Otwórz filtry, wybierz kryteria i użyj „Zapisz zestaw”.</AppText> : null}
-    {siblings.map(item => <View key={item.id} style={[styles.item, { borderColor: theme.border }]}>
+    {siblings.map(item => <View key={item.id} style={[styles.item, { borderColor: theme.border }]}><View style={layout.row}>
       <Pressable accessibilityRole="button" accessibilityLabel={`Wczytaj zestaw: ${item.name}`} disabled={busy}
         onPress={() => onApply(item)} style={({ pressed }) => [styles.itemContent, { opacity: pressed ? 0.65 : 1 }]}>
         <AppText variant="label">{item.name}</AppText>
@@ -129,6 +139,14 @@ function SavedFilterListSheet({ kind, onClose, onApply }: {
         {filterSetExpired(item, today) ? <AppText variant="caption">Termin w tym zestawie już minął</AppText> : null}
       </Pressable>
       <IconButton icon="more" label={`Opcje zestawu: ${item.name}`} onPress={() => setManagedId(item.id)} />
+      </View>
+      {kind === 'trips' ? <View style={[layout.row, { padding: 12, paddingTop: 0 }]}>
+        <AppText variant="caption" style={styles.flex}>Powiadamiaj o nowych wyjazdach</AppText>
+        <Switch accessibilityLabel={`Powiadamiaj o nowych wyjazdach: ${item.name}`} value={item.notificationsEnabled}
+          disabled={busy || (!item.notificationsEnabled && filterSetExpired(item, today))}
+          trackColor={{ false: theme.border, true: theme.primaryStrong }}
+          onValueChange={enabled => { void toggleNotifications(item, enabled); }} />
+      </View> : null}
     </View>)}
   </BottomSheet>;
 }
@@ -166,6 +184,6 @@ function ManageFilterSetSheet({ item, onClose }: { item: SavedFilterSet; onClose
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   savedButton: { minHeight: 44, paddingHorizontal: 4, flexDirection: 'row', alignItems: 'center', gap: 5 },
-  item: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: Radius.small, paddingRight: 4 },
+  item: { borderWidth: 1, borderRadius: Radius.small, paddingRight: 4 },
   itemContent: { flex: 1, minWidth: 0, minHeight: 64, padding: 12, gap: 4 },
 });

@@ -7,6 +7,7 @@ export interface SavedFilterTransport {
   load: () => Promise<SavedFilterSet[]>;
   save: (request: FilterSetWrite) => Promise<SavedFilterSet>;
   remove: (id: string) => Promise<boolean>;
+  setNotifications?: (id: string, enabled: boolean) => Promise<SavedFilterSet>;
 }
 export interface SavedFilterSnapshot {
   items: readonly SavedFilterSet[];
@@ -86,10 +87,23 @@ export function createSavedFilterStore(transport: SavedFilterTransport) {
       return { ok: false, error: filterSetError(cause, 'Nie udało się usunąć zestawu. Spróbuj ponownie.') };
     } finally { finish(current); }
   };
+  const setNotifications = async (id: string, enabled: boolean): Promise<SaveResult> => {
+    if (!available() || !transport.setNotifications) return { item: null, error: 'Poczekaj na wczytanie zestawów lub spróbuj ponownie.' };
+    const current = generation; writes++; publish({ busy: true });
+    try {
+      const item = await transport.setNotifications(id, enabled);
+      if (!alive || current !== generation) return { item: null, error: null };
+      if (item.id !== id || item.kind !== 'trips' || item.notificationsEnabled !== enabled) throw Error('Missing settings confirmation');
+      publish({ items: sorted([...snapshot.items.filter(value => value.id !== id), item]), error: null });
+      return { item, error: null };
+    } catch (cause) {
+      return { item: null, error: alive && current === generation ? filterSetError(cause, 'Nie udało się zmienić powiadomień. Spróbuj ponownie.') : null };
+    } finally { finish(current); }
+  };
   return {
     getSnapshot: () => snapshot,
     subscribe: (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; },
-    refresh, save, remove,
+    refresh, save, remove, setNotifications,
     activate: () => { alive = true; },
     dispose: () => { alive = false; generation++; fetching = null; repeat = false; },
   };

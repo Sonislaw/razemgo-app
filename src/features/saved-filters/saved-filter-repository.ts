@@ -33,3 +33,11 @@ export async function removeFilterSet(userId: string, id: string) {
   if (data !== true) throw Error('Missing deletion confirmation');
   return data;
 }
+export async function setFilterSetNotifications(userId: string, id: string, enabled: boolean) {
+  const token = await accountToken(userId);
+  const { data, error } = await backendRequest(signal => getSupabase().rpc('set_my_filter_set_notifications', {
+    target_id: id, enabled,
+  }).setHeader('Authorization', 'Bearer ' + token).abortSignal(signal), 'saved_filters.notifications');
+  if (error) throw error;
+  return parseSavedFilterSet(data);
+}

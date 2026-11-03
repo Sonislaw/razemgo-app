@@ -77,6 +77,10 @@ export interface ClientDatabase {
     Tables: GeneratedDatabase['public']['Tables'];
     Views: Record<never, never>;
     Functions: {
+      set_my_filter_set_notifications: {
+        Args: { target_id: string; enabled: boolean };
+        Returns: import('../../features/saved-filters/saved-filter-data').SavedFilterSetRow;
+      };
       list_my_filter_sets: {
         Args: Record<never, never>;
         Returns: import('../../features/saved-filters/saved-filter-data').SavedFilterSetRow[];

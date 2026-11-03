@@ -500,6 +500,7 @@ export type Database = {
                     "push_messages": boolean;
                     "push_proposals": boolean;
                     "push_reactions": boolean;
+                    "push_saved_filters": boolean;
                     "updated_at": string;
                 };
                 ComputedFields: never;
@@ -510,6 +511,7 @@ export type Database = {
                     "push_messages"?: boolean;
                     "push_proposals"?: boolean;
                     "push_reactions"?: boolean;
+                    "push_saved_filters"?: boolean;
                     "updated_at"?: string;
                 };
                 Update: {
@@ -519,6 +521,7 @@ export type Database = {
                     "push_messages"?: boolean;
                     "push_proposals"?: boolean;
                     "push_reactions"?: boolean;
+                    "push_saved_filters"?: boolean;
                     "updated_at"?: string;
                 };
                 Relationships: [
@@ -540,6 +543,7 @@ export type Database = {
                     "actor_group_id": string;
                     "conversation_id": string | null;
                     "created_at": string;
+                    "filter_set_id": string | null;
                     "id": string;
                     "invitation_id": string | null;
                     "kind": string;
@@ -558,6 +562,7 @@ export type Database = {
                     "actor_group_id": string;
                     "conversation_id"?: string | null;
                     "created_at"?: string;
+                    "filter_set_id"?: string | null;
                     "id"?: string;
                     "invitation_id"?: string | null;
                     "kind": string;
@@ -575,6 +580,7 @@ export type Database = {
                     "actor_group_id"?: string;
                     "conversation_id"?: string | null;
                     "created_at"?: string;
+                    "filter_set_id"?: string | null;
                     "id"?: string;
                     "invitation_id"?: string | null;
                     "kind"?: string;
@@ -921,6 +927,7 @@ export type Database = {
                     "delivery_id": string;
                     "device_id": string;
                     "event_id": string;
+                    "filter_set_id": string;
                     "invitation_id": string;
                     "kind": string;
                     "notification_id": string;
@@ -1227,6 +1234,12 @@ export type Database = {
                 };
                 Returns: number;
             };
+            "process_filter_notifications": {
+                Args: {
+                    "batch_size"?: number;
+                };
+                Returns: Json;
+            };
             "process_proposal_notifications": {
                 Args: {
                     "batch_size"?: number;
@@ -1424,6 +1437,13 @@ export type Database = {
                 Args: {
                     "reaction_kind": string;
                     "target_message_id": string;
+                };
+                Returns: Json;
+            };
+            "set_my_filter_set_notifications": {
+                Args: {
+                    "enabled": boolean;
+                    "target_id": string;
                 };
                 Returns: Json;
             };

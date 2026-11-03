@@ -132,6 +132,16 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   Miniony termin ma informację i akcję „Edytuj”, bez przesuwania dat.
   Migracja `202611030001_saved_filter_sets.sql` wdrożona na Dev; Preview
   i Production nie wdrażano. Szczegóły i weryfikacja: [SAVED_FILTERS.md](SAVED_FILTERS.md).
+- **Alerty zapisanych filtrów wyjazdów** są opcjonalne, domyślnie wyłączone
+  przy każdym zestawie. Pierwsze nowe publiczne publikacje, pasujące do wszystkich
+  kryteriów, tworzą zbiorczy wpis i push w pięciominutowych oknach. Własny wyjazd
+  nie jest wymagany. Alert otwiera zestaw w Odkrywaj → Wyjazdy od pierwszej strony.
+  Włączenie i zastąpienie kryteriów nie odtwarzają historycznych wyników;
+  wyłączenie i usunięcie anulują oczekującą wysyłkę. Nazwa zachowuje obserwację,
+  miniony termin uniemożliwia jej włączenie. Globalny push ma osobną kategorię
+  „Wyniki zapisanych filtrów”; profile i obecne propozycje pozostają niezależne.
+  Migracja `202611030002_saved_filter_notifications.sql` i dispatcher wdrożone
+  wyłącznie na Dev. [Zasady i weryfikacja](SAVED_FILTER_ALERTS.md).
 - **Akceptacja zaproszenia tworzy rozmowę.** Licznik kontaktów przy wyjeździe
   oznacza zaakceptowane rozmowy; aplikacja nie traktuje go jako listy potwierdzonych
   uczestników. Skład wyjazdu opisuje liczebność, nie imienną listę zapisów.
@@ -170,7 +180,7 @@ Główny podział odpowiedzialności:
 | [`database.generated.ts`](../src/types/database.generated.ts) | Schemat generowany z lokalnego Supabase; nie zastępuje walidacji JSON. |
 | [`src/lib/`](../src/lib/) | Klient Supabase, cykl żądań, synchronizacja, paginacja, magazyny, daty, sesja i monitoring. |
 | [`src/components/`](../src/components/) | Wspólne UI, karty, mapy i oś czasu; warianty `.web.tsx` dla różnic platform. |
-| [`supabase/migrations/`](../supabase/migrations/) | Historia bazy i końcowe definicje RPC. Obecnie 45 migracji; najnowsza to `202611010003_proposal_criteria.sql`. |
+| [`supabase/migrations/`](../supabase/migrations/) | Historia bazy i końcowe definicje RPC. Obecnie 47 migracji; najnowsza to `202611030002_saved_filter_notifications.sql`. |
 | [`supabase/functions/`](../supabase/functions/) | Edge Functions: `delete-account`, `dispatch-push`, `monitor-push`. |
 | [`scripts/`](../scripts/) | Testy Node/PGlite i Playwright, kontrole, generatory, diagnostyka, benchmarki i wdrażanie środowisk. |
 
@@ -191,7 +201,7 @@ zaproszenia i wysyłka wiadomości korzystają z kluczy idempotencji.
 [`AccountSyncProvider`](../src/features/auth/account-sync-context.tsx) łączy Realtime,
 powrót aplikacji i kontrolny odczyt co 20 s. Realtime przekazuje sygnał
 `mailbox_updates`, a dane pobierane są osobno. `get_my_sync_state()` zwraca
-rewizje domen `mailbox`, `notifications`, `favorites`, `trips`; koordynator odświeża
+rewizje domen `mailbox`, `notifications`, `favorites`, `trips`, `saved_filters`; koordynator odświeża
 zmienione domeny i ponawia nieudane odczyty. Obecność i kontrola dostępu mają
 odrębne zadania. Obserwacje reakcji/obecności zależą od fokusu ekranu.
 

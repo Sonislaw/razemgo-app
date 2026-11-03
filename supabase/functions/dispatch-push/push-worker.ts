@@ -1,4 +1,4 @@
-export type PushKind = 'invitation_received' | 'invitation_accepted' | 'message' | 'favorite_trip' | 'trip_reaction' | 'proposal';
+export type PushKind = 'invitation_received' | 'invitation_accepted' | 'message' | 'favorite_trip' | 'trip_reaction' | 'proposal' | 'saved_filter';
 export type PushJob = {
   delivery_id: string; event_id: string; device_id: string; push_token: string;
   kind: PushKind; recipient_group_id: string; invitation_id: string | null;
@@ -6,6 +6,7 @@ export type PushJob = {
   trip_id?: string | null;
   notification_id?: string | null;
   proposal_count?: number;
+  filter_set_id?: string | null;
 };
 type Result = 'ticket' | 'sent' | 'retry' | 'invalid' | 'failed';
 type RpcClient = { rpc: (name: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }> };
@@ -25,6 +26,7 @@ const COPY = {
   favorite_trip: { title: 'Nowy wyjazd ulubionej ekipy', body: 'Ekipa z Twoich ulubionych opublikowała nowy wyjazd. Zobacz szczegóły w RazemGo.' },
   trip_reaction: { title: 'Nowa reakcja na Twoje ogłoszenie', body: 'Ktoś zostawił emocję pod Twoim wyjazdem. Zobacz reakcję w RazemGo.' },
   proposal: { title: 'Nowa propozycja wyjazdu', body: 'Pojawił się wyjazd pasujący do Twojego planu. Zobacz szczegóły w RazemGo.' },
+  saved_filter: { title: 'Nowe wyniki zapisanych filtrów', body: 'Pojawiły się nowe wyjazdy pasujące do zapisanego zestawu. Sprawdź wyniki w RazemGo.' },
 };
 export function pushMessage(job: PushJob) {
   const key = job.kind === 'message' ? 'chat-' + job.conversation_id : job.event_id;
@@ -33,13 +35,14 @@ export function pushMessage(job: PushJob) {
     : COPY[job.kind];
   return {
     to: job.push_token, ...copy, sound: 'default', priority: 'high', ttl: 86400,
-    channelId: job.kind === 'proposal' ? 'razemgo-proposals' : job.kind === 'favorite_trip' ? 'razemgo-favorite-trips' : job.kind === 'trip_reaction' ? 'razemgo-reactions' : 'razemgo-contact', collapseId: key, tag: key,
+    channelId: job.kind === 'saved_filter' ? 'razemgo-saved-filters' : job.kind === 'proposal' ? 'razemgo-proposals' : job.kind === 'favorite_trip' ? 'razemgo-favorite-trips' : job.kind === 'trip_reaction' ? 'razemgo-reactions' : 'razemgo-contact', collapseId: key, tag: key,
     ...(job.conversation_id ? { threadId: job.conversation_id } : {}),
     data: { v: 1, eventId: job.event_id, kind: job.kind, recipientGroupId: job.recipient_group_id,
       ...(job.invitation_id ? { invitationId: job.invitation_id } : {}),
       ...(job.conversation_id ? { conversationId: job.conversation_id } : {}),
       ...(job.kind === 'favorite_trip' || job.kind === 'trip_reaction' || job.kind === 'proposal' ? { tripId: job.trip_id } : {}),
-      ...(job.kind === 'proposal' ? { notificationId: job.notification_id } : {}) },
+      ...(job.kind === 'proposal' ? { notificationId: job.notification_id } : {}),
+      ...(job.kind === 'saved_filter' ? { filterSetId: job.filter_set_id, notificationId: job.notification_id } : {}) },
   };
 }
 function errorResult(code?: string): Result {

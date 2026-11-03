@@ -3,7 +3,7 @@ import { USE_DEMO_DATA } from '@/constants/app';
 import { useAuth } from '@/features/auth/auth-context';
 import { useAccountSyncJob } from '@/features/auth/account-sync-context';
 import { useProfile } from '@/features/profile/profile-context';
-import { fetchFilterSets, persistFilterSet, removeFilterSet } from './saved-filter-repository';
+import { fetchFilterSets, persistFilterSet, removeFilterSet, setFilterSetNotifications } from './saved-filter-repository';
 import { createSavedFilterStore, type SavedFilterSnapshot, type SavedFilterStore, type SavedFilterTransport } from './saved-filter-store';
 import { filterSetPayload, parseSavedFilterSet, type SavedFilterSet } from './saved-filter-data';
 
@@ -20,10 +20,17 @@ function demoTransport(): SavedFilterTransport {
       if (!old && request.filters === null) throw Object.assign(Error(), { code: 'P0002' });
       const stamp = new Date().toISOString();
       const item = parseSavedFilterSet({ id: request.id, name: request.name, kind: request.kind,
-        filters: request.filters ?? filterSetPayload(old!), schema_version: 1, created_at: old?.createdAt ?? stamp, updated_at: stamp });
+        filters: request.filters ?? filterSetPayload(old!), schema_version: 1, created_at: old?.createdAt ?? stamp, updated_at: stamp,
+        notifications_enabled: old?.notificationsEnabled ?? false });
       items = [...items.filter(value => value.id !== item.id), item]; return item;
     },
     remove: async id => { items = items.filter(item => item.id !== id); return true; },
+    setNotifications: async (id, enabled) => {
+      const old = items.find(item => item.id === id && item.kind === 'trips');
+      if (!old) throw Object.assign(Error(), { code: 'P0002' });
+      const item = { ...old, notificationsEnabled: enabled, updatedAt: new Date().toISOString() };
+      items = items.map(value => value.id === id ? item : value); return item;
+    },
   };
 }
 export function SavedFilterProvider({ children }: { children: ReactNode }) {
@@ -33,6 +40,7 @@ export function SavedFilterProvider({ children }: { children: ReactNode }) {
   const ready = USE_DEMO_DATA || (!!userId && !isLoading && !isRecovering && !error && hasProfile && status === 'ready');
   const store = useMemo(() => ready ? createSavedFilterStore(USE_DEMO_DATA ? demoTransport() : {
     load: () => fetchFilterSets(userId!), save: request => persistFilterSet(userId!, request), remove: id => removeFilterSet(userId!, id),
+    setNotifications: (id, enabled) => setFilterSetNotifications(userId!, id, enabled),
   }) : null, [ready, userId]);
   useEffect(() => {
     if (!store) return;

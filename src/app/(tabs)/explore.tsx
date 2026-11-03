@@ -1,6 +1,7 @@
 import { DataStatus } from '@/components/ui/data-status';
 import { LoadMoreButton } from '@/components/ui/load-more-button';
 import { useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import {
   AppText,
@@ -35,7 +36,10 @@ import { filterSetExpired } from '@/features/saved-filters/saved-filter-data';
 import { useCurrentDate } from '@/hooks/use-current-date';
 
 export default function ExploreScreen() {
-  const [view, setView] = useState<'trips' | 'groups'>('trips');
+  const { openTrips } = useLocalSearchParams<{ openTrips?: string }>();
+  const [selection, setSelection] = useState<{ view: 'trips' | 'groups'; openTrips?: string }>({ view: 'trips', openTrips });
+  const view = selection.openTrips === openTrips ? selection.view : 'trips';
+  const setView = (next: 'trips' | 'groups') => setSelection({ view: next, openTrips });
   const theme = useTheme();
   const { filters, setFilters, activeTripSet, applySavedFilterSet } = useDiscovery();
   const today = useCurrentDate();

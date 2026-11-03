@@ -45,7 +45,13 @@ export async function fetchNotifications(
       'proposal',
       'favorite_trip',
       'trip_reaction',
+      'saved_filter',
     ]);
+    if (entry.kind === 'saved_filter') {
+      if (entry.filter_set_id !== null && (typeof entry.filter_set_id !== 'string' || !/^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(entry.filter_set_id)))
+        throw Error('Invalid filter notification');
+      integer(entry.filter_result_count);
+    }
     if (entry.read_at !== null) text(entry.read_at, 80);
     if (typeof entry.available !== 'boolean')
       throw new Error('Invalid notification availability');

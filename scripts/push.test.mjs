@@ -5,6 +5,18 @@ import { dispatchPush, pushMessage, validDispatchSecret } from '../supabase/func
 
 const group='00000000-0000-4000-8000-000000000001',event='00000000-0000-4000-8000-000000000002',chat='00000000-0000-4000-8000-000000000003';
 const job=(patch={})=>({delivery_id:event,event_id:event,device_id:group,push_token:'ExponentPushToken[testToken123456]',kind:'message',recipient_group_id:group,invitation_id:event,conversation_id:chat,ticket_id:null,claim_key:group,attempts:1,...patch});
+test('saved-filter digests use safe identifiers, their own preference/channel and the account-protected set route',()=>{
+  const payload=pushMessage(job({kind:'saved_filter',filter_set_id:chat,notification_id:event,proposal_count:3,invitation_id:null,conversation_id:null}));
+  assert.equal(payload.channelId,'razemgo-saved-filters');
+  assert.deepEqual(payload.data,{v:1,eventId:event,kind:'saved_filter',recipientGroupId:group,filterSetId:chat,notificationId:event});
+  const target=parsePushTarget({...payload.data,url:'https://evil.example',filters:{location_query:'private'}});
+  assert.deepEqual(pushDestination(target,group),{pathname:'/saved-filter/[id]',params:{id:chat}});
+  assert.equal(pushDestination(target,event),null);
+  assert.equal(pushPreferenceAllows('saved_filter',{push_saved_filters:false}),false);
+  assert.equal(pushPreferenceAllows('saved_filter',{push_proposals:false}),true);
+  for(const filterSetId of [undefined,null,'../../settings','https://evil.example'])assert.equal(parsePushTarget({...payload.data,filterSetId}),null);
+  assert.equal(parsePushTarget({...payload.data,notificationId:'bad'}),null);
+});
 function fixture(jobs){const outcomes=[];return {outcomes,client:{rpc:async(name,args)=>name==='claim_push_deliveries'?{data:jobs,error:null}:(outcomes.push(args),{data:null,error:null})}};}
 
 test('notification taps whitelist destinations and require the matching signed-in crew',()=>{

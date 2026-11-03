@@ -12,11 +12,12 @@ export type SavedFilterKind = 'trips' | 'groups';
 export type FilterSetDraft = { kind: 'trips'; filters: DiscoveryFilters } | { kind: 'groups'; filters: GroupFilters };
 export type FilterSetPayload = ReturnType<typeof discoveryFiltersPayload> | ReturnType<typeof groupFiltersPayload>;
 export type SavedFilterSet = FilterSetDraft & {
-  id: string; name: string; schemaVersion: 1; createdAt: string; updatedAt: string;
+  id: string; name: string; schemaVersion: 1; createdAt: string; updatedAt: string; notificationsEnabled: boolean;
 };
 export interface SavedFilterSetRow {
   id: string; name: string; kind: SavedFilterKind; filters: unknown;
   schema_version: number; created_at: string; updated_at: string;
+  notifications_enabled?: boolean;
 }
 export interface FilterSetWrite {
   id: string; kind: SavedFilterKind; name: string; filters: FilterSetPayload | null;
@@ -105,7 +106,9 @@ export function parseSavedFilterSet(value: unknown): SavedFilterSet {
   if (!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id) || filterSetNameError(name) || normalizeFilterSetName(name) !== name || p.schema_version !== 1) invalid();
   const createdAt = text(p.created_at, 80), updatedAt = text(p.updated_at, 80);
   if (!Number.isFinite(Date.parse(createdAt)) || !Number.isFinite(Date.parse(updatedAt))) invalid();
-  const base = { id, name, schemaVersion: 1 as const, createdAt, updatedAt };
+  const notificationsEnabled = p.notifications_enabled === undefined ? false : bool(p.notifications_enabled);
+  if (p.kind === 'groups' && notificationsEnabled) invalid();
+  const base = { id, name, schemaVersion: 1 as const, createdAt, updatedAt, notificationsEnabled };
   if (p.kind === 'trips') return { ...base, kind: 'trips', filters: tripCriteriaFromPayload(p.filters) };
   if (p.kind === 'groups') return { ...base, kind: 'groups', filters: groupCriteriaFromPayload(p.filters) };
   return invalid();

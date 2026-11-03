@@ -16,10 +16,15 @@ const names = [
   'list_my_filter_sets',
   'save_my_filter_set',
   'delete_my_filter_set',
+  'set_my_filter_set_notifications',
+  'process_filter_notifications',
 ];
 for (const name of names) {
   const args =
-    name === 'save_my_filter_set'
+    name === 'set_my_filter_set_notifications'
+      ? { target_id: '00000000-0000-4000-8000-000000000001', enabled: true }
+      : name === 'process_filter_notifications' ? { batch_size: 1 }
+      : name === 'save_my_filter_set'
       ? { target_id: '00000000-0000-4000-8000-000000000001', filter_kind: 'trips', set_name: 'Anonymous probe', filter_payload: {} }
       : name === 'delete_my_filter_set'
         ? { target_id: '00000000-0000-4000-8000-000000000001' }

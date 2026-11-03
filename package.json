@@ -65,6 +65,7 @@
     "typecheck": "tsc --noEmit",
     "test:discovery": "node --test scripts/discovery.test.mjs",
     "test:saved-filters": "node --test scripts/saved-filters.test.mjs scripts/saved-filters-backend.test.mjs",
+    "test:filter-alerts": "node --test scripts/filter-alerts-backend.test.mjs scripts/push.test.mjs",
     "test:profile": "node --test scripts/profile.test.mjs",
     "test:messaging": "node --test scripts/messaging.test.mjs scripts/messaging-data.test.mjs scripts/messaging-backend.test.mjs",
     "test:trips": "node --test scripts/trips.test.mjs",

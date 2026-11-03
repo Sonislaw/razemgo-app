@@ -67,3 +67,16 @@ test('a stale read cannot overwrite an acknowledged mutation', async () => {
   nextLoad([]); await pending; await store.refresh();
   assert.equal(store.getSnapshot().items[0].id, item.id);
 });
+test('subscription saves retain criteria, wait for acknowledgement and ignore a disposed account',async()=>{
+  const item=parseSavedFilterSet(row('trips',filterSetPayload(draft)));
+  let fail=true,release;
+  const store=createSavedFilterStore({load:async()=>[item],save:async()=>item,remove:async()=>true,
+    setNotifications:async(id,enabled)=>{if(fail)throw Error('Offline');return {...item,notificationsEnabled:enabled};}});
+  await store.refresh();assert.ok((await store.setNotifications(item.id,true)).error);assert.equal(store.getSnapshot().items[0].notificationsEnabled,false);
+  fail=false;const result=await store.setNotifications(item.id,true);assert.equal(result.item.notificationsEnabled,true);
+  assert.equal(sameFilterCriteria(item,result.item),true);
+  const pending=createSavedFilterStore({load:async()=>[item],save:async()=>item,remove:async()=>true,
+    setNotifications:()=>new Promise(resolve=>{release=resolve;})});
+  await pending.refresh();const request=pending.setNotifications(item.id,true);await Promise.resolve();pending.dispose();
+  release({...item,notificationsEnabled:true});assert.equal((await request).item,null);assert.equal(pending.getSnapshot().items[0].notificationsEnabled,false);
+});

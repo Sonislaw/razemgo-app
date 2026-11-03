@@ -1,8 +1,8 @@
 import type { ProfileAvatarId } from '@/types/avatar';
 import type { ReactionKind } from '@/features/reactions/reaction-data';
 
-export type NotificationKind = 'message' | 'invitation_received' | 'invitation_accepted' | 'proposal' | 'favorite_trip' | 'trip_reaction';
-export type NotificationPreferenceKey = 'messages' | 'invitations' | 'favorite_trips' | 'reactions' | 'proposals';
+export type NotificationKind = 'message' | 'invitation_received' | 'invitation_accepted' | 'proposal' | 'favorite_trip' | 'trip_reaction' | 'saved_filter';
+export type NotificationPreferenceKey = 'messages' | 'invitations' | 'favorite_trips' | 'reactions' | 'proposals' | 'saved_filters';
 export interface NotificationEntry {
   id: string;
   kind: NotificationKind;
@@ -20,6 +20,8 @@ export interface NotificationEntry {
   available: boolean;
   reaction_kind?: ReactionKind | null;
   reaction_active?: boolean;
+  filter_set_id?: string | null;
+  filter_result_count?: number;
 }
 export interface NotificationPreferences {
   push_messages: boolean;
@@ -27,6 +29,7 @@ export interface NotificationPreferences {
   push_favorite_trips: boolean;
   push_reactions: boolean;
   push_proposals: boolean;
+  push_saved_filters: boolean;
   updated_at: string | null;
 }
 export interface NotificationsPage {
@@ -37,7 +40,7 @@ export interface NotificationsPage {
   fetched_at: string;
 }
 export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
-  push_messages: true, push_invitations: true, push_favorite_trips: true, push_reactions: true, push_proposals: true, updated_at: null,
+  push_messages: true, push_invitations: true, push_favorite_trips: true, push_reactions: true, push_proposals: true, push_saved_filters: true, updated_at: null,
 };
 export function notificationTitle(kind: NotificationKind) {
   return {
@@ -47,5 +50,6 @@ export function notificationTitle(kind: NotificationKind) {
     proposal: 'Nowa propozycja wyjazdu',
     favorite_trip: 'Nowy wyjazd ulubionej ekipy',
     trip_reaction: 'Nowa reakcja na Twoje ogłoszenie',
+    saved_filter: 'Nowe wyniki zapisanych filtrów',
   }[kind];
 }

@@ -217,6 +217,13 @@ export function PushProvider({ children }: { children: ReactNode }) {
           lockscreenVisibility:
             notifications.AndroidNotificationVisibility.PRIVATE,
         });
+      if (Platform.OS === 'android')
+        await notifications.setNotificationChannelAsync('razemgo-saved-filters', {
+          name: 'Wyniki zapisanych filtrów',
+          importance: notifications.AndroidImportance.DEFAULT,
+          lockscreenVisibility:
+            notifications.AndroidNotificationVisibility.PRIVATE,
+        });
       let permission = await notifications.getPermissionsAsync();
       if (!permission.granted && ask && permission.canAskAgain)
         permission = await notifications.requestPermissionsAsync({

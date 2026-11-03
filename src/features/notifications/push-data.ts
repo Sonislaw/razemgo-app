@@ -1,6 +1,6 @@
 import type { NotificationPreferences } from './notification-types';
 
-export type PushKind = 'invitation_received' | 'invitation_accepted' | 'message' | 'favorite_trip' | 'trip_reaction' | 'proposal';
+export type PushKind = 'invitation_received' | 'invitation_accepted' | 'message' | 'favorite_trip' | 'trip_reaction' | 'proposal' | 'saved_filter';
 export interface PushTarget {
   v: 1;
   eventId: string;
@@ -10,8 +10,10 @@ export interface PushTarget {
   conversationId?: string;
   tripId?: string;
   notificationId?: string;
+  filterSetId?: string;
 }
 export function pushPreferenceAllows(kind: PushKind, preferences: Partial<NotificationPreferences> | null) {
+  if (kind === 'saved_filter') return preferences?.push_saved_filters !== false;
   if (kind === 'proposal') return preferences?.push_proposals !== false;
   if (kind === 'favorite_trip') return preferences?.push_favorite_trips !== false;
   if (kind === 'trip_reaction') return preferences?.push_reactions !== false;
@@ -23,6 +25,8 @@ export function parsePushTarget(value: unknown): PushTarget | null {
   const data=value as Record<string,unknown>;
   const uuid=(v: unknown): v is string => typeof v==='string' && UUID.test(v);
   if (data.v!==1 || !uuid(data.eventId) || !uuid(data.recipientGroupId)) return null;
+  if (data.kind==='saved_filter' && uuid(data.filterSetId) && uuid(data.notificationId))
+    return {v:1,eventId:data.eventId,recipientGroupId:data.recipientGroupId,kind:'saved_filter',filterSetId:data.filterSetId,notificationId:data.notificationId};
   if (data.kind==='proposal' && uuid(data.tripId) && uuid(data.notificationId))
     return {v:1,eventId:data.eventId,recipientGroupId:data.recipientGroupId,kind:'proposal',tripId:data.tripId,notificationId:data.notificationId};
   if ((data.kind==='favorite_trip' || data.kind==='trip_reaction') && uuid(data.tripId))
@@ -35,6 +39,7 @@ export function parsePushTarget(value: unknown): PushTarget | null {
 }
 export function pushDestination(target: PushTarget, groupId: string) {
   if (target.recipientGroupId!==groupId) return null;
+  if (target.kind==='saved_filter') return { pathname: '/saved-filter/[id]' as const, params: { id: target.filterSetId! } };
   if (target.kind==='trip_reaction') return { pathname: '/trips/[id]' as const, params: { id: target.tripId! } };
   if (target.kind==='favorite_trip' || target.kind==='proposal') return { pathname: '/trip/[id]' as const, params: { id: target.tripId! } };
   return target.kind==='invitation_received'

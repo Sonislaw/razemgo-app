@@ -18,7 +18,10 @@ Wylogowanie czyści stan lokalny. Ponowne logowanie odświeża katalog bez stoso
 zestawu. Ręczne zastosowanie/wyczyszczenie filtrów usuwa nazwę aktywnego zestawu.
 Usunięcie zestawu lub zmiana jego kryteriów na drugim urządzeniu pozostawia
 będącą w użyciu kopię kryteriów, usuwając oznaczenie zestawu. Zmiana nazwy
-odświeża samą etykietę. Funkcja nie zmienia profilu ani powiadomień.
+odświeża samą etykietę. Funkcja nie zmienia profilu ani kryteriów propozycji.
+Zestawy wyjazdów można teraz opcjonalnie obserwować przełącznikiem
+„Powiadamiaj o nowych wyjazdach”. Domyślnie jest wyłączony. Nowe publikacje
+tworzą zbiorcze alerty; [opis, zasady i weryfikacja](SAVED_FILTER_ALERTS.md).
 
 ## Dane i uprawnienia
 

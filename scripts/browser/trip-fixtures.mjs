@@ -157,6 +157,15 @@ async function backend(context, store) {
       if (store.failFilterLoad) return respond({ message: 'offline' }, 503);
       return respond([...store.filterSets.values()].filter(row => row.owner === id).map(({ owner, ...row }) => row));
     }
+    if (endpoint === 'set_my_filter_set_notifications') {
+      if (store.failFilterNotifications) return respond({ message: 'offline' },503);
+      const row=store.filterSets.get(body.target_id);
+      if (!row || row.owner!==id) return respond({code:'P0002'},400);
+      if(row.kind!=='trips')return respond({code:'22023'},400);
+      const updated={...row,notifications_enabled:body.enabled,updated_at:new Date().toISOString()};
+      store.filterSets.set(updated.id,updated);
+      const {owner,...result}=updated;return respond(result);
+    }
     if (endpoint === 'save_my_filter_set') {
       (store.filterSaveCalls ??= []).push(body);
       if (store.failFilterSave) return respond({ message: 'offline' }, 503);
@@ -170,7 +179,8 @@ async function backend(context, store) {
       if (!old && !body.filter_payload) return respond({ code: 'P0002' }, 400);
       const stamp = new Date().toISOString();
       const row = { id: body.target_id, kind: body.filter_kind, name, schema_version: 1,
-        filters: body.filter_payload ?? old.filters, created_at: old?.created_at ?? stamp, updated_at: stamp };
+        filters: body.filter_payload ?? old.filters, created_at: old?.created_at ?? stamp, updated_at: stamp,
+        notifications_enabled:old?.notifications_enabled ?? false };
       store.filterSets.set(row.id, { ...row, owner: id });
       if (store.loseFilterAcknowledgement) { store.loseFilterAcknowledgement = false; return route.abort('failed'); }
       return respond(row);
@@ -537,7 +547,12 @@ async function backend(context, store) {
             b.id.localeCompare(a.id),
         );
       return respond({
-        items: entries.slice(0, body.page_size ?? 30),
+        items: entries.slice(0, body.page_size ?? 30).map(entry => {
+          if(entry.kind!=='saved_filter')return entry;
+          const set=store.filterSets.get(entry.filter_set_id);
+          return {...entry,filter_set_id:set?.owner===id?set.id:null,available:!!set&&set.owner===id&&entry.available,
+            trip_label:set?.name??entry.trip_label};
+        }),
         has_more: entries.length > (body.page_size ?? 30),
         unread_count: all.filter((n) => !n.read_at).length,
         preferences: store.notificationPreferences.get(groupId(id)) ?? {
@@ -546,6 +561,7 @@ async function backend(context, store) {
           push_favorite_trips: true,
           push_reactions: true,
           push_proposals: true,
+          push_saved_filters: true,
           updated_at: null,
         },
         fetched_at: new Date().toISOString(),
@@ -577,6 +593,7 @@ async function backend(context, store) {
         push_favorite_trips: true,
         push_reactions: true,
         push_proposals: true,
+        push_saved_filters: true,
         updated_at: null,
       };
       const fields = {
@@ -585,6 +602,7 @@ async function backend(context, store) {
         favorite_trips: 'push_favorite_trips',
         reactions: 'push_reactions',
         proposals: 'push_proposals',
+        saved_filters: 'push_saved_filters',
       };
       if (!fields[body.preference_key]) return respond({ code: '22023' }, 400);
       const saved = {

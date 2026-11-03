@@ -6,6 +6,18 @@ export function plannedMapFilters(filters: DiscoveryFilters): DiscoveryFilters {
     : { ...filters, tripModes: ['planned'] };
 }
 
+export function hasResettableMapFilters(filters: DiscoveryFilters): boolean {
+  return Boolean(
+    filters.favoritesOnly ||
+      filters.dateRangeId !== 'all' ||
+      filters.location.trim() ||
+      filters.childAgeBands.length ||
+      filters.groupKinds?.length ||
+      filters.animalKinds?.length ||
+      filters.landscapeKinds?.length,
+  );
+}
+
 export interface TripDiscoveryState {
   filters: DiscoveryFilters;
   mapOpen: boolean;

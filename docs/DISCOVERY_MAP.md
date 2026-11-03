@@ -10,6 +10,7 @@ Powrót przez **Lista** zachowuje wczytane strony i pozycję przewijania.
 Mapa zachowuje swój widok w ramach sesji konta oraz przy powrocie ze szczegółów.
 Wejście na mapę ustawia bieżący typ ogłoszenia na **Mam plan**. W filtrach mapy
 ten wybór jest zaznaczony i zablokowany. „Wyczyść” resetuje pozostałe kryteria;
+przy samym „Mam plan” przyciski resetowania są ukryte, również wewnątrz panelu filtrów.
 wczytanie zapisanego zestawu również zachowuje „Mam plan”, bez zmiany zapisu
 ani jego powiadomień. Nazwa zestawu jest wyświetlana tylko przy zgodności kryteriów.
 Po powrocie na listę „Mam plan” pozostaje zaznaczone, a typ znów można zmieniać.

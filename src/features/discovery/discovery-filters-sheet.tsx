@@ -37,7 +37,10 @@ import {
 import { useTripResultCount } from './use-trip-search';
 import { SaveFilterSetButton } from '../saved-filters/saved-filter-ui';
 import type { SavedFilterSet } from '../saved-filters/saved-filter-data';
-import { plannedMapFilters } from './trip-discovery-state';
+import {
+  hasResettableMapFilters,
+  plannedMapFilters,
+} from './trip-discovery-state';
 
 interface DiscoveryFiltersSheetProps {
   initialFilters: DiscoveryFilters;
@@ -108,19 +111,21 @@ export function DiscoveryFiltersSheet({
             </View>
           ) : null}
           <View style={layout.row}>
-            <View style={{ flex: 1 }}>
-              <Button
-                label="Wyczyść"
-                variant="secondary"
-                onPress={() =>
-                  setDraft(
-                    plannedOnly
-                      ? plannedMapFilters(INITIAL_FILTERS)
-                      : { ...INITIAL_FILTERS },
-                  )
-                }
-              />
-            </View>
+            {!plannedOnly || hasResettableMapFilters(draft) ? (
+              <View style={{ flex: 1 }}>
+                <Button
+                  label="Wyczyść"
+                  variant="secondary"
+                  onPress={() =>
+                    setDraft(
+                      plannedOnly
+                        ? plannedMapFilters(INITIAL_FILTERS)
+                        : { ...INITIAL_FILTERS },
+                    )
+                  }
+                />
+              </View>
+            ) : null}
             <SaveFilterSetButton
               value={{ kind: 'trips', filters: draft }}
               disabled={!!dateError}

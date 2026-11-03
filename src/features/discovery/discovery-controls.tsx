@@ -6,7 +6,7 @@ import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export function DiscoveryFilterBar({ activeCount, summary, placeholder, filterLabel = 'Otwórz filtry', filterHint,
-  clearLabel = 'Wyczyść filtry', renderFilters, onClear, savedSetName, notice, action }: {
+  clearLabel = 'Wyczyść filtry', renderFilters, onClear, savedSetName, notice, action, showClear = activeCount > 0 }: {
   activeCount: number;
   summary: string;
   placeholder: string;
@@ -18,6 +18,7 @@ export function DiscoveryFilterBar({ activeCount, summary, placeholder, filterLa
   savedSetName?: string;
   notice?: string;
   action?: ReactNode;
+  showClear?: boolean;
 }) {
   const theme = useTheme();
   // Opening a panel must not re-render the collection and its mounted cards.
@@ -32,7 +33,7 @@ export function DiscoveryFilterBar({ activeCount, summary, placeholder, filterLa
       </View>
       <Icon name="arrow" size={18} />
     </Pressable>
-    {activeCount ? <IconButton label={clearLabel} icon="close" onPress={onClear} /> : null}
+    {showClear ? <IconButton label={clearLabel} icon="close" onPress={onClear} /> : null}
     {action}
     </View>
     {notice ? <View style={layout.row}>

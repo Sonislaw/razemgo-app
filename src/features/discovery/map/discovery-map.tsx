@@ -41,7 +41,10 @@ import { MapSelection } from './map-selection';
 import { MapPreview } from './map-preview';
 import { useFavoriteIds } from '@/features/favorites/favorites-context';
 import { useMessagingSelector } from '@/features/messaging/messaging-context';
-import { plannedMapFilters } from '../trip-discovery-state';
+import {
+  hasResettableMapFilters,
+  plannedMapFilters,
+} from '../trip-discovery-state';
 
 export function DiscoveryMap({
   memory,
@@ -264,6 +267,7 @@ export function DiscoveryMap({
         </View>
         <DiscoveryFilterBar
           activeCount={activeCount}
+          showClear={hasResettableMapFilters(filters)}
           summary={summary}
           savedSetName={activeTripSet?.name}
           notice={notice}

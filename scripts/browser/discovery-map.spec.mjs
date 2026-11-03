@@ -162,6 +162,7 @@ for (const width of [320, 390])
     await expect(
       page.getByText('Plany w obszarze: 13', { exact: true }),
     ).toBeVisible();
+    await expect(button(page, 'Wyczyść filtry')).toHaveCount(0);
     await button(page, 'Otwórz filtry').click();
     const mode = page.getByRole('checkbox', { name: 'Mam plan', exact: true });
     await expect(mode).toBeChecked();
@@ -169,7 +170,12 @@ for (const width of [320, 390])
     await expect(
       page.getByRole('checkbox', { name: 'Szukam pomysłu', exact: true }),
     ).toHaveCount(0);
+    await expect(button(page, 'Wyczyść')).toHaveCount(0);
+    await page
+      .getByRole('checkbox', { name: 'Klimat wyjazdu: Jeziora', exact: true })
+      .click();
     await button(page, 'Wyczyść').click();
+    await expect(button(page, 'Wyczyść')).toHaveCount(0);
     await expect(mode).toBeChecked();
     await expect(mode).toBeDisabled();
     await page.getByRole('button', { name: /^Pokaż wyniki/ }).click();
@@ -187,6 +193,7 @@ for (const width of [320, 390])
     expect(query.filters.child_age_bands).toEqual(['4–6']);
     expect(store.filterSets.get(saved.id)).toEqual(original);
     await button(page, 'Wyczyść filtry').click();
+    await expect(button(page, 'Wyczyść filtry')).toHaveCount(0);
     await expect(
       page.getByText('Plany w obszarze: 13', { exact: true }),
     ).toBeVisible();

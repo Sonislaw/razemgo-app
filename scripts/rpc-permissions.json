@@ -69,6 +69,66 @@
   },
   {
     "schema": "discovery_private",
+    "name": "map_bounds",
+    "arguments": "value jsonb",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "map_candidates",
+    "arguments": "f jsonb, me uuid",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "map_cell",
+    "arguments": "lat double precision, lng double precision, step double precision",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "map_intersects",
+    "arguments": "mode text, lat double precision, lng double precision, radius double precision, bounds jsonb, extent jsonb",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "map_step",
+    "arguments": "bounds jsonb, zoom integer",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
+    "name": "map_y",
+    "arguments": "latitude double precision",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "discovery_private",
     "name": "matching_context",
     "arguments": "me uuid, f jsonb",
     "definer": false,
@@ -1091,6 +1151,18 @@
   },
   {
     "schema": "public",
+    "name": "get_trip_map_items",
+    "arguments": "filters jsonb, viewport jsonb, map_zoom integer, cluster_key text, after_cursor jsonb, page_size integer",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
     "name": "get_trip_reactions",
     "arguments": "trip_ids uuid[]",
     "definer": true,
@@ -1488,6 +1560,18 @@
     "schema": "public",
     "name": "search_public_trips_v3",
     "arguments": "filters jsonb, after_cursor jsonb, page_size integer",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "search_trip_map",
+    "arguments": "filters jsonb, viewport jsonb, map_zoom integer",
     "definer": true,
     "settings": [
       "search_path=\"\""

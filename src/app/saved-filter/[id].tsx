@@ -9,7 +9,7 @@ import { createRequestKey } from '@/lib/request-key';
 export default function OpenSavedFilterScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { store, status, error } = useSavedFilters();
-  const { applySavedFilterSet } = useDiscovery();
+  const { applySavedFilterSet, closeTripMap } = useDiscovery();
   const [attempt, setAttempt] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const opened = useRef(false);
@@ -22,12 +22,12 @@ export default function OpenSavedFilterScreen() {
       if (snapshot.error || snapshot.status !== 'ready') { setLoaded(true); return; }
       const item = snapshot.items.find(item => item.id === id && item.kind === 'trips');
       if (item) {
-        opened.current = true; applySavedFilterSet(item);
+        opened.current = true; closeTripMap(); applySavedFilterSet(item);
         router.replace({ pathname: '/explore', params: { openTrips: createRequestKey() } });
       } else setLoaded(true);
     });
     return () => { alive = false; };
-  }, [id, store, attempt, applySavedFilterSet]);
+  }, [id, store, attempt, applySavedFilterSet, closeTripMap]);
   return <Screen><Card>
     <AppText variant="heading">Zapisane filtry</AppText>
     <DataStatus status={error ? 'error' : !loaded ? 'loading' : status} error={error}

@@ -77,6 +77,25 @@ export interface ClientDatabase {
     Tables: GeneratedDatabase['public']['Tables'];
     Views: Record<never, never>;
     Functions: {
+      search_trip_map: {
+        Args: {
+          filters?: ReturnType<typeof import('../../features/discovery/discovery-data').discoveryFiltersPayload>;
+          viewport?: import('../../features/discovery/map/map-data').MapBounds;
+          map_zoom?: number;
+        };
+        Returns: unknown;
+      };
+      get_trip_map_items: {
+        Args: {
+          filters?: ReturnType<typeof import('../../features/discovery/discovery-data').discoveryFiltersPayload>;
+          viewport?: import('../../features/discovery/map/map-data').MapBounds;
+          map_zoom?: number;
+          cluster_key?: string;
+          after_cursor?: import('../../features/discovery/map/map-data').MapCursor | null;
+          page_size?: number;
+        };
+        Returns: unknown;
+      };
       set_my_filter_set_notifications: {
         Args: { target_id: string; enabled: boolean };
         Returns: import('../../features/saved-filters/saved-filter-data').SavedFilterSetRow;

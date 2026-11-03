@@ -1,0 +1,40 @@
+import type { DiscoveryFilters } from '../../types/travel';
+
+export function plannedMapFilters(filters: DiscoveryFilters): DiscoveryFilters {
+  return filters.tripModes.length === 1 && filters.tripModes[0] === 'planned'
+    ? filters
+    : { ...filters, tripModes: ['planned'] };
+}
+
+export interface TripDiscoveryState {
+  filters: DiscoveryFilters;
+  mapOpen: boolean;
+}
+type TripDiscoveryAction =
+  | { type: 'open-map' }
+  | { type: 'close-map' }
+  | {
+      type: 'filters';
+      value:
+        | DiscoveryFilters
+        | ((current: DiscoveryFilters) => DiscoveryFilters);
+    };
+
+// Evaluate the lock when an action is processed, including callbacks created
+// before the map opened (for example a delayed saved-set acknowledgement).
+export function tripDiscoveryReducer(
+  state: TripDiscoveryState,
+  action: TripDiscoveryAction,
+): TripDiscoveryState {
+  if (action.type === 'open-map')
+    return { mapOpen: true, filters: plannedMapFilters(state.filters) };
+  if (action.type === 'close-map') return { ...state, mapOpen: false };
+  const filters =
+    typeof action.value === 'function'
+      ? action.value(state.filters)
+      : action.value;
+  return {
+    ...state,
+    filters: state.mapOpen ? plannedMapFilters(filters) : filters,
+  };
+}

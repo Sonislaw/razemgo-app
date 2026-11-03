@@ -22,7 +22,7 @@ import { useDiscovery } from '@/features/discovery/discovery-context';
 import { DiscoveryFiltersSheet } from '@/features/discovery/discovery-filters-sheet';
 import { DiscoveryFilterBar, DiscoveryResultsHeader } from '@/features/discovery/discovery-controls';
 import { useTripSearch } from '@/features/discovery/use-trip-search';
-import { TRIP_SEARCH_PAGE_SIZE } from '@/features/discovery/discovery-data';
+import { discoveryFiltersPayload,TRIP_SEARCH_PAGE_SIZE } from '@/features/discovery/discovery-data';
 import { useTheme } from '@/hooks/use-theme';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
@@ -34,14 +34,19 @@ import { CollectionScreen } from '@/components/ui/collection-screen';
 import { SavedFiltersButton } from '@/features/saved-filters/saved-filter-ui';
 import { filterSetExpired } from '@/features/saved-filters/saved-filter-data';
 import { useCurrentDate } from '@/hooks/use-current-date';
+import { DiscoveryMap } from '@/features/discovery/map/discovery-map';
+import { MapListLayer } from '@/features/discovery/map/map-list-layer';
+import type { MapMemory } from '@/features/discovery/map/map-data';
+import { USE_DEMO_DATA } from '@/constants/app';
 
 export default function ExploreScreen() {
   const { openTrips } = useLocalSearchParams<{ openTrips?: string }>();
+  const [mapMemory,setMapMemory]=useState<MapMemory>({});
   const [selection, setSelection] = useState<{ view: 'trips' | 'groups'; openTrips?: string }>({ view: 'trips', openTrips });
   const view = selection.openTrips === openTrips ? selection.view : 'trips';
   const setView = (next: 'trips' | 'groups') => setSelection({ view: next, openTrips });
   const theme = useTheme();
-  const { filters, setFilters, activeTripSet, applySavedFilterSet } = useDiscovery();
+  const { filters, setFilters, activeTripSet, applySavedFilterSet,tripFilterRevision,tripMapOpen:mapOpen,openTripMap,closeTripMap } = useDiscovery();
   const today = useCurrentDate();
   const { items: proposals, totalCount, hasMore, status, loadingMore, error, retry, loadMore, preserveOnReturn } = useTripSearch(filters, TRIP_SEARCH_PAGE_SIZE, view === 'trips');
   const { state: ownTrips } = useOwnTrips();
@@ -123,7 +128,7 @@ export default function ExploreScreen() {
     </>;
   if (view === 'groups') return <GroupsDiscovery header={header} beforeList={switcher} />;
   return (
-    <CollectionScreen
+    <View style={{flex:1}}><MapListLayer hidden={mapOpen}><CollectionScreen
       testID="discovery-screen"
       header={header}
       data={proposals}
@@ -152,6 +157,10 @@ export default function ExploreScreen() {
           </View>
         ) : null}
         <DiscoveryFilterBar activeCount={activeCount} summary={summary} placeholder="Typ, termin, miejsce i klimat"
+          action={USE_DEMO_DATA?undefined:<Pressable accessibilityRole="button" accessibilityLabel="Pokaż mapę wyjazdów" onPress={openTripMap}
+            style={({pressed})=>({minHeight:56,minWidth:48,alignItems:'center',justifyContent:'center',gap:3,opacity:pressed?0.65:1})}>
+            <Icon name="map" size={21} color={theme.primaryStrong} /><AppText variant="caption" style={{color:theme.primaryStrong}}>Mapa</AppText>
+          </Pressable>}
           savedSetName={activeTripSet?.name}
           notice={filterSetExpired({ kind: 'trips', filters }, today) ? 'Termin w tym zestawie już minął' : undefined}
           filterHint="Wybierz typ ogłoszenia, klimat, termin, miejsce i wiek dzieci"
@@ -186,7 +195,11 @@ export default function ExploreScreen() {
           />
         ) : null}
       </>}
-    />
+    /></MapListLayer>
+    {mapOpen?<DiscoveryMap key={JSON.stringify(discoveryFiltersPayload(filters))+':'+tripFilterRevision} memory={mapMemory} onRemember={setMapMemory} summary={summary} activeCount={activeCount}
+      notice={filterSetExpired({kind:'trips',filters},today)?'Termin w tym zestawie już minął':undefined}
+      onClose={closeTripMap} onNavigate={preserveOnReturn} />:null}
+    </View>
   );
 }
 const styles = StyleSheet.create({

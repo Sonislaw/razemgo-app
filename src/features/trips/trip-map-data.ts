@@ -80,7 +80,7 @@ function regionArea(location: LocationOption): MapArea | undefined {
   return area;
 }
 
-function approximateArea(location?: LocationOption): MapArea | undefined {
+export function getLocationMapArea(location?: LocationOption): MapArea | undefined {
   if (!location) return undefined;
   if (Number.isFinite(location.latitude) && Number.isFinite(location.longitude))
     return {
@@ -132,7 +132,7 @@ export function getTripMapTarget(trip: TripPlan): TripMapTarget | undefined {
     ...(details.length
       ? {}
       : {
-          area: approximateArea(
+          area: getLocationMapArea(
             location ?? {
               ...place,
               id: 'legacy:' + normalize(place.name),

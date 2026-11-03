@@ -37,24 +37,27 @@ import {
 import { useTripResultCount } from './use-trip-search';
 import { SaveFilterSetButton } from '../saved-filters/saved-filter-ui';
 import type { SavedFilterSet } from '../saved-filters/saved-filter-data';
+import { plannedMapFilters } from './trip-discovery-state';
 
 interface DiscoveryFiltersSheetProps {
   initialFilters: DiscoveryFilters;
   onApply: (filters: DiscoveryFilters) => void;
   onClose: () => void;
   onSaved: (item: SavedFilterSet) => void;
+  plannedOnly?: boolean;
 }
 export function DiscoveryFiltersSheet({
   initialFilters,
   onApply,
   onClose,
   onSaved,
+  plannedOnly = false,
 }: DiscoveryFiltersSheetProps) {
   const theme = useTheme();
   const [showDateRange, setShowDateRange] = useState(false);
   const [draft, setDraft] = useState<DiscoveryFilters>(() => ({
     ...initialFilters,
-    tripModes: [...initialFilters.tripModes],
+    tripModes: plannedOnly ? ['planned'] : [...initialFilters.tripModes],
     childAgeBands: [...initialFilters.childAgeBands],
     animalKinds: [...(initialFilters.animalKinds ?? [])],
     landscapeKinds: [...(initialFilters.landscapeKinds ?? [])],
@@ -79,7 +82,11 @@ export function DiscoveryFiltersSheet({
   return (
     <FilterSheet
       title="Filtry wyjazdów"
-      description="Wybierz typ ogłoszenia, termin, miejsce i klimat."
+      description={
+        plannedOnly
+          ? 'Wybierz termin, miejsce i klimat wyjazdów z gotowym planem.'
+          : 'Wybierz typ ogłoszenia, termin, miejsce i klimat.'
+      }
       onClose={onClose}
       footer={
         <>
@@ -100,12 +107,25 @@ export function DiscoveryFiltersSheet({
               />
             </View>
           ) : null}
-          <View style={layout.row}><View style={{ flex: 1 }}><Button
-            label="Wyczyść"
-            variant="secondary"
-            onPress={() => setDraft({ ...INITIAL_FILTERS })}
-          /></View>
-          <SaveFilterSetButton value={{ kind: 'trips', filters: draft }} disabled={!!dateError} onSaved={onSaved} />
+          <View style={layout.row}>
+            <View style={{ flex: 1 }}>
+              <Button
+                label="Wyczyść"
+                variant="secondary"
+                onPress={() =>
+                  setDraft(
+                    plannedOnly
+                      ? plannedMapFilters(INITIAL_FILTERS)
+                      : { ...INITIAL_FILTERS },
+                  )
+                }
+              />
+            </View>
+            <SaveFilterSetButton
+              value={{ kind: 'trips', filters: draft }}
+              disabled={!!dateError}
+              onSaved={onSaved}
+            />
           </View>
           <Button
             label={
@@ -117,7 +137,7 @@ export function DiscoveryFiltersSheet({
             onPress={() => {
               if (dateError) return;
               Keyboard.dismiss();
-              onApply(draft);
+              onApply(plannedOnly ? plannedMapFilters(draft) : draft);
             }}
           />
         </>
@@ -153,8 +173,9 @@ export function DiscoveryFiltersSheet({
       <View style={layout.stack}>
         <FieldLabel>Typ ogłoszenia</FieldLabel>
         <AppText variant="caption" color="textSecondary">
-          Wybierz jeden lub oba typy. Co najmniej jeden musi pozostać
-          zaznaczony.
+          {plannedOnly
+            ? 'Na mapie pokazujemy wyłącznie ogłoszenia „Mam plan”.'
+            : 'Wybierz jeden lub oba typy. Co najmniej jeden musi pozostać zaznaczony.'}
         </AppText>
         <ChipRow horizontal label="Typ ogłoszenia">
           {(
@@ -168,55 +189,63 @@ export function DiscoveryFiltersSheet({
                 label: 'Szukam pomysłu',
               },
             ] as const
-          ).map((option) => {
-            const selected = draft.tripModes.includes(option.mode);
-            return (
-              <Pressable
-                key={option.mode}
-                accessibilityRole="checkbox"
-                accessibilityLabel={option.label}
-                accessibilityState={{ checked: selected }}
-                aria-checked={selected}
-                accessibilityHint={
-                  selected && draft.tripModes.length === 1
-                    ? 'Zaznacz drugi typ, aby odznaczyć ten.'
-                    : undefined
-                }
-                onPress={() =>
-                  setDraft((current) => ({
-                    ...current,
-                    tripModes: toggleDiscoveryTripMode(
-                      current.tripModes,
-                      option.mode,
-                    ),
-                  }))
-                }
-                style={({ pressed }) => [
-                  layout.row,
-                  {
-                    minHeight: 48,
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: Radius.pill,
-                    borderWidth: 1,
-                    borderColor: selected ? theme.primaryStrong : theme.border,
-                    backgroundColor: selected
-                      ? theme.backgroundSelected
-                      : theme.muted,
-                    opacity: pressed ? 0.7 : 1,
-                  },
-                ]}
-              >
-                {selected ? <Icon name="check" size={15} /> : null}
-                <AppText
-                  variant="label"
-                  color={selected ? 'primaryStrong' : 'text'}
+          )
+            .filter((option) => !plannedOnly || option.mode === 'planned')
+            .map((option) => {
+              const selected = draft.tripModes.includes(option.mode);
+              return (
+                <Pressable
+                  key={option.mode}
+                  accessibilityRole="checkbox"
+                  accessibilityLabel={option.label}
+                  disabled={plannedOnly}
+                  accessibilityState={{
+                    checked: selected,
+                    disabled: plannedOnly,
+                  }}
+                  aria-checked={selected}
+                  accessibilityHint={
+                    selected && draft.tripModes.length === 1
+                      ? 'Zaznacz drugi typ, aby odznaczyć ten.'
+                      : undefined
+                  }
+                  onPress={() =>
+                    setDraft((current) => ({
+                      ...current,
+                      tripModes: toggleDiscoveryTripMode(
+                        current.tripModes,
+                        option.mode,
+                      ),
+                    }))
+                  }
+                  style={({ pressed }) => [
+                    layout.row,
+                    {
+                      minHeight: 48,
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      borderRadius: Radius.pill,
+                      borderWidth: 1,
+                      borderColor: selected
+                        ? theme.primaryStrong
+                        : theme.border,
+                      backgroundColor: selected
+                        ? theme.backgroundSelected
+                        : theme.muted,
+                      opacity: plannedOnly ? 0.7 : pressed ? 0.7 : 1,
+                    },
+                  ]}
                 >
-                  {option.label}
-                </AppText>
-              </Pressable>
-            );
-          })}
+                  {selected ? <Icon name="check" size={15} /> : null}
+                  <AppText
+                    variant="label"
+                    color={selected ? 'primaryStrong' : 'text'}
+                  >
+                    {option.label}
+                  </AppText>
+                </Pressable>
+              );
+            })}
         </ChipRow>
       </View>
       <View style={layout.stack}>
@@ -282,7 +311,9 @@ export function DiscoveryFiltersSheet({
           }
         />
         <AppText variant="caption" color="textSecondary">
-          Wyszukiwanie obejmuje cele wyjazdów i obszary do wspólnego wyboru.
+          {plannedOnly
+            ? 'Wyszukiwanie obejmuje cele wyjazdów.'
+            : 'Wyszukiwanie obejmuje cele wyjazdów i obszary do wspólnego wyboru.'}
         </AppText>
       </View>
       {draft.sourceTripId ? (

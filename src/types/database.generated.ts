@@ -1158,6 +1158,17 @@ export type Database = {
                 Args: Record<PropertyKey, never>;
                 Returns: Json;
             };
+            "get_trip_map_items": {
+                Args: {
+                    "after_cursor"?: Json;
+                    "cluster_key"?: string;
+                    "filters"?: Json;
+                    "map_zoom"?: number;
+                    "page_size"?: number;
+                    "viewport"?: Json;
+                };
+                Returns: Json;
+            };
             "get_trip_reactions": {
                 Args: {
                     "trip_ids": (string)[];
@@ -1398,6 +1409,14 @@ export type Database = {
                     "after_cursor"?: Json;
                     "filters"?: Json;
                     "page_size"?: number;
+                };
+                Returns: Json;
+            };
+            "search_trip_map": {
+                Args: {
+                    "filters"?: Json;
+                    "map_zoom"?: number;
+                    "viewport"?: Json;
                 };
                 Returns: Json;
             };

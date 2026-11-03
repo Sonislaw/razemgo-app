@@ -18,6 +18,8 @@ const names = [
   'delete_my_filter_set',
   'set_my_filter_set_notifications',
   'process_filter_notifications',
+  'search_trip_map',
+  'get_trip_map_items',
 ];
 for (const name of names) {
   const args =

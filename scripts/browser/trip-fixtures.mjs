@@ -19,6 +19,7 @@ import { tripRecommendation } from '../support/legacy-matching/trip-recommendati
 import { groupRecommendation } from '../support/legacy-matching/recommendation.ts';
 import { filterPublicGroups, publicGroupFromRow } from '../../src/features/groups/group-data.ts';
 import { groupCriteriaFromPayload } from '../../src/features/saved-filters/saved-filter-data.ts';
+import { mockMapResponse } from './map-fixtures.mjs';
 
 const A = '00000000-0000-4000-8000-000000000001';
 const B = '00000000-0000-4000-8000-000000000002';
@@ -153,6 +154,11 @@ async function backend(context, store) {
     } catch {}
     const endpoint = url.pathname.split('/').at(-1);
     (store.technicalCalls ??= []).push(endpoint);
+    if(['search_trip_map','get_trip_map_items'].includes(endpoint)){
+      (store.mapCalls??=[]).push({endpoint,...body});
+      if(store.failMap||endpoint==='get_trip_map_items'&&store.failMapItems)return respond({message:'Offline'},503);
+      return respond(mockMapResponse(endpoint,body,store,groupId(id),gid=>store.mapCrews?.get(gid)??{...profile(gid===groupId(A)?A:B).group,id:gid},store.favoriteTrips.get(id)??new Set()));
+    }
     if (endpoint === 'list_my_filter_sets') {
       if (store.failFilterLoad) return respond({ message: 'offline' }, 503);
       return respond([...store.filterSets.values()].filter(row => row.owner === id).map(({ owner, ...row }) => row));

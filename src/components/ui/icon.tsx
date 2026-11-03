@@ -5,6 +5,7 @@ import { TAB_ICONS } from '@/constants/tab-icons';
 import { useTheme } from '@/hooks/use-theme';
 
 export const SYMBOLS = {
+  map: { ios: 'map', android: 'map', web: 'map' },
   bookmark: { ios: 'bookmark', android: 'bookmark_border', web: 'bookmark_border' },
   share: { ios: 'square.and.arrow.up', android: 'share', web: 'share' },
   clock: { ios: 'clock', android: 'schedule', web: 'schedule' },

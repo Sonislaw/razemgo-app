@@ -173,6 +173,26 @@ async function groupBackend(context, store) {
   );
 }
 
+test('profile contact offers editable first-message suggestions without a trip', async ({ page, context }) => {
+  const store = state();
+  await groupBackend(context, store);
+  await login(page);
+  await page.goto('/crew/' + groupId(B));
+  await page.getByRole('button', { name: 'Zaproś do kontaktu', exact: true }).click();
+  const sheet = page.getByRole('dialog', { name: 'Zaproś do kontaktu', exact: true });
+  const field = sheet.getByRole('textbox', { name: 'Treść zaproszenia', exact: true });
+  await expect(sheet.getByRole('button', { name: /^Podpowiedź:/ })).toHaveCount(3);
+  await sheet.getByRole('button', { name: 'Podpowiedź: Poznajmy się', exact: true }).click();
+  await expect(field).toHaveValue(/Chętnie poznam Waszą ekipę/);
+  expect(store.invitations).toHaveLength(0);
+  const edited = (await field.inputValue()) + ' Lubimy krótkie wypady.';
+  await field.fill(edited);
+  await sheet.getByRole('button', { name: 'Wyślij zaproszenie', exact: true }).click();
+  await expect(page).toHaveURL('http://localhost:8085/messages');
+  expect(store.invitations).toHaveLength(1);
+  expect(store.invitations[0]).toMatchObject({ context_kind: 'profile', trip_id: null, text: edited });
+});
+
 test('crew numbers appear only on profiles and support exact live-count search', async ({
   page,
   context,

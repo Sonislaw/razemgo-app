@@ -10,9 +10,10 @@ import { useTheme } from '@/hooks/use-theme';
 import { createRequestKey } from '@/lib/request-key';
 import type { TravelGroup, TripProposal } from '@/types/travel';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { TextInput, View } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { TextInput, View, type TextInputInstance } from 'react-native';
 import { useMessaging } from './messaging-context';
+import { FirstMessageSuggestions } from './first-message-suggestions-ui';
 import {
   getGroupContact,
   getTripContact,
@@ -61,6 +62,7 @@ function ContactAction({
   const theme = useTheme();
   const [composing, setComposing] = useState(false);
   const [text, setText] = useState('');
+  const input = useRef<TextInputInstance>(null);
   const [requestKey] = useState(createRequestKey);
   const trip = proposal?.trip;
   const contact = trip
@@ -165,12 +167,23 @@ function ContactAction({
             Przedstaw się i napisz, co Cię zainteresowało. Dane dzieci z profilu
             nie zostaną dodane do wiadomości.
           </AppText>
+          <FirstMessageSuggestions
+            trip={trip}
+            text={text}
+            disabled={busy}
+            onChoose={(value) => {
+              setText(value);
+              input.current?.focus();
+            }}
+          />
           <TextInput
+            ref={input}
             accessibilityLabel="Treść zaproszenia"
             placeholder="Cześć! Chętnie porozmawiam o wspólnym wyjeździe…"
             placeholderTextColor={theme.textSecondary}
             value={text}
             onChangeText={setText}
+            editable={!busy}
             multiline
             maxLength={MAX_INVITATION_LENGTH}
             style={{

@@ -67,6 +67,74 @@ function accepted(store, count = 1) {
   return chat.id;
 }
 
+for (const width of [320, 390])
+  test(`first-message suggestions preserve drafts, allow edits and retry at ${width}px`, async ({ page, context }) => {
+    await page.setViewportSize({ width, height: 844 });
+    const store = seeded();
+    await backend(context, store);
+    await login(page, 'b@example.com');
+    await page.goto('/trip/' + TRIP);
+    await page.getByRole('button', { name: 'Zaproś do kontaktu', exact: true }).click();
+    const sheet = page.getByRole('dialog', { name: 'Zaproś do kontaktu', exact: true });
+    const field = sheet.getByRole('textbox', { name: 'Treść zaproszenia', exact: true });
+    const suggestion = label => sheet.getByRole('button', { name: 'Podpowiedź: ' + label, exact: true });
+    await expect(field).toHaveValue('');
+    await expect(sheet.getByRole('button', { name: /^Podpowiedź:/ })).toHaveCount(3);
+    await suggestion('Wspólny wyjazd').click();
+    await expect(field).toHaveValue(/Chłapowo/);
+    expect(store.invitations).toHaveLength(0);
+    await suggestion('Miejsce na nocleg').click();
+    await expect(field).toHaveValue(/Pod Wydmami/);
+    await expect(sheet.getByRole('button', { name: 'Wstaw podpowiedź', exact: true })).toHaveCount(0);
+    const custom = 'Cześć! Możemy dołączyć do Was w sobotę?';
+    await field.fill(custom);
+    await suggestion('Wspólne aktywności').click();
+    await expect(field).toHaveValue(custom);
+    await sheet.getByRole('button', { name: 'Zachowaj mój tekst', exact: true }).click();
+    await expect(field).toHaveValue(custom);
+    await suggestion('Wspólny wyjazd').click();
+    await sheet.getByRole('button', { name: 'Wstaw podpowiedź', exact: true }).click();
+    await expect(field).toHaveValue(/Chłapowo/);
+    const edited = (await field.inputValue()) + ' Możemy przyjechać w sobotę.';
+    await field.fill(edited);
+    await sheet.screenshot({ path: `.expo/first-message-suggestions-${width}.png` });
+    expect(await sheet.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+    await sheet.getByRole('button', { name: 'Zamknij', exact: true }).click();
+    await page.getByRole('button', { name: 'Zaproś do kontaktu', exact: true }).click();
+    await expect(field).toHaveValue(edited);
+    store.failInvitation = true;
+    await sheet.getByRole('button', { name: 'Wyślij zaproszenie', exact: true }).click();
+    await expect(sheet.getByRole('alert')).toContainText('Nie udało się');
+    await expect(field).toHaveValue(edited);
+    expect(store.invitations).toHaveLength(0);
+    store.failInvitation = false;
+    await sheet.getByRole('button', { name: 'Wyślij zaproszenie', exact: true }).click();
+    await expect(page).toHaveURL('http://localhost:8085/messages');
+    expect(store.invitations).toHaveLength(1);
+    expect(store.invitations[0].text).toBe(edited);
+    await page.goto('/trip/' + TRIP);
+    await expect(page.getByRole('button', { name: 'Zobacz wysłane zaproszenie', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Podpowiedź:/ })).toHaveCount(0);
+  });
+
+test('flexible trips suggest a shared idea rather than a fixed campsite', async ({ page, context }) => {
+  const store = seeded();
+  Object.assign(store.trips.get(TRIP), { mode: 'flexible', location_name: 'Mazury', location_kind: 'region' });
+  await backend(context, store);
+  await login(page, 'b@example.com');
+  await page.goto('/trip/' + TRIP);
+  await page.getByRole('button', { name: 'Zaproś do kontaktu', exact: true }).click();
+  const sheet = page.getByRole('dialog', { name: 'Zaproś do kontaktu', exact: true });
+  const field = sheet.getByRole('textbox', { name: 'Treść zaproszenia', exact: true });
+  await sheet.getByRole('button', { name: 'Podpowiedź: Wspólny pomysł', exact: true }).click();
+  await expect(field).toHaveValue(/Szukam pomysłu.*Mazury/);
+  await expect(field).not.toHaveValue(/Pod Wydmami/);
+  await expect(sheet.getByRole('button', { name: 'Podpowiedź: Miejsce na nocleg', exact: true })).toHaveCount(0);
+  await sheet.getByRole('button', { name: 'Podpowiedź: Kierunek i termin', exact: true }).click();
+  await expect(field).toHaveValue(/termin z ogłoszenia jest elastyczny/);
+  expect(store.invitations).toHaveLength(0);
+});
+
 test('invitation → acceptance → durable chat, receipts, retries, second device, block and report', async ({
   page,
   context,

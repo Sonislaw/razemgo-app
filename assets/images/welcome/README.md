@@ -1,6 +1,8 @@
 # Ilustracje strony powitalnej
 
-Dwie ilustracje do CTA przed logowaniem. Lokalnie dołączone do aplikacji, z przezroczystym tłem PNG; nie wymagają połączenia z usługą obrazów.
+Aktualne pełne tła przycisków „Nowe konto” i „Zaloguj się” opisano w [scenic/README.md](scenic/README.md). Lokalnie dołączone do aplikacji; nie wymagają połączenia z usługą obrazów.
+
+Poniżej zachowano dokumentację pierwotnych ilustracji z przezroczystym tłem.
 
 Wygenerowane 23.10.2026 przez wbudowane narzędzie `imagegen` (bez CLI/API). Prompty poniżej są finalnymi promptami użytymi do generowania.
 

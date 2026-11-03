@@ -4,14 +4,8 @@ import { AppText } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
 import { TAB_ICONS } from '@/constants/tab-icons';
 
-const ACTIONS = {
-  crew: {
-    title: 'Znajdź ekipę',
-    description: 'Poznaj podróżników z podobnymi planami.',
-    action: 'Szukaj teraz',
-    icon: 'compass',
-    artwork: require('@/assets/images/home/scenic/find-crew-campfire-caravan.webp'),
-    wash: require('@/assets/images/home/scenic/crew-wash.svg'),
+const PALETTES = {
+  green: {
     background: '#174C50',
     heading: '#FFFFFF',
     text: '#F0F7F3',
@@ -19,19 +13,50 @@ const ACTIONS = {
     button: '#FFFDF5',
     buttonText: '#174B50',
   },
-  trip: {
-    title: 'Dodaj wyjazd',
-    description: 'Zaplanuj wyjazd i znajdź towarzystwo.',
-    action: 'Utwórz wyjazd',
-    icon: 'caravan',
-    artwork: require('@/assets/images/home/scenic/plan-trip.webp'),
-    wash: require('@/assets/images/home/scenic/trip-wash.svg'),
+  warm: {
     background: '#FFF3DB',
     heading: '#203E47',
     text: '#435E66',
     badge: '#B64A1B',
     button: '#B64A1B',
     buttonText: '#FFFFFF',
+  },
+} as const;
+
+const ACTIONS = {
+  crew: {
+    ...PALETTES.green,
+    title: 'Znajdź ekipę',
+    description: 'Poznaj podróżników z podobnymi planami.',
+    action: 'Szukaj teraz',
+    icon: 'compass',
+    artwork: require('@/assets/images/home/scenic/find-crew-campfire-caravan.webp'),
+    wash: require('@/assets/images/home/scenic/crew-wash.svg'),
+  },
+  trip: {
+    ...PALETTES.warm,
+    title: 'Dodaj wyjazd',
+    description: 'Zaplanuj wyjazd i znajdź towarzystwo.',
+    action: 'Utwórz wyjazd',
+    icon: 'caravan',
+    artwork: require('@/assets/images/home/scenic/plan-trip.webp'),
+    wash: require('@/assets/images/home/scenic/trip-wash.svg'),
+  },
+  register: {
+    ...PALETTES.green,
+    title: 'Nowe konto',
+    description: 'Załóż konto i znajdź towarzystwo na wyjazd.',
+    action: 'Nowe konto',
+    artwork: require('@/assets/images/welcome/scenic/join-the-crew.webp'),
+    wash: require('@/assets/images/welcome/scenic/register-wash.svg'),
+  },
+  login: {
+    ...PALETTES.warm,
+    title: 'Zaloguj się',
+    description: 'Wróć do swojej ekipy i wspólnych planów.',
+    action: 'Zaloguj się',
+    artwork: require('@/assets/images/welcome/scenic/back-to-camp.webp'),
+    wash: require('@/assets/images/welcome/scenic/login-wash.svg'),
   },
 } as const;
 
@@ -42,6 +67,7 @@ export function HomeScenicAction({ kind, onPress }: {
   const { width } = useWindowDimensions();
   const compact = width < 360;
   const action = ACTIONS[kind];
+  const tile = kind === 'register' || kind === 'login';
   return (
     <Pressable
       testID={'home-action-' + kind}
@@ -49,11 +75,12 @@ export function HomeScenicAction({ kind, onPress }: {
       accessibilityLabel={action.title}
       accessibilityHint={action.description}
       onPress={onPress}
-      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.card, tile && styles.tileCard, pressed && styles.pressed]}
     >
       <View style={[
         styles.surface,
-        { backgroundColor: action.background, minHeight: compact ? 176 : 184 },
+        { backgroundColor: action.background, minHeight: tile ? (compact ? 142 : 144) : (compact ? 176 : 184) },
+        tile && styles.tileSurface,
       ]}>
         <View
           style={StyleSheet.absoluteFill}
@@ -67,7 +94,7 @@ export function HomeScenicAction({ kind, onPress }: {
             source={action.artwork}
             style={StyleSheet.absoluteFill}
             contentFit="cover"
-            contentPosition="right center"
+            contentPosition={tile ? 'top center' : 'right center'}
             transition={0}
             cachePolicy="memory-disk"
             accessible={false}
@@ -81,15 +108,19 @@ export function HomeScenicAction({ kind, onPress }: {
             alt=""
           />
         </View>
-        <View style={styles.content} pointerEvents="none">
-          <AppText variant="heading" style={[styles.title, { color: action.heading }, compact && styles.compactTitle]}>
-            {action.title}
-          </AppText>
-          <AppText style={[styles.description, { color: action.text }, compact && styles.compactDescription]}>
-            {action.description}
-          </AppText>
+        <View style={[styles.content, tile && styles.tileContent]} pointerEvents="none">
+          {!tile ? (
+            <AppText variant="heading" style={[styles.title, { color: action.heading }, compact && styles.compactTitle]}>
+              {action.title}
+            </AppText>
+          ) : null}
+          {!tile ? (
+            <AppText style={[styles.description, { color: action.text }, compact && styles.compactDescription]}>
+              {action.description}
+            </AppText>
+          ) : null}
           {/* A visual CTA inside one large tap target, without nested buttons. */}
-          <View style={[styles.cta, { backgroundColor: action.button }]}>
+          <View style={[styles.cta, tile && styles.tileCta, tile && compact && styles.compactTileCta, { backgroundColor: action.button }]}>
             <AppText variant="label" style={[styles.ctaLabel, { color: action.buttonText }]}>{action.action}</AppText>
             <Icon name="arrow" size={18} color={action.buttonText} />
           </View>
@@ -100,22 +131,24 @@ export function HomeScenicAction({ kind, onPress }: {
           accessible={false}
         />
       </View>
-      <View
-        style={[styles.badge, { backgroundColor: action.badge }]}
-        pointerEvents="none"
-        accessible={false}
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      >
-        <Image
-          source={TAB_ICONS[action.icon][Platform.OS === 'web' ? 'web' : 'native'].default}
-          tintColor="#FFFFFF"
-          contentFit="contain"
-          style={styles.badgeIcon}
+      {'icon' in action ? (
+        <View
+          style={[styles.badge, { backgroundColor: action.badge }]}
+          pointerEvents="none"
           accessible={false}
-          alt=""
-        />
-      </View>
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
+          <Image
+            source={TAB_ICONS[action.icon][Platform.OS === 'web' ? 'web' : 'native'].default}
+            tintColor="#FFFFFF"
+            contentFit="contain"
+            style={styles.badgeIcon}
+            accessible={false}
+            alt=""
+          />
+        </View>
+      ) : null}
     </Pressable>
   );
 }
@@ -123,12 +156,15 @@ export function HomeScenicAction({ kind, onPress }: {
 const styles = StyleSheet.create({
   card: { marginTop: 12, borderRadius: 28, boxShadow: '0 5px 18px rgba(25, 63, 69, 0.12)' },
   pressed: { transform: [{ scale: 0.99 }] },
+  tileCard: { flex: 1, minWidth: 0, marginTop: 0 },
   surface: {
     borderRadius: 28, overflow: 'hidden',
     paddingHorizontal: 18, paddingTop: 32, paddingBottom: 18, justifyContent: 'center',
   },
+  tileSurface: { paddingHorizontal: 8, paddingTop: 12, paddingBottom: 12, justifyContent: 'flex-end' },
   frame: { borderRadius: 28, borderWidth: 1, borderColor: '#FFFFFFCC' },
   content: { width: '67%', gap: 8, alignItems: 'flex-start' },
+  tileContent: { width: '100%' },
   title: { fontSize: 23, lineHeight: 29, fontWeight: '800' },
   compactTitle: { fontSize: 20, lineHeight: 26 },
   description: { fontSize: 14, lineHeight: 20, fontWeight: '500' },
@@ -145,4 +181,6 @@ const styles = StyleSheet.create({
     borderRadius: 999, paddingHorizontal: 14, paddingVertical: 9,
   },
   ctaLabel: { fontSize: 13, lineHeight: 18, fontWeight: '700', flexShrink: 1 },
+  tileCta: { alignSelf: 'stretch' },
+  compactTileCta: { paddingHorizontal: 8, gap: 4 },
 });

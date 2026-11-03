@@ -1,16 +1,12 @@
 import { BrandHeader } from '@/components/ui/brand-header';
 import { AppText, Screen } from '@/components/ui/primitives';
 import { Spacing } from '@/constants/theme';
-import { HomeAction } from '@/features/home/home-ui';
+import { HomeScenicAction } from '@/features/home/home-scenic-action';
 import { WelcomeFeaturedListing } from '@/features/welcome/welcome-featured-listing';
 import { router } from 'expo-router';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 export default function WelcomeScreen() {
-  const { width } = useWindowDimensions();
-  const density = width < 360 ? 'compact' : 'regular';
-  const illustrationSize = width < 360 ? 80 : 96;
-
   return (
     <Screen
       testID="welcome-main"
@@ -28,27 +24,12 @@ export default function WelcomeScreen() {
       </View>
 
       <View testID="welcome-actions" style={styles.actions}>
-        <HomeAction
-          label="Nowe konto"
-          description="Załóż konto i znajdź towarzystwo na wyjazd."
-          illustration={require('@/assets/images/welcome/join-the-crew.webp')}
-          illustrationSize={illustrationSize}
-          density={density}
-          orientation="vertical"
-          showDescription={false}
-          style={styles.action}
+        <HomeScenicAction
+          kind="register"
           onPress={() => router.push('/auth/sign-up')}
         />
-        <HomeAction
-          label="Zaloguj się"
-          description="Wróć do swojej ekipy i wspólnych planów."
-          illustration={require('@/assets/images/welcome/back-to-camp.webp')}
-          illustrationSize={illustrationSize}
-          density={density}
-          orientation="vertical"
-          showDescription={false}
-          style={styles.action}
-          variant="secondary"
+        <HomeScenicAction
+          kind="login"
           onPress={() => router.push('/auth/sign-in')}
         />
       </View>
@@ -61,5 +42,4 @@ const styles = StyleSheet.create({
   intro: { gap: Spacing.two, paddingTop: Spacing.one },
   description: { fontSize: 15, lineHeight: 22 },
   actions: { flexDirection: 'row', gap: 12, paddingVertical: Spacing.two },
-  action: { flex: 1, minWidth: 0 },
 });

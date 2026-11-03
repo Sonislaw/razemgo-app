@@ -12,11 +12,13 @@ export function ProfileCoverHeader({
   title,
   onBack,
   actions,
+  leadingAction,
 }: {
   avatarId?: ProfileAvatarId;
   title: string;
   onBack?: () => void;
   actions?: ReactNode;
+  leadingAction?: ReactNode;
 }) {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -61,7 +63,7 @@ export function ProfileCoverHeader({
           paddingRight: Math.max(Spacing.four, insets.right),
         },
       ]}>
-        {onBack ? <IconButton icon="back" label="Wróć" onPress={onBack} /> : <View style={styles.spacer} />}
+        {onBack ? <IconButton icon="back" label="Wróć" onPress={onBack} /> : leadingAction ?? <View style={styles.spacer} />}
         <AppText accessibilityRole="header" variant="heading" style={styles.title}>{title}</AppText>
         {actions ?? <View style={styles.spacer} />}
       </View>

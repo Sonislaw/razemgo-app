@@ -1,8 +1,7 @@
 import { router } from 'expo-router';
 import type { TripProposal } from '@/types/travel';
 import { TripListingAction, TripListingCard } from './trip-listing-card';
-import { FavoriteButton } from '@/features/favorites/favorite-button';
-import { FavoriteIconButton } from '@/features/favorites/favorite-icon-button';
+import { CardShareActions } from '@/features/sharing/card-share-actions';
 import { View } from 'react-native';
 import { TripReactionsButton, TripReactionsPreview } from '@/features/reactions/trip-reactions';
 
@@ -30,9 +29,7 @@ export function DiscoveryTripCard({ trip, group, onNavigate, preview = false, te
       datesLabel={datesLabel}
       onPressGroup={() => { onNavigate?.(); router.push({ pathname: '/crew/[id]', params: { id: group.id } }); }}
       travelModes={trip.travelModes}
-      favoriteAction={preview
-        ? <FavoriteIconButton label="Dodaj wyjazd do ulubionych" compact translucent disabled onPress={() => {}} />
-        : <FavoriteButton kind="trip" targetId={trip.id} compact translucent />}
+      favoriteAction={<CardShareActions kind="trip" targetId={trip.id} preview={preview} />}
       footer={
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
         {preview ? <TripReactionsPreview /> : <TripReactionsButton tripId={trip.id} ownerGroupId={trip.groupId} />}

@@ -7,7 +7,7 @@ import { useTheme } from '@/hooks/use-theme';
 import type { PublicGroup } from './group-data';
 import { GroupCardFacts } from './group-profile-card';
 import { useGroupOnline } from '@/features/presence/presence-context';
-import { FavoriteButton } from '@/features/favorites/favorite-button';
+import { CardShareActions } from '@/features/sharing/card-share-actions';
 import { GroupAvatar } from '@/features/profile/group-avatar';
 import { getProfileCover } from '@/features/profile/profile-cover-data';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
@@ -54,7 +54,7 @@ export function GroupCard({ item, onNavigate }: { item: PublicGroup; onNavigate?
       </>}
     </Pressable>
     <View style={styles.favorite}>
-      <FavoriteButton kind="group" targetId={group.id} compact translucent />
+      <CardShareActions kind="group" targetId={group.id} />
     </View>
     <View style={[layout.row, styles.footer, { borderColor: theme.border }]}>
       <AppText variant="caption" color="textSecondary" style={{ flex: 1 }}>
@@ -80,6 +80,6 @@ const styles = StyleSheet.create({
   compactName: { fontSize: 20, lineHeight: 25 },
   adults: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   adultCount: { flexShrink: 1 },
-  favorite: { position: 'absolute', top: 12, right: 12, zIndex: 1 },
+  favorite: { position: 'absolute', top: 12, right: 12, zIndex: 1, flexDirection: 'row', gap: 0 },
   footer: { borderTopWidth: 1, marginHorizontal: 16, paddingTop: 6, paddingBottom: 10 },
 });

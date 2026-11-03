@@ -11,11 +11,13 @@ export function FavoriteButton({
   targetId,
   compact = false,
   translucent = false,
+  paired = false,
 }: {
   kind: FavoriteKind;
   targetId: string;
   compact?: boolean;
   translucent?: boolean;
+  paired?: boolean;
 }) {
   const { store, selected, pending, status } = useFavorite(kind, targetId);
   const [failedSelection, setFailedSelection] = useState<boolean | null>(null);
@@ -43,6 +45,7 @@ export function FavoriteButton({
         disabled={status === 'loading'}
         compact={compact}
         translucent={translucent}
+        paired={paired}
         label={label}
         testID={'favorite-' + kind + '-' + targetId}
         onPress={() => {

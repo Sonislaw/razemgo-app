@@ -13,6 +13,7 @@ import { GroupProfileCard } from '@/features/groups/group-profile-card';
 import { GroupAboutCard } from '@/features/groups/group-about-card';
 import { ProfileCoverHeader } from '@/features/profile/profile-cover-header';
 import { FavoriteButton, FavoritesNotice } from '@/features/favorites/favorite-button';
+import { ShareLinkButton } from '@/features/sharing/share-link-button';
 import { View } from 'react-native';
 
 export default function PublicGroupScreen() {
@@ -41,6 +42,7 @@ export default function PublicGroupScreen() {
       <FavoritesNotice />
       <GroupAboutCard about={data.about} />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <ShareLinkButton kind="group" targetId={data.group.id} />
         <FavoriteButton kind="group" targetId={data.group.id} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <GroupContactAction key={id} group={data.group} />

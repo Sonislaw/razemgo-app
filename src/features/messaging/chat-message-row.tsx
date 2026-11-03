@@ -1,6 +1,7 @@
 import { AppText, Button } from '@/components/ui/primitives';
 import { Fonts, MaxContentWidth, Typography } from '@/constants/theme';
 import { MessageReactionButton } from '@/features/messaging/message-reactions-ui';
+import { SharedMessageText } from '@/features/sharing/shared-message-text';
 import {
   formatMessageDate,
   formatMessageTime,
@@ -71,15 +72,7 @@ export function ChatMessageRow({
             },
           ]}
         >
-          <AppText
-            style={{
-              color: self ? theme.onPrimary : theme.text,
-              fontSize: 15,
-              lineHeight: 22,
-            }}
-          >
-            {item.text}
-          </AppText>
+          <SharedMessageText text={item.text} self={self} />
           <View style={{ alignItems: 'flex-end' }}>
             <AppText
               variant="caption"

@@ -24,6 +24,8 @@ import {
   isValidDate,
   TRIP_STATUS_LABELS,
 } from './own-trips-state';
+import type { ReactNode } from 'react';
+import { ShareLinkButton } from '@/features/sharing/share-link-button';
 
 export function ownTripPlace(trip: OwnedTrip): string {
   const place = trip.mode === 'planned' ? trip.destination : trip.travelArea;
@@ -69,10 +71,12 @@ export function TripPageHeader({
   title,
   onBack,
   onMenu,
+  actions,
 }: {
   title: string;
   onBack: () => void;
   onMenu?: () => void;
+  actions?: ReactNode;
 }) {
   return (
     <HeaderRow>
@@ -80,6 +84,7 @@ export function TripPageHeader({
       <AppText variant="heading" accessibilityRole="header" style={{ flex: 1 }}>
         {title}
       </AppText>
+      {actions}
       {onMenu ? (
         <IconButton label="Opcje wyjazdu" icon="more" onPress={onMenu} />
       ) : null}
@@ -109,6 +114,7 @@ export function OwnTripCard({ trip, onMenu }: {
       trip={trip}
       locationLabel={ownTripPlace(trip)}
       datesLabel={ownTripDates(trip)}
+      favoriteAction={searching ? <ShareLinkButton kind="trip" targetId={trip.id} compact translucent /> : undefined}
       rightBadge={status === 'published' ? undefined : <TripStatusBadge status={status} />}
       footer={
         <View style={{ gap: 8 }}>

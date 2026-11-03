@@ -1,6 +1,6 @@
 # Kontekst aplikacji RazemGo
 
-Stan rozpoznania: **1.11.2026**, wersja kodu **1.4.0**, bazowy commit `d5765b2`
+Stan rozpoznania: **2.11.2026**, wersja kodu **1.5.0**, bazowy commit `d5765b2`
 z późniejszymi zmianami edycji opisu, stałej dostępności profili ekip i propozycji.
 Pierwsze rozpoznanie obejmowało lokalny kod, migracje, konfigurację i dokumentację.
 Informacje o wdrożonych APK pochodzą z dokumentacji wydania. Późniejsze zmiany Dev
@@ -103,6 +103,14 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   miejsce na nazwę ekipy. Ilustracja oraz treść
   otwierają profil; wybór ulubionych zachowuje pozycję na liście.
   Opis ekipy jest dostępny w szczegółach profilu; karta na liście go nie pokazuje.
+- **Udostępnianie w Dev:** ikona na kartach i w szczegółach wyjazdów/ekip otwiera
+  „Kopiuj link”. Adresy `razemgo-dev://trip/<id>` i `razemgo-dev://crew/<id>`
+  są rozpoznawane w wiadomościach, również w otaczającym je tekście. Własna ekipa
+  otwiera Mój profil; właściciel wyjazdu trafia do swoich szczegółów także dla
+  wyjazdu spoza pobranych stron listy. Odbiorca otwiera zwykłe szczegóły z obecną
+  kontrolą dostępności. Funkcja jest wyłączona w Preview. Kopiowanie wymaga
+  modułu `expo-clipboard` w nowej paczce Dev; nie konfiguruje domeny ani Production.
+  APK Dev 1.5.0 (5) jest gotowy; [instalacja i weryfikacja](DEV_SHARING.md).
 - **Główne listy wyjazdów i ekip pobierają po pięć elementów.** Kolejna porcja
   wymaga przycisku; listy są wirtualizowane i zachowują miejsce po powrocie ze
   szczegółów. Skrzynka ma porcje po 20, historia rozmowy po 50 wiadomości.

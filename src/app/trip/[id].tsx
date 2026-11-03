@@ -30,6 +30,7 @@ import { TripReactionsButton } from '@/features/reactions/trip-reactions';
 import { MaxContentWidth } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ShareLinkButton } from '@/features/sharing/share-link-button';
 
 export function generateStaticParams() {
   return AVAILABLE_PROPOSALS.map(({ trip }) => ({ id: trip.id }));
@@ -69,6 +70,7 @@ export default function TripDetailsScreen() {
         <AppText variant="heading" accessibilityRole="header" style={styles.flex}>
           Wyjazd
         </AppText>
+        <ShareLinkButton kind="trip" targetId={trip.id} />
         <DemoBadge />
         <TripReportAction key={trip.id} tripId={trip.id} />
       </HeaderRow>

@@ -135,6 +135,7 @@ function RootNavigator() {
           <Stack.Screen name="admin" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="trip/[id]" />
+          <Stack.Screen name="shared-trip/[id]" />
           <Stack.Screen name="edit-profile" />
           <Stack.Screen name="crew/[id]" />
           <Stack.Screen name="settings" />

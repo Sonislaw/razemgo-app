@@ -3,12 +3,18 @@ import { Icon } from '@/components/ui/icon';
 import { Typography } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-export function FavoriteIconButton({ selected = false, pending = false, disabled = false, compact = false, translucent = false, label, onPress, testID }: {
+export function compactFavoriteInset(fontScale: number) {
+  const circle = Typography.caption.lineHeight * fontScale + 10;
+  return Math.min(8, Math.max(0, 44 - circle - 4));
+}
+
+export function FavoriteIconButton({ selected = false, pending = false, disabled = false, compact = false, translucent = false, paired = false, label, onPress, testID }: {
   selected?: boolean;
   pending?: boolean;
   disabled?: boolean;
   compact?: boolean;
   translucent?: boolean;
+  paired?: boolean;
   label: string;
   onPress: () => void;
   testID?: string;
@@ -22,7 +28,8 @@ export function FavoriteIconButton({ selected = false, pending = false, disabled
       accessibilityState={{ selected, busy: pending, disabled: disabled || pending }}
       disabled={disabled || pending} testID={testID}
       onPress={event => { event.stopPropagation(); onPress(); }}
-      style={({ pressed }) => ({ width: touchSize, height: touchSize, alignItems: compact ? 'flex-end' : 'center', justifyContent: compact ? 'flex-start' : 'center', opacity: pressed || pending ? 0.65 : 1 })}>
+      style={({ pressed }) => ({ width: touchSize, height: touchSize, paddingRight: compact && paired ? compactFavoriteInset(fontScale) : 0,
+        alignItems: compact ? 'flex-end' : 'center', justifyContent: compact ? 'flex-start' : 'center', opacity: pressed || pending ? 0.65 : 1 })}>
       <View style={{ width: circleSize, height: circleSize, borderRadius: circleSize / 2, alignItems: 'center', justifyContent: 'center',
         backgroundColor: translucent ? theme.backgroundElement + 'CC' : theme.backgroundElement, borderWidth: 1, borderColor: theme.border }}>
         {pending ? <ActivityIndicator color={theme.primaryStrong} size="small" /> : <Icon name={selected ? 'heart-filled' : 'heart'} size={compact ? 18 : 24} color={selected ? '#DC2626' : theme.primaryStrong} />}

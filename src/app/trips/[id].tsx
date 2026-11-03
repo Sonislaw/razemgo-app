@@ -40,6 +40,7 @@ import {
 } from '@/features/trips/trip-ui';
 import { useOwnTrip } from '@/features/trips/use-own-trip';
 import { useTheme } from '@/hooks/use-theme';
+import { ShareLinkButton } from '@/features/sharing/share-link-button';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
@@ -162,6 +163,7 @@ export default function OwnTripDetailsScreen() {
             title="Twój wyjazd"
             onBack={back}
             onMenu={() => setMenu(true)}
+            actions={searching ? <ShareLinkButton kind="trip" targetId={trip.id} /> : undefined}
           />
           {contactError ? (
             <DataStatus

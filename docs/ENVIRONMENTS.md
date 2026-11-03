@@ -66,6 +66,17 @@ APK Dev używa osobnego pakietu i instaluje się obok Preview. `start:dev` używ
 
 Rolę administratora nadaj po pierwszym zalogowaniu do Dev: `node scripts/manage-admin.mjs grant ADRES_POTWIERDZONEGO_KONTA`. Administratorzy nie są kopiowani między bazami.
 
+## APK Dev 1.5.0 (5) — udostępnianie
+
+[Pobierz APK Dev 1.5.0 (5)](https://expo.dev/artifacts/eas/9bX8hOaKEZIOOdLX9G0Vm3ksGXjoOFBks0lDuaDAlM4.apk).
+[Build EAS](https://expo.dev/accounts/sonislaw/projects/razemgo/builds/2771ef29-fa31-4de7-bc0a-69335e0dd53d)
+zakończył się `FINISHED` 2.11.2026. Potwierdzono pakiet `pl.razemgo.app.development`,
+wersję `1.5.0`, versionCode `5` i obecność natywnego modułu schowka.
+
+Nowy APK jest wymagany do „Kopiuj link” na telefonie. Zainstaluj go jako aktualizację
+Dev i połącz z serwerem Metro. [Zakres funkcji i weryfikacja](DEV_SHARING.md).
+Preview i Production nie były budowane ani publikowane w ramach tej zmiany.
+
 ## Pierwsze APK Dev
 
 [Pobierz RazemGo Dev 1.0.0 (1)](https://expo.dev/artifacts/eas/npzArKRcfEn1n43nAUDyr3GGfG662gcQGptMAq8-OUM.apk). [Build EAS](https://expo.dev/accounts/sonislaw/projects/razemgo/builds/be2b8c07-2f05-4cbf-8a96-7f4fd8717fbf) zakończył się `FINISHED` 25.10.2026.

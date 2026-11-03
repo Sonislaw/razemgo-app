@@ -13,10 +13,17 @@ const names = [
   'get_my_trip_contact_counts',
   'refresh_public_trip_results',
   'refresh_public_group_results',
+  'list_my_filter_sets',
+  'save_my_filter_set',
+  'delete_my_filter_set',
 ];
 for (const name of names) {
   const args =
-    name === 'get_my_trip_contact_counts'
+    name === 'save_my_filter_set'
+      ? { target_id: '00000000-0000-4000-8000-000000000001', filter_kind: 'trips', set_name: 'Anonymous probe', filter_payload: {} }
+      : name === 'delete_my_filter_set'
+        ? { target_id: '00000000-0000-4000-8000-000000000001' }
+      : name === 'get_my_trip_contact_counts'
       ? { target_trip_id: '00000000-0000-4000-8000-000000000001' }
       : name === 'get_my_mailbox_states'
         ? { conversation_ids: [], invitation_ids: [] }
@@ -47,5 +54,5 @@ for (const name of ['delete-account', 'dispatch-push', 'monitor-push']) {
     throw Error('Expected anonymous Edge denial for ' + name);
 }
 console.log(
-  'Dev only: 7 deployed RPC contracts and 3 Edge endpoints reject anonymous access. No user data read or changed.',
+  `Dev only: ${names.length} deployed RPC contracts and 3 Edge endpoints reject anonymous access. No user data read or changed.`,
 );

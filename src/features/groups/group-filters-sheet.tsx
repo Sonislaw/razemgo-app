@@ -32,15 +32,19 @@ import {
 } from './group-data';
 import { DEMO_PUBLIC_GROUPS } from './group-demo';
 import { fetchPublicGroupCount } from './group-repository';
+import { SaveFilterSetButton } from '../saved-filters/saved-filter-ui';
+import type { SavedFilterSet } from '../saved-filters/saved-filter-data';
 
 export function GroupFiltersSheet({
   filters,
   onApply,
   onClose,
+  onSaved,
 }: {
   filters: GroupFilters;
   onApply: (value: GroupFilters) => void;
   onClose: () => void;
+  onSaved: (item: SavedFilterSet) => void;
 }) {
   const [draft, setDraft] = useState(filters);
   const [countAttempt, setCountAttempt] = useState(0);
@@ -146,11 +150,13 @@ export function GroupFiltersSheet({
               />
             </View>
           ) : null}
-          <Button
+          <View style={layout.row}><View style={{ flex: 1 }}><Button
             label="Wyczyść"
             variant="secondary"
             onPress={() => setDraft({ ...INITIAL_GROUP_FILTERS })}
-          />
+          /></View>
+          <SaveFilterSetButton value={{ kind: 'groups', filters: draft }} onSaved={onSaved} />
+          </View>
           <Button
             label={
               resultCount !== null

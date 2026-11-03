@@ -3,6 +3,7 @@ import { USE_DEMO_DATA } from '@/constants/app';
 import { AccountSyncProvider } from '@/features/auth/account-sync-context';
 import { AuthProvider, useAuth } from '@/features/auth/auth-context';
 import { DiscoveryProvider } from '@/features/discovery/discovery-context';
+import { SavedFilterProvider } from '@/features/saved-filters/saved-filter-context';
 import { FavoritesProvider } from '@/features/favorites/favorites-context';
 import { MessagingProvider } from '@/features/messaging/messaging-context';
 import {
@@ -161,13 +162,15 @@ function AccountProviders() {
           <FavoritesProvider>
             <ReactionsProvider>
               <OwnTripsProvider>
-                <DiscoveryProvider>
-                  <MessagingProvider>
-                    <NotificationsProvider>
-                      <RootNavigator />
-                    </NotificationsProvider>
-                  </MessagingProvider>
-                </DiscoveryProvider>
+                <SavedFilterProvider>
+                  <DiscoveryProvider>
+                    <MessagingProvider>
+                      <NotificationsProvider>
+                        <RootNavigator />
+                      </NotificationsProvider>
+                    </MessagingProvider>
+                  </DiscoveryProvider>
+                </SavedFilterProvider>
               </OwnTripsProvider>
             </ReactionsProvider>
           </FavoritesProvider>

@@ -37,6 +37,7 @@ import {
 import { DEMO_PUBLIC_GROUPS } from './group-demo';
 import { GroupFiltersSheet } from './group-filters-sheet';
 import { fetchPublicGroups, refreshGroupResults } from './group-repository';
+import { SavedFiltersButton } from '../saved-filters/saved-filter-ui';
 
 export function GroupsDiscovery({
   header,
@@ -45,7 +46,7 @@ export function GroupsDiscovery({
   header?: ReactNode;
   beforeList?: ReactNode;
 }) {
-  const { groupFilters: filters, setGroupFilters: setFilters } = useDiscovery();
+  const { groupFilters: filters, setGroupFilters: setFilters, activeGroupSet, applySavedFilterSet } = useDiscovery();
   const favoritesStore = useFavoritesStore();
   const blocked = useMessagingSelector((value) => value.state.blockedGroupIds);
   const returnLoad = useRef<(() => Promise<void>) | null>(null);
@@ -212,6 +213,7 @@ export function GroupsDiscovery({
           <DiscoveryFilterBar
             activeCount={activeCount}
             summary={summary}
+            savedSetName={activeGroupSet?.name}
             placeholder="Nazwa, rodzaj ekipy i zainteresowania"
             filterLabel="Filtry ekip"
             filterHint="Wybierz nazwę, rodzaj ekipy, wiek dzieci i sposób podróżowania"
@@ -220,6 +222,7 @@ export function GroupsDiscovery({
               <GroupFiltersSheet
                 filters={filters}
                 onClose={onClose}
+                onSaved={item => { applySavedFilterSet(item); onClose(); }}
                 onApply={(next) => {
                   setFilters(next);
                   onClose();
@@ -230,6 +233,7 @@ export function GroupsDiscovery({
           />
           <DiscoveryResultsHeader
             title={hasLoaded ? 'Ekipy · ' + page.totalCount : 'Ekipy'}
+            action={<SavedFiltersButton kind="groups" onApply={applySavedFilterSet} />}
           />
         </>
       }

@@ -6,7 +6,7 @@ import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export function DiscoveryFilterBar({ activeCount, summary, placeholder, filterLabel = 'Otwórz filtry', filterHint,
-  clearLabel = 'Wyczyść filtry', renderFilters, onClear }: {
+  clearLabel = 'Wyczyść filtry', renderFilters, onClear, savedSetName, notice }: {
   activeCount: number;
   summary: string;
   placeholder: string;
@@ -15,37 +15,48 @@ export function DiscoveryFilterBar({ activeCount, summary, placeholder, filterLa
   clearLabel?: string;
   renderFilters: (onClose: () => void) => ReactNode;
   onClear: () => void;
+  savedSetName?: string;
+  notice?: string;
 }) {
   const theme = useTheme();
   // Opening a panel must not re-render the collection and its mounted cards.
   const [showFilters, setShowFilters] = useState(false);
-  return <View style={layout.row}>
+  return <View style={layout.stack}><View style={layout.row}>
     <Pressable accessibilityRole="button" accessibilityLabel={filterLabel} accessibilityHint={filterHint} onPress={() => setShowFilters(true)}
       style={({ pressed }) => [styles.filterBar, { borderColor: theme.border, backgroundColor: theme.backgroundElement, opacity: pressed ? 0.7 : 1 }]}>
       <Icon name="filters" size={21} />
       <View style={styles.flex}>
         <AppText variant="label">Filtry{activeCount ? ' · ' + activeCount : ''}</AppText>
-        <AppText variant="caption" color="textSecondary">{summary || placeholder}</AppText>
+        <AppText variant="caption" color="textSecondary">{savedSetName ?? (summary || placeholder)}</AppText>
       </View>
       <Icon name="arrow" size={18} />
     </Pressable>
     {activeCount ? <IconButton label={clearLabel} icon="close" onPress={onClear} /> : null}
+    </View>
+    {notice ? <View style={layout.row}>
+      <AppText variant="caption" color="textSecondary" accessibilityRole="alert" style={styles.flex}>{notice}</AppText>
+      <Pressable accessibilityRole="button" accessibilityLabel="Edytuj termin zestawu" onPress={() => setShowFilters(true)} style={{ minHeight: 44, justifyContent: 'center' }}>
+        <AppText variant="label" style={{ color: theme.primaryStrong }}>Edytuj</AppText>
+      </Pressable>
+    </View> : null}
     {showFilters ? renderFilters(() => setShowFilters(false)) : null}
   </View>;
 }
 
-export function DiscoveryResultsHeader({ title }: {
+export function DiscoveryResultsHeader({ title, action }: {
   title: string;
+  action?: ReactNode;
 }) {
   return <View style={styles.resultsHeader}>
     <View style={styles.flex}>
       <AppText variant="heading" accessibilityRole="header" accessibilityLiveRegion="polite" style={styles.resultTitle}>{title}</AppText>
     </View>
+    {action}
   </View>;
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
+  flex: { flex: 1, minWidth: 0 },
   filterBar: { flex: 1, flexDirection: 'row', alignItems: 'center', minHeight: 56, padding: 12, gap: Spacing.two,
     borderWidth: 1, borderRadius: Radius.small },
   resultsHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, justifyContent: 'space-between' },

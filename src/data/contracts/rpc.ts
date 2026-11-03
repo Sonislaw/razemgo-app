@@ -77,6 +77,18 @@ export interface ClientDatabase {
     Tables: GeneratedDatabase['public']['Tables'];
     Views: Record<never, never>;
     Functions: {
+      list_my_filter_sets: {
+        Args: Record<never, never>;
+        Returns: import('../../features/saved-filters/saved-filter-data').SavedFilterSetRow[];
+      };
+      save_my_filter_set: {
+        Args: { target_id: string; filter_kind: string; set_name: string; filter_payload?: import('../../features/saved-filters/saved-filter-data').FilterSetPayload | null };
+        Returns: import('../../features/saved-filters/saved-filter-data').SavedFilterSetRow;
+      };
+      delete_my_filter_set: {
+        Args: { target_id: string };
+        Returns: boolean;
+      };
       search_public_trips_v3: {
         Args: {
           filters?: ReturnType<

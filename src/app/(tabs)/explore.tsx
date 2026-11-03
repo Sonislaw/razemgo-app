@@ -30,11 +30,15 @@ import { LANDSCAPE_OPTIONS } from '@/constants/landscape-options';
 import { GroupsDiscovery } from '@/features/groups/groups-discovery';
 import { FavoritesNotice } from '@/features/favorites/favorite-button';
 import { CollectionScreen } from '@/components/ui/collection-screen';
+import { SavedFiltersButton } from '@/features/saved-filters/saved-filter-ui';
+import { filterSetExpired } from '@/features/saved-filters/saved-filter-data';
+import { useCurrentDate } from '@/hooks/use-current-date';
 
 export default function ExploreScreen() {
   const [view, setView] = useState<'trips' | 'groups'>('trips');
   const theme = useTheme();
-  const { filters, setFilters } = useDiscovery();
+  const { filters, setFilters, activeTripSet, applySavedFilterSet } = useDiscovery();
+  const today = useCurrentDate();
   const { items: proposals, totalCount, hasMore, status, loadingMore, error, retry, loadMore, preserveOnReturn } = useTripSearch(filters, TRIP_SEARCH_PAGE_SIZE, view === 'trips');
   const { state: ownTrips } = useOwnTrips();
   const sourceTrip = ownTrips.trips.find(
@@ -144,14 +148,18 @@ export default function ExploreScreen() {
           </View>
         ) : null}
         <DiscoveryFilterBar activeCount={activeCount} summary={summary} placeholder="Typ, termin, miejsce i klimat"
+          savedSetName={activeTripSet?.name}
+          notice={filterSetExpired({ kind: 'trips', filters }, today) ? 'Termin w tym zestawie już minął' : undefined}
           filterHint="Wybierz typ ogłoszenia, klimat, termin, miejsce i wiek dzieci"
           onClear={reset}
           renderFilters={(onClose) => (
             <DiscoveryFiltersSheet initialFilters={filters} onClose={onClose}
+              onSaved={item => { applySavedFilterSet(item); onClose(); }}
               onApply={(nextFilters) => { setFilters(nextFilters); onClose(); }} />
           )} />
       </View>
-        <DiscoveryResultsHeader title={totalCount === null ? 'Propozycje' : 'Propozycje · ' + totalCount} />
+        <DiscoveryResultsHeader title={totalCount === null ? 'Propozycje' : 'Propozycje · ' + totalCount}
+          action={<SavedFiltersButton kind="trips" onApply={applySavedFilterSet} />} />
       </>}
       empty={status === 'ready' ? (
           <EmptyState

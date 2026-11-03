@@ -43,7 +43,7 @@ export interface OwnTripPageRow {
   latest_trip: TripRow | null;
 }
 export interface AccountSummary {
-  domains?: Record<'mailbox' | 'notifications' | 'favorites' | 'trips', string>;
+  domains?: Record<'mailbox' | 'notifications' | 'favorites' | 'trips', string> & { saved_filters?: string };
   revision: number;
   unread_messages: number;
   pending_invitations: number;

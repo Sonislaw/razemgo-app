@@ -1,6 +1,6 @@
 # Kontekst aplikacji RazemGo
 
-Stan rozpoznania: **2.11.2026**, wersja kodu **1.5.0**, bazowy commit `d5765b2`
+Stan rozpoznania: **3.11.2026**, wersja kodu **1.5.0**, bazowy commit `d5765b2`
 z późniejszymi zmianami edycji opisu, stałej dostępności profili ekip i propozycji.
 Pierwsze rozpoznanie obejmowało lokalny kod, migracje, konfigurację i dokumentację.
 Informacje o wdrożonych APK pochodzą z dokumentacji wydania. Późniejsze zmiany Dev
@@ -117,6 +117,21 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   Przy filtrach Odkrywaj (wyjazdy i ekipy) oraz Moich wyjazdów nie ma przycisku
   ręcznego odświeżania. Automatyczne odświeżanie, reset filtrów i ponowienie
   po błędzie pozostają dostępne.
+- **Zapisane filtry w Odkrywaj:** oddzielne nazwane zestawy dla wyjazdów i ekip,
+  po 10 na zakładkę. Przycisk „Zapisane · N” jest przy liczbie wyników, a „Zapisz
+  zestaw” w stopce filtrów obok „Wyczyść”. Nazwy mają 1–40 znaków i są unikalne
+  bez rozróżniania wielkości liter w danej zakładce. Można wczytać, zastąpić,
+  zmienić nazwę i usunąć zestaw. Zapis stosuje kryteria i zamyka formularz;
+  nieudany zapis zachowuje go do ponowienia z tym samym identyfikatorem.
+  Katalog jest prywatny dla konta i synchronizowany domeną `saved_filters`.
+  Wczytanie zaczyna wyniki od pierwszej strony, także dla identycznych kryteriów.
+  Synchronizacja katalogu nie zmienia aktywnego wyszukiwania, a ponowne logowanie
+  nie wczytuje automatycznie ostatnich filtrów. Ręczna zmiana/reset usuwa etykietę
+  zestawu, usunięcie zapisu pozostawia kryteria. Kryteria własnego wyjazdu są
+  niezależną kopią bez `sourceTripId`; daty i tolerancja pozostają dokładne.
+  Miniony termin ma informację i akcję „Edytuj”, bez przesuwania dat.
+  Migracja `202611030001_saved_filter_sets.sql` wdrożona na Dev; Preview
+  i Production nie wdrażano. Szczegóły i weryfikacja: [SAVED_FILTERS.md](SAVED_FILTERS.md).
 - **Akceptacja zaproszenia tworzy rozmowę.** Licznik kontaktów przy wyjeździe
   oznacza zaakceptowane rozmowy; aplikacja nie traktuje go jako listy potwierdzonych
   uczestników. Skład wyjazdu opisuje liczebność, nie imienną listę zapisów.

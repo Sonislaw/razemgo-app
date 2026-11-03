@@ -35,16 +35,20 @@ import {
   updateDiscoveryLocationQuery,
 } from './filter-trips';
 import { useTripResultCount } from './use-trip-search';
+import { SaveFilterSetButton } from '../saved-filters/saved-filter-ui';
+import type { SavedFilterSet } from '../saved-filters/saved-filter-data';
 
 interface DiscoveryFiltersSheetProps {
   initialFilters: DiscoveryFilters;
   onApply: (filters: DiscoveryFilters) => void;
   onClose: () => void;
+  onSaved: (item: SavedFilterSet) => void;
 }
 export function DiscoveryFiltersSheet({
   initialFilters,
   onApply,
   onClose,
+  onSaved,
 }: DiscoveryFiltersSheetProps) {
   const theme = useTheme();
   const [showDateRange, setShowDateRange] = useState(false);
@@ -96,11 +100,13 @@ export function DiscoveryFiltersSheet({
               />
             </View>
           ) : null}
-          <Button
+          <View style={layout.row}><View style={{ flex: 1 }}><Button
             label="Wyczyść"
             variant="secondary"
             onPress={() => setDraft({ ...INITIAL_FILTERS })}
-          />
+          /></View>
+          <SaveFilterSetButton value={{ kind: 'trips', filters: draft }} disabled={!!dateError} onSaved={onSaved} />
+          </View>
           <Button
             label={
               dateError || countError

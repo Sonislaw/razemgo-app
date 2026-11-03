@@ -17,7 +17,8 @@ import {
 } from '../../src/features/trips/own-trips-state.ts';
 import { tripRecommendation } from '../support/legacy-matching/trip-recommendation.ts';
 import { groupRecommendation } from '../support/legacy-matching/recommendation.ts';
-import { publicGroupFromRow } from '../../src/features/groups/group-data.ts';
+import { filterPublicGroups, publicGroupFromRow } from '../../src/features/groups/group-data.ts';
+import { groupCriteriaFromPayload } from '../../src/features/saved-filters/saved-filter-data.ts';
 
 const A = '00000000-0000-4000-8000-000000000001';
 const B = '00000000-0000-4000-8000-000000000002';
@@ -104,6 +105,7 @@ function state() {
     favoriteGroups: new Map(),
     favoriteTrips: new Map(),
     reactions: new Map(),
+    filterSets: new Map(),
   };
 }
 async function backend(context, store) {
@@ -151,6 +153,48 @@ async function backend(context, store) {
     } catch {}
     const endpoint = url.pathname.split('/').at(-1);
     (store.technicalCalls ??= []).push(endpoint);
+    if (endpoint === 'list_my_filter_sets') {
+      if (store.failFilterLoad) return respond({ message: 'offline' }, 503);
+      return respond([...store.filterSets.values()].filter(row => row.owner === id).map(({ owner, ...row }) => row));
+    }
+    if (endpoint === 'save_my_filter_set') {
+      (store.filterSaveCalls ??= []).push(body);
+      if (store.failFilterSave) return respond({ message: 'offline' }, 503);
+      const old = store.filterSets.get(body.target_id);
+      if (old && (old.owner !== id || old.kind !== body.filter_kind)) return respond({ code: 'P0002' }, 400);
+      const siblings = [...store.filterSets.values()].filter(row => row.owner === id && row.kind === body.filter_kind);
+      const name = body.set_name.trim().replace(/\s+/g, ' ');
+      if (siblings.some(row => row.id !== body.target_id && row.name.toLocaleLowerCase('pl') === name.toLocaleLowerCase('pl')))
+        return respond({ code: '23505' }, 409);
+      if (!old && siblings.length >= 10) return respond({ code: '54000' }, 400);
+      if (!old && !body.filter_payload) return respond({ code: 'P0002' }, 400);
+      const stamp = new Date().toISOString();
+      const row = { id: body.target_id, kind: body.filter_kind, name, schema_version: 1,
+        filters: body.filter_payload ?? old.filters, created_at: old?.created_at ?? stamp, updated_at: stamp };
+      store.filterSets.set(row.id, { ...row, owner: id });
+      if (store.loseFilterAcknowledgement) { store.loseFilterAcknowledgement = false; return route.abort('failed'); }
+      return respond(row);
+    }
+    if (endpoint === 'delete_my_filter_set') {
+      if (store.failFilterDelete) return respond({ message: 'offline' }, 503);
+      if (store.filterSets.get(body.target_id)?.owner === id) store.filterSets.delete(body.target_id);
+      return respond(true);
+    }
+    if (['list_public_groups_v3', 'count_public_groups', 'refresh_public_group_results_v3'].includes(endpoint)) {
+      (store.groupSearchCalls ??= []).push({ endpoint, ...body });
+      const other = profile(id === A ? B : A).group;
+      const rows = store.directoryRows ?? [{ crew: other, about: '', active_trip_count: 0 }];
+      const filtered = filterPublicGroups(rows.map(publicGroupFromRow), groupCriteriaFromPayload(body.filters),
+        new Set([...store.presence].filter(([, online]) => online).map(([id]) => id)), store.favoriteGroups.get(id) ?? new Set());
+      const ids = filtered.map(row => row.group.id);
+      const ordered = ids.map(id => rows.find(row => row.crew.id === id));
+      if (endpoint === 'count_public_groups') return respond(ordered.length);
+      if (endpoint === 'refresh_public_group_results_v3') return respond(ordered.filter(row => body.group_ids.includes(row.crew.id)));
+      const offset = body.after_cursor ? ordered.findIndex(row => row.crew.id === body.after_cursor.id) + 1 : 0;
+      const items = ordered.slice(offset, offset + body.page_size), last = items.at(-1);
+      return respond({ items, total_count: ordered.length, result_revision: resultRevision(ordered),
+        has_more: offset + items.length < ordered.length, cursor: last ? { id: last.crew.id, name: last.crew.name } : null });
+    }
     if (endpoint === 'get_my_sync_state') {
       const mine = store.conversations.filter((c) =>
         [c.sender_group_id, c.recipient_group_id].includes(groupId(id)),
@@ -160,6 +204,7 @@ async function backend(context, store) {
         .map(tripFromRow);
       return respond({
         domains: {
+          saved_filters: String(parseInt(resultRevision([...store.filterSets.values()].filter(row => row.owner === id)).slice(0, 12), 16)),
           mailbox: String(
             parseInt(
               resultRevision([

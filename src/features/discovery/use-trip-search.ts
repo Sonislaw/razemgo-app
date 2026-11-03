@@ -43,7 +43,7 @@ export function useTripSearch(
     USE_DEMO_DATA || !!filters.favoritesOnly,
   );
   const demoFavoriteIds = USE_DEMO_DATA ? favoriteTripIds : null;
-  const { revision } = useDiscovery();
+  const { revision, tripFilterRevision } = useDiscovery();
   const userId = session?.user.id ?? '';
   const key = 'discovery:3:' + JSON.stringify(discoveryFiltersPayload(filters));
   const ready =
@@ -98,7 +98,7 @@ export function useTripSearch(
     // Serialized filters and mutation revisions define the resource identity.
     // Hydration updates the cache without resetting already viewed pages.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [userId, key, pageSize, demoFavoriteIds],
+    [userId, key, pageSize, demoFavoriteIds, tripFilterRevision],
   );
   const state = useSyncExternalStore(
     store.subscribe,

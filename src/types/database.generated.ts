@@ -952,6 +952,12 @@ export type Database = {
                 };
                 Returns: number;
             };
+            "delete_my_filter_set": {
+                Args: {
+                    "target_id": string;
+                };
+                Returns: boolean;
+            };
             "delete_my_trip": {
                 Args: {
                     "trip_id": string;
@@ -1151,6 +1157,10 @@ export type Database = {
                 };
                 Returns: Json;
             };
+            "list_my_filter_sets": {
+                Args: Record<PropertyKey, never>;
+                Returns: Json;
+            };
             "list_my_trip_page": {
                 Args: {
                     "after_cursor"?: Json;
@@ -1313,6 +1323,15 @@ export type Database = {
                     "response": string;
                 };
                 Returns: string;
+            };
+            "save_my_filter_set": {
+                Args: {
+                    "filter_kind": string;
+                    "filter_payload"?: Json;
+                    "set_name": string;
+                    "target_id": string;
+                };
+                Returns: Json;
             };
             "save_my_group_visibility": {
                 Args: {

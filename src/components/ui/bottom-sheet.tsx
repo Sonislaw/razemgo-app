@@ -3,14 +3,13 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText, IconButton } from './primitives';
-import { SheetModal, SheetSurface } from './sheet-modal';
+import { SheetBackdrop, SheetModal, SheetSurface } from './sheet-modal';
 import { MaxContentWidth, Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -35,15 +34,7 @@ export function BottomSheet({
         style={styles.overlay}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View
-          style={[StyleSheet.absoluteFill, { backgroundColor: theme.scrim }]}
-        />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Zamknij panel"
-          onPress={close}
-          style={StyleSheet.absoluteFill}
-        />
+        <SheetBackdrop label="Zamknij panel" onPress={close} />
         <SheetSurface
           role="dialog"
           accessibilityLabel={title}

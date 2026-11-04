@@ -9,7 +9,7 @@ import {
   type FlatListInstance,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SheetModal, SheetSurface } from '@/components/ui/sheet-modal';
+import { SheetBackdrop, SheetModal, SheetSurface } from '@/components/ui/sheet-modal';
 import {
   AppText,
   Button,
@@ -110,12 +110,7 @@ export function DateRangeSheet({
   return (
     <SheetModal onRequestClose={onClose}>
       <View style={styles.overlay}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Zamknij kalendarz bez zmian"
-          onPress={onClose}
-          style={[StyleSheet.absoluteFill, { backgroundColor: theme.scrim }]}
-        />
+        <SheetBackdrop label="Zamknij kalendarz bez zmian" onPress={onClose} />
         <SheetSurface
           role="dialog"
           accessibilityLabel="Wybierz daty"

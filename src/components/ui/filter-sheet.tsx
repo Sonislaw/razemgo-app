@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SheetModal, SheetSurface } from './sheet-modal';
+import { SheetBackdrop, SheetModal, SheetSurface } from './sheet-modal';
 import { AppText, IconButton } from './primitives';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -19,8 +19,7 @@ export function FilterSheet({ title, description, children, footer, overlay, onC
   const close = () => { Keyboard.dismiss(); onClose(); };
   return <SheetModal onRequestClose={close}>
     <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.scrim }]} />
-      <Pressable style={StyleSheet.absoluteFill} onPress={close} accessibilityRole="button" accessibilityLabel="Zamknij panel filtrów" />
+      <SheetBackdrop label="Zamknij panel filtrów" onPress={close} />
       <SheetSurface role="dialog" accessibilityLabel={title} accessibilityViewIsModal aria-modal
         style={[styles.sheet, { backgroundColor: theme.backgroundElement, marginTop: insets.top }]}>
         <View style={[styles.header, { borderBottomColor: theme.border }]}>

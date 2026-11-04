@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
 import { compactLocalities } from './locality-data.mjs';
 import {
   POLISH_LOCALITIES,
+  POLISH_PROVINCES,
   LOCALITY_SOURCE,
 } from '../src/data/locations/polish-localities.ts';
 import {
@@ -30,6 +32,7 @@ test('the pinned snapshot contains all 43989 unique source ids and sixteen provi
     LOCALITY_SOURCE.count,
   );
   assert.equal(POLISH_LOCALITIES.provinces.length, 16);
+  assert.deepEqual(POLISH_PROVINCES,POLISH_LOCALITIES.provinces);
   for (const row of POLISH_LOCALITIES.places) {
     assert.equal(row.length, 9);
     assert.ok(POLISH_LOCALITIES.provinces[row[3]]);
@@ -219,6 +222,35 @@ test('publication and editing retain a selected village id even for names repeat
       location.commune,
     );
   }
+});
+
+test('country, province and short queries leave the full dictionary unloaded', () => {
+  const source = `
+    import assert from 'node:assert/strict';
+    import { createRequire } from 'node:module';
+    const require = createRequire(import.meta.url);
+    const path = require.resolve('./src/data/locations/polish-localities.json');
+    const locations = await import(${JSON.stringify(new URL('../src/features/trips/trip-locations.ts',import.meta.url).href)});
+    assert.equal(locations.findTripLocation('country:PL').name,'Polska');
+    assert.equal(locations.findTripLocation('pl-region:pomorskie').name,'Pomorskie');
+    assert.equal(locations.findTripLocation('demo-location-slowenia').name,'Słowenia');
+    assert.equal(locations.findTripLocation('not-a-location'),undefined);
+    assert.deepEqual(locations.searchTripLocations('x'),[]);
+    assert.equal(locations.searchTripLocations('polska')[0].id,'country:PL');
+    assert.equal(Boolean(require.cache[path]),false,'Full dictionary loaded too early');
+    assert.equal(locations.findTripLocation('pl-locality:4259').name,'Chłapowo');
+    assert.ok(require.cache[path]);
+  `;
+  const result = spawnSync(process.execPath,['--input-type=module','-e',source],{encoding:'utf8',windowsHide:true});
+  assert.equal(result.status,0,result.stderr);
+});
+
+test('cached search results cannot be changed by a caller and remain separate by trip mode', () => {
+  const results = searchTripLocations('pomorskie');
+  const expected = results.map(row => row.id);
+  results.pop();
+  assert.deepEqual(searchTripLocations(' POMORSKIE ').map(row=>row.id),expected);
+  assert.ok(searchTripLocations('pomorskie','planned').every(row=>row.kind==='city'||row.kind==='village'));
 });
 
 test('dictionary encoding preserves source identifiers, Polish names, coordinates and normalized names', () => {

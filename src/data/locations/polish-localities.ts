@@ -1,5 +1,8 @@
 import { loadDictionary } from './locality-dictionary.cjs';
 import source from './polish-localities-source.json' with { type: 'json' };
+import provinces from './polish-provinces.json' with { type: 'json' };
+
+export const POLISH_PROVINCES: readonly string[] = provinces;
 
 export type LocalityRow = readonly [
   id: string,

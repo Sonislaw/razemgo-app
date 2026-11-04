@@ -2,6 +2,9 @@
 
 10 ilustracji wygenerowanych 22 października 2026 za pomocą wbudowanego narzędzia `image_gen` i umiejętności imagegen. PNG z przezroczystością, przygotowane do okrągłych miniaturek w aplikacji. Oryginalne obrazy pozostają w katalogu generated_images narzędzia; pliki aplikacji mają rozdzielczość 384 × 384 px.
 
+4.11.2026 zoptymalizowano pliki aplikacji: WebP, jakość 92, bez zmiany wymiarów,
+kadru ani kanału przezroczystości. Łączna waga zmalała z 1 591 028 do 611 666 bajtów.
+
 Wybór: Edytuj profil → Moja ekipa → Awatar ekipy. Nazwa i opis są tekstem aplikacji, nie częścią obrazów.
 
 Awatary widać przy autorach w Odkrywaj, organizatorach w szczegółach wyjazdów,

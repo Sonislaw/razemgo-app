@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { memo } from 'react';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { AppText, layout } from '@/components/ui/primitives';
@@ -12,7 +13,7 @@ import { GroupAvatar } from '@/features/profile/group-avatar';
 import { getProfileCover } from '@/features/profile/profile-cover-data';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 
-export function GroupCard({ item, onNavigate }: { item: PublicGroup; onNavigate?: () => void }) {
+export const GroupCard = memo(function GroupCard({ item, onNavigate }: { item: PublicGroup; onNavigate?: () => void }) {
   const theme = useTheme();
   const { group, activeTripCount } = item;
   const { width } = useWindowDimensions();
@@ -65,7 +66,7 @@ export function GroupCard({ item, onNavigate }: { item: PublicGroup; onNavigate?
       </Pressable>
     </View>
   </View>;
-}
+});
 
 const styles = StyleSheet.create({
   card: { borderRadius: 28, borderWidth: 1, overflow: 'hidden', boxShadow: '0 4px 20px rgba(36, 56, 66, 0.08)' },

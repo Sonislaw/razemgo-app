@@ -31,6 +31,7 @@ export function createTripSearchStore(
     load: (cursor: TripSearchCursor | undefined, signal) =>
       fetchPage(cursor, signal),
     key: (item: DiscoveryTripProposal) => item.trip.id,
+    reuseUnchangedItems: true,
     error: discoveryError,
     refreshItems,
   });

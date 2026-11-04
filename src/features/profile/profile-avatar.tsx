@@ -1,6 +1,7 @@
 import { useTheme } from '@/hooks/use-theme';
 import type { ProfileAvatarId } from '@/types/avatar';
 import { Image, type ImageProps } from 'expo-image';
+import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { getProfileAvatar } from './profile-avatar-data';
 
@@ -17,7 +18,7 @@ const AVATAR_IMAGES = {
   'happy-dog': require('@/assets/images/avatars/happy-dog.webp'),
 } satisfies Record<ProfileAvatarId, ImageProps['source']>;
 
-export function ProfileAvatar({
+export const ProfileAvatar = memo(function ProfileAvatar({
   avatarId,
   size = 64,
   decorative = false,
@@ -96,7 +97,7 @@ export function ProfileAvatar({
       )}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: { flexShrink: 0 },

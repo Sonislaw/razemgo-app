@@ -49,6 +49,8 @@ export function IllustratedPageHeader({
           style={StyleSheet.absoluteFill}
           contentFit="cover"
           contentPosition="bottom right"
+          cachePolicy="memory-disk"
+          transition={0}
           accessible={false}
           alt=""
         />

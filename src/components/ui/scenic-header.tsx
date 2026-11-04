@@ -1,5 +1,6 @@
 import { Spacing } from '@/constants/theme';
 import { Image } from 'expo-image';
+import { memo } from 'react';
 import {
   StyleSheet,
   useWindowDimensions,
@@ -18,7 +19,7 @@ export function getScenicHeaderLayout(width: number) {
   };
 }
 
-export function ScenicHeaderBackground({
+export const ScenicHeaderBackground = memo(function ScenicHeaderBackground({
   testID = 'scenic-page-header',
   style,
 }: {
@@ -41,12 +42,14 @@ export function ScenicHeaderBackground({
         style={[styles.artwork, { height: artworkHeight, top: -artworkOffset }]}
         contentFit="cover"
         contentPosition="bottom"
+        cachePolicy="memory-disk"
+        transition={0}
         accessible={false}
         alt=""
       />
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   background: {

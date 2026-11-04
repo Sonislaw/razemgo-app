@@ -31,6 +31,11 @@ writeFileSync(
   'utf8',
 );
 writeFileSync(
+  new URL('polish-provinces.json', target),
+  JSON.stringify(data.provinces) + '\n',
+  'utf8',
+);
+writeFileSync(
   new URL('polish-localities-license.txt', target),
   license,
   'utf8',

@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { memo } from 'react';
 import type { TripProposal } from '@/types/travel';
 import { TripListingAction, TripListingCard } from './trip-listing-card';
 import { CardShareActions } from '@/features/sharing/card-share-actions';
@@ -13,7 +14,7 @@ interface DiscoveryTripCardProps extends TripProposal {
   datesLabel?: string;
 }
 
-export function DiscoveryTripCard({ trip, group, onNavigate, preview = false, testID, locationLabel, datesLabel }: DiscoveryTripCardProps) {
+export const DiscoveryTripCard = memo(function DiscoveryTripCard({ trip, group, onNavigate, preview = false, testID, locationLabel, datesLabel }: DiscoveryTripCardProps) {
   const openTrip = () => {
     onNavigate?.();
     router.push({ pathname: '/trip/[id]', params: { id: trip.id } });
@@ -41,4 +42,4 @@ export function DiscoveryTripCard({ trip, group, onNavigate, preview = false, te
       }
     />
   );
-}
+});

@@ -1,7 +1,8 @@
 import { Image } from 'expo-image';
+import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-export function ScenicFooter({
+export const ScenicFooter = memo(function ScenicFooter({
   leftInset = 0,
   rightInset = 0,
 }: {
@@ -24,12 +25,14 @@ export function ScenicFooter({
         source={require('@/assets/images/scenic-footer.webp')}
         style={styles.image}
         contentFit="contain"
+        cachePolicy="memory-disk"
+        transition={0}
         accessible={false}
         alt=""
       />
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   footer: { alignSelf: 'stretch', marginTop: 'auto', flexShrink: 0 },

@@ -40,6 +40,7 @@ export function ProfileCoverHeader({
           testID={'profile-cover-' + cover.avatarId}
           source={cover.source}
           recyclingKey={cover.avatarId}
+          cachePolicy="memory-disk"
           contentFit="cover"
           contentPosition="center"
           transition={0}

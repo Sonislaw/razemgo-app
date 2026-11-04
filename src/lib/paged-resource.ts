@@ -22,6 +22,8 @@ export function createPagedResource<
   key: (item: T) => string;
   error: (error: unknown, phase: 'load' | 'more') => string;
   refreshItems?: (items: T[], signal: AbortSignal) => Promise<T[]>;
+  // Opt in for plain JSON DTOs. Other resources keep their existing semantics.
+  reuseUnchangedItems?: boolean;
 }) {
   let state: ResourceState<T, C, P> = {
     page: null,
@@ -40,6 +42,16 @@ export function createPagedResource<
   const unique = (items: T[]) => [
     ...new Map(items.map((item) => [options.key(item), item])).values(),
   ];
+  const reconcileItems = (page: P | null, previous: P | null): P | null => {
+    if (!options.reuseUnchangedItems || !page || !previous) return page;
+    const byId = new Map(previous.items.map(item => [options.key(item),item]));
+    const items = page.items.map(item => {
+      const old = byId.get(options.key(item));
+      return old && (old === item || JSON.stringify(old) === JSON.stringify(item)) ? old : item;
+    });
+    const unchanged = items.length === previous.items.length && items.every((item,i) => item === previous.items[i]);
+    return { ...page, items: unchanged ? previous.items : items };
+  };
   const checkCursor = (before: C, page: P | null) => {
     if (
       page?.hasMore &&
@@ -119,7 +131,7 @@ export function createPagedResource<
           page = { ...next, items: unique([...page.items, ...next.items]) };
         }
       if (version === generation)
-        publish({ page, status: 'ready', error: null });
+        publish({ page: reconcileItems(page,previous), status: 'ready', error: null });
     } catch (error) {
       if (version === generation && !signal.aborted)
         publish({ status: 'error', error: options.error(error, 'load') });
@@ -153,9 +165,9 @@ export function createPagedResource<
       }
       if (version === generation)
         publish({
-          page: next
+          page: reconcileItems(next
             ? { ...next, items: unique([...previous.items, ...next.items]) }
-            : null,
+            : null,previous),
           status: 'ready',
           loadingMore: false,
         });

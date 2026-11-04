@@ -1,4 +1,4 @@
-import { getLocalities } from '../../data/locations/polish-localities.ts';
+import { getLocalities, POLISH_PROVINCES } from '../../data/locations/polish-localities.ts';
 import { SUPPLEMENTARY_LOCATIONS } from '../../data/locations/supplementary.ts';
 import type { LocationOption } from '../../types/location';
 import type { TripMode, TripPlace } from '../../types/travel';
@@ -62,32 +62,31 @@ const baseSupplementary: LocationOption[] = [
     source: 'country',
   },
 ];
+const supplementary: LocationOption[] = [
+  ...baseSupplementary,
+  ...POLISH_PROVINCES.map(
+    (province): LocationOption => ({
+      id: 'pl-region:' + province,
+      name: province[0].toLocaleUpperCase('pl-PL') + province.slice(1),
+      region: '',
+      country: 'Polska',
+      kind: 'region',
+      source: 'derived-region',
+    }),
+  ),
+];
+const supplementaryById = new Map(
+  supplementary.map((item) => [item.id, item]),
+);
 function createLocationIndex() {
   const data = getLocalities();
   const rows = data.places;
-  const rowById = new Map(rows.map((row) => [row[0], row]));
-  const supplementary: LocationOption[] = [
-    ...baseSupplementary,
-    ...data.provinces.map(
-      (province): LocationOption => ({
-        id: 'pl-region:' + province,
-        name: province[0].toLocaleUpperCase('pl-PL') + province.slice(1),
-        region: '',
-        country: 'Polska',
-        kind: 'region',
-        source: 'derived-region',
-      }),
-    ),
-  ];
-  const supplementaryById = new Map(
-    supplementary.map((item) => [item.id, item]),
-  );
+  const rowById = new Map<string, (typeof rows)[number]>();
+  for (const row of rows) rowById.set(row[0], row);
   return {
     data,
     rows,
     rowById,
-    supplementary,
-    supplementaryById,
     provinces: data.provinces.map(
       (province) =>
         normalize(province) + (province === 'pomorskie' ? ' pomorze' : ''),
@@ -119,6 +118,17 @@ const extraEntry = (item: LocationOption): SearchEntry => ({
   ),
   priority: item.kind === 'country' ? 2 : 1,
 });
+const supplementaryEntries = supplementary.map(extraEntry);
+// The dictionary is immutable for this app build. Retain only a bounded set of
+// recent queries so backspacing/revisiting filters does not repeat full scans.
+const searchResults = new Map<string, readonly LocationOption[]>();
+const SEARCH_CACHE_LIMIT = 64;
+function rememberSearch(key: string, items: LocationOption[]) {
+  searchResults.set(key, items);
+  if (searchResults.size > SEARCH_CACHE_LIMIT)
+    searchResults.delete(searchResults.keys().next().value!);
+  return [...items];
+}
 function entryForRow(index: number): SearchEntry {
   const { rows, provinces, counties, communes } = locationIndex();
   const cached = searchEntries.get(index);
@@ -137,13 +147,12 @@ function entryForRow(index: number): SearchEntry {
 export function findTripLocation(id?: string): LocationOption | undefined {
   if (!id) return undefined;
   const canonicalId = legacyIds.get(id) ?? id;
-  const { supplementaryById, rowById, data } = locationIndex();
   const extra = supplementaryById.get(canonicalId);
   if (extra) return extra;
   if (resolved.has(canonicalId)) return resolved.get(canonicalId);
-  const row = canonicalId.startsWith('pl-locality:')
-    ? rowById.get(canonicalId.slice('pl-locality:'.length))
-    : undefined;
+  if (!canonicalId.startsWith('pl-locality:')) return undefined;
+  const { rowById, data } = locationIndex();
+  const row = rowById.get(canonicalId.slice('pl-locality:'.length));
   if (!row) return undefined;
   const location: LocationOption = {
     id: canonicalId,
@@ -165,8 +174,6 @@ export function searchTripLocations(
   query: string,
   mode: TripMode = 'flexible',
 ): LocationOption[] {
-  const { data, supplementary } = locationIndex();
-  const supplementaryEntries = supplementary.map(extraEntry);
   const value = normalize(query)
     .replace(/[,.;]+/gu, ' ')
     .replace(/\s+/gu, ' ')
@@ -184,6 +191,14 @@ export function searchTripLocations(
   if (value.length < MIN_LOCATION_QUERY_LENGTH) return [];
   if (value === 'polska' && mode === 'flexible')
     return [findTripLocation('country:PL')!];
+  const cacheKey = JSON.stringify([mode,value]);
+  const cached = searchResults.get(cacheKey);
+  if (cached) {
+    searchResults.delete(cacheKey);
+    searchResults.set(cacheKey,cached);
+    return [...cached];
+  }
+  const { data } = locationIndex();
   const terms = value.split(' ');
   const buckets = terms
     .filter(
@@ -229,7 +244,7 @@ export function searchTripLocations(
     best.splice(index === -1 ? best.length : index, 0, candidate);
     if (best.length > MAX_LOCATION_SUGGESTIONS) best.pop();
   }
-  return best.map(({ entry }) => findTripLocation(entry.id)!);
+  return rememberSearch(cacheKey,best.map(({ entry }) => findTripLocation(entry.id)!));
 }
 
 export function locationContext(location: LocationOption): string {

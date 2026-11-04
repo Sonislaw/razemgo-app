@@ -854,7 +854,9 @@ async function backend(context, store) {
   });
 }
 async function login(page, email = 'a@example.com') {
-  await page.clock.setFixedTime(new Date('2026-10-24T12:00:00Z'));
+  // Keep calendar dates reproducible while allowing Animated's Date.now clock
+  // to advance alongside requestAnimationFrame.
+  await page.clock.setSystemTime(new Date('2026-10-24T12:00:00Z'));
   await page.goto('/auth/sign-in');
   await page.getByRole('textbox', { name: 'E-mail', exact: true }).fill(email);
   await page.getByLabel('Hasło', { exact: true }).fill('correct-password');

@@ -90,6 +90,7 @@ export function GroupsDiscovery({
       createPagedResource({
         load: fetchPage,
         key: (item: GroupPage['items'][number]) => item.group.id,
+        reuseUnchangedItems: true,
         error: groupDirectoryError,
         refreshItems: USE_DEMO_DATA
           ? undefined

@@ -5,6 +5,31 @@ import { createPagedResource } from '../src/lib/paged-resource.ts';
 import { pageRevision } from '../src/data/contracts/page-revision.ts';
 import { mergeRecentEntities } from '../src/lib/bounded-entities.ts';
 
+test('unchanged DTO refreshes retain card and array identities, while edits and removals are applied', async () => {
+  let rows = [{id:'a',name:'Ekipa A',tags:['Rowery']},{id:'b',name:'Ekipa B',tags:[]}];
+  const store = createPagedResource({
+    key: item => item.id,
+    reuseUnchangedItems: true,
+    error: () => 'retry',
+    load: async () => ({items:structuredClone(rows),totalCount:rows.length,hasMore:false,cursor:null}),
+  });
+  await store.refresh();
+  const initial = store.getSnapshot().page.items;
+  await store.refresh();
+  assert.equal(store.getSnapshot().page.items,initial);
+  rows = rows.map(row => row.id==='b' ? {...row,name:'Nowa nazwa',tags:['Kajaki']} : row);
+  await store.refresh();
+  const edited = store.getSnapshot().page.items;
+  assert.equal(edited[0],initial[0]);
+  assert.notEqual(edited[1],initial[1]);
+  assert.equal(edited[1].name,'Nowa nazwa');
+  rows = rows.slice(1);
+  await store.refresh();
+  assert.deepEqual(store.getSnapshot().page.items.map(row=>row.id),['b']);
+  await store.restart();
+  assert.notEqual(store.getSnapshot().page.items[0],edited[1]);
+});
+
 function fixture(fingerprints = true) {
   let rows = Array.from({ length: 15 }, (_, i) => ({
     id: String((i + 1) * 10).padStart(3, '0'),

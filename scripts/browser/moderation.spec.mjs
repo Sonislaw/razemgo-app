@@ -1,5 +1,6 @@
 import {test,expect} from '@playwright/test';
 import {A,B,backend,login,state,groupId} from './trip-fixtures.mjs';
+import {scrollUntil} from './collection-helpers.mjs';
 const reportId='00000000-0000-4000-8000-000000000901';
 const summary=(id=reportId,patch={})=>({id,target_kind:'trip',reason:'Spam',status:'new',created_at:'2026-10-24T10:00:00.000Z',updated_at:'2026-10-24T10:00:00.000Z',reported_name:'Ekipa nad jeziorem',reporter_name:'Ekipa zgłaszająca',reported_group_id:groupId(B),reporter_group_id:groupId(A),...patch});
 async function fixture(context,store){
@@ -17,9 +18,12 @@ async function fixture(context,store){
     if(!store.admin||id!==A)return respond({code:'42501'},403);
     if(store.failAdmin)return respond({code:'XX000',message:'private backend error'},503);
     if(name==='admin_list_reports'){
+      if(body.before_id&&store.failMoreAdmin)return respond({code:'XX000'},503);
       const items=store.records.filter(r=>(body.status_filter==='all'||body.status_filter==='open'&&r.status!=='closed'||r.status===body.status_filter)
         &&(!body.search_text||(r.reported_name+' '+r.reason).toLowerCase().includes(body.search_text.toLowerCase())));
-      return respond({items,has_more:false,counts:Object.fromEntries(['new','in_progress','closed'].map(s=>[s,store.records.filter(r=>r.status===s).length]))});
+      const offset=body.before_id?items.findIndex(item=>item.id===body.before_id)+1:0;
+      const page=items.slice(offset,offset+(store.reportPageSize??items.length));
+      return respond({items:page,has_more:offset+page.length<items.length,counts:Object.fromEntries(['new','in_progress','closed'].map(s=>[s,store.records.filter(r=>r.status===s).length]))});
     }
     const detail=details.get(body.report_id);if(!detail)return respond({code:'P0002'},404);
     if(name==='admin_report_detail')return respond(detail);
@@ -37,6 +41,26 @@ async function fixture(context,store){
     return respond({},400);
   });
 }
+test('moderation queue automatically appends pages and retains reports on a paging failure',async({page,context})=>{
+  const store=state();store.admin=true;await fixture(context,store);
+  store.records=Array.from({length:43},(_,index)=>summary('00000000-0000-4000-8000-'+String(8000+index).padStart(12,'0'),{reported_name:'Zgłoszona ekipa '+index}));
+  store.reportPageSize=20;store.failMoreAdmin=true;
+  await login(page);await page.goto('/admin');
+  const list=page.getByTestId('admin-report-list'),rows=list.getByRole('button',{name:/^Zgłoszona ekipa/});
+  await expect(rows).toHaveCount(20);
+  await scrollUntil(list,async()=>await list.getByRole('alert').count()>0);
+  await expect(rows).toHaveCount(20);
+  const reads=()=>store.adminCalls.filter(call=>call.name==='admin_list_reports'&&call.body.before_id).length;
+  const failed=reads();
+  await list.evaluate(el=>{el.scrollTop=0;});await list.evaluate(el=>{el.scrollTop=el.scrollHeight;});
+  await expect.poll(reads).toBe(failed);
+  store.failMoreAdmin=false;await list.getByRole('button',{name:'Spróbuj ponownie',exact:true}).click();
+  await expect(rows).toHaveCount(40);
+  await scrollUntil(list,async()=>await rows.count()===43);
+  await expect(list.getByTestId('pagination-footer')).toHaveCount(0);
+  await expect(list.getByRole('button',{name:'Wczytaj kolejne',exact:true})).toHaveCount(0);
+});
+
 test('desktop moderation supports evidence, confirmed actions, audit and queue filters',async({page,context})=>{
   await page.setViewportSize({width:1440,height:1000});const store=state();store.admin=true;await fixture(context,store);await login(page);
   await page.goto('/admin');await page.getByRole('button',{name:'Ekipa nad jeziorem, Spam',exact:true}).click();

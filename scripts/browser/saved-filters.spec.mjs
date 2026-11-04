@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { loadNextPage } from './collection-helpers.mjs';
 import { A, B, groupId, state, backend, login } from './trip-fixtures.mjs';
 import { INITIAL_FILTERS } from '../../src/features/discovery/filter-trips.ts';
 import { INITIAL_GROUP_FILTERS } from '../../src/features/groups/group-data.ts';
@@ -55,9 +56,8 @@ for (const width of [320, 390]) test(`trip sets: retry, first-page reload, renam
   expect(store.filterSaveCalls.at(-1).target_id).toBe(firstId);
   expect(store.filterSets.size).toBe(1);
   await expect(button(page, 'Otwórz filtry')).toContainText('Wszystkie plany');
-  await button(page, 'Pokaż więcej wyjazdów').click();
   const screen = page.getByTestId('discovery-screen');
-  await expect(screen.getByTestId('discovery-screen-loaded-10')).toBeAttached();
+  await loadNextPage(screen,10);
   await screen.evaluate(el => { el.scrollTop = 0; });
   await load(page, 1, 'Wszystkie plany');
   await expect(screen.getByTestId('discovery-screen-loaded-5')).toBeAttached();

@@ -8,7 +8,7 @@ import {
   backend,
   login,
 } from './trip-fixtures.mjs';
-import { expectLoaded, scrollToRow } from './collection-helpers.mjs';
+import { loadNextPage, expectLoaded, expectLoadedAtLeast, scrollToRow, scrollUntil } from './collection-helpers.mjs';
 const uuid = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
 function seed(store, n = 13) {
   for (let i = 0; i < n; i++) {
@@ -74,36 +74,26 @@ test('bounded trip pages, load-more retry, full filter counts, global sorting an
     await route.fallback();
   });
   store.failMore = true;
-  await page
-    .getByRole('button', { name: 'Pokaż więcej wyjazdów', exact: true })
-    .click();
-  const loadingMore = page.getByRole('button', {
-    name: 'Wczytywanie ogłoszeń',
-    exact: true,
-  });
+  const loadingMore = screen.getByTestId('pagination-footer');
+  await scrollUntil(screen,async()=>await loadingMore.getByRole('progressbar').count()>0);
   await expect(loadingMore).toBeVisible();
-  await expect(loadingMore).toBeDisabled();
+  await expect(screen.getByRole('button',{name:'Pokaż więcej wyjazdów',exact:true})).toHaveCount(0);
   await expect(cards).toHaveCount(5);
   await expect(
-    loadingMore.getByLabel('Wczytywanie kolejnych ogłoszeń', { exact: true }),
+    loadingMore.getByLabel('Wczytywanie kolejnych ogłoszeń…', { exact: true }),
   ).toBeVisible();
   releaseMore();
   await expect(page.getByRole('alert')).toContainText(
     'Nie udało się pobrać ogłoszeń',
   );
   await expect(cards).toHaveCount(5);
-  await expect(
-    page.getByRole('button', { name: 'Pokaż więcej wyjazdów', exact: true }),
-  ).toBeEnabled();
+  await expect(loadingMore.getByRole('button',{name:'Spróbuj ponownie',exact:true})).toBeEnabled();
   store.failMore = false;
   await page
     .getByRole('button', { name: 'Spróbuj ponownie', exact: true })
     .click();
   await expectLoaded(screen, 10);
-  await page
-    .getByRole('button', { name: 'Pokaż więcej wyjazdów', exact: true })
-    .click();
-  await expectLoaded(screen, 13);
+  await loadNextPage(screen, 13);
   await expect(
     page.getByRole('button', { name: 'Pokaż więcej wyjazdów', exact: true }),
   ).toHaveCount(0);
@@ -119,10 +109,7 @@ test('bounded trip pages, load-more retry, full filter counts, global sorting an
   await expect(
     page.getByText('Propozycje · 13', { exact: true }),
   ).toBeVisible();
-  await page
-    .getByRole('button', { name: 'Pokaż więcej wyjazdów', exact: true })
-    .click();
-  await expectLoaded(screen, 10);
+  await loadNextPage(screen, 10);
   await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
   await expect(cards).toHaveCount(0);
   await page
@@ -188,10 +175,7 @@ test('returning from a listing or its crew restores all viewed pages and the scr
   const screen = page.getByTestId('discovery-screen'),
     cards = page.locator('[data-testid^="discovery-trip-"]');
   await expect(cards).toHaveCount(5);
-  await page
-    .getByRole('button', { name: 'Pokaż więcej wyjazdów', exact: true })
-    .click();
-  await expectLoaded(screen, 10);
+  await loadNextPage(screen, 10);
   const target = page.getByTestId('discovery-trip-' + uuid(8009));
   const openTrip = target.getByRole('button', { name: /^Otwórz wyjazd ze zdjęcia:/ });
   await scrollToRow(screen, openTrip);
@@ -209,10 +193,10 @@ test('returning from a listing or its crew restores all viewed pages and the scr
     .getByRole('button', { name: 'Wróć do listy wyjazdów', exact: true })
     .click();
   await expect(page).toHaveURL('http://localhost:8085/explore');
-  await expectLoaded(screen, 10);
+  await expectLoadedAtLeast(screen, 10);
   await expect(
-    page.getByRole('button', { name: 'Pokaż więcej wyjazdów', exact: true }),
-  ).toBeEnabled();
+    screen.getByRole('button',{name:'Pokaż więcej wyjazdów',exact:true}),
+  ).toHaveCount(0);
   await expect
     .poll(async () =>
       Math.abs((await screen.evaluate((el) => el.scrollTop)) - tripScroll),
@@ -224,7 +208,7 @@ test('returning from a listing or its crew restores all viewed pages and the scr
   await openTitle.focus(); await page.keyboard.press('Enter');
   await expect(page).toHaveURL('http://localhost:8085/trip/' + uuid(8009));
   await page.getByRole('button', { name: 'Wróć do listy wyjazdów', exact: true }).click();
-  await expectLoaded(screen, 10);
+  await expectLoadedAtLeast(screen, 10);
   await expect.poll(async () => Math.abs((await screen.evaluate(el => el.scrollTop)) - titleScroll)).toBeLessThan(4);
   const openCrew = target.getByRole('button', { name: /^Zobacz profil:/ });
   await openCrew.scrollIntoViewIfNeeded();
@@ -233,19 +217,16 @@ test('returning from a listing or its crew restores all viewed pages and the scr
   await expect(page).toHaveURL('http://localhost:8085/crew/' + groupId(B));
   await page.getByRole('button', { name: 'Wróć', exact: true }).click();
   await expect(page).toHaveURL('http://localhost:8085/explore');
-  await expectLoaded(screen, 10);
+  await expectLoadedAtLeast(screen, 10);
   await expect(
-    page.getByRole('button', { name: 'Pokaż więcej wyjazdów', exact: true }),
-  ).toBeEnabled();
+    screen.getByRole('button',{name:'Pokaż więcej wyjazdów',exact:true}),
+  ).toHaveCount(0);
   await expect
     .poll(async () =>
       Math.abs((await screen.evaluate((el) => el.scrollTop)) - crewScroll),
     )
     .toBeLessThan(4);
-  await page
-    .getByRole('button', { name: 'Pokaż więcej wyjazdów', exact: true })
-    .click();
-  await expectLoaded(screen, 13);
+  await loadNextPage(screen, 13);
   await page.getByRole('tab', { name: 'Start', exact: true }).click();
   await expect(page).toHaveURL('http://localhost:8085/');
   await page.getByRole('tab', { name: 'Odkrywaj', exact: true }).click();
@@ -299,10 +280,7 @@ test('a newly inserted middle listing reconciles pages and retains the visible r
   await page.goto('/explore');
   const screen = page.getByTestId('discovery-screen');
   await expectLoaded(screen, 5);
-  await screen
-    .getByRole('button', { name: 'Pokaż więcej wyjazdów', exact: true })
-    .click();
-  await expectLoaded(screen, 10);
+  await loadNextPage(screen, 10);
   const target = screen.getByTestId('discovery-trip-' + uuid(8008));
   await scrollToRow(screen, target);
   const before = (await target.boundingBox()).y;

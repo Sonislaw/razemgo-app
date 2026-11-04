@@ -8,6 +8,7 @@ import {
   type ThemeColor,
 } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useAutoPagination, type AutoPagination } from '@/hooks/use-auto-pagination';
 import type { ReactNode } from 'react';
 import {
   Platform,
@@ -75,6 +76,7 @@ export function Screen({
   adjustKeyboardInsets = true,
   footerPlacement = 'flow',
   onNearEnd,
+  pagination,
 }: {
   children: ReactNode;
   header?: ReactNode;
@@ -82,23 +84,29 @@ export function Screen({
   adjustKeyboardInsets?: boolean;
   footerPlacement?: 'flow' | 'fixed';
   onNearEnd?: () => void;
+  pagination?: AutoPagination;
 }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const fixedFooter = footerPlacement === 'fixed';
+  const paging = useAutoPagination(pagination);
   const content = (
     <ScrollView
-      scrollEventThrottle={onNearEnd ? 100 : undefined}
+      scrollEventThrottle={onNearEnd || pagination ? 100 : undefined}
+      onLayout={pagination ? paging.onLayout : undefined}
+      onScrollBeginDrag={pagination ? paging.onScrollBeginDrag : undefined}
+      onContentSizeChange={pagination ? paging.onContentSizeChange : undefined}
       onScroll={
-        onNearEnd
+        onNearEnd || pagination
           ? (event) => {
+              if (pagination) paging.onScroll(event);
               const { contentOffset, contentSize, layoutMeasurement } =
                 event.nativeEvent;
               if (
                 contentOffset.y + layoutMeasurement.height >
                 contentSize.height - 600
               )
-                onNearEnd();
+                onNearEnd?.();
             }
           : undefined
       }

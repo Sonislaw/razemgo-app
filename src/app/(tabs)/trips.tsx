@@ -1,6 +1,5 @@
 import { CollectionScreen } from '@/components/ui/collection-screen';
 import { DataStatus } from '@/components/ui/data-status';
-import { LoadMoreButton } from '@/components/ui/load-more-button';
 import { Icon } from '@/components/ui/icon';
 import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import {
@@ -70,25 +69,17 @@ function TripsContent() {
         key={noticeId ?? 'initial'}
         testID="own-trips-screen"
         data={trips}
+        pagination={{itemCount:trips.length,hasMore,loading:loadingMore,disabled:status==='loading',error,
+          resetKey:loadMore,loadingLabel:'Wczytywanie kolejnych ogłoszeń…',onLoadMore:loadMore,onRetry:retry}}
         afterList={
           <>
-            {error && trips.length ? (
+            {error && trips.length && !hasMore ? (
               <DataStatus
                 status="error"
                 error={error}
                 onRetry={() => {
                   void retry();
                 }}
-              />
-            ) : null}
-            {hasMore ? (
-              <LoadMoreButton
-                label="Pokaż więcej wyjazdów"
-                loadingLabel="Wczytywanie ogłoszeń"
-                loadingAccessibilityLabel="Wczytywanie kolejnych ogłoszeń"
-                loading={loadingMore}
-                disabled={status === 'loading'}
-                onPress={() => { void loadMore(); }}
               />
             ) : null}
           </>

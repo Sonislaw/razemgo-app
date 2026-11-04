@@ -211,6 +211,12 @@ opisuje zbiór dostępnych ID i kolejność. Nie jest uprawnieniem ani rewizją 
 rekordu; znane elementy są odświeżane osobno. Cache encji własnych wyjazdów jest
 ograniczony do 100 i przypina najnowsze aktywne ogłoszenie; nie obcina wczytanych list.
 
+Listy automatycznie pobierają następną stronę po zbliżeniu do końca. Wspólny
+[`useAutoPagination`](../src/hooks/use-auto-pagination.ts) obsługuje listy ekranów,
+panele mapy i reakcji, powiadomienia, moderację oraz przewijanie czatu ku starszym
+wiadomościom. Podczas pobierania widoczny jest komunikat ze wskaźnikiem. Błąd
+zachowuje wczytane treści i wymaga ręcznego ponowienia; nie uruchamia pętli żądań.
+
 UI korzysta ze wspólnych tokenów w [`theme.ts`](../src/constants/theme.ts), lokalnych
 ilustracji i obszaru treści do 600 px. Bieżący hook wymusza jasny motyw, mimo
 istnienia palety ciemnej. Miejscowości są wyszukiwane lokalnie w odroczonym słowniku.

@@ -292,10 +292,10 @@ export default function MessagesScreen() {
         afterList={
           <View style={{ gap: 12 }}>
             {loadingMoreMailbox ? (
-              <ActivityIndicator
+              <View style={{flexDirection:'row',alignItems:'center',gap:12}} accessibilityLiveRegion="polite"><ActivityIndicator
                 accessibilityLabel="Wczytywanie skrzynki"
                 color={theme.primaryStrong}
-              />
+              /><AppText variant="caption" color="textSecondary" style={{flexShrink:1}}>Wczytywanie kolejnych rozmów i zaproszeń…</AppText></View>
             ) : null}
             <View
               style={[

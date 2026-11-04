@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { scrollUntil, loadNextPage } from './collection-helpers.mjs';
 import { A, B, groupId, state, backend, login } from './trip-fixtures.mjs';
 import { mockMapTiles } from './map-fixtures.mjs';
 import {
@@ -90,7 +91,7 @@ for (const width of [320, 390])
       page.getByRole('dialog', { name: 'Wyjazdy w tym miejscu', exact: true }),
     ).toBeVisible();
     await expect(page.getByText('Wyniki: 13', { exact: true })).toBeVisible();
-    await button(page, 'Pokaż więcej wyjazdów w tym miejscu').click();
+    await scrollUntil(page.getByTestId('sheet-scroll'),()=>store.mapCalls.some(c=>c.endpoint==='get_trip_map_items'&&c.after_cursor));
     await expect
       .poll(
         () =>
@@ -456,9 +457,8 @@ test('list pages and scroll, map camera and selected trip survive switching and 
   await expect(
     page.getByText('Propozycje · 13', { exact: true }),
   ).toBeVisible();
-  await button(page, 'Pokaż więcej wyjazdów').click();
   const screen = page.getByTestId('discovery-screen');
-  await expect(screen.getByTestId('discovery-screen-loaded-10')).toBeAttached();
+  await loadNextPage(screen,10);
   await screen.evaluate((el) => {
     el.scrollTop = 420;
   });

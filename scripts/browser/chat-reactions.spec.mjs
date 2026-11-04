@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+import { scrollUntil } from './collection-helpers.mjs';
 import {A,B,groupId,state,backend,login} from './trip-fixtures.mjs';
 
 const CHAT='00000000-0000-4000-8000-000000000903';
@@ -102,7 +103,7 @@ test('failed reaction saves and history loads remain retryable and never discard
 test('older pages also support the long-press reaction picker',async({page,context})=>{
   const store=seed(65);await backend(context,store);await login(page);await page.goto('/chat/'+CHAT);
   await expect(row(page,65)).toBeInViewport();
-  await page.getByRole('button',{name:'Wczytaj starsze wiadomości',exact:true}).click();
+  await scrollUntil(page.getByTestId('chat-message-list'),async()=>await row(page,1).count()>0);
   await row(page,1).getByText('Rozmowa o podróży, wiadomość 1.',{exact:true}).click({delay:400});
   await expect(page.getByRole('heading',{name:'Reakcja na wiadomość',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Dzięki',exact:true}).click();

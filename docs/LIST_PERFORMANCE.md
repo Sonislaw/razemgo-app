@@ -5,17 +5,25 @@
 ## Okno renderowania i nawigacja
 
 - Pierwsze 5 kart jest renderowanych od razu. Okno obejmuje 5 wysokości ekranu, a dalsze karty są montowane w partiach po 4. Natywne przycinanie widoków jest wyłączone; ograniczenie liczby komponentów realizuje sama wirtualizacja.
-- Liczba pobranych rekordów pozostaje niezależna od liczby wyrenderowanych kart. Odkrywaj i profil ekipy nadal pobierają po 5 z bazy. Wirtualizacja nie uruchamia automatycznego pobierania następnych stron.
-- **Moje wyjazdy na Dev:** aktywne i archiwalne są pobierane po 5 przez istniejące `list_my_trip_page`. Kolejną porcję pobiera wyłącznie kliknięcie „Pokaż więcej wyjazdów”, analogicznie do Odkrywaj. Podczas pobierania przycisk jest zablokowany, pokazuje „Wczytywanie ogłoszeń” i kręciołek. Samo przewinięcie niczego nie pobiera. Błąd zachowuje poprzednie karty i umożliwia ponowienie. Liczniki oraz filtry dotyczą całego zbioru; powrót ze szczegółów zachowuje wczytane strony i pozycję. Zmiana filtrów lub aktywne/archiwum zaczyna od pierwszej porcji. Zmiana z 29.10.2026 obejmuje wyłącznie kod Dev i nie wymaga migracji ani nowego APK; Preview 1.3.0 zachowuje dotychczasowe zachowanie.
+- Liczba pobranych rekordów pozostaje niezależna od liczby wyrenderowanych kart. Odkrywaj, profil ekipy oraz Moje wyjazdy pobierają po 5 z bazy. Od 4.11.2026 na Dev zbliżenie do końca listy automatycznie pobiera następną stronę i pokazuje komunikat ze wskaźnikiem ładowania.
+- Wspólny `useAutoPagination` pilnuje pojedynczego żądania, fokusu ekranu i wznowienia po trwającym odświeżaniu. Błąd zachowuje poprzednie karty i zatrzymuje automatyczne próby do ręcznego ponowienia. Liczniki oraz filtry dotyczą całego zbioru; powrót ze szczegółów zachowuje wczytane strony i pozycję. Zmiana filtrów lub aktywne/archiwum zaczyna od pierwszej porcji. Zmiana obejmuje też listy w panelach mapy i reakcji, powiadomienia, moderację i przewijanie historii czatu ku starszym wiadomościom. Nie wymaga migracji ani nowego APK.
 - Ulubione, reakcje i obecność korzystają z dotychczasowych wspólnych magazynów. Odmontowanie karty nie usuwa zapisanej reakcji ani serduszka.
 - Wyzerowanie wyników przy nowym zapytaniu resetuje przewinięcie. Powrót ze szczegółów zachowuje dane, zmierzone karty i pozycję. Odświeżanie istniejących kart nie wstawia nad listą wskaźnika ładowania zmieniającego wysokość nagłówka.
 - Obrazy krajobrazów i avatarów mają jawny cache pamięci i dysku, włączone zmniejszanie przy dekodowaniu, klucze zgodne z zawartością i brak powtarzanej animacji przy montowaniu. Wymiary wynikają z istniejących stylów, więc oczekiwanie na obraz albo błąd obrazu nie zmienia wysokości karty.
 
 ## Weryfikacja
 
+Automatyczne doładowywanie z 4.11.2026: przeszły lint, TypeScript, kontrola granic
+źródeł i **637 testów Node/PGlite**. Testy przeglądarkowe sprawdzają postęp
+pobierania, zachowanie treści po błędzie, ręczne ponowienie, listy po 50 rekordów,
+powroty do przewiniętej karty, izolację kont, mapę i zapisane filtry przy 320/390 px,
+starsze wiadomości podczas odświeżania oraz listy reakcji i moderacji. Scenariusze
+nawigacji dopuszczają pobranie następnej strony podczas dochodzenia do końcowej
+karty; początkowa strona i rozmiar porcji nadal są sprawdzane dokładnie.
+
 Zmiana stronicowania Moich wyjazdów na Dev z 29.10.2026: przeszły lint, TypeScript, **513 testów Node/PGlite** oraz **9 wybranych scenariuszy Playwright**. Nowe przypadki sprawdzają aktywne i archiwalne strony 5+5+3, wskaźnik ładowania, retry bez utraty kart, pełne liczniki, filtrowanie poza pierwszą stroną i powrót do pozycji po szczegółach. Regresja objęła również 50 własnych wyjazdów, izolację kont i cały cykl zapisu/edycji/usuwania. Kontrola bundla Androida potwierdziła działający Metro i konfigurację Dev; nie wykonano testu na fizycznym telefonie.
 
-Po zamianie automatycznego doładowania na przycisk ponownie przeszły lint, TypeScript i **6 scenariuszy Playwright**. W aktywnych i archiwalnych sprawdzono, że samo przewinięcie do końca zachowuje pięć rekordów i nie wysyła żądania następnej strony; kliknięcie pobiera kolejne pięć, blokuje przycisk i pokazuje kręciołek. Pozostały poprawne retry, powrót do pozycji, pełne filtry i test listy z 50 własnymi wyjazdami.
+Historycznie, po zamianie automatycznego doładowania na przycisk, ponownie przeszły lint, TypeScript i **6 scenariuszy Playwright**. W aktywnych i archiwalnych sprawdzono, że samo przewinięcie do końca zachowuje pięć rekordów i nie wysyła żądania następnej strony; kliknięcie pobiera kolejne pięć, blokuje przycisk i pokazuje kręciołek. Pozostały poprawne retry, powrót do pozycji, pełne filtry i test listy z 50 własnymi wyjazdami. Od 4.11.2026 na Dev obowiązuje automatyczne doładowywanie opisane wyżej.
 
 Scenariusze `scripts/browser/collection-performance.spec.mjs` używają po 50 rekordów. Sprawdzają odmontowanie odległych kart, ponowne pokazanie ulubionej karty, powrót do ostatniego ogłoszenia, zagnieżdżoną nawigację ekipa → wyjazd → ekipa → Odkrywaj, reset po zmianie zakładki, izolację kont i ponowienie nieudanej strony. Osobna próba celowo zatrzymuje i przerywa pobieranie obrazów, mierząc wysokość karty na szerokości 320 px.
 

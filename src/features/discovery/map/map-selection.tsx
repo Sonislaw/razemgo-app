@@ -101,9 +101,12 @@ export function MapSelection({
       </Card>
     );
   return (
-    <BottomSheet title="Wyjazdy w tym miejscu" onClose={onClose}>
+    <BottomSheet title="Wyjazdy w tym miejscu" onClose={onClose}
+      pagination={{itemCount:page.items.length,hasMore:page.hasMore,loading:state.loadingMore,
+        disabled:state.status==='loading',error:state.error,resetKey:store,
+        loadingLabel:'Wczytywanie kolejnych wyjazdów…',onLoadMore:store.more,onRetry:store.retry}}>
       <DataStatus
-        status={state.status}
+        status={page.items.length && page.hasMore ? 'ready' : state.status}
         error={state.error}
         label="Wczytywanie wyjazdów"
         onRetry={() => void store.retry()}
@@ -141,18 +144,6 @@ export function MapSelection({
           </View>
         </Pressable>
       ))}
-      {page?.hasMore ? (
-        <Button
-          label={
-            state.loadingMore
-              ? 'Wczytywanie…'
-              : 'Pokaż więcej wyjazdów w tym miejscu'
-          }
-          variant="secondary"
-          disabled={state.loadingMore}
-          onPress={() => void store.more()}
-        />
-      ) : null}
     </BottomSheet>
   );
 }

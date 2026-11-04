@@ -66,10 +66,10 @@ export function NotificationEntryRow({ entry, onOpen, compact = false }: {
   </Pressable>;
 }
 
-export function NotificationFeedback() {
+export function NotificationFeedback({ hideLoadError = false }: {hideLoadError?:boolean}) {
   const inbox = useNotifications();
   return <>
-    {inbox.error ? <Card style={{ gap: 8 }}>
+    {inbox.error && !hideLoadError ? <Card style={{ gap: 8 }}>
       <AppText variant="caption" accessibilityRole="alert">{inbox.error}</AppText>
       <Button label="Odśwież powiadomienia" variant="secondary" onPress={() => { void inbox.refresh(); }} />
     </Card> : null}

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { A, groupId, state, backend, login } from './trip-fixtures.mjs';
-import { expectLoaded, scrollToRow } from './collection-helpers.mjs';
+import { expectLoaded, loadNextPage, scrollUntil, scrollToRow } from './collection-helpers.mjs';
 
 function seed(store, archived) {
   return Array.from({ length: 13 }, (_, index) => {
@@ -21,12 +21,8 @@ function seed(store, archived) {
   });
 }
 
-async function reachEnd(screen) {
-  await screen.evaluate(el => { el.scrollTop = el.scrollHeight; });
-}
-
 for (const archived of [false, true]) {
-  test(`${archived ? 'archived' : 'active'} own listings load 5+5+3 only on click, show progress, retain the detail position and filter the full result set`, async ({page, context}) => {
+  test(`${archived ? 'archived' : 'active'} own listings automatically load 5+5+3, show progress, retain the detail position and filter the full result set`, async ({page, context}) => {
     test.setTimeout(120000);
     const store = state();
     const active = seed(store, false), past = seed(store, true);
@@ -49,21 +45,16 @@ for (const archived of [false, true]) {
       if (body?.after_cursor && body.archived === archived) await pending;
       await route.fallback();
     });
-    const moreButton = screen.getByRole('button', {name: 'Pokaż więcej wyjazdów', exact: true});
-    await scrollToRow(screen, moreButton);
-    await reachEnd(screen);
+    const moreButton = screen.getByTestId('pagination-footer');
+    await scrollUntil(screen,async()=>await moreButton.getByRole('progressbar').count()>0);
     await expectLoaded(screen, 5);
-    expect(store.ownTripPageCalls.filter(call => call.after_cursor)).toHaveLength(0);
-    await moreButton.click();
-    const loading = screen.getByRole('button', {name: 'Wczytywanie ogłoszeń', exact: true});
+    const loading = moreButton;
     await expect(loading).toBeVisible();
-    await expect(loading).toBeDisabled();
-    await expect(loading.getByLabel('Wczytywanie kolejnych ogłoszeń', {exact: true})).toBeVisible();
+    await expect(loading.getByLabel('Wczytywanie kolejnych ogłoszeń…', {exact: true})).toBeVisible();
     release();
     await expectLoaded(screen, 10);
-    await scrollToRow(screen, moreButton);
     expect(store.ownTripPageCalls.filter(call => call.after_cursor)).toHaveLength(1);
-    await moreButton.click(); await expectLoaded(screen, 13);
+    await loadNextPage(screen,13);
     await expect(screen.getByText('Wczytywanie ogłoszeń', {exact: true})).toHaveCount(0);
     await expect(moreButton).toHaveCount(0);
     const more = store.ownTripPageCalls.filter(call => call.archived === archived && call.after_cursor);
@@ -107,10 +98,7 @@ test('failed own-listing pages retain cards and wait for an explicit retry', asy
     }
     return route.fallback();
   });
-  const more = screen.getByRole('button', {name: 'Pokaż więcej wyjazdów', exact: true});
-  await scrollToRow(screen, more); await reachEnd(screen);
-  expect(failedRequests).toBe(0);
-  await more.click();
+  await scrollUntil(screen,async()=>failedRequests>0);
   await expect(screen.getByRole('alert')).toContainText('Nie udało się pobrać wyjazdów');
   await expectLoaded(screen, 5);
   const attempts = failedRequests;

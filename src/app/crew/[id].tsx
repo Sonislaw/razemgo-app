@@ -2,7 +2,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { AppText, Button, Card, EmptyState, SectionTitle } from '@/components/ui/primitives';
 import { CollectionScreen } from '@/components/ui/collection-screen';
 import { DataStatus } from '@/components/ui/data-status';
-import { LoadMoreButton } from '@/components/ui/load-more-button';
 import { ProfileSubpageHeader } from '@/features/profile/profile-ui';
 import { GroupContactAction } from '@/features/messaging/trip-contact-action';
 import { GroupReportAction } from '@/features/moderation/trip-report-action';
@@ -29,6 +28,9 @@ export default function PublicGroupScreen() {
     onConfirm: async () => { if (await setBlock(id, true)) back(); },
   }} /> : null;
   return <CollectionScreen testID="crew-profile-screen" data={available ? data.trips : []} itemGap={24}
+    pagination={{itemCount:available?data.trips.length:0,hasMore:available&&data.hasMore,loading:loadingMore,
+      disabled:status==='loading',error,enabled:available,resetKey:loadMore,
+      loadingLabel:'Wczytywanie kolejnych ogłoszeń…',onLoadMore:loadMore,onRetry:retry}}
     header={available ? <ProfileCoverHeader avatarId={data.group.avatarId} title="Profil ekipy" onBack={back} actions={profileActions} /> : undefined}
     keyExtractor={item => item.trip.id}
     renderItem={({ item }) => <DiscoveryTripCard {...item} onNavigate={preserveOnReturn} />}
@@ -53,10 +55,7 @@ export default function PublicGroupScreen() {
     </>}
     empty={available ? <Card><AppText color="textSecondary">Ta ekipa nie ma teraz aktywnych ogłoszeń. Możesz zaprosić ją do kontaktu i wspólnie wymyślić wyjazd.</AppText></Card> : null}
     afterList={available ? <>
-      <DataStatus status={status === 'loading' ? 'ready' : status} error={error} label="Wczytywanie ogłoszeń" onRetry={() => void retry()} />
-      {data.hasMore ? <LoadMoreButton label="Pokaż więcej wyjazdów" loadingLabel="Wczytywanie ogłoszeń"
-        loadingAccessibilityLabel="Wczytywanie kolejnych ogłoszeń" loading={loadingMore} disabled={status === 'loading'}
-        onPress={() => void loadMore()} /> : null}
+      <DataStatus status={status === 'loading' || (data.trips.length && data.hasMore) ? 'ready' : status} error={error} label="Wczytywanie ogłoszeń" onRetry={() => void retry()} />
     </> : null}
   />;
 }

@@ -1,5 +1,6 @@
 import { BottomSheet } from '@/components/ui/bottom-sheet';
-import { LoadMoreButton } from '@/components/ui/load-more-button';
+import { PaginationFooter } from '@/components/ui/pagination-footer';
+import { useAutoPagination } from '@/hooks/use-auto-pagination';
 import { Icon } from '@/components/ui/icon';
 import {
   AppText,
@@ -13,7 +14,7 @@ import {
 import { useTheme } from '@/hooks/use-theme';
 import { createRequestKey } from '@/lib/request-key';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
+import { router, useIsFocused } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -116,6 +117,11 @@ export default function AdminScreen() {
   const requests = useRef({ list: 0, detail: 0 });
   const active = useRef(true);
   const busy = useRef(false);
+  const focused = useIsFocused();
+  const pagination = {itemCount:page.items.length,hasMore:page.has_more,loading,error:listError,
+    enabled:access.is_admin&&focused&&(wide||!selected),resetKey:filter+'|'+search,
+    loadingLabel:'Wczytywanie kolejnych zgłoszeń…',onLoadMore:()=>load(page.items.at(-1))};
+  const paging = useAutoPagination(pagination);
   useEffect(() => {
     const current = requests.current;
     active.current = true;
@@ -519,6 +525,8 @@ export default function AdminScreen() {
         />
       </View>
       <ScrollView
+        testID="admin-report-list"
+        onScroll={paging.onScroll} onScrollBeginDrag={paging.onScrollBeginDrag} onLayout={paging.onLayout} onContentSizeChange={paging.onContentSizeChange} scrollEventThrottle={100}
         contentContainerStyle={{
           padding: wide ? 32 : 16,
           paddingBottom: 32 + insets.bottom,
@@ -636,7 +644,7 @@ export default function AdminScreen() {
                 {loading && !page.items.length ? (
                   <ActivityIndicator accessibilityLabel="Wczytywanie zgłoszeń" />
                 ) : null}
-                {listError ? (
+                {listError && !page.has_more ? (
                   <Card>
                     <AppText accessibilityRole="alert">{listError}</AppText>
                     <Button
@@ -701,13 +709,7 @@ export default function AdminScreen() {
                     </View>
                   </Pressable>
                 ))}
-                {page.has_more ? (
-                  <LoadMoreButton
-                    label="Pokaż kolejne zgłoszenia"
-                    loading={loading}
-                    onPress={() => void load(page.items.at(-1))}
-                  />
-                ) : null}
+                <PaginationFooter pagination={pagination} onRetry={paging.retry} />
               </View>
             ) : null}
             {wide || selected ? (

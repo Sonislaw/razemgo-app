@@ -60,6 +60,7 @@ export default function OwnTripDetailsScreen() {
     contact,
     refresh: refreshMailbox,
     loadMoreMailbox,
+    loadingMoreMailbox,
   } = useMessaging();
   const {
     counts: contactCounts,
@@ -325,6 +326,7 @@ export default function OwnTripDetailsScreen() {
                 oznacza potwierdzenia wspólnego wyjazdu.
               </AppText>
             )}
+            {loadingMoreMailbox ? <AppText variant="caption" color="textSecondary" accessibilityLiveRegion="polite">Wczytywanie kolejnych kontaktów…</AppText> : null}
           </Card>
           <Button
             label={status === 'draft' ? 'Dokończ szkic' : 'Edytuj wyjazd'}

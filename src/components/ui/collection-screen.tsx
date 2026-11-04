@@ -11,6 +11,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScenicFooter } from './scenic-footer';
 import { ScenicHeaderBackground } from './scenic-header';
+import { useIsFocused } from 'expo-router';
+import { useAutoPagination, type AutoPagination } from '@/hooks/use-auto-pagination';
+import { PaginationFooter } from './pagination-footer';
 
 interface CollectionScreenProps<T> {
   data: readonly T[];
@@ -24,6 +27,7 @@ interface CollectionScreenProps<T> {
   testID: string;
   itemGap?: number;
   onEndReached?: () => void;
+  pagination?: AutoPagination;
 }
 
 // This is the screen's only vertical scroller. Card state belongs in the shared
@@ -40,10 +44,13 @@ export function CollectionScreen<T>({
   testID,
   itemGap = 12,
   onEndReached,
+  pagination,
 }: CollectionScreenProps<T>) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const list = useRef<FlatList<T>>(null);
+  const focused = useIsFocused();
+  const paging = useAutoPagination(pagination ? {...pagination,enabled:focused && pagination.enabled !== false} : undefined);
   const gutter = {
     paddingLeft: Math.max(Spacing.four, insets.left),
     paddingRight: Math.max(Spacing.four, insets.right),
@@ -60,8 +67,13 @@ export function CollectionScreen<T>({
         ref={list}
         testID={testID}
         data={data}
-        onEndReached={onEndReached}
-        onEndReachedThreshold={0.8}
+        onEndReached={pagination ? paging.onEndReached : onEndReached}
+        onEndReachedThreshold={0.3}
+        onScroll={pagination ? paging.onScroll : undefined}
+        onScrollBeginDrag={pagination ? paging.onScrollBeginDrag : undefined}
+        onLayout={pagination ? paging.onLayout : undefined}
+        onContentSizeChange={pagination ? paging.onContentSizeChange : undefined}
+        scrollEventThrottle={pagination ? 100 : undefined}
         keyExtractor={keyExtractor}
         style={{ flex: 1, backgroundColor: theme.background }}
         contentContainerStyle={styles.content}
@@ -130,6 +142,7 @@ export function CollectionScreen<T>({
                 ]}
               >
                 {afterList}
+                {pagination ? <PaginationFooter pagination={{...pagination,loading:pagination.loading||paging.requesting}} onRetry={paging.retry} /> : null}
               </View>
             </View>
             <ScenicFooter />

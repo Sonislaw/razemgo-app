@@ -12,7 +12,7 @@ import {
   backend,
   login,
 } from './trip-fixtures.mjs';
-import { expectLoaded, scrollToRow } from './collection-helpers.mjs';
+import { loadNextPage, expectLoaded, expectLoadedAtLeast, scrollToRow, scrollUntil } from './collection-helpers.mjs';
 
 const uuid = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
 
@@ -118,16 +118,10 @@ test('crew listings fetch 5/10/13 with a spinner, retry and restore the listing 
   await expect(
     screen.getByRole('heading', { name: 'Ogłoszenia ekipy · 13', exact: true }),
   ).toBeVisible();
-  await screen
-    .getByRole('button', { name: 'Pokaż więcej wyjazdów', exact: true })
-    .click();
-  const loading = screen.getByRole('button', {
-    name: 'Wczytywanie ogłoszeń',
-    exact: true,
-  });
-  await expect(loading).toBeDisabled();
+  const loading = screen.getByTestId('pagination-footer');
+  await scrollUntil(screen,async()=>await loading.getByRole('progressbar').count()>0);
   await expect(
-    loading.getByLabel('Wczytywanie kolejnych ogłoszeń', { exact: true }),
+    loading.getByLabel('Wczytywanie kolejnych ogłoszeń…', { exact: true }),
   ).toBeVisible();
   await expect(cards).toHaveCount(5);
   release();
@@ -153,7 +147,7 @@ test('crew listings fetch 5/10/13 with a spinner, retry and restore the listing 
     .getByRole('button', { name: 'Wróć do listy wyjazdów', exact: true })
     .click();
   await expect(page).toHaveURL('http://localhost:8085/crew/' + groupId(B));
-  await expectLoaded(screen, 10);
+  await expectLoadedAtLeast(screen, 10);
   await expect.poll(() => calls.length).toBe(before + 1);
   await expect
     .poll(async () =>
@@ -161,10 +155,7 @@ test('crew listings fetch 5/10/13 with a spinner, retry and restore the listing 
     )
     .toBeLessThan(4);
   await expect(button).toBeInViewport();
-  await screen
-    .getByRole('button', { name: 'Pokaż więcej wyjazdów', exact: true })
-    .click();
-  await expectLoaded(screen, 13);
+  await loadNextPage(screen, 13);
   await expect(
     screen.getByRole('button', { name: 'Pokaż więcej wyjazdów', exact: true }),
   ).toHaveCount(0);
@@ -172,9 +163,7 @@ test('crew listings fetch 5/10/13 with a spinner, retry and restore the listing 
   await page.reload();
   await expect(cards).toHaveCount(5);
   unavailable = true;
-  await screen
-    .getByRole('button', { name: 'Pokaż więcej wyjazdów', exact: true })
-    .click();
+  await scrollUntil(screen,async()=>await cards.count()===0);
   await expect(cards).toHaveCount(0);
   await expect(
     screen.getByRole('heading', {

@@ -6,6 +6,29 @@ export async function expectLoaded(screen,count){
   await expect(screen.getByTestId(id+'-loaded-'+count)).toBeAttached();
 }
 
+async function loadedCount(screen) {
+  const id=await screen.getAttribute('data-testid');
+  const loaded=await screen.locator('[data-testid^="'+id+'-loaded-"]').getAttribute('data-testid');
+  return Number(loaded?.slice((id+'-loaded-').length));
+}
+
+// Reaching a card near the end can preload another page before navigation.
+export async function expectLoadedAtLeast(screen,count) {
+  await expect.poll(()=>loadedCount(screen)).toBeGreaterThanOrEqual(count);
+}
+
+export async function scrollUntil(screen, ready) {
+  await expect.poll(async () => {
+    if (await ready()) return true;
+    await screen.evaluate(el => el.scrollBy(0,Math.max(100,el.clientHeight*0.7)));
+    return false;
+  },{timeout:25000,intervals:[50,100,150]}).toBe(true);
+}
+
+export async function loadNextPage(screen,count) {
+  await scrollUntil(screen,async () => (await loadedCount(screen))>=count);
+}
+
 export async function scrollToRow(screen,row){
   let scanned=false;
   // Move like a user, allowing variable-height rows to be measured along the

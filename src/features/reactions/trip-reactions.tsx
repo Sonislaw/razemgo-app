@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
-import { LoadMoreButton } from '@/components/ui/load-more-button';
 import { AppText, Button, layout } from '@/components/ui/primitives';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/features/auth/auth-context';
@@ -52,16 +51,28 @@ export function TripReactionsButton({ tripId, ownerGroupId, compact = false }: {
   const [peopleBusy, setPeopleBusy] = useState(false);
   const [failedKind, setFailedKind] = useState<ReactionKind | null | undefined>(undefined);
   const version = useRef(0), fetching = useRef(false);
+  const currentPeople = useRef<ReactorsPage | null>(null);
   const owner = ownerGroupId === profile.group.id;
   const userId = session?.user.id;
   const loadPeople = useCallback(async (cursor?: TripReactor) => {
     if (!userId || !owner || fetching.current) return;
     const current = version.current; fetching.current = true; setPeopleBusy(true); setPeopleError(false);
     try {
-      const loaded = await fetchTripReactors(userId, tripId, cursor);
+      let loaded = await fetchTripReactors(userId, tripId, cursor);
+      const target = cursor ? 0 : (currentPeople.current?.items.length ?? 0);
+      while (!cursor && loaded.has_more && loaded.items.length < target) {
+        if (version.current !== current) return;
+        const next = await fetchTripReactors(userId,tripId,loaded.items.at(-1));
+        const added = next.items.filter(item=>!loaded.items.some(old=>old.id===item.id));
+        if (!added.length && next.has_more) throw new Error('Reaction cursor did not advance');
+        loaded = {...next,items:[...loaded.items,...added]};
+      }
       if (version.current !== current) return;
-      setPeople(previous => cursor && previous ? { ...loaded,
-        items: [...previous.items, ...loaded.items.filter(item => !previous.items.some(old => old.id === item.id))] } : loaded);
+      const previous = currentPeople.current;
+      const next = cursor && previous ? {...loaded,
+        items:[...previous.items,...loaded.items.filter(item=>!previous.items.some(old=>old.id===item.id))]} : loaded;
+      currentPeople.current = next;
+      setPeople(next);
     } catch { if (version.current === current) setPeopleError(true); }
     finally { if (version.current === current) { fetching.current = false; setPeopleBusy(false); } }
   }, [owner, tripId, userId]);
@@ -82,8 +93,11 @@ export function TripReactionsButton({ tripId, ownerGroupId, compact = false }: {
   return <>
     <TripReactionsTrigger tripId={tripId} summary={summary} owner={owner} compact={compact} busy={busy} loading={loading} open={open}
       onPress={() => { setFailedKind(undefined); setPeople(null); setPeopleError(false); setPeopleBusy(false);
-        fetching.current = false; setOpen(true); void store.refresh(); }} />
-    {open ? <BottomSheet title={owner ? 'Reakcje na Twoje ogłoszenie' : 'Reakcje na ogłoszenie'} onClose={() => { if (!busy) setOpen(false); }}>
+        currentPeople.current = null; fetching.current = false; setOpen(true); void store.refresh(); }} />
+    {open ? <BottomSheet title={owner ? 'Reakcje na Twoje ogłoszenie' : 'Reakcje na ogłoszenie'} onClose={() => { if (!busy) setOpen(false); }}
+      pagination={{itemCount:people?.items.length??0,hasMore:owner&&!!people?.has_more,loading:peopleBusy,
+        error:peopleError?'Nie udało się wczytać kolejnych ekip.':null,resetKey:tripId,
+        loadingLabel:'Wczytywanie kolejnych ekip…',onLoadMore:()=>loadPeople(people?.items.at(-1))}}>
       <AppText color="textSecondary">{owner ? 'Zobacz, komu podoba się Twój plan.' : 'Wybierz jedną emocję. Możesz ją później zmienić lub cofnąć.'}</AppText>
       {!summary && !error ? <ActivityIndicator accessibilityLabel="Wczytywanie reakcji" color={theme.primaryStrong} /> : null}
       {error ? <><AppText variant="caption" accessibilityRole="alert">{error}</AppText>
@@ -108,8 +122,8 @@ export function TripReactionsButton({ tripId, ownerGroupId, compact = false }: {
       {!owner && mine ? <Button label="Cofnij reakcję" variant="secondary" disabled={busy} onPress={() => void save(null)} /> : null}
       {owner ? <>
         <AppText variant="label" accessibilityRole="header">Reagujące ekipy</AppText>
-        {peopleBusy ? <ActivityIndicator accessibilityLabel="Wczytywanie reagujących ekip" color={theme.primaryStrong} /> : null}
-        {peopleError ? <><AppText accessibilityRole="alert">Nie udało się wczytać ekip.</AppText>
+        {peopleBusy && !people ? <ActivityIndicator accessibilityLabel="Wczytywanie reagujących ekip" color={theme.primaryStrong} /> : null}
+        {peopleError && !people?.has_more ? <><AppText accessibilityRole="alert">Nie udało się wczytać ekip.</AppText>
           <Button label="Wczytaj ekipy ponownie" variant="secondary" onPress={() => void loadPeople()} /></> : null}
         {people && !people.items.length ? <AppText color="textSecondary">Jeszcze nikt nie zostawił reakcji.</AppText> : null}
         {people?.items.map(person => <Pressable key={person.id} testID={'trip-reactor-' + person.group_id}
@@ -122,8 +136,6 @@ export function TripReactionsButton({ tripId, ownerGroupId, compact = false }: {
             <AppText variant="caption" color="textSecondary">{reactionOption(person.kind).label}</AppText></View>
           <AppText aria-hidden style={{ fontSize: 24 }}>{reactionOption(person.kind).emoji}</AppText>
         </Pressable>)}
-        {people?.has_more ? <LoadMoreButton label="Wczytaj kolejne ekipy" loadingLabel="Wczytywanie ekip" loading={peopleBusy}
-          onPress={() => void loadPeople(people.items.at(-1))} /> : null}
       </> : null}
     </BottomSheet> : null}
   </>;

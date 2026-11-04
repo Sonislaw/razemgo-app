@@ -1,6 +1,7 @@
 import { TripTimeline } from '@/components/trips/trip-timeline';
 import { DataStatus } from '@/components/ui/data-status';
-import { LoadMoreButton } from '@/components/ui/load-more-button';
+import { PaginationFooter } from '@/components/ui/pagination-footer';
+import { useAutoPagination } from '@/hooks/use-auto-pagination';
 import { Icon } from '@/components/ui/icon';
 import {
   AppText,
@@ -33,7 +34,7 @@ import { useProfile } from '@/features/profile/profile-context';
 import { getTripHeadline } from '@/features/trips/trip-headline';
 import { useTheme } from '@/hooks/use-theme';
 import type { ChatMessage } from '@/types/messaging';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useIsFocused, useLocalSearchParams } from 'expo-router';
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   AppState,
@@ -97,6 +98,12 @@ export default function ChatScreen() {
   const focused = useRef(false);
   const displayMessages = useMemo(() => [...messages].reverse(), [messages]);
   const historyReady = !!history?.loaded || IS_DEMO_MODE;
+  const isFocused = useIsFocused();
+  const pagination = {itemCount:messages.length,hasMore:!!history?.hasMore,
+    loading:!!history?.loading||!!history?.requestPending,disabled:!!history?.requestPending,enabled:historyReady&&isFocused,resetKey:id,
+    error:history?.error,loadingLabel:'Wczytywanie starszych wiadomości…',
+    onLoadMore:()=>loadHistory(id,true),onRetry:()=>loadHistory(id)};
+  const paging = useAutoPagination(pagination);
   const tail = messages.at(-1);
   const tailKey = tail?.requestKey ?? tail?.id ?? null;
   const reactionMessage = messages.find(
@@ -315,6 +322,8 @@ export default function ChatScreen() {
             ref={list}
             style={{ flex: 1, minHeight: 0 }}
             inverted
+            onEndReached={paging.onEndReached}
+            onEndReachedThreshold={0.3}
             data={historyReady ? displayMessages : []}
             keyExtractor={(item) => item.id}
             keyboardShouldPersistTaps="handled"
@@ -327,7 +336,7 @@ export default function ChatScreen() {
                     Wczytywanie wiadomości…
                   </AppText>
                 ) : null}
-                {history?.error ? (
+                {history?.error && !history.hasMore ? (
                   <DataStatus
                     status="error"
                     error={history.error}
@@ -336,20 +345,11 @@ export default function ChatScreen() {
                     }}
                   />
                 ) : null}
-                {history?.hasMore ? (
-                  <LoadMoreButton
-                    label="Wczytaj starsze wiadomości"
-                    loading={history.loading}
-                    disabled={history.requestPending}
-                    onPress={() => {
-                      scroll.current.readingOlder();
-                      void loadHistory(id, true);
-                    }}
-                  />
-                ) : null}
+                <PaginationFooter pagination={{...pagination,loading:pagination.loading||paging.requesting}} onRetry={paging.retry} />
               </View>
             }
             onScroll={(event) => {
+              paging.onScroll(event);
               const { contentOffset, contentSize, layoutMeasurement } =
                 event.nativeEvent;
               scroll.current.scrolled(
@@ -368,16 +368,17 @@ export default function ChatScreen() {
                 void markRead(id, latest.id);
             }}
             scrollEventThrottle={100}
-            onScrollBeginDrag={() => scroll.current.readingOlder()}
+            onScrollBeginDrag={() => { paging.onScrollBeginDrag(); scroll.current.readingOlder(); }}
             maintainVisibleContentPosition={{
               minIndexForVisible: 0,
               autoscrollToTopThreshold: 100,
             }}
-            onContentSizeChange={() =>
-              scroll.current.contentChanged() &&
-              list.current?.scrollToOffset({ offset: 0, animated: false })
-            }
+            onContentSizeChange={(width,height) => {
+              paging.onContentSizeChange(width,height);
+              if (scroll.current.contentChanged()) list.current?.scrollToOffset({ offset: 0, animated: false });
+            }}
             onLayout={(event) => {
+              paging.onLayout(event);
               if (
                 scroll.current.viewportChanged(event.nativeEvent.layout.height)
               )

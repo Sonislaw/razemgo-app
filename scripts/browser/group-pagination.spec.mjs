@@ -12,7 +12,7 @@ import {
   backend,
   login,
 } from './trip-fixtures.mjs';
-import { expectLoaded, scrollToRow } from './collection-helpers.mjs';
+import { loadNextPage, expectLoaded, expectLoadedAtLeast, scrollToRow, scrollUntil } from './collection-helpers.mjs';
 
 const uuid = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
 
@@ -152,16 +152,10 @@ test('crew pages load five at a time, show progress, retry and restore profile s
   await expect(cards).toHaveCount(5);
   await expect(page.getByText('Ekipy · 13', { exact: true })).toBeVisible();
   failMore = true;
-  await page
-    .getByRole('button', { name: 'Pokaż więcej ekip', exact: true })
-    .click();
-  const progress = page.getByRole('button', {
-    name: 'Wczytywanie ekip',
-    exact: true,
-  });
-  await expect(progress).toBeDisabled();
+  const progress = screen.getByTestId('pagination-footer');
+  await scrollUntil(screen,async()=>await progress.getByRole('progressbar').count()>0);
   await expect(
-    progress.getByLabel('Wczytywanie kolejnych ekip', { exact: true }),
+    progress.getByLabel('Wczytywanie kolejnych ekip…', { exact: true }),
   ).toBeVisible();
   await expect(cards).toHaveCount(5);
   releaseMore();
@@ -193,7 +187,7 @@ test('crew pages load five at a time, show progress, retry and restore profile s
   await expect(page).toHaveURL('http://localhost:8085/crew/' + groupId(B));
   await page.getByRole('button', { name: 'Wróć', exact: true }).click();
   await expect(page).toHaveURL('http://localhost:8085/explore');
-  await expectLoaded(screen, 10);
+  await expectLoadedAtLeast(screen, 10);
   await expect(page.getByText('Ekipy · 13', { exact: true })).toBeAttached();
   await expect
     .poll(async () =>
@@ -210,16 +204,13 @@ test('crew pages load five at a time, show progress, retry and restore profile s
   await expect(page).toHaveURL('http://localhost:8085/crew/' + groupId(B));
   await page.getByRole('button', { name: 'Wróć', exact: true }).click();
   await expect(page).toHaveURL('http://localhost:8085/explore');
-  await expectLoaded(screen, 10);
+  await expectLoadedAtLeast(screen, 10);
   await expect
     .poll(async () =>
       Math.abs((await screen.evaluate((el) => el.scrollTop)) - buttonScroll),
     )
     .toBeLessThan(4);
-  await page
-    .getByRole('button', { name: 'Pokaż więcej ekip', exact: true })
-    .click();
-  await expectLoaded(screen, 13);
+  await loadNextPage(screen, 13);
   await expect(
     page.getByRole('button', { name: 'Pokaż więcej ekip', exact: true }),
   ).toHaveCount(0);

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { scrollUntil } from './collection-helpers.mjs';
 import { A,B,groupId,state,backend,login } from './trip-fixtures.mjs';
 
 const CHAT='00000000-0000-4000-8000-000000009001';
@@ -36,7 +37,7 @@ test('notification history persists across reload and another device, with filte
   const store=state();store.notifications=Array.from({length:35},(_,i)=>notification(i));
   await backend(context,store);await login(page);await page.goto('/notifications');
   await expect(page.getByTestId(/^notification-entry-/)).toHaveCount(30);
-  await page.getByRole('button',{name:'Wczytaj starsze powiadomienia',exact:true}).click();
+  await scrollUntil(page.getByTestId('notification-list'),async()=>await page.getByTestId(/^notification-entry-/).count()===35);
   await expect(page.getByTestId(/^notification-entry-/)).toHaveCount(35);
   const target=store.notifications.at(-1);
   await page.getByTestId('notification-entry-'+target.id).click();

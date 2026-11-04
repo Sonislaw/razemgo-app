@@ -10,7 +10,7 @@ import {
   backend,
   login,
 } from './trip-fixtures.mjs';
-import { expectLoaded, scrollToRow } from './collection-helpers.mjs';
+import { expectLoaded, scrollToRow, loadNextPage, scrollUntil } from './collection-helpers.mjs';
 
 const uuid = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
 function seed(store, owner = B, count = 50, base = 10000) {
@@ -40,15 +40,9 @@ function seed(store, owner = B, count = 50, base = 10000) {
   for (const trip of trips) store.trips.set(trip.id, trip);
   return trips;
 }
-async function loadAll(screen, label, count = 50) {
+async function loadAll(screen, count = 50) {
   for (let n = 5; n < count; n += 5) {
-    const more = screen.getByRole('button', { name: label, exact: true });
-    // Reach the footer through the render window, as a person scrolling would.
-    // Playwright's instant scroll can move it again while FlatList measures rows,
-    // cancelling the press even though the click action reports success.
-    await scrollToRow(screen, more);
-    await more.click();
-    await expectLoaded(screen, Math.min(n + 5, count));
+    await loadNextPage(screen, Math.min(n + 5, count));
   }
 }
 async function bounded(screen, prefix, total) {
@@ -70,7 +64,7 @@ test('50 discovery trips unmount distant cards, retain favorites, restore the la
   await page.goto('/explore');
   const screen = page.getByTestId('discovery-screen');
   await expectLoaded(screen, 5);
-  await loadAll(screen, 'Pokaż więcej wyjazdów');
+  await loadAll(screen);
   await expectLoaded(screen, 50);
   const last = screen.getByTestId('discovery-trip-' + trips[49].id);
   await scrollToRow(screen, last);
@@ -212,7 +206,7 @@ test('50 crew profiles, 50 crew listings and 50 own trips each keep a bounded re
   await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
   const screen = page.getByTestId('discovery-screen');
   await expectLoaded(screen, 5);
-  await loadAll(screen, 'Pokaż więcej ekip');
+  await loadAll(screen);
   const last = screen.getByTestId('public-group-' + groupId(B));
   await scrollToRow(screen, last);
   const crewMounted = await bounded(screen, 'public-group-', 50);
@@ -220,7 +214,7 @@ test('50 crew profiles, 50 crew listings and 50 own trips each keep a bounded re
   await last.click();
   const detail = page.getByTestId('crew-profile-screen');
   await expectLoaded(detail, 5);
-  await loadAll(detail, 'Pokaż więcej wyjazdów');
+  await loadAll(detail);
   const lastTrip = detail.getByTestId('discovery-trip-' + trips[49].id);
   await scrollToRow(detail, lastTrip);
   const listingMounted = await bounded(detail, 'discovery-trip-', 50);
@@ -250,7 +244,7 @@ test('50 crew profiles, 50 crew listings and 50 own trips each keep a bounded re
   await page.goto('/trips');
   const ownScreen = page.getByTestId('own-trips-screen');
   await expectLoaded(ownScreen, 5);
-  await loadAll(ownScreen, 'Pokaż więcej wyjazdów');
+  await loadAll(ownScreen);
   const lastOwn = ownScreen.getByTestId('own-trip-' + own[49].id);
   await scrollToRow(ownScreen, lastOwn);
   const ownMounted = await bounded(ownScreen, 'own-trip-', 50);
@@ -307,12 +301,7 @@ test('delayed or failed images keep card geometry and a failed next page keeps t
   ).toBeLessThanOrEqual(2);
   await card.screenshot({ path: '.expo/collection-card-320.png' });
   store.failMore = true;
-  const more = screen.getByRole('button', {
-    name: 'Pokaż więcej wyjazdów',
-    exact: true,
-  });
-  await scrollToRow(screen, more);
-  await more.click();
+  await scrollUntil(screen,async()=>await screen.getByRole('alert').count()>0);
   await expect(screen.getByRole('alert')).toContainText(
     'Nie udało się pobrać ogłoszeń',
   );

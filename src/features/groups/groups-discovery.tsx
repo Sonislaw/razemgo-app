@@ -1,6 +1,5 @@
 import { CollectionScreen } from '@/components/ui/collection-screen';
 import { DataStatus } from '@/components/ui/data-status';
-import { LoadMoreButton } from '@/components/ui/load-more-button';
 import { Button, EmptyState } from '@/components/ui/primitives';
 import { USE_DEMO_DATA } from '@/constants/app';
 import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
@@ -203,6 +202,8 @@ export function GroupsDiscovery({
       testID="discovery-screen"
       header={header}
       data={items}
+      pagination={{itemCount:items.length,hasMore:page.hasMore,loading:isLoadingMore,disabled:status==='loading',error,
+        resetKey:store,loadingLabel:'Wczytywanie kolejnych ekip…',onLoadMore:more,onRetry:store.retry}}
       itemGap={16}
       keyExtractor={(item) => item.group.id}
       renderItem={({ item }) => (
@@ -241,7 +242,7 @@ export function GroupsDiscovery({
       afterList={
         <>
           <DataStatus
-            status={isLoadingMore ? 'ready' : status}
+            status={isLoadingMore || (items.length && page.hasMore) ? 'ready' : status}
             error={error}
             label="Wczytywanie ekip"
             onRetry={() => void store.retry()}
@@ -251,15 +252,6 @@ export function GroupsDiscovery({
               title="Jeszcze nie ma tu ekip"
               description="Zmień filtry albo wróć później. Nowe ekipy pojawiają się po uzupełnieniu profilu."
               action={<Button label="Pokaż wszystkie ekipy" onPress={reset} />}
-            />
-          ) : null}
-          {page.hasMore && (status !== 'loading' || isLoadingMore) ? (
-            <LoadMoreButton
-              label="Pokaż więcej ekip"
-              loadingLabel="Wczytywanie ekip"
-              loadingAccessibilityLabel="Wczytywanie kolejnych ekip"
-              loading={isLoadingMore}
-              onPress={() => void more()}
             />
           ) : null}
         </>

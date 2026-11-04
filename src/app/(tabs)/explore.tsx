@@ -1,5 +1,4 @@
 import { DataStatus } from '@/components/ui/data-status';
-import { LoadMoreButton } from '@/components/ui/load-more-button';
 import { useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -132,12 +131,14 @@ export default function ExploreScreen() {
       testID="discovery-screen"
       header={header}
       data={proposals}
+      pagination={{itemCount:proposals.length,hasMore,loading:loadingMore,disabled:status==='loading',error,
+        enabled:!mapOpen,resetKey:loadMore,loadingLabel:'Wczytywanie kolejnych ogłoszeń…',onLoadMore:loadMore,onRetry:retry}}
       keyExtractor={proposal => proposal.trip.id}
       renderItem={({ item: proposal }) => <DiscoveryTripCard {...proposal}
         onNavigate={preserveOnReturn} />}
       beforeList={<>
       {switcher}
-      <DataStatus status={status === 'loading' && proposals.length ? 'ready' : status} error={error} onRetry={() => { void retry(); }} label="Wczytywanie ogłoszeń" />
+      <DataStatus status={proposals.length && (hasMore || status === 'loading') ? 'ready' : status} error={error} onRetry={() => { void retry(); }} label="Wczytywanie ogłoszeń" />
       <View style={styles.controls}>
         {filters.sourceTripId ? (
           <View style={layout.row}>
@@ -183,18 +184,6 @@ export default function ExploreScreen() {
             }
           />
         ) : null}
-      afterList={<>
-        {hasMore ? (
-          <LoadMoreButton
-            label="Pokaż więcej wyjazdów"
-            loadingLabel="Wczytywanie ogłoszeń"
-            loadingAccessibilityLabel="Wczytywanie kolejnych ogłoszeń"
-            loading={loadingMore}
-            disabled={status === 'loading'}
-            onPress={() => { void loadMore(); }}
-          />
-        ) : null}
-      </>}
     /></MapListLayer>
     {mapOpen?<DiscoveryMap key={JSON.stringify(discoveryFiltersPayload(filters))+':'+tripFilterRevision} memory={mapMemory} onRemember={setMapMemory} summary={summary} activeCount={activeCount}
       notice={filterSetExpired({kind:'trips',filters},today)?'Termin w tym zestawie już minął':undefined}

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { scrollUntil } from './collection-helpers.mjs';
 import { A, B, groupId, state, backend, login } from './trip-fixtures.mjs';
 
 const TRIP = '00000000-0000-4000-8000-000000000901';
@@ -326,10 +327,18 @@ test('mailbox and history errors offer real retry without showing fake empty sta
   // Advancing with failures still enabled drains already scheduled callbacks.
   await page.clock.install();
   await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
-  store.failMailbox = false;
-  await page
-    .getByRole('button', { name: 'Spróbuj ponownie', exact: true })
-    .click();
+  const recoverOnRetry = async (endpoint, failure) => {
+    let release;
+    const clicked = new Promise(resolve => { release = resolve; });
+    const hold = async route => { await clicked; await route.fallback(); };
+    await page.route('**/rest/v1/rpc/' + endpoint, hold);
+    // Keep responses blocked until the retry action has actually been clicked.
+    // A queued background recovery must not remove the button before the action.
+    await page.getByRole('button', { name: 'Spróbuj ponownie', exact: true }).click();
+    store[failure] = false;
+    release();
+  };
+  await recoverOnRetry('get_my_mailbox_page', 'failMailbox');
   await expect(page.getByRole('button', { name: /^Ekipa B,/ })).toBeVisible();
   await page.clock.resume();
   store.failHistory = true;
@@ -338,10 +347,7 @@ test('mailbox and history errors offer real retry without showing fake empty sta
     'Nie udało się pobrać wiadomości',
   );
   await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
-  store.failHistory = false;
-  await page
-    .getByRole('button', { name: 'Spróbuj ponownie', exact: true })
-    .click();
+  await recoverOnRetry('get_conversation_messages', 'failHistory');
   await expect(
     page.getByText('Wiadomość numer 1', { exact: true }),
   ).toBeVisible();
@@ -357,9 +363,6 @@ test('history pagination and a lost send response never duplicate the committed 
   await backend(context, store);
   await login(page);
   await page.goto('/chat/' + chat);
-  await page
-    .getByRole('button', { name: 'Wczytaj starsze wiadomości', exact: true })
-    .click();
   await expect(
     page.getByRole('button', {
       name: 'Wczytaj starsze wiadomości',
@@ -402,7 +405,7 @@ test('history pagination and a lost send response never duplicate the committed 
   ).toBeVisible();
 });
 
-test('history paging waits for pending reaction synchronization before accepting a press', async ({
+test('history paging waits for pending reaction synchronization before automatically loading', async ({
   page,
   context,
 }) => {
@@ -420,16 +423,13 @@ test('history paging waits for pending reaction synchronization before accepting
   try {
     await login(page);
     await page.goto('/chat/' + chat);
-    const older = page.getByRole('button', {
-      name: 'Wczytaj starsze wiadomości',
-      exact: true,
-    });
-    await expect(older).toBeVisible();
-    await expect(older).toBeDisabled();
-    release();
-    await older.click();
-    await expect(older).toHaveCount(0);
     const list = page.getByTestId('chat-message-list');
+    const older = list.getByTestId('pagination-footer');
+    await expect(older).toBeAttached();
+    await list.evaluate(el=>{el.scrollTop=el.scrollHeight;});
+    await expect(older.getByRole('progressbar')).toBeVisible();
+    release();
+    await expect(older).toHaveCount(0);
     await expect
       .poll(async () => {
         await list.evaluate((el) => {
@@ -443,7 +443,7 @@ test('history paging waits for pending reaction synchronization before accepting
   }
 });
 
-test('a background history refresh preserves a press requesting the older page', async ({
+test('a background history refresh preserves the scroll intent requesting the older page', async ({
   page,
   context,
 }) => {
@@ -452,11 +452,9 @@ test('a background history refresh preserves a press requesting the older page',
   await backend(context, store);
   await login(page);
   await page.goto('/chat/' + chat);
-  const older = page.getByRole('button', {
-    name: 'Wczytaj starsze wiadomości',
-    exact: true,
-  });
-  await expect(older).toBeEnabled();
+  const list = page.getByTestId('chat-message-list');
+  const older = list.getByTestId('pagination-footer');
+  await expect(older).toBeAttached();
   let release,
     started,
     olderReads = 0;
@@ -486,8 +484,7 @@ test('a background history refresh preserves a press requesting the older page',
   try {
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await request;
-    await expect(older).toBeEnabled();
-    await older.click();
+    await scrollUntil(list,async()=>await older.getByRole('progressbar').isVisible());
     expect(olderReads).toBe(0);
     release();
     await expect(older).toHaveCount(0);

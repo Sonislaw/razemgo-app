@@ -14,7 +14,6 @@ test('real API flow: create, failed save, reload, second device, discovery, life
   await page.getByRole('button',{name:'Dalej',exact:true}).click();
   await page.getByRole('textbox',{name:'Miasto lub wieś',exact:true}).fill('Chłapowo pomorskie');
   await page.getByRole('button',{name:/^Wybierz lokalizację: Chłapowo,/}).first().click();
-  await page.getByRole('button',{name:'Szczegóły kempingu',exact:true}).click();
   await page.getByRole('textbox',{name:'Nazwa kempingu',exact:true}).fill('Kemping Testowy');
   await page.getByRole('textbox',{name:'Adres kempingu',exact:true}).fill('Testowa 12');
   const description='Spokojny wyjazd nad morze, rowery i wspolne ognisko. Zabieramy gry planszowe na wieczory.';

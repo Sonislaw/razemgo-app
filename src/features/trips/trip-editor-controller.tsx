@@ -64,9 +64,7 @@ export function TripEditorScreen() {
   const modeLabel = form.mode === 'planned' ? 'Mam plan' : 'Szukam pomysłu';
   const titles = [
     'Jaki masz plan?',
-    form.mode === 'flexible'
-      ? 'Jaki kierunek Cię interesuje?'
-      : 'Dokąd i jak podróżujesz?',
+    'Szczegóły wyjazdu',
   ];
   const [step, setStep] = useState<1 | 2>(1);
   const [errors, setErrors] = useState<string[]>([]);
@@ -115,8 +113,8 @@ export function TripEditorScreen() {
   const showIssues = (validation: TripFormIssue[]) => {
     setIssues(validation);
     setErrors([]);
-    const first = (['dates', 'locationId', 'description', 'participants', 'travelModes',
-      'campgroundName', 'campgroundAddress', 'animals'] as const).find(field => validation.some(issue => issue.field === field));
+    const first = (['dates', 'locationId', 'campgroundName', 'campgroundAddress',
+      'description', 'participants', 'animals', 'travelModes'] as const).find(field => validation.some(issue => issue.field === field));
     if (first) {
       setStep(first === 'dates' ? 1 : 2);
       setPendingFocus(first);
@@ -221,8 +219,6 @@ export function TripEditorScreen() {
         >
           <ScenicHeaderBackground style={{ top: insets.top + 4 }} />
           <View
-            ref={formContent}
-            collapsable={false}
             style={{
               width: '100%',
               maxWidth: MaxContentWidth,
@@ -332,6 +328,8 @@ export function TripEditorScreen() {
           }}
         >
           <View
+            ref={formContent}
+            collapsable={false}
             style={{
               width: '100%',
               maxWidth: MaxContentWidth,
@@ -385,7 +383,6 @@ export function TripEditorScreen() {
                   previousStatus={previousStatus}
                   preview={preview}
                   profile={profile}
-                  fields={fields}
                 />
               </>
             )}

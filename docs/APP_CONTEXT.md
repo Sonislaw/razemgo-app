@@ -75,8 +75,10 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   jedną noc, jeden sposób podróżowania i opis długości 20–1000 znaków.
 - **Kreator ma dwa kroki:** typ/termin oraz miejsce/szczegóły, w tym uczestnicy,
   widoczność i podgląd. Nagłówek ogłoszenia powstaje z opisu. Szkic może być niepełny.
-  W drugim kroku najpierw są dane wymagane i widoczność. Kemping, dodatkowe
-  informacje oraz podgląd są rozwijane. Ukrycie sekcji zachowuje jej dane.
+  Drugi krok jest pogrupowany tematycznie: lokalizacja (miejscowość, opcjonalna
+  nazwa i adres kempingu), plan (opis, klimat, zainteresowania), ekipa
+  (uczestnicy, zwierzęta i transport) oraz widoczność. Pola opcjonalne są widoczne;
+  rozwijany pozostaje wyłącznie podgląd.
   Błędy są przy właściwych polach, a publikacja przewija i przenosi fokus do
   pierwszego błędu. Podgląd używa tej samej karty i szerokości co Odkrywaj,
   z nieaktywnymi akcjami; pełny opis i adres nie są dodawane nad ekipą.

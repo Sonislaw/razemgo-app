@@ -5,7 +5,7 @@ import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
 import { ExpandableSection } from '@/components/ui/expandable-section';
 import { ChipRow } from '@/components/ui/chip-row';
 import { Icon } from '@/components/ui/icon';
-import { AppText, Chip, FieldLabel, layout } from '@/components/ui/primitives';
+import { AppText, Card, Chip, FieldLabel, SectionTitle, layout } from '@/components/ui/primitives';
 import { TripAnimalFields } from '@/features/animals/animal-fields';
 import { ProfileTextField } from '@/features/profile/profile-form-fields';
 import { INTEREST_OPTIONS } from '@/features/profile/profile-options';
@@ -28,8 +28,6 @@ import {
 import { useTheme } from '@/hooks/use-theme';
 import type { TripForm, OwnedTrip, TripStatus } from '@/types/owned-trip';
 import { TripEditorField, tripFieldErrorId, type TripEditorFields } from './trip-editor-field';
-import { tripAnimalSummary } from '@/features/animals/animal-data';
-import { LANDSCAPE_OPTIONS } from '@/constants/landscape-options';
 import { useRef, useState } from 'react';
 
 import { Pressable, View, type TextInputInstance, type ViewInstance } from 'react-native';
@@ -140,100 +138,86 @@ export function TripDestinationStep({
   fields: TripEditorFields;
 }) {
   const locationInput = useRef<TripLocationFieldHandle>(null);
+  const campgroundName = useRef<TextInputInstance>(null);
+  const campgroundAddress = useRef<TextInputInstance>(null);
   const descriptionInput = useRef<TextInputInstance>(null);
   return (
     <>
-      <TripEditorField name="locationId" label="Miejsce wyjazdu" fields={fields} focus={() => locationInput.current?.focus()}>
-      <TripLocationField
-        inputRef={locationInput}
-        errorId={fields.errors.locationId ? tripFieldErrorId('locationId') : undefined}
-        mode={form.mode}
-        value={form.locationId}
-        label={
-          form.mode === 'flexible' ? 'Preferowany obszar wyjazdu' : undefined
-        }
-        hint={
-          form.mode === 'flexible'
-            ? 'Wskaż miejscowość, region lub kraj, w którym chcesz podróżować. Konkretne miejsce wybierzesz wspólnie z ekipą.'
-            : undefined
-        }
-        onChange={(id) => {
-          onLocationChange(id);
-        }}
-      />
-      </TripEditorField>
-      <TripEditorField name="description" label="Opis wyjazdu" fields={fields} focus={() => descriptionInput.current?.focus()}>
-      <ProfileTextField
-        inputRef={descriptionInput}
-        errorId={fields.errors.description ? tripFieldErrorId('description') : undefined}
-        label="Opis wyjazdu"
-        required
-        value={form.description}
-        onChangeText={(value) => update('description', value)}
-        maxLength={MAX_TRIP_DESCRIPTION_LENGTH}
-        multiline
-        hint={`Min. ${MIN_TRIP_DESCRIPTION_LENGTH} znaków · ${tripDescriptionLength(form.description)}/${MAX_TRIP_DESCRIPTION_LENGTH}. Początek opisu pokażemy na karcie wyjazdu.`}
-      />
-      </TripEditorField>
-      <TripEditorField name="participants" label="Kto jedzie?" fields={fields}>
-        <TripParticipantsFields value={form.participants} onChange={value => update('participants', value)} />
-      </TripEditorField>
-      <TripEditorField name="travelModes" label="Sposób podróżowania" fields={fields}>
-        <FieldLabel required>Jak podróżujesz na ten wyjazd?</FieldLabel>
-        <TravelModePicker
-          horizontal
-          value={form.travelModes}
-          onChange={(travelModes) => update('travelModes', travelModes)}
-        />
-      </TripEditorField>
+      <Card testID="trip-editor-location" style={{ gap: 20 }}>
+        <SectionTitle title="Lokalizacja" />
+        <TripEditorField name="locationId" label="Miejsce wyjazdu" fields={fields} focus={() => locationInput.current?.focus()}>
+          <TripLocationField
+            inputRef={locationInput}
+            errorId={fields.errors.locationId ? tripFieldErrorId('locationId') : undefined}
+            mode={form.mode}
+            value={form.locationId}
+            label={form.mode === 'flexible' ? 'Preferowany obszar wyjazdu' : undefined}
+            hint={form.mode === 'flexible'
+              ? 'Wskaż miejscowość, region lub kraj, w którym chcesz podróżować. Konkretne miejsce wybierzesz wspólnie z ekipą.'
+              : undefined}
+            onChange={onLocationChange}
+          />
+        </TripEditorField>
+        {form.mode === 'planned' && isConcreteTripLocation(findTripLocation(form.locationId)) ? <>
+          <TripEditorField name="campgroundName" label="Nazwa kempingu" fields={fields} focus={() => campgroundName.current?.focus()}>
+            <ProfileTextField label="Nazwa kempingu" value={form.campgroundName} inputRef={campgroundName}
+              errorId={fields.errors.campgroundName ? tripFieldErrorId('campgroundName') : undefined}
+              onChangeText={value => update('campgroundName', value)} maxLength={120} hint="Opcjonalnie, jeśli wiesz już, gdzie się zatrzymasz." />
+          </TripEditorField>
+          <TripEditorField name="campgroundAddress" label="Adres kempingu" fields={fields} focus={() => campgroundAddress.current?.focus()}>
+            <ProfileTextField label="Adres kempingu" value={form.campgroundAddress ?? ''} inputRef={campgroundAddress}
+              errorId={fields.errors.campgroundAddress ? tripFieldErrorId('campgroundAddress') : undefined}
+              onChangeText={value => update('campgroundAddress', value)} maxLength={200} hint="Opcjonalnie: ulica i numer. Miejscowość jest wybrana powyżej." />
+          </TripEditorField>
+        </> : null}
+      </Card>
+
+      <Card testID="trip-editor-plan" style={{ gap: 20 }}>
+        <SectionTitle title="Plan wyjazdu" />
+        <TripEditorField name="description" label="Opis wyjazdu" fields={fields} focus={() => descriptionInput.current?.focus()}>
+          <ProfileTextField
+            inputRef={descriptionInput}
+            errorId={fields.errors.description ? tripFieldErrorId('description') : undefined}
+            label="Opis wyjazdu"
+            required
+            value={form.description}
+            onChangeText={value => update('description', value)}
+            maxLength={MAX_TRIP_DESCRIPTION_LENGTH}
+            multiline
+            hint={`Min. ${MIN_TRIP_DESCRIPTION_LENGTH} znaków · ${tripDescriptionLength(form.description)}/${MAX_TRIP_DESCRIPTION_LENGTH}. Początek opisu pokażemy na karcie wyjazdu.`}
+          />
+        </TripEditorField>
+        <View style={{ gap: 8 }}>
+          <FieldLabel>Klimat wyjazdu</FieldLabel>
+          <TripLandscapePicker value={form.landscape} onChange={value => update('landscape', value)} />
+        </View>
+        <View style={{ gap: 8 }}>
+          <FieldLabel>Co chcesz robić?</FieldLabel>
+          <ChipRow horizontal label="Zainteresowania">
+            {INTEREST_OPTIONS.map(interest => <Chip key={interest} label={interest} selected={form.interests.includes(interest)}
+              onPress={() => update('interests', toggle(form.interests, interest))} />)}
+          </ChipRow>
+        </View>
+      </Card>
+
+      <Card testID="trip-editor-crew" style={{ gap: 20 }}>
+        <TripEditorField name="participants" label="Kto jedzie?" fields={fields}>
+          <TripParticipantsFields value={form.participants} onChange={value => update('participants', value)} />
+        </TripEditorField>
+        <TripEditorField name="animals" label="Zwierzęta na wyjeździe" fields={fields}>
+          <TripAnimalFields value={form.animals} onChange={animals => update('animals', animals)} />
+        </TripEditorField>
+        <TripEditorField name="travelModes" label="Sposób podróżowania" fields={fields}>
+          <FieldLabel required>Jak podróżujesz na ten wyjazd?</FieldLabel>
+          <TravelModePicker
+            horizontal
+            value={form.travelModes}
+            onChange={travelModes => update('travelModes', travelModes)}
+          />
+        </TripEditorField>
+      </Card>
     </>
   );
-}
-
-function TripOptionalFields({ form, update, fields }: { form: TripForm; update: Update; fields: TripEditorFields }) {
-  const [campgroundOpen, setCampgroundOpen] = useState(false);
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  const campgroundName = useRef<TextInputInstance>(null);
-  const campgroundAddress = useRef<TextInputInstance>(null);
-  const detailsSummary = [
-    LANDSCAPE_OPTIONS.find(option => option.value === form.landscape)?.label,
-    ...form.interests, tripAnimalSummary(form.animals),
-  ].filter(Boolean).join(' · ');
-  return <>
-    {form.mode === 'planned' && isConcreteTripLocation(findTripLocation(form.locationId)) ? (
-      <ExpandableSection title="Szczegóły kempingu" summary={form.campgroundName.trim() || 'Opcjonalnie: nazwa i adres'}
-        expanded={campgroundOpen || !!fields.errors.campgroundName || !!fields.errors.campgroundAddress}
-        onToggle={() => setCampgroundOpen(value => !value)}>
-        <TripEditorField name="campgroundName" label="Nazwa kempingu" fields={fields} focus={() => campgroundName.current?.focus()}>
-          <ProfileTextField label="Nazwa kempingu" value={form.campgroundName} inputRef={campgroundName}
-            errorId={fields.errors.campgroundName ? tripFieldErrorId('campgroundName') : undefined}
-            onChangeText={value => update('campgroundName', value)} maxLength={120} hint="Jeśli wiesz już, gdzie się zatrzymasz." />
-        </TripEditorField>
-        <TripEditorField name="campgroundAddress" label="Adres kempingu" fields={fields} focus={() => campgroundAddress.current?.focus()}>
-          <ProfileTextField label="Adres kempingu" value={form.campgroundAddress ?? ''} inputRef={campgroundAddress}
-            errorId={fields.errors.campgroundAddress ? tripFieldErrorId('campgroundAddress') : undefined}
-            onChangeText={value => update('campgroundAddress', value)} maxLength={200} hint="Ulica i numer. Adres pomoże wskazać miejsce na mapie." />
-        </TripEditorField>
-      </ExpandableSection>
-    ) : null}
-    <ExpandableSection title="Dodatkowe informacje" summary={detailsSummary}
-      expanded={detailsOpen || !!fields.errors.animals} onToggle={() => setDetailsOpen(value => !value)}>
-      <View style={{ gap: 8 }}>
-        <FieldLabel>Co chcesz robić?</FieldLabel>
-        <ChipRow horizontal label="Zainteresowania">
-          {INTEREST_OPTIONS.map(interest => <Chip key={interest} label={interest} selected={form.interests.includes(interest)}
-            onPress={() => update('interests', toggle(form.interests, interest))} />)}
-        </ChipRow>
-      </View>
-      <View style={{ gap: 8 }}>
-        <FieldLabel>Klimat wyjazdu</FieldLabel>
-        <TripLandscapePicker value={form.landscape} onChange={value => update('landscape', value)} />
-      </View>
-      <TripEditorField name="animals" label="Zwierzęta na wyjeździe" fields={fields}>
-        <TripAnimalFields value={form.animals} onChange={animals => update('animals', animals)} />
-      </TripEditorField>
-    </ExpandableSection>
-  </>;
 }
 
 export function TripPublicationFields({
@@ -242,21 +226,19 @@ export function TripPublicationFields({
   previousStatus,
   preview,
   profile,
-  fields,
 }: {
   form: TripForm;
   update: Update;
   previousStatus: TripStatus;
   preview: OwnedTrip;
   profile: TravelerProfile;
-  fields: TripEditorFields;
 }) {
   const [previewOpen, setPreviewOpen] = useState(false);
   return (
     <>
-      <View style={{ gap: 8 }}>
-        <FieldLabel>Widoczność planu</FieldLabel>
-        <ChipRow horizontal label="Widoczność planu">
+      <Card testID="trip-editor-visibility" style={{ gap: 12 }}>
+        <SectionTitle title="Widoczność planu" />
+        <ChipRow label="Widoczność planu">
           {(
             [
               { value: 'public', label: 'Dla społeczności' },
@@ -280,8 +262,7 @@ export function TripPublicationFields({
                 ? 'Zapis zachowa wstrzymane poszukiwania. Możesz je później wznowić z menu wyjazdu.'
                 : 'Opublikowany plan będzie otwarty na zaproszenia.'}
         </AppText>
-      </View>
-      <TripOptionalFields form={form} update={update} fields={fields} />
+      </Card>
       <ExpandableSection title="Podgląd planu" summary="Zobacz, jak Twoje ogłoszenie będzie wyglądać w Odkrywaj." fullWidthContent
         expanded={previewOpen} onToggle={() => setPreviewOpen(value => !value)}>
         <DiscoveryTripCard

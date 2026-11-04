@@ -18,7 +18,6 @@ export function TripParticipantsFields({ value, onChange }: {
       </AppText>
       <ProfileCounter
         label="Dorośli na wyjeździe"
-        required
         value={current.adultCount}
         min={1}
         max={MAX_TRIP_PARTICIPANTS}
@@ -26,7 +25,6 @@ export function TripParticipantsFields({ value, onChange }: {
       />
       <ProfileCounter
         label="Dzieci na wyjeździe"
-        required
         value={current.childCount}
         min={0}
         max={MAX_TRIP_PARTICIPANTS}

@@ -121,8 +121,9 @@ export default function ProfileEditor({
         <>
           <PageHeader title="Poznajmy Twoją ekipę" />
           <AppText color="textSecondary">
-            Uzupełnij podstawy. Zainteresowania i zwierzęta możesz dodać
-            później w profilu.
+            Uzupełnij podstawowe informacje o ekipie. Później zajrzyj do
+            profilu i dodaj pozostałe szczegóły, aby inni mogli Was lepiej
+            poznać.
           </AppText>
         </>
       ) : (
@@ -149,7 +150,7 @@ export default function ProfileEditor({
             required
             value={draft.group.name}
             maxLength={MAX_GROUP_NAME_LENGTH}
-            hint="Maksymalnie 20 znaków."
+            hint={`Pozostałe znaki: ${Math.max(0, MAX_GROUP_NAME_LENGTH - draft.group.name.length)}`}
             onChangeText={(name) =>
               setDraft((current) => ({
                 ...current,

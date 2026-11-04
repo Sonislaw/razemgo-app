@@ -52,6 +52,7 @@ export default function HomeScreen() {
     <View testID="home-canvas" style={styles.screen}>
       <Screen
         testID="home-main"
+        fillFooter={!latestListing}
         header={<HomeHeader onOpenDemo={() => setDemoOpen(true)} />}
       >
         {!hasProfile ? (

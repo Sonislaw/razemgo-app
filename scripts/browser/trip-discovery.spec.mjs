@@ -44,6 +44,50 @@ function seed(store, n = 13) {
     });
   }
 }
+for (const width of [320,390]) test(`empty discovery offers creating a trip even with active filters at ${width}px`,async({page,context})=>{
+  await page.setViewportSize({width,height:844});
+  const store=state();await backend(context,store);await login(page);await page.goto('/explore');
+  const screen=page.getByTestId('discovery-screen');
+  await expect(screen.getByRole('heading',{name:'Brak wyjazdów do odkrycia',exact:true})).toBeVisible();
+  await expect(screen.getByRole('button',{name:'Pokaż wszystkie wyjazdy',exact:true})).toHaveCount(0);
+  await page.getByRole('button',{name:'Otwórz filtry',exact:true}).click();
+  await page.getByRole('checkbox',{name:'Klimat wyjazdu: Morze',exact:true}).click();
+  await page.getByRole('button',{name:'Pokaż wyniki · 0',exact:true}).click();
+  await expect(screen.getByRole('heading',{name:'Brak wyjazdów do odkrycia',exact:true})).toBeVisible();
+  await expect(screen.getByRole('heading',{name:'Brak pasujących wyjazdów',exact:true})).toHaveCount(0);
+  const create=screen.getByRole('button',{name:'Dodaj wyjazd',exact:true});
+  await expect(create).toBeInViewport({ratio:1});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(1);
+  await page.screenshot({path:'.expo/discovery-empty-'+width+'.png'});
+  await create.click();await expect(page).toHaveURL('http://localhost:8085/trip-editor');
+  await expect(page.getByRole('heading',{name:'Nowy wyjazd',exact:true})).toBeVisible();
+  expect(store.trips.size).toBe(0);
+});
+
+test('empty filtered search distinguishes available trips and tolerates an availability count failure',async({page,context})=>{
+  const store=state();seed(store,3);await backend(context,store);await login(page);await page.goto('/explore');
+  const screen=page.getByTestId('discovery-screen');
+  await expectLoaded(screen,3);
+  expect(store.tripSearchCalls.filter(call=>call.endpoint==='count_public_trips')).toHaveLength(0);
+  const openEmptyFilter=async()=>{
+    await page.getByRole('button',{name:'Otwórz filtry',exact:true}).click();
+    await page.getByRole('checkbox',{name:'Klimat wyjazdu: Góry',exact:true}).click();
+    await expect(page.getByRole('button',{name:'Pokaż wyniki · 0',exact:true})).toBeEnabled();
+  };
+  await openEmptyFilter();await page.getByRole('button',{name:'Pokaż wyniki · 0',exact:true}).click();
+  await expect(screen.getByRole('heading',{name:'Brak pasujących wyjazdów',exact:true})).toBeVisible();
+  await expect(screen.getByRole('button',{name:'Dodaj wyjazd',exact:true})).toHaveCount(0);
+  await page.screenshot({path:'.expo/discovery-empty-filtered.png'});
+  await screen.getByRole('button',{name:'Pokaż wszystkie wyjazdy',exact:true}).click();await expectLoaded(screen,3);
+  await openEmptyFilter();store.failTripCount=true;
+  const failed=page.waitForResponse(response=>response.url().endsWith('/rpc/count_public_trips')&&response.status()===503);
+  await page.getByRole('button',{name:'Pokaż wyniki · 0',exact:true}).click();await failed;
+  await expect(screen.getByRole('heading',{name:'Brak pasujących wyjazdów',exact:true})).toBeVisible();
+  await expect(screen.getByRole('heading',{name:'Brak wyjazdów do odkrycia',exact:true})).toHaveCount(0);
+  store.failTripCount=false;
+  await screen.getByRole('button',{name:'Pokaż wszystkie wyjazdy',exact:true}).click();await expectLoaded(screen,3);
+});
+
 test('bounded trip pages, load-more retry, full filter counts, global sorting and direct detail links', async ({
   page,
   context,

@@ -98,6 +98,10 @@ Rozróżnienie `/trip` oraz `/trips` jest zamierzone.
   Zdjęcie, tytuł i „Zobacz wyjazd” otwierają te same szczegóły, z zachowaniem
   pozycji listy po powrocie. Serce, reakcje i profil ekipy mają odrębne akcje.
   Wymiary nagłówka oraz wygląd karty wyjazdu pozostają zachowane.
+  Pusta lista wyjazdów rozróżnia brak dostępnych ogłoszeń (akcja „Dodaj wyjazd”)
+  od braku wyników dla filtrów (akcja „Pokaż wszystkie wyjazdy”). Licznik bez
+  filtrów jest sprawdzany dodatkowo tylko przy zerowym wyniku z aktywnymi filtrami;
+  błąd tego odczytu nie jest przedstawiany jako pusty katalog.
   Karty w widoku ekip mają akwarelowe tło powiązane z avatarem, takie samo
   jak w szczegółach profilu, faliste przejście do danych i avatar w białej ramce.
   Serce jest osobną akcją w prawym górnym rogu ilustracji, w rozmiarze używanym

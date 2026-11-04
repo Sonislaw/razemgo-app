@@ -75,6 +75,7 @@ export function Screen({
   testID,
   adjustKeyboardInsets = true,
   footerPlacement = 'flow',
+  fillFooter = false,
   onNearEnd,
   pagination,
 }: {
@@ -83,6 +84,7 @@ export function Screen({
   testID?: string;
   adjustKeyboardInsets?: boolean;
   footerPlacement?: 'flow' | 'fixed';
+  fillFooter?: boolean;
   onNearEnd?: () => void;
   pagination?: AutoPagination;
 }) {
@@ -147,7 +149,7 @@ export function Screen({
       >
         <View style={styles.screen}>{children}</View>
       </View>
-      {!fixedFooter ? <ScenicFooter /> : null}
+      {!fixedFooter ? <ScenicFooter fillAvailableSpace={fillFooter} /> : null}
     </ScrollView>
   );
 
@@ -369,18 +371,20 @@ export interface EmptyStateProps {
   description: string;
   icon?: IconName;
   action?: ReactNode;
+  compact?: boolean;
 }
 export function EmptyState({
   title,
   description,
   icon = 'search',
   action,
+  compact = false,
 }: EmptyStateProps) {
   const theme = useTheme();
   return (
-    <Card style={styles.empty}>
-      <View style={[styles.emptyIcon, { backgroundColor: theme.hero }]}>
-        <Icon name={icon} size={44} />
+    <Card style={[styles.empty, compact && styles.emptyCompact]}>
+      <View style={[styles.emptyIcon, compact && styles.emptyIconCompact, { backgroundColor: theme.hero }]}>
+        <Icon name={icon} size={compact ? 32 : 44} />
       </View>
       <AppText
         accessibilityRole="header"
@@ -500,5 +504,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: Spacing.two,
   },
+  emptyCompact: { paddingVertical: Spacing.four },
+  emptyIconCompact: { width: 64, height: 64, borderRadius: Radius.card, marginBottom: 0 },
   center: { textAlign: 'center' },
 });

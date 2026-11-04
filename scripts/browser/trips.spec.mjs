@@ -81,7 +81,7 @@ test('real API flow: create, failed save, reload, second device, discovery, life
     await own.getByRole('button',{name:/^Opcje wyjazdu:/}).click();
     await page.getByRole('button',{name:'Wstrzymaj poszukiwania',exact:true}).click();
     await expect(own.getByRole('button',{name:'Znajdź towarzystwo',exact:true})).toBeDisabled();
-    await b.goto('/explore');await expect(b.getByText('Jeszcze się mijamy',{exact:true})).toBeVisible();await expect(card).toHaveCount(0);
+    await b.goto('/explore');await expect(b.getByText('Brak wyjazdów do odkrycia',{exact:true})).toBeVisible();await expect(card).toHaveCount(0);
     await own.getByRole('button',{name:/^Opcje wyjazdu:/}).click();
     await page.getByRole('button',{name:'Duplikuj jako szkic',exact:true}).click();
     const copied=[...store.trips.values()].find(item=>item.id!==trip.id);
@@ -97,7 +97,7 @@ test('real API flow: create, failed save, reload, second device, discovery, life
     await page.getByRole('button',{name:'Usuń wyjazd',exact:true}).click();
     await page.getByRole('button',{name:'Usuń wyjazd',exact:true}).click();
     await expect(own).toHaveCount(0);
-    await b.reload();await expect(b.getByText('Jeszcze się mijamy',{exact:true})).toBeVisible();await expect(card).toHaveCount(0);
+    await b.reload();await expect(b.getByText('Brak wyjazdów do odkrycia',{exact:true})).toBeVisible();await expect(card).toHaveCount(0);
     expect(store.trips.has(copied.id)).toBe(true);
     expect(errors).toEqual([]);
   }finally{await device.close();await other.close();}
@@ -154,9 +154,9 @@ test('load failures offer retry and never masquerade as an empty collection or o
   await expect(page.getByRole('heading',{name:'Dokąd wybierzesz się z ekipą?'})).toBeVisible();
   store.failPublic=true;await page.goto('/explore');
   await expect(page.getByRole('alert')).toContainText('Nie udało się pobrać ogłoszeń');
-  await expect(page.getByText('Jeszcze się mijamy',{exact:true})).toHaveCount(0);
+  await expect(page.getByText('Brak wyjazdów do odkrycia',{exact:true})).toHaveCount(0);
   store.failPublic=false;await page.getByRole('button',{name:'Spróbuj ponownie',exact:true}).click();
-  await expect(page.getByText('Jeszcze się mijamy',{exact:true})).toBeVisible();
+  await expect(page.getByText('Brak wyjazdów do odkrycia',{exact:true})).toBeVisible();
 });
 test('an incomplete draft persists and request keys do not need crypto.randomUUID',async({page,context})=>{
   await context.addInitScript(()=>{Object.defineProperty(globalThis.crypto,'randomUUID',{value:undefined,configurable:true});});

@@ -1,6 +1,6 @@
 import { DataStatus } from '@/components/ui/data-status';
 import { useState } from 'react';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import {
   AppText,
@@ -20,7 +20,7 @@ import {
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { DiscoveryFiltersSheet } from '@/features/discovery/discovery-filters-sheet';
 import { DiscoveryFilterBar, DiscoveryResultsHeader } from '@/features/discovery/discovery-controls';
-import { useTripSearch } from '@/features/discovery/use-trip-search';
+import { useTripSearch, useTripResultCount } from '@/features/discovery/use-trip-search';
 import { discoveryFiltersPayload,TRIP_SEARCH_PAGE_SIZE } from '@/features/discovery/discovery-data';
 import { useTheme } from '@/hooks/use-theme';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
@@ -61,6 +61,10 @@ export default function ExploreScreen() {
     Number(Boolean(filters.groupKinds?.length)) +
     Number(Boolean(filters.animalKinds?.length)) +
     Number(Boolean(filters.landscapeKinds?.length)) + Number(Boolean(filters.favoritesOnly));
+  const checkAvailableTrips = view === 'trips' && !mapOpen && status === 'ready' && totalCount === 0 && activeCount > 0;
+  const { count: availableTripCount, countError, retryCount } = useTripResultCount(INITIAL_FILTERS, checkAvailableTrips);
+  const checkingAvailability = checkAvailableTrips && availableTripCount === null && !countError;
+  const noAvailableTrips = activeCount === 0 || availableTripCount === 0;
   const summary = [
     filters.favoritesOnly ? 'Tylko ulubione' : '',
     filters.tripModes.length === 1
@@ -176,14 +180,19 @@ export default function ExploreScreen() {
           action={<SavedFiltersButton kind="trips" onApply={applySavedFilterSet} />} />
       </>}
       empty={status === 'ready' ? (
+        checkingAvailability ? <DataStatus status="loading" error={null} label="Sprawdzanie dostępnych wyjazdów" onRetry={retryCount} /> : (
           <EmptyState
-            title="Jeszcze się mijamy"
-            description="Żaden plan nie pasuje do tych filtrów. Zmień klimat wyjazdu lub pozostałe kryteria."
-            action={
-              <Button label="Pokaż wszystkie propozycje" onPress={reset} />
-            }
+            compact
+            icon={noAvailableTrips ? 'tent' : 'search'}
+            title={noAvailableTrips ? 'Brak wyjazdów do odkrycia' : 'Brak pasujących wyjazdów'}
+            description={noAvailableTrips
+              ? 'Dodaj swój plan lub wolny termin i znajdź towarzystwo na wspólny wyjazd.'
+              : 'Żaden wyjazd nie pasuje do wybranych filtrów. Zmień kryteria lub zobacz wszystkie wyjazdy.'}
+            action={noAvailableTrips
+              ? <Button label="Dodaj wyjazd" icon="plus" onPress={() => router.push('/trip-editor')} />
+              : <Button label="Pokaż wszystkie wyjazdy" onPress={reset} />}
           />
-        ) : null}
+        )) : null}
     /></MapListLayer>
     {mapOpen?<DiscoveryMap key={JSON.stringify(discoveryFiltersPayload(filters))+':'+tripFilterRevision} memory={mapMemory} onRemember={setMapMemory} summary={summary} activeCount={activeCount}
       notice={filterSetExpired({kind:'trips',filters},today)?'Termin w tym zestawie już minął':undefined}

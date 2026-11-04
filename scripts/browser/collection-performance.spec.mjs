@@ -116,7 +116,7 @@ test('50 discovery trips unmount distant cards, retain favorites, restore the la
   await page.goto('/explore');
   await expectLoaded(screen, 0);
   await expect(
-    screen.getByRole('heading', { name: 'Jeszcze się mijamy', exact: true }),
+    screen.getByRole('heading', { name: 'Brak wyjazdów do odkrycia', exact: true }),
   ).toBeVisible();
   await writeFile(
     '.expo/collection-trip-window.local.json',

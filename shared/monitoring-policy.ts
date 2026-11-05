@@ -13,6 +13,7 @@ export const OPERATIONS = [
   'groups.search', 'groups.detail', 'groups.report',
   'presence.heartbeat', 'presence.lookup',
   'favorites.load', 'favorites.save',
+  'tutorial.load', 'tutorial.save',
   'saved_filters.load', 'saved_filters.save', 'saved_filters.delete', 'saved_filters.notifications', 'discovery.map',
   'reactions.load', 'reactions.save', 'reactions.people',
   'contacts.block', 'contacts.report', 'notifications.load', 'notifications.read', 'notifications.preferences', 'push.register', 'push.unregister',

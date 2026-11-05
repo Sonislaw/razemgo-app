@@ -1,6 +1,6 @@
 import { useTheme } from '@/hooks/use-theme';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { AccessibilityInfo, Animated, Easing, Platform, Pressable, StyleSheet, useWindowDimensions, type ViewProps } from 'react-native';
+import { AccessibilityInfo, Animated, Easing, Platform, Pressable, StyleSheet, View, useWindowDimensions, type ViewProps } from 'react-native';
 
 const SheetTransitionContext = createContext<{
   backdrop: Animated.Value;
@@ -55,10 +55,16 @@ function useTransition() {
   return value;
 }
 
-export function SheetBackdrop({ onPress, label }: { onPress: () => void; label: string }) {
+export function SheetBackdrop({ onPress, label, cutout }: { onPress: () => void; label: string; cutout?: { x: number; y: number; width: number; height: number } }) {
   const theme = useTheme();
   const { backdrop } = useTransition();
-  return <Animated.View testID="sheet-backdrop" style={[StyleSheet.absoluteFill, { backgroundColor: theme.scrim, opacity: backdrop }]}>
+  return <Animated.View testID="sheet-backdrop" style={[StyleSheet.absoluteFill, { backgroundColor: cutout ? 'transparent' : theme.scrim, opacity: backdrop }]}>
+    {cutout ? <>
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: cutout.y, backgroundColor: theme.scrim }} />
+      <View style={{ position: 'absolute', top: cutout.y + cutout.height, left: 0, right: 0, bottom: 0, backgroundColor: theme.scrim }} />
+      <View style={{ position: 'absolute', top: cutout.y, left: 0, width: cutout.x, height: cutout.height, backgroundColor: theme.scrim }} />
+      <View style={{ position: 'absolute', top: cutout.y, left: cutout.x + cutout.width, right: 0, height: cutout.height, backgroundColor: theme.scrim }} />
+    </> : null}
     <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={StyleSheet.absoluteFill} />
   </Animated.View>;
 }

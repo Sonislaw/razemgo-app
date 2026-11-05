@@ -7,6 +7,8 @@ import { useMessagingSelector } from '@/features/messaging/messaging-context';
 import { notificationCount } from '@/features/messaging/messaging-state';
 import { CountBadge } from '@/features/messaging/messaging-ui';
 import { useTheme } from '@/hooks/use-theme';
+import { TutorialTarget } from '@/features/tutorial/tutorial-target';
+import type { TutorialTargetId } from '@/features/tutorial/tutorial-context';
 import { Image } from 'expo-image';
 import {
   TabList,
@@ -24,6 +26,7 @@ type TabButtonProps = Omit<TabTriggerSlotProps, 'ref'> &
   Pick<ComponentProps<typeof Pressable>, 'ref'> & {
     icon: TabIconName;
     count?: number;
+    target: TutorialTargetId;
   };
 
 function TabButton({
@@ -31,6 +34,7 @@ function TabButton({
   isFocused,
   icon,
   count = 0,
+  target,
   ...props
 }: TabButtonProps) {
   const theme = useTheme();
@@ -46,37 +50,39 @@ function TabButton({
       accessibilityState={{ selected: isFocused }}
       style={({ pressed }) => [styles.tab, { opacity: pressed ? 0.65 : 1 }]}
     >
-      <View
-        style={[
-          styles.icon,
-          {
-            backgroundColor: isFocused
-              ? theme.backgroundSelected
-              : theme.backgroundElement,
-          },
-        ]}
-      >
-        <Image
-          source={TAB_ICONS[icon].web[isFocused ? 'selected' : 'default']}
-          tintColor={isFocused ? theme.primaryStrong : theme.textSecondary}
-          contentFit="contain"
-          style={{ width: 26, height: 26 }}
-          accessible={false}
-          alt=""
-        />
-        {count ? (
-          <View style={{ position: 'absolute', top: -5, right: 0 }}>
-            <CountBadge count={count} />
-          </View>
-        ) : null}
-      </View>
-      <AppText
-        variant="caption"
-        color={isFocused ? 'primaryStrong' : 'textSecondary'}
-        style={styles.label}
-      >
-        {children}
-      </AppText>
+      <TutorialTarget id={target} style={styles.tabContent}>
+        <View
+          style={[
+            styles.icon,
+            {
+              backgroundColor: isFocused
+                ? theme.backgroundSelected
+                : theme.backgroundElement,
+            },
+          ]}
+        >
+          <Image
+            source={TAB_ICONS[icon].web[isFocused ? 'selected' : 'default']}
+            tintColor={isFocused ? theme.primaryStrong : theme.textSecondary}
+            contentFit="contain"
+            style={{ width: 26, height: 26 }}
+            accessible={false}
+            alt=""
+          />
+          {count ? (
+            <View style={{ position: 'absolute', top: -5, right: 0 }}>
+              <CountBadge count={count} />
+            </View>
+          ) : null}
+        </View>
+        <AppText
+          variant="caption"
+          color={isFocused ? 'primaryStrong' : 'textSecondary'}
+          style={styles.label}
+        >
+          {children}
+        </AppText>
+      </TutorialTarget>
     </Pressable>
   );
 }
@@ -105,6 +111,7 @@ export default function AppTabs() {
         {TAB_ITEMS.map((tab) => (
           <TabTrigger key={tab.name} name={tab.name} href={tab.href} asChild>
             <TabButton
+              target={tab.name}
               icon={tab.icon}
               count={tab.name === 'messages' ? notifications : 0}
             >
@@ -130,6 +137,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   tab: { flex: 1, minWidth: 0, minHeight: 56, alignItems: 'center', gap: 4 },
+  tabContent: { width: '100%', alignItems: 'center', gap: 4 },
   icon: {
     paddingVertical: 4,
     paddingHorizontal: 16,

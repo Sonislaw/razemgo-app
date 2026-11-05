@@ -72,6 +72,7 @@ async function backend(context, existingState) {
     if (request.method() === 'OPTIONS')
       return route.fulfill({ status: 204, headers });
     const body = request.postDataJSON() ?? {};
+    if (url.pathname === '/rest/v1/rpc/get_my_tutorial_state') return respond({ version: 1, status: 'skipped' });
     if (url.pathname === '/rest/v1/rpc/set_my_presence') {
       if (state.stallPresence && body.is_online === false)
         return new Promise(() => {});

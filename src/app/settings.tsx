@@ -17,6 +17,7 @@ import { PushPermissionCard } from '@/features/notifications/push-permission-car
 import { NotificationPreferencesCard } from '@/features/notifications/notification-ui';
 import { MonitoringTestCard } from '@/features/notifications/monitoring-test-card';
 import {useAccountAccess} from '@/features/moderation/account-access-context';
+import { useTutorial } from '@/features/tutorial/tutorial-context';
 
 function SettingsSection({
   icon,
@@ -58,6 +59,7 @@ function SettingsSection({
 }
 
 export default function SettingsScreen() {
+  const tutorial = useTutorial();
   const {is_admin}=useAccountAccess();
   const { from } = useLocalSearchParams<{ from?: string }>();
   const fromHome = from === 'home';
@@ -91,6 +93,14 @@ export default function SettingsScreen() {
           <Button label="Zablokowane ekipy" icon="block" variant="secondary" onPress={openSafety} />
         </Card>
         <PushPermissionCard />
+        {tutorial.available ? <Card style={{ gap: 12 }}>
+          <View style={layout.row}>
+            <Icon name="compass" size={22} />
+            <AppText accessibilityRole="header" variant="label">Samouczek</AppText>
+          </View>
+          <AppText variant="caption" color="textSecondary">Poznaj zakładki dolnego menu oraz dzwoneczek z powiadomieniami.</AppText>
+          <Button label="Uruchom samouczek" variant="secondary" onPress={tutorial.start} />
+        </Card> : null}
         <NotificationPreferencesCard />
         <AccountSettings />
         {is_admin ? <Button label="Panel administracyjny" icon="shield" variant="secondary" onPress={()=>router.push('/admin')} /> : null}

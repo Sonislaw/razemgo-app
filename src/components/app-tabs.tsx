@@ -5,6 +5,7 @@ import { BottomTabInset } from '@/constants/theme';
 import { useMessagingSelector } from '@/features/messaging/messaging-context';
 import { notificationCount } from '@/features/messaging/messaging-state';
 import { useTheme } from '@/hooks/use-theme';
+import { NativeTutorialTabTargets } from '@/features/tutorial/tutorial-target';
 import { NativeTabs } from 'expo-router/native-tabs';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -62,6 +63,7 @@ export default function AppTabs() {
         ))}
       </NativeTabs>
       <TabBarGradient height={BottomTabInset + insets.bottom} />
+      <NativeTutorialTabTargets />
     </View>
   );
 }

@@ -9,7 +9,7 @@ import {
 } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useAutoPagination, type AutoPagination } from '@/hooks/use-auto-pagination';
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import {
   Platform,
   Pressable,
@@ -19,6 +19,7 @@ import {
   useWindowDimensions,
   View,
   type TextProps,
+  type ScrollViewInstance,
   type ViewProps,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -78,6 +79,7 @@ export function Screen({
   fillFooter = false,
   onNearEnd,
   pagination,
+  scrollRef,
 }: {
   children: ReactNode;
   header?: ReactNode;
@@ -87,6 +89,7 @@ export function Screen({
   fillFooter?: boolean;
   onNearEnd?: () => void;
   pagination?: AutoPagination;
+  scrollRef?: Ref<ScrollViewInstance>;
 }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -94,6 +97,7 @@ export function Screen({
   const paging = useAutoPagination(pagination);
   const content = (
     <ScrollView
+      ref={scrollRef}
       scrollEventThrottle={onNearEnd || pagination ? 100 : undefined}
       onLayout={pagination ? paging.onLayout : undefined}
       onScrollBeginDrag={pagination ? paging.onScrollBeginDrag : undefined}

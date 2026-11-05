@@ -4,6 +4,7 @@ import { BrandHeader } from '@/components/ui/brand-header';
 import { IS_DEMO_MODE } from '@/constants/app';
 import { useTheme } from '@/hooks/use-theme';
 import { HomeNotifications } from '@/features/notifications/home-notifications';
+import { TutorialTarget } from '@/features/tutorial/tutorial-target';
 
 export function HomeHeader({ onOpenDemo }: { onOpenDemo: () => void }) {
   const theme = useTheme();
@@ -37,7 +38,9 @@ export function HomeHeader({ onOpenDemo }: { onOpenDemo: () => void }) {
               </View>
             </Pressable>
           ) : null}
-          <HomeNotifications key={width} />
+          <TutorialTarget id="notifications">
+            <HomeNotifications key={width} />
+          </TutorialTarget>
         </>
       }
     />

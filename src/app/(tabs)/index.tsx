@@ -14,10 +14,17 @@ import { useProfile } from '@/features/profile/profile-context';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import { todayDate } from '@/features/trips/own-trips-state';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { StyleSheet, View, type ScrollViewInstance } from 'react-native';
+import { TUTORIAL_STEPS, useTutorial } from '@/features/tutorial/tutorial-context';
 
 export default function HomeScreen() {
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  const { step } = useTutorial();
+  const showingBell = step !== null && TUTORIAL_STEPS[step]?.target === 'notifications';
+  useEffect(() => {
+    if (showingBell) scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [showingBell]);
   const { hasProfile, profile } = useProfile();
   const { setFilters } = useDiscovery();
   const {
@@ -51,6 +58,7 @@ export default function HomeScreen() {
   return (
     <View testID="home-canvas" style={styles.screen}>
       <Screen
+        scrollRef={scrollRef}
         testID="home-main"
         fillFooter={!latestListing}
         header={<HomeHeader onOpenDemo={() => setDemoOpen(true)} />}

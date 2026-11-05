@@ -851,6 +851,18 @@
   },
   {
     "schema": "public",
+    "name": "finish_my_tutorial",
+    "arguments": "tutorial_status text",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
     "name": "finish_push_delivery",
     "arguments": "delivery_id uuid, lease uuid, result text, expected_token text, expo_ticket_id text, failure_code text",
     "definer": true,
@@ -1069,6 +1081,18 @@
     "schema": "public",
     "name": "get_my_trip_reactors",
     "arguments": "target_trip_id uuid, after_at timestamp with time zone, after_id uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_my_tutorial_state",
+    "arguments": "",
     "definer": true,
     "settings": [
       "search_path=\"\""

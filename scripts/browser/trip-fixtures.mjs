@@ -107,6 +107,7 @@ function state() {
     favoriteTrips: new Map(),
     reactions: new Map(),
     filterSets: new Map(),
+    tutorialStates: new Map([[A, 'skipped'], [B, 'skipped']]),
   };
 }
 async function backend(context, store) {
@@ -153,6 +154,19 @@ async function backend(context, store) {
       ).sub;
     } catch {}
     const endpoint = url.pathname.split('/').at(-1);
+    if (endpoint === 'get_my_tutorial_state') {
+      (store.tutorialLoadCalls ??= []).push(id);
+      if (store.failTutorialLoad) return respond({ message: 'offline' }, 503);
+      if (store.waitTutorialLoad) await store.waitTutorialLoad;
+      return respond({ version: 1, status: store.tutorialStates.get(id) ?? null });
+    }
+    if (endpoint === 'finish_my_tutorial') {
+      (store.tutorialSaveCalls ??= []).push({ id, status: body.tutorial_status });
+      if (store.failTutorialSave) return respond({ message: 'offline' }, 503);
+      const status = store.tutorialStates.get(id) === 'completed' ? 'completed' : body.tutorial_status;
+      store.tutorialStates.set(id, status);
+      return respond({ version: 1, status });
+    }
     (store.technicalCalls ??= []).push(endpoint);
     if(['search_trip_map','get_trip_map_items'].includes(endpoint)){
       (store.mapCalls??=[]).push({endpoint,...body});

@@ -22,6 +22,8 @@ import {
 } from '@/features/profile/profile-context';
 import { ReactionsProvider } from '@/features/reactions/reactions-context';
 import { OwnTripsProvider } from '@/features/trips/own-trips-context';
+import { TutorialProvider } from '@/features/tutorial/tutorial-context';
+import { TutorialOverlay } from '@/features/tutorial/tutorial-overlay';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import {
@@ -149,6 +151,7 @@ function RootNavigator() {
         </Stack.Protected>
       </Stack>
       <PushAccountBridge ready={ready} />
+      <TutorialOverlay />
     </>
   );
 }
@@ -167,7 +170,9 @@ function AccountProviders() {
                   <DiscoveryProvider>
                     <MessagingProvider>
                       <NotificationsProvider>
-                        <RootNavigator />
+                        <TutorialProvider>
+                          <RootNavigator />
+                        </TutorialProvider>
                       </NotificationsProvider>
                     </MessagingProvider>
                   </DiscoveryProvider>

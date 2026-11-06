@@ -16,6 +16,7 @@ import type { TravelGroup, TripPlan } from '@/types/travel';
 import { TripCover } from './trip-cover';
 import { TripPlanningIcon } from './trip-planning-icon';
 import { TripLocationSummary } from './trip-location-summary';
+import { PassportLevelBadge } from '@/features/passport/passport-level-badge';
 
 interface TripListingCardProps {
   trip: TripPlan;
@@ -111,6 +112,7 @@ export function TripListingCard({
             <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={44} decorative />
             <View style={styles.flex}>
               <AppText variant="label">{group.name}</AppText>
+              <PassportLevelBadge group={group} compact />
               <AppText variant="caption" color="textSecondary">
                 {participantsSummary}
               </AppText>

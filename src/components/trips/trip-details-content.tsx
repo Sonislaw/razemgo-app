@@ -7,6 +7,7 @@ import type { TravelGroup, TripPlan } from '@/types/travel';
 import { TripLocationSummary } from './trip-location-summary';
 import { TripMapCard } from './trip-map-card';
 import { TripParticipantsCard } from './trip-participants-card';
+import { PassportLevelBadge } from '@/features/passport/passport-level-badge';
 
 export function TripDetailsContent({
   trip,
@@ -40,6 +41,7 @@ export function TripDetailsContent({
               >
                 {group.name}
               </AppText>
+              <PassportLevelBadge group={group} compact />
             </View>
             <TravelModeBadges modes={trip.travelModes ?? group.travelModes} />
           </View>

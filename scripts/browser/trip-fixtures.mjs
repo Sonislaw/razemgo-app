@@ -20,6 +20,8 @@ import { groupRecommendation } from '../support/legacy-matching/recommendation.t
 import { filterPublicGroups, publicGroupFromRow } from '../../src/features/groups/group-data.ts';
 import { groupCriteriaFromPayload } from '../../src/features/saved-filters/saved-filter-data.ts';
 import { mockMapResponse } from './map-fixtures.mjs';
+import { passportFixture } from './passport-fixtures.mjs';
+export const TEST_API_ORIGIN = process.env.RAZEMGO_TEST_API_ORIGIN ?? 'http://127.0.0.1:54321';
 
 const A = '00000000-0000-4000-8000-000000000001';
 const B = '00000000-0000-4000-8000-000000000002';
@@ -108,9 +110,14 @@ function state() {
     reactions: new Map(),
     filterSets: new Map(),
     tutorialStates: new Map([[A, 'skipped'], [B, 'skipped']]),
+    passports: new Map([[A, passportFixture(groupId(A))], [B, passportFixture(groupId(B))]]),
   };
 }
 async function backend(context, store) {
+  // Preview UI can be tested with its real app variant and a fake API key;
+  // all HTTP requests stay in this in-memory backend, without live user data.
+  if (TEST_API_ORIGIN.startsWith('https://'))
+    await context.routeWebSocket(TEST_API_ORIGIN.replace('https://', 'wss://') + '/**', socket => socket.close());
   await context.route('https://monitoring.razemgo.invalid/**', (route) =>
     route.fulfill({
       status: 200,
@@ -118,7 +125,7 @@ async function backend(context, store) {
       headers: { 'access-control-allow-origin': '*' },
     }),
   );
-  await context.route('http://127.0.0.1:54321/**', async (route) => {
+  await context.route(TEST_API_ORIGIN + '/**', async (route) => {
     const request = route.request(),
       url = new URL(request.url());
     const headers = {
@@ -154,6 +161,16 @@ async function backend(context, store) {
       ).sub;
     } catch {}
     const endpoint = url.pathname.split('/').at(-1);
+    if (endpoint === 'get_my_traveler_passport' || endpoint === 'get_public_traveler_passport') {
+      (store.passportCalls ??= []).push({ endpoint, user: id });
+      if (store.failPassport) return respond({ message: 'offline' }, 503);
+      if (store.waitPassport) await store.waitPassport;
+      const owner = endpoint === 'get_my_traveler_passport' ? id : body.target_group_id === groupId(A) ? A : B;
+      const value = store.passports.get(owner);
+      if (!value || (endpoint === 'get_public_traveler_passport' && store.blocks.has(groupId(id)))) return respond(null);
+      return respond(endpoint === 'get_my_traveler_passport' ? value :
+        { ...value, own: false, categories: value.categories.map(c => ({ ...c, count: null })) });
+    }
     if (endpoint === 'get_my_tutorial_state') {
       (store.tutorialLoadCalls ??= []).push(id);
       if (store.failTutorialLoad) return respond({ message: 'offline' }, 503);
@@ -234,6 +251,7 @@ async function backend(context, store) {
         .map(tripFromRow);
       return respond({
         domains: {
+          passport: String(parseInt(resultRevision(store.passports.get(id)).slice(0, 12), 16)),
           saved_filters: String(parseInt(resultRevision([...store.filterSets.values()].filter(row => row.owner === id)).slice(0, 12), 16)),
           mailbox: String(
             parseInt(

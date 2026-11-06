@@ -14,6 +14,7 @@ export const OPERATIONS = [
   'presence.heartbeat', 'presence.lookup',
   'favorites.load', 'favorites.save',
   'tutorial.load', 'tutorial.save',
+  'passport.load',
   'saved_filters.load', 'saved_filters.save', 'saved_filters.delete', 'saved_filters.notifications', 'discovery.map',
   'reactions.load', 'reactions.save', 'reactions.people',
   'contacts.block', 'contacts.report', 'notifications.load', 'notifications.read', 'notifications.preferences', 'push.register', 'push.unregister',
@@ -58,7 +59,7 @@ export function classifyFailure(error: unknown, operation: MonitoringOperation, 
   return { category: status && status >= 500 ? 'server' : 'unexpected', code: KNOWN_CODES.has(code) ? code : status ? 'HTTP_' + status : 'UNEXPECTED', status };
 }
 const ROUTES = new Set(['/', '/welcome','/auth/sign-in','/auth/sign-up','/auth/confirm','/auth/forgot-password','/auth/reset-password','/auth/callback',
-  '/onboarding','/account-loading','/explore','/trips','/messages','/profile','/edit-profile','/settings','/notifications','/messaging-safety','/trip-editor','/admin']);
+  '/onboarding','/account-loading','/explore','/trips','/messages','/profile','/edit-profile','/settings','/notifications','/messaging-safety','/trip-editor','/admin','/traveler-passport']);
 export function monitoringRoute(path: string): string {
   const route = path.split(/[?#]/,1)[0];
   if (ROUTES.has(route)) return route;

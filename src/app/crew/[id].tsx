@@ -14,6 +14,7 @@ import { ProfileCoverHeader } from '@/features/profile/profile-cover-header';
 import { FavoriteButton, FavoritesNotice } from '@/features/favorites/favorite-button';
 import { ShareLinkButton } from '@/features/sharing/share-link-button';
 import { View } from 'react-native';
+import { PassportCard } from '@/features/passport/passport-card';
 
 export default function PublicGroupScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -43,6 +44,7 @@ export default function PublicGroupScreen() {
       <GroupProfileCard group={data.group} expanded />
       <FavoritesNotice />
       <GroupAboutCard about={data.about} />
+      <PassportCard group={data.group} />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <ShareLinkButton kind="group" targetId={data.group.id} />
         <FavoriteButton kind="group" targetId={data.group.id} />

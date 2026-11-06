@@ -72,6 +72,7 @@ export const INITIAL_GROUP_FILTERS: GroupFilters = {
 export type PublicGroupRow = {
   crew: {
     id: string;
+    passport?: TravelGroup['passport'];
     crew_number?: number;
     name: string;
     avatar_id: ProfileAvatarId;
@@ -95,6 +96,7 @@ export function publicGroupFromRow(row: PublicGroupRow): PublicGroup {
   return {
     group: {
       id: g.id,
+      ...(g.passport ? { passport: g.passport } : {}),
       ...(g.crew_number ? { crewNumber: g.crew_number } : {}),
       name: g.name,
       avatarId: g.avatar_id,

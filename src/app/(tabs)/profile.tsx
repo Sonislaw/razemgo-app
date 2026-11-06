@@ -16,6 +16,7 @@ import { GroupProfileCard } from '@/features/groups/group-profile-card';
 import { GroupAboutCard } from '@/features/groups/group-about-card';
 import { ProfileCoverHeader } from '@/features/profile/profile-cover-header';
 import { ShareLinkButton } from '@/features/sharing/share-link-button';
+import { PassportCard } from '@/features/passport/passport-card';
 
 export default function ProfileScreen() {
   const { profile, hasProfile } = useProfile();
@@ -60,6 +61,7 @@ export default function ProfileScreen() {
           expanded
         />
         <GroupAboutCard about={profile.about} own />
+        <PassportCard group={group} own />
         {IS_DEMO_MODE ? (
           <View style={styles.demo}>
             <DemoBadge />

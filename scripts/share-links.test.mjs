@@ -35,3 +35,18 @@ test('chat leaves foreign environments, nested URLs, malformed paths and auth li
     assert.equal(parseShareLink(text), null);
   }
 });
+
+test('Preview shares use its own scheme and neither environment opens links from the other backend', () => {
+  for (const [kind, path] of [['trip', 'trip'], ['group', 'crew']]) {
+    const link = `razemgo://${path}/${ID}`;
+    assert.equal(createShareLink(kind, ID, 'razemgo'), link);
+    assert.deepEqual(parseShareLink(link.toUpperCase(), 'razemgo'), { kind, id: ID });
+    assert.equal(parseShareLink(link, 'razemgo-dev'), null);
+    assert.equal(parseShareLink(`razemgo-dev://${path}/${ID}`, 'razemgo'), null);
+    assert.deepEqual(splitSharedText(`Zobacz (${link}).`, 'razemgo'), [
+      { text: 'Zobacz (' }, { text: link, target: { kind, id: ID } }, { text: ').' },
+    ]);
+  }
+  for (const text of [TRIP, CREW, 'razemgo://auth/callback', `https://example.com/razemgo://trip/${ID}`, `razemgo://trip/${ID}?token=x`])
+    assert.deepEqual(splitSharedText(text, 'razemgo'), [{ text }]);
+});

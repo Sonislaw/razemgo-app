@@ -24,6 +24,8 @@ import { ReactionsProvider } from '@/features/reactions/reactions-context';
 import { OwnTripsProvider } from '@/features/trips/own-trips-context';
 import { TutorialProvider } from '@/features/tutorial/tutorial-context';
 import { TutorialOverlay } from '@/features/tutorial/tutorial-overlay';
+import { PassportProvider } from '@/features/passport/passport-context';
+import { PassportAwardNotice } from '@/features/passport/passport-award-notice';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import {
@@ -141,6 +143,7 @@ function RootNavigator() {
           <Stack.Screen name="shared-trip/[id]" />
           <Stack.Screen name="saved-filter/[id]" />
           <Stack.Screen name="edit-profile" />
+          <Stack.Screen name="traveler-passport" />
           <Stack.Screen name="crew/[id]" />
           <Stack.Screen name="settings" />
           <Stack.Screen name="notifications" />
@@ -152,6 +155,7 @@ function RootNavigator() {
       </Stack>
       <PushAccountBridge ready={ready} />
       <TutorialOverlay />
+      {ready ? <PassportAwardNotice /> : null}
     </>
   );
 }
@@ -162,25 +166,27 @@ function AccountProviders() {
   return (
     <ProfileProvider key={session?.user.id ?? 'guest'}>
       <AccountSyncProvider>
-        <PresenceProvider>
-          <FavoritesProvider>
-            <ReactionsProvider>
-              <OwnTripsProvider>
-                <SavedFilterProvider>
-                  <DiscoveryProvider>
-                    <MessagingProvider>
-                      <NotificationsProvider>
-                        <TutorialProvider>
-                          <RootNavigator />
-                        </TutorialProvider>
-                      </NotificationsProvider>
-                    </MessagingProvider>
-                  </DiscoveryProvider>
-                </SavedFilterProvider>
-              </OwnTripsProvider>
-            </ReactionsProvider>
-          </FavoritesProvider>
-        </PresenceProvider>
+        <PassportProvider>
+          <PresenceProvider>
+            <FavoritesProvider>
+              <ReactionsProvider>
+                <OwnTripsProvider>
+                  <SavedFilterProvider>
+                    <DiscoveryProvider>
+                      <MessagingProvider>
+                        <NotificationsProvider>
+                          <TutorialProvider>
+                            <RootNavigator />
+                          </TutorialProvider>
+                        </NotificationsProvider>
+                      </MessagingProvider>
+                    </DiscoveryProvider>
+                  </SavedFilterProvider>
+                </OwnTripsProvider>
+              </ReactionsProvider>
+            </FavoritesProvider>
+          </PresenceProvider>
+        </PassportProvider>
       </AccountSyncProvider>
     </ProfileProvider>
   );

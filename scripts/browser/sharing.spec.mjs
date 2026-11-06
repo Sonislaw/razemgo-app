@@ -1,12 +1,14 @@
 import { test, expect } from '@playwright/test';
-import { A, B, groupId, profile, state, backend, login } from './trip-fixtures.mjs';
+import { A, B, groupId, profile, state, backend, login, TEST_API_ORIGIN } from './trip-fixtures.mjs';
 
 const TRIP = '00000000-0000-4000-8000-000000008001';
 const PRIVATE = '00000000-0000-4000-8000-000000008002';
 const CHAT = '00000000-0000-4000-8000-000000008003';
 const INVITE = '00000000-0000-4000-8000-000000008004';
-const tripLink = 'razemgo-dev://trip/' + TRIP;
-const groupLink = 'razemgo-dev://crew/' + groupId(B);
+const scheme = process.env.RAZEMGO_SHARING_TEST_SCHEME ?? 'razemgo-dev';
+const variant = scheme === 'razemgo' ? 'Preview' : 'Dev';
+const tripLink = scheme + '://trip/' + TRIP;
+const groupLink = scheme + '://crew/' + groupId(B);
 
 function seed() {
   const store = state();
@@ -36,7 +38,7 @@ async function copy(page, button, expected) {
 
 async function sharingBackend(context, store) {
   await backend(context, store);
-  await context.route('http://127.0.0.1:54321/rest/v1/rpc/**', async route => {
+  await context.route(TEST_API_ORIGIN + '/rest/v1/rpc/**', async route => {
     const request = route.request();
     const name = new URL(request.url()).pathname.split('/').at(-1);
     if (request.method() === 'OPTIONS' || !['list_public_groups_v3', 'count_public_groups', 'get_public_group_v3', 'refresh_public_group_results_v3'].includes(name)) return route.fallback();
@@ -63,7 +65,7 @@ async function pasteAndSend(page, prefix, expected) {
   await expect(page.getByRole('link', { name: /^Otwórz udostępnion/ }).last()).toBeVisible();
 }
 
-test('Dev copies trip and crew links, pastes into durable chat and opens viewer-specific screens on two accounts', async ({ page, context, browser }) => {
+test(`${variant} copies trip and crew links, pastes into durable chat and opens viewer-specific screens on two accounts`, async ({ page, context, browser }) => {
   test.setTimeout(120000);
   const store = seed();
   await sharingBackend(context, store);
@@ -108,7 +110,7 @@ test('Dev copies trip and crew links, pastes into durable chat and opens viewer-
   expect(errors).toEqual([]);
 });
 
-test('Dev handles clipboard denial, retry, private drafts and shared trips no longer available', async ({ page, context }) => {
+test(`${variant} handles clipboard denial, retry, private drafts and shared trips no longer available`, async ({ page, context }) => {
   test.setTimeout(90000);
   const store = seed();
   store.messages.push({ id: '00000000-0000-4000-9000-000000008005', sequence: 1, conversation_id: CHAT,

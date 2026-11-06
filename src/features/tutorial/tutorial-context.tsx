@@ -10,8 +10,8 @@ import { sessionStorage } from '@/lib/session-storage';
 import { createTutorialStore, type TutorialDecision } from './tutorial-store';
 import { fetchTutorialState, saveTutorialState } from './tutorial-repository';
 
-// Enable alongside the Dev migration; Preview is promoted separately.
-export const TUTORIAL_ENABLED = Constants.expoConfig?.extra?.appVariant === 'development';
+const variant = Constants.expoConfig?.extra?.appVariant;
+export const TUTORIAL_ENABLED = variant === 'development' || variant === 'preview';
 export const TUTORIAL_STEPS = [
   { target: 'index', title: 'Start',
     text: 'To punkt startowy aplikacji. Przejdziesz stąd do szukania ekipy lub dodasz własny wyjazd. Poniżej znajdziesz najnowsze ogłoszenie, gdy pojawi się w aplikacji.' },

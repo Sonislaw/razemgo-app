@@ -9,6 +9,7 @@ import { AnimalPortrait } from '@/features/animals/animal-portrait';
 import type { TravelGroup } from '@/types/travel';
 import { crewNumberText } from '@/features/profile/crew-number';
 import { useTheme } from '@/hooks/use-theme';
+import { PassportLevelBadge } from '@/features/passport/passport-level-badge';
 
 interface GroupProfileCardProps {
   group: TravelGroup;
@@ -35,6 +36,7 @@ export function GroupProfileCard({
             {crewNumberText(group.crewNumber)}
           </AppText>
         ) : null}
+        <PassportLevelBadge group={group} centered />
       </View>
       <View style={layout.row}>
         <View style={styles.details}>

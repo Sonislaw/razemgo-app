@@ -40,6 +40,13 @@ export function parseGroupRow(value: unknown, publicOnly = false): GroupRow {
   text(row.id, 128);
   text(row.name, 40);
   text(row.avatar_id, 64);
+  if (row.passport !== undefined) {
+    const passport = object(row.passport);
+    integer(passport.level, 1, 8);
+    integer(passport.points);
+    integer(passport.badge_count, 0, 53);
+    text(passport.title, 80);
+  }
   if (!publicOnly) text(row.owner_user_id, 128);
   if (row.crew_number !== undefined) integer(row.crew_number, 100000);
   oneOf(row.kind, ['family', 'couple', 'solo', 'friends']);

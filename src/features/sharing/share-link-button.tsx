@@ -5,7 +5,7 @@ import { Icon } from '@/components/ui/icon';
 import { AppText, Button } from '@/components/ui/primitives';
 import { Typography } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { DEV_SHARING_ENABLED } from './share-config';
+import { SHARING_ENABLED, SHARING_SCHEME } from './share-config';
 import { createShareLink, type SharedKind } from './share-links';
 import { copySharedLink } from './copy-link';
 
@@ -24,8 +24,8 @@ export function ShareLinkButton({ kind, targetId, compact = false, translucent =
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState(false);
-  const link = createShareLink(kind, targetId);
-  if (!DEV_SHARING_ENABLED || (!link && !disabled && !onPress)) return null;
+  const link = createShareLink(kind, targetId, SHARING_SCHEME);
+  if (!SHARING_ENABLED || (!link && !disabled && !onPress)) return null;
   const title = kind === 'trip' ? 'Udostępnij wyjazd' : 'Udostępnij ekipę';
   const circle = compact ? Typography.caption.lineHeight * fontScale + 10 : 44;
   const copy = async () => {

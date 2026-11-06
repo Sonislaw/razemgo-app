@@ -12,6 +12,7 @@ import { CardShareActions } from '@/features/sharing/card-share-actions';
 import { GroupAvatar } from '@/features/profile/group-avatar';
 import { getProfileCover } from '@/features/profile/profile-cover-data';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
+import { PassportLevelBadge } from '@/features/passport/passport-level-badge';
 
 export const GroupCard = memo(function GroupCard({ item, onNavigate }: { item: PublicGroup; onNavigate?: () => void }) {
   const theme = useTheme();
@@ -47,6 +48,7 @@ export const GroupCard = memo(function GroupCard({ item, onNavigate }: { item: P
               <AppText variant="caption" color="textSecondary" style={styles.adultCount}>
                 {group.adultCount} {group.adultCount === 1 ? 'dorosły' : 'dorosłych'}
               </AppText>
+              <PassportLevelBadge group={group} compact />
             </View>
           </View>
         </View>
@@ -79,7 +81,7 @@ const styles = StyleSheet.create({
   nameColumn: { flex: 1, minWidth: 0, gap: 6 },
   name: { fontSize: 23, lineHeight: 28, fontWeight: '800' },
   compactName: { fontSize: 20, lineHeight: 25 },
-  adults: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  adults: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 },
   adultCount: { flexShrink: 1 },
   favorite: { position: 'absolute', top: 12, right: 12, zIndex: 1, flexDirection: 'row', gap: 0 },
   footer: { borderTopWidth: 1, marginHorizontal: 16, paddingTop: 6, paddingBottom: 10 },

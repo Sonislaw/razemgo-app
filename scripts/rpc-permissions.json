@@ -395,7 +395,7 @@
     "schema": "messaging_private",
     "name": "public_crew",
     "arguments": "g travel_groups",
-    "definer": false,
+    "definer": true,
     "settings": [
       "search_path=\"\""
     ],
@@ -706,6 +706,66 @@
     "roles": [
       "authenticated"
     ]
+  },
+  {
+    "schema": "passport_private",
+    "name": "activity_changed",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "passport_private",
+    "name": "payload",
+    "arguments": "crew uuid, own boolean",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "passport_private",
+    "name": "profile_completed",
+    "arguments": "crew uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "passport_private",
+    "name": "record_event",
+    "arguments": "crew uuid, kind text, source text",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "passport_private",
+    "name": "summary",
+    "arguments": "crew uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "passport_private",
+    "name": "trip_published",
+    "arguments": "t trip_plans",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
   },
   {
     "schema": "presence_private",
@@ -1055,6 +1115,28 @@
   },
   {
     "schema": "public",
+    "name": "get_my_sync_state_before_passport",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "public",
+    "name": "get_my_traveler_passport",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
     "name": "get_my_trip",
     "arguments": "target_trip_id uuid",
     "definer": false,
@@ -1153,6 +1235,18 @@
     "schema": "public",
     "name": "get_public_group_v3",
     "arguments": "target_group_id uuid, after_cursor jsonb, page_size integer",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_public_traveler_passport",
+    "arguments": "target_group_id uuid",
     "definer": true,
     "settings": [
       "search_path=\"\""

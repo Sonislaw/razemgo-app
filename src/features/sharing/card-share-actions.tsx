@@ -1,7 +1,7 @@
 import { useWindowDimensions, View } from 'react-native';
 import { FavoriteButton } from '@/features/favorites/favorite-button';
 import { compactFavoriteInset, FavoriteIconButton } from '@/features/favorites/favorite-icon-button';
-import { DEV_SHARING_ENABLED } from './share-config';
+import { SHARING_ENABLED, SHARING_SCHEME } from './share-config';
 import { ShareLinkButton } from './share-link-button';
 import { createShareLink, type SharedKind } from './share-links';
 
@@ -13,7 +13,7 @@ export function CardShareActions({ kind, targetId, preview = false, onExamplePre
   favoriteTestID?: string;
 }) {
   const { fontScale } = useWindowDimensions();
-  const paired = DEV_SHARING_ENABLED && (preview || !!onExamplePress || !!createShareLink(kind, targetId));
+  const paired = SHARING_ENABLED && (preview || !!onExamplePress || !!createShareLink(kind, targetId, SHARING_SCHEME));
   const inset = paired ? compactFavoriteInset(fontScale) : 0;
   const subject = kind === 'trip' ? 'wyjazd' : 'ekipę';
   // Move the tap areas right and inset the heart equally, preserving its position.

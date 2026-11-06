@@ -77,6 +77,8 @@ export interface ClientDatabase {
     Tables: GeneratedDatabase['public']['Tables'];
     Views: Record<never, never>;
     Functions: {
+      get_my_traveler_passport: { Args: Record<never, never>; Returns: unknown };
+      get_public_traveler_passport: { Args: { target_group_id: string }; Returns: unknown };
       get_my_tutorial_state: { Args: Record<never, never>; Returns: unknown };
       finish_my_tutorial: { Args: { tutorial_status: string }; Returns: unknown };
       search_trip_map: {

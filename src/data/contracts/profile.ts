@@ -1,9 +1,11 @@
 import type { AnimalKind } from '../../types/animals';
 import type { ProfileAvatarId } from '../../types/avatar';
 import type { ChildAgeBand, TravelGroup } from '../../types/travel';
+import type { PassportSummary } from '../../types/passport';
 
 export type GroupRow = {
   id: string;
+  passport?: PassportSummary;
   crew_number?: number;
   owner_user_id: string;
   name: string;

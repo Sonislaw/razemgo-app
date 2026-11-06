@@ -56,9 +56,10 @@ export function AccountSyncProvider({ children }: { children: ReactNode }) {
               integer(value[key]);
             if (value.domains !== undefined) {
               const domains = object(value.domains);
-              if (domains.saved_filters !== undefined &&
-                (typeof domains.saved_filters !== 'string' || !/^\d+$/.test(domains.saved_filters)))
-                throw new Error('Invalid synchronization domain');
+              for (const key of ['saved_filters', 'passport'])
+                if (domains[key] !== undefined &&
+                  (typeof domains[key] !== 'string' || !/^\d+$/.test(domains[key] as string)))
+                  throw new Error('Invalid synchronization domain');
               for (const key of [
                 'mailbox',
                 'notifications',

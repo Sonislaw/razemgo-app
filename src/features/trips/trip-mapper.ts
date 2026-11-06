@@ -83,6 +83,7 @@ export function proposalFromRow(value: unknown): TripProposal {
     trip: tripFromRow(trip),
     group: {
       id: crew.id,
+      ...(crew.passport ? { passport: crew.passport } : {}),
       name: crew.name,
       avatarId: crew.avatar_id,
       kind: crew.kind,

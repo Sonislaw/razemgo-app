@@ -1,5 +1,6 @@
 import type { AnimalKind, GroupAnimals, TripAnimals } from './animals';
 import type { ProfileAvatarId } from './avatar';
+import type { PassportSummary } from './passport';
 
 export type ChildAgeBand = '0–3' | '4–6' | '7–9' | '10–12' | '13–17';
 export type TripMode = 'planned' | 'flexible';
@@ -13,6 +14,7 @@ export interface TripParticipants {
 
 export interface TravelGroup {
   id: string;
+  passport?: PassportSummary;
   crewNumber?: number;
   name: string;
   avatarId?: ProfileAvatarId;

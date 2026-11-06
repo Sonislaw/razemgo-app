@@ -23,7 +23,7 @@ export function PassportAwardNotice() {
     <View testID="passport-award-notice" accessibilityLiveRegion="polite" style={[styles.notice, { backgroundColor: theme.backgroundElement, borderColor: theme.primaryStrong }]}>
       <Pressable accessibilityRole="button" accessibilityLabel={'Nowa odznaka: ' + category.name + '. Otwórz paszport'}
         style={styles.action} onPress={() => { dismissAward?.(); router.push('/traveler-passport'); }}>
-        <Icon name="compass" size={26} />
+        <Icon name="passport" size={26} />
         <View style={{ flex: 1 }}>
           <AppText variant="label">{newAward.count > 1 ? `Nowe odznaki · ${newAward.count}` : 'Nowa odznaka!'}</AppText>
           <AppText variant="caption">{category.name} · {PASSPORT_TIERS[newAward.tier - 1]}{newAward.levelUp ? ' · nowy poziom ekipy!' : ''}</AppText>

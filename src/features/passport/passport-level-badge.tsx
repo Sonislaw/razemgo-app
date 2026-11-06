@@ -17,7 +17,7 @@ export function PassportLevelBadge({ group, compact = false, centered = false }:
   return <View testID={'passport-level-' + group.id} accessible accessibilityRole="text"
     accessibilityLabel={`Poziom ekipy ${summary.level}. ${summary.title}`}
     style={[styles.badge, { backgroundColor: theme.hero, borderColor: theme.border, alignSelf: centered ? 'center' : 'flex-start' }, compact && styles.compact]}>
-    <Icon name="compass" size={compact ? 12 : 16} color={theme.heroText} />
+    <Icon name="passport" size={compact ? 12 : 16} color={theme.heroText} />
     <AppText variant="caption" style={{ color: theme.heroText, fontWeight: '700', flexShrink: 1 }}>
       {compact ? summary.title : `Poziom ${summary.level} · ${summary.title}`}
     </AppText>

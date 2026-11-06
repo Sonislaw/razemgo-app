@@ -76,7 +76,7 @@ export const SYMBOLS = {
   bike: { ios: 'bicycle', android: 'directions_bike', web: 'directions_bike' },
   campfire: { ios: 'flame', android: 'local_fire_department', web: 'local_fire_department' },
 } as const;
-export type IconName = keyof typeof SYMBOLS | 'campfire-chat';
+export type IconName = keyof typeof SYMBOLS | 'campfire-chat' | 'passport';
 export interface IconProps {
   name: IconName;
   size?: number;
@@ -92,7 +92,10 @@ export function Icon({ name, size = 22, color }: IconProps) {
       aria-hidden
       style={{ width: size, height: size }}
     >
-      {name === 'heart-filled' ? (
+      {name === 'passport' ? (
+        <Image source={require('@/assets/icons/passport.svg')} tintColor={color ?? theme.primaryStrong}
+          contentFit="contain" style={{ width: size, height: size }} accessible={false} alt="" />
+      ) : name === 'heart-filled' ? (
         <Image source={require('@/assets/icons/heart-filled.svg')} tintColor={color ?? theme.primaryStrong}
           contentFit="contain" style={{ width: size, height: size }} accessible={false} alt="" />
       ) : name === 'campfire-chat' ? (

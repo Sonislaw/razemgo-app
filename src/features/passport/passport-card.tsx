@@ -19,7 +19,7 @@ export function PassportCard({ group, own = false }: { group: TravelGroup; own?:
     .sort((a, b) => (b.awards.at(-1)?.earned_at ?? '').localeCompare(a.awards.at(-1)?.earned_at ?? '')).slice(0, 3) : [];
   return <Card testID="passport-profile-section" style={[styles.card, { borderColor: theme.border }]}>
     <View style={styles.heading}>
-      <View style={[styles.coverIcon, { backgroundColor: theme.hero }]}><Icon name="compass" size={26} color={theme.heroText} /></View>
+      <View style={[styles.coverIcon, { backgroundColor: theme.hero }]}><Icon name="passport" size={32} color={theme.heroText} /></View>
       <View style={{ flex: 1, gap: 2 }}>
         <AppText variant="heading" accessibilityRole="header">Paszport podróżnika</AppText>
         <AppText variant="caption" color="textSecondary">Pamiątki ze wspólnych przygód w RazemGo</AppText>
@@ -37,7 +37,7 @@ export function PassportCard({ group, own = false }: { group: TravelGroup; own?:
           <AppText variant="caption" numberOfLines={2} style={{ textAlign: 'center' }}>{category.name}</AppText>
         </View>;
       })}</View> : own ? <AppText variant="caption" color="textSecondary">Każda zdobyta odznaka dodaje punkty do poziomu ekipy.</AppText> : null}
-      <Button label={own ? 'Otwórz paszport' : 'Zobacz odznaki ekipy'} variant="secondary" icon="compass"
+      <Button label={own ? 'Otwórz paszport' : 'Zobacz odznaki ekipy'} variant="secondary" icon="passport"
         onPress={() => router.push(own ? '/traveler-passport' : { pathname: '/traveler-passport', params: { groupId: group.id, name: group.name } })} />
     </> : null}
     {own && state.data && state.error ? <AppText variant="caption" color="textSecondary">{state.error}</AppText> : null}

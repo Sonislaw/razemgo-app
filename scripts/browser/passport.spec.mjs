@@ -19,6 +19,10 @@ for (const width of [320, 390]) test(`passport collection, thresholds and level 
   await button(page, 'Wróć do profilu').click();
   await button(page, 'Otwórz paszport').click();
   await expect(page).toHaveURL(/\/traveler-passport$/);
+  await expect.poll(() => page.getByTestId('passport-cover-artwork').evaluate(el => {
+    const image = el.tagName === 'IMG' ? el : el.querySelector('img');
+    return !!image?.complete && image.naturalWidth >= 1024;
+  })).toBe(true);
   await page.screenshot({ path: `.expo/passport-${width}-header.png` });
   await expect(page.getByTestId('passport-badge-messages')).toContainText('49 / 50');
   await page.getByTestId('passport-badge-messages').click();
@@ -51,7 +55,7 @@ test('new awards sync without duplicate celebrations and another account gets it
 });
 test('load failure can be retried and public passport shows awards without activity counters', async ({ page }) => {
   const store = state();store.failPassport = true;
-  store.passports.set(B, passportFixture(groupId(B), { messages: 200, plans: 5, active_days: 7 }));
+  store.passports.set(B, passportFixture(groupId(B), { messages: 200, plans: 5, active_days: 7, ideas: 25, trip_favorites: 75, group_favorites: 40 }));
   await backend(page.context(), store);await login(page);await page.goto('/traveler-passport');
   await expect(page.getByText('Nie udało się wczytać paszportu. Sprawdź połączenie i spróbuj ponownie.', { exact: true })).toBeVisible();
   store.failPassport = false;await button(page, 'Spróbuj ponownie').click();

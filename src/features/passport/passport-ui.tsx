@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui/primitives';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
+import { Colors } from '@/constants/theme';
 import type { PassportCategory, PassportSummary } from '@/types/passport';
 import { levelProgress } from './passport-data';
 
@@ -22,19 +23,20 @@ export function PassportStamp({ category, tier, small = false }: { category: Pas
     </View>
   </View>;
 }
-export function PassportProgressBar({ fraction, label }: { fraction: number; label: string }) {
+export function PassportProgressBar({ fraction, label, onArtwork = false }: { fraction: number; label: string; onArtwork?: boolean }) {
   const theme = useTheme();
+  const colors = onArtwork ? Colors.light : theme;
   return <View accessibilityRole="progressbar" accessibilityLabel={label}
     accessibilityValue={{ min: 0, max: 100, now: Math.round(Math.min(1, Math.max(0, fraction)) * 100) }}
-    style={[styles.track, { backgroundColor: theme.muted }]}>
-    <View style={[styles.fill, { backgroundColor: theme.primaryStrong, width: `${Math.min(1, Math.max(0, fraction)) * 100}%` }]} />
+    style={[styles.track, { backgroundColor: colors.muted }]}>
+    <View style={[styles.fill, { backgroundColor: colors.primaryStrong, width: `${Math.min(1, Math.max(0, fraction)) * 100}%` }]} />
   </View>;
 }
-export function PassportLevelProgress({ summary }: { summary: PassportSummary }) {
+export function PassportLevelProgress({ summary, onArtwork = false }: { summary: PassportSummary; onArtwork?: boolean }) {
   const progress = levelProgress(summary);
   return <View style={{ gap: 8 }}>
-    <PassportProgressBar fraction={progress.fraction} label="Postęp poziomu ekipy" />
-    <AppText variant="caption" color="textSecondary">
+    <PassportProgressBar fraction={progress.fraction} label="Postęp poziomu ekipy" onArtwork={onArtwork} />
+    <AppText variant="caption" color="textSecondary" style={onArtwork ? { color: Colors.light.textSecondary } : undefined}>
       {progress.next ? `${summary.points} pkt · do poziomu ${progress.next.level} brakuje ${progress.remaining} pkt` :
         `${summary.points} pkt · najwyższy poziom ekipy`}
     </AppText>

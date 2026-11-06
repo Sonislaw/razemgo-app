@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="text-wash" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FAFCF8" stop-opacity="0.97"/>
+      <stop offset="0.36" stop-color="#FAFCF8" stop-opacity="0.94"/>
+      <stop offset="0.58" stop-color="#FAFCF8" stop-opacity="0.84"/>
+      <stop offset="0.78" stop-color="#FAFCF8" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#FAFCF8" stop-opacity="0.03"/>
+    </linearGradient>
+    <linearGradient id="footer-wash" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FAFCF8" stop-opacity="0"/>
+      <stop offset="0.64" stop-color="#FAFCF8" stop-opacity="0"/>
+      <stop offset="0.85" stop-color="#FAFCF8" stop-opacity="0.58"/>
+      <stop offset="1" stop-color="#FAFCF8" stop-opacity="0.90"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#text-wash)" d="M0 0h1000v1000H0z"/>
+  <path fill="url(#footer-wash)" d="M0 0h1000v1000H0z"/>
+</svg>

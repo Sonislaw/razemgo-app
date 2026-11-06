@@ -91,6 +91,7 @@ export const Spacing = {
   six: 64,
 } as const;
 export const Radius = { small: 12, card: 20, hero: 28, pill: 999 } as const;
+export const Shadows = { profileCard: '0 8px 28px rgba(36, 56, 66, 0.10)' } as const;
 export const Typography = {
   title: { fontSize: 30, lineHeight: 38, fontWeight: '700' },
   heading: { fontSize: 21, lineHeight: 28, fontWeight: '700' },

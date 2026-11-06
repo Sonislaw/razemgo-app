@@ -10,6 +10,7 @@ import { ProfileSubpageHeader } from '@/features/profile/profile-ui';
 import { useTheme } from '@/hooks/use-theme';
 import { Colors } from '@/constants/theme';
 import { PASSPORT_ENABLED } from './passport-config';
+import { PassportBadgeArtwork } from './passport-badge-artwork';
 import { useOwnPassport, usePublicPassport } from './passport-context';
 import { badgeProgress, PASSPORT_BADGE_COUNT, PASSPORT_CATEGORIES, PASSPORT_TIERS, PASSPORT_TIER_POINTS } from './passport-data';
 import { PassportLevelProgress, PassportProgressBar, PassportStamp } from './passport-ui';
@@ -77,16 +78,19 @@ export function PassportScreen() {
             const progress = badgeProgress(c, a.tier, a.count ?? 0);
             return <Pressable key={c.id} testID={'passport-badge-' + c.id} accessibilityRole="button"
               accessibilityLabel={`${c.name}. ${a.tier ? PASSPORT_TIERS[a.tier - 1] : 'Do zdobycia'}. Zobacz progi odznaki`}
-              onPress={() => setSelected(c.id)} style={({ pressed }) => [styles.tile, { backgroundColor: theme.backgroundElement, borderColor: theme.border, opacity: pressed ? 0.75 : 1 }]}>
-              <PassportStamp category={c} tier={a.tier} />
-              <AppText variant="label" style={styles.center}>{c.name}</AppText>
-              <AppText variant="caption" color="textSecondary" style={styles.center}>
-                {a.tier ? `${PASSPORT_TIERS[a.tier - 1]} · ${a.tier}/${c.thresholds.length}` : 'Do zdobycia'}
-              </AppText>
-              {data.own && progress.target !== undefined ? <View style={{ width: '100%', gap: 5 }}>
-                <PassportProgressBar fraction={progress.fraction} label={'Postęp odznaki ' + c.name} />
-                <AppText variant="caption" color="textSecondary" style={styles.center}>{a.count} / {progress.target}</AppText>
-              </View> : a.tier === c.thresholds.length ? <AppText variant="caption" color="positive">Komplet stopni</AppText> : null}
+              onPress={() => setSelected(c.id)} style={({ pressed }) => [styles.tile, { opacity: pressed ? 0.85 : 1 }]}>
+              <PassportBadgeArtwork categoryId={c.id} />
+              <View style={styles.tileStamp}><PassportStamp category={c} tier={a.tier} small /></View>
+              <View style={styles.tileDetails}>
+                <AppText variant="label" style={styles.tileText}>{c.name}</AppText>
+                <AppText variant="caption" style={styles.tileSecondary}>
+                  {a.tier ? `${PASSPORT_TIERS[a.tier - 1]} · ${a.tier}/${c.thresholds.length}` : 'Do zdobycia'}
+                </AppText>
+                {data.own && progress.target !== undefined ? <View style={{ width: '100%', gap: 5 }}>
+                  <PassportProgressBar fraction={progress.fraction} label={'Postęp odznaki ' + c.name} onDarkArtwork />
+                  <AppText variant="caption" style={styles.tileSecondary}>{a.count} / {progress.target}</AppText>
+                </View> : a.tier === c.thresholds.length ? <AppText variant="caption" style={styles.tileComplete}>Komplet stopni</AppText> : null}
+              </View>
             </Pressable>;
           })}
         </View>
@@ -100,7 +104,15 @@ export function PassportScreen() {
       </> : null}
     </>}
     {category && achievement && data ? <BottomSheet title={category.name} onClose={() => setSelected(null)}>
-      <View style={{ alignItems: 'center', paddingVertical: 8 }}><PassportStamp category={category} tier={achievement.tier} /></View>
+      <View testID="passport-badge-detail-cover" style={styles.detailCover}>
+        <PassportBadgeArtwork categoryId={category.id} />
+        <View style={styles.detailCoverContent}>
+          <PassportStamp category={category} tier={achievement.tier} />
+          <AppText variant="label" style={styles.tileText}>
+            {achievement.tier ? `${PASSPORT_TIERS[achievement.tier - 1]} · ${achievement.tier}/${category.thresholds.length}` : 'Do zdobycia'}
+          </AppText>
+        </View>
+      </View>
       <AppText>{category.description}</AppText>
       {data.own ? <AppText variant="label">Twój postęp: {achievement.count} · {category.unit}</AppText> : null}
       {category.thresholds.map((threshold, i) => {
@@ -125,8 +137,17 @@ const styles = StyleSheet.create({
   filters: { flexDirection: 'row', gap: 8 },
   filter: { minHeight: 44, justifyContent: 'center', borderRadius: 22, borderWidth: 1, paddingHorizontal: 18 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  tile: { flexBasis: '46%', flexGrow: 1, minWidth: 120, alignItems: 'center', borderRadius: 22,
-    borderWidth: 1, padding: 14, gap: 10, minHeight: 194 },
-  center: { textAlign: 'center' },
+  tile: { flexBasis: '46%', flexGrow: 1, minWidth: 120, borderRadius: 22, overflow: 'hidden',
+    borderWidth: 1, borderColor: '#FFFFFF', backgroundColor: '#133A3C', padding: 14,
+    justifyContent: 'space-between', gap: 26, minHeight: 238 },
+  tileStamp: { alignSelf: 'flex-start' },
+  tileDetails: { width: '100%', gap: 6 },
+  tileText: { color: '#FFFFFF' },
+  tileSecondary: { color: '#E1EEEB' },
+  tileComplete: { color: '#C8EBB8' },
+  detailCover: { minHeight: 190, borderRadius: 20, overflow: 'hidden', backgroundColor: '#133A3C',
+    justifyContent: 'flex-end', padding: 18 },
+  detailCoverContent: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
+    flexWrap: 'wrap', gap: 14 },
   milestone: { borderRadius: 16, borderWidth: 1, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 10 },
 });

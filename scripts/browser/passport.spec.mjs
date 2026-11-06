@@ -24,12 +24,24 @@ for (const width of [320, 390]) test(`passport collection, thresholds and level 
     return !!image?.complete && image.naturalWidth >= 1024;
   })).toBe(true);
   await page.screenshot({ path: `.expo/passport-${width}-header.png` });
+  const scenes = page.locator('[data-testid^="passport-badge-artwork-"]');
+  await expect(scenes).toHaveCount(14);
+  await expect.poll(() => scenes.evaluateAll(elements => elements.every(el => {
+    const image = el.tagName === 'IMG' ? el : el.querySelector('img');
+    return !!image?.complete && image.naturalWidth >= 480;
+  }))).toBe(true);
+  await page.getByTestId('passport-badge-campgrounds').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: `.expo/passport-${width}-badge-backgrounds-bottom.png` });
+  await page.getByTestId('passport-badge-profile').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: `.expo/passport-${width}-badge-backgrounds-top.png` });
   await expect(page.getByTestId('passport-badge-messages')).toContainText('49 / 50');
   await page.getByTestId('passport-badge-messages').click();
   const dialog = page.getByRole('dialog', { name: 'Rozmówca' });
   await expect(dialog.getByText('Brąz · próg 10', { exact: true })).toBeVisible();
   await expect(dialog.getByText('Srebro · próg 50', { exact: true })).toBeVisible();
   await expect(dialog.getByText('Twój postęp: 49 · wiadomości', { exact: true })).toBeVisible();
+  await expect(dialog).toBeInViewport({ ratio: 1 });
+  await dialog.screenshot({ path: `.expo/passport-${width}-badge-details.png` });
   await button(dialog, 'Gotowe').click();
   await button(page, 'Zdobyte').click();
   await expect(page.getByTestId('passport-badge-ideas')).toHaveCount(0);
@@ -66,6 +78,8 @@ test('load failure can be retried and public passport shows awards without activ
   const dialog = page.getByRole('dialog', { name: 'Rozmówca' });
   await expect(dialog.getByText(/Twój postęp/)).toHaveCount(0);
   await expect(dialog.getByText('Złoto · próg 200', { exact: true })).toBeVisible();
+  await expect(dialog).toBeInViewport({ ratio: 1 });
+  await dialog.screenshot({ path: '.expo/passport-public-badge-details.png' });
   await button(dialog, 'Gotowe').click();
   await page.screenshot({ path: '.expo/passport-public.png', fullPage: true });
 });
@@ -75,7 +89,7 @@ test('directory cards carry levels without requesting a passport for each card',
   await backend(page.context(), store);await login(page);await page.goto('/explore');
   await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
   const card = page.getByTestId('group-card-' + groupId(B));
-  await expect(card.getByTestId('passport-level-' + groupId(B))).toContainText('Doświadczona ekipa');
+  await expect(card.getByTestId('passport-level-' + groupId(B))).toHaveText('Poziom 5 · Doświadczona ekipa');
   expect(store.passportCalls.filter(call => call.endpoint === 'get_public_traveler_passport')).toHaveLength(0);
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 844 });

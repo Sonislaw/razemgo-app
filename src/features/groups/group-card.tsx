@@ -48,7 +48,6 @@ export const GroupCard = memo(function GroupCard({ item, onNavigate }: { item: P
               <AppText variant="caption" color="textSecondary" style={styles.adultCount}>
                 {group.adultCount} {group.adultCount === 1 ? 'dorosły' : 'dorosłych'}
               </AppText>
-              <PassportLevelBadge group={group} compact />
             </View>
           </View>
         </View>
@@ -56,6 +55,9 @@ export const GroupCard = memo(function GroupCard({ item, onNavigate }: { item: P
       </View>
       </>}
     </Pressable>
+    <View pointerEvents="none" style={styles.level}>
+      <PassportLevelBadge group={group} showIcon={false} />
+    </View>
     <View style={styles.favorite}>
       <CardShareActions kind="group" targetId={group.id} />
     </View>
@@ -83,6 +85,7 @@ const styles = StyleSheet.create({
   compactName: { fontSize: 20, lineHeight: 25 },
   adults: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 },
   adultCount: { flexShrink: 1 },
+  level: { position: 'absolute', top: 12, left: 12, right: 100, zIndex: 1 },
   favorite: { position: 'absolute', top: 12, right: 12, zIndex: 1, flexDirection: 'row', gap: 0 },
   footer: { borderTopWidth: 1, marginHorizontal: 16, paddingTop: 6, paddingBottom: 10 },
 });

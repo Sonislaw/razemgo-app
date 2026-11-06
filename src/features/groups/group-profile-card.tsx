@@ -9,6 +9,7 @@ import { AnimalPortrait } from '@/features/animals/animal-portrait';
 import type { TravelGroup } from '@/types/travel';
 import { crewNumberText } from '@/features/profile/crew-number';
 import { useTheme } from '@/hooks/use-theme';
+import { Shadows } from '@/constants/theme';
 import { PassportLevelBadge } from '@/features/passport/passport-level-badge';
 
 interface GroupProfileCardProps {
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 16,
     borderRadius: 28,
-    boxShadow: '0 8px 28px rgba(36, 56, 66, 0.10)',
+    boxShadow: Shadows.profileCard,
   },
   avatarFrame: {
     alignSelf: 'center',

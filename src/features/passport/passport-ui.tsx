@@ -23,13 +23,15 @@ export function PassportStamp({ category, tier, small = false }: { category: Pas
     </View>
   </View>;
 }
-export function PassportProgressBar({ fraction, label, onArtwork = false }: { fraction: number; label: string; onArtwork?: boolean }) {
+export function PassportProgressBar({ fraction, label, onArtwork = false, onDarkArtwork = false }: {
+  fraction: number; label: string; onArtwork?: boolean; onDarkArtwork?: boolean;
+}) {
   const theme = useTheme();
   const colors = onArtwork ? Colors.light : theme;
   return <View accessibilityRole="progressbar" accessibilityLabel={label}
     accessibilityValue={{ min: 0, max: 100, now: Math.round(Math.min(1, Math.max(0, fraction)) * 100) }}
-    style={[styles.track, { backgroundColor: colors.muted }]}>
-    <View style={[styles.fill, { backgroundColor: colors.primaryStrong, width: `${Math.min(1, Math.max(0, fraction)) * 100}%` }]} />
+    style={[styles.track, { backgroundColor: onDarkArtwork ? '#587375' : colors.muted }]}>
+    <View style={[styles.fill, { backgroundColor: onDarkArtwork ? '#F9CD6A' : colors.primaryStrong, width: `${Math.min(1, Math.max(0, fraction)) * 100}%` }]} />
   </View>;
 }
 export function PassportLevelProgress({ summary, onArtwork = false }: { summary: PassportSummary; onArtwork?: boolean }) {

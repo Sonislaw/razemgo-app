@@ -112,7 +112,7 @@ export function TripListingCard({
             <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={44} decorative />
             <View style={styles.flex}>
               <AppText variant="label">{group.name}</AppText>
-              <PassportLevelBadge group={group} compact />
+              <PassportLevelBadge group={group} compact levelOnly showIcon={false} />
               <AppText variant="caption" color="textSecondary">
                 {participantsSummary}
               </AppText>

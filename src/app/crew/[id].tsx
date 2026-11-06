@@ -15,6 +15,7 @@ import { FavoriteButton, FavoritesNotice } from '@/features/favorites/favorite-b
 import { ShareLinkButton } from '@/features/sharing/share-link-button';
 import { View } from 'react-native';
 import { PassportCard } from '@/features/passport/passport-card';
+import { Shadows } from '@/constants/theme';
 
 export default function PublicGroupScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -55,7 +56,7 @@ export default function PublicGroupScreen() {
       <SectionTitle title={'Ogłoszenia ekipy · ' + data.activeTripCount} />
     </> : null}
     </>}
-    empty={available ? <Card><AppText color="textSecondary">Ta ekipa nie ma teraz aktywnych ogłoszeń. Możesz zaprosić ją do kontaktu i wspólnie wymyślić wyjazd.</AppText></Card> : null}
+    empty={available ? <Card style={{ boxShadow: Shadows.profileCard }}><AppText color="textSecondary">Ta ekipa nie ma teraz aktywnych ogłoszeń. Możesz zaprosić ją do kontaktu i wspólnie wymyślić wyjazd.</AppText></Card> : null}
     afterList={available ? <>
       <DataStatus status={status === 'loading' || (data.trips.length && data.hasMore) ? 'ready' : status} error={error} label="Wczytywanie ogłoszeń" onRetry={() => void retry()} />
     </> : null}

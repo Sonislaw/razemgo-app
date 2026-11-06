@@ -11,6 +11,7 @@ import {
 import { Icon } from '@/components/ui/icon';
 import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import { IS_DEMO_MODE } from '@/constants/app';
+import { Shadows } from '@/constants/theme';
 import { useProfile } from '@/features/profile/profile-context';
 import { GroupProfileCard } from '@/features/groups/group-profile-card';
 import { GroupAboutCard } from '@/features/groups/group-about-card';
@@ -38,7 +39,7 @@ export default function ProfileScreen() {
   if (!hasProfile)
     return (
       <Screen header={header}>
-        <Card>
+        <Card style={{ boxShadow: Shadows.profileCard }}>
           <Icon name="people" size={32} />
           <AppText variant="heading">Przedstaw swoją ekipę</AppText>
           <AppText color="textSecondary">

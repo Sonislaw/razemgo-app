@@ -28,7 +28,8 @@ export function PassportScreen() {
   const category = PASSPORT_CATEGORIES.find(c => c.id === selected);
   const achievement = data?.categories.find(c => c.id === selected);
   const items = PASSPORT_CATEGORIES.filter(c => !collected || (data?.categories.find(a => a.id === c.id)?.tier ?? 0) > 0);
-  return <Screen testID="traveler-passport-screen" header={<ProfileSubpageHeader title="Paszport podróżnika" onBack={back} backLabel="Wróć" />}>
+  return <Screen testID="traveler-passport-screen">
+    <ProfileSubpageHeader title="Paszport podróżnika" onBack={back} backLabel="Wróć" />
     {!PASSPORT_ENABLED ? <EmptyState title="Paszport nie jest dostępny" description="Ta funkcja jest obecnie dostępna w wersji Dev."
       action={<Button label="Wróć do profilu" onPress={back} />} /> : <>
       {!data ? <DataStatus status={state.status} error={state.error} label="Wczytywanie paszportu" onRetry={() => void state.refresh?.()} /> : null}

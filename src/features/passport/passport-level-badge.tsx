@@ -19,7 +19,7 @@ export function PassportLevelBadge({ group, compact = false, centered = false }:
     style={[styles.badge, { backgroundColor: theme.hero, borderColor: theme.border, alignSelf: centered ? 'center' : 'flex-start' }, compact && styles.compact]}>
     <Icon name="compass" size={compact ? 12 : 16} color={theme.heroText} />
     <AppText variant="caption" style={{ color: theme.heroText, fontWeight: '700', flexShrink: 1 }}>
-      {compact ? `Poz. ${summary.level}` : `Poziom ${summary.level} · ${summary.title}`}
+      {compact ? summary.title : `Poziom ${summary.level} · ${summary.title}`}
     </AppText>
   </View>;
 }

@@ -12,9 +12,14 @@ for (const width of [320, 390]) test(`passport collection, thresholds and level 
   const section = page.getByTestId('passport-profile-section');
   await expect(section.getByText('Paszport podróżnika', { exact: true })).toBeVisible();
   await expect(section.getByText('5 z 53 odznak', { exact: true })).toBeVisible();
-  await expect(page.getByTestId('passport-level-' + groupId(A))).toContainText('Poziom 2');
+  await expect(page.getByTestId('passport-level-' + groupId(A))).toContainText('Poziom 2 · W drodze');
+  await button(page, 'Edytuj profil').click();
+  await expect(page.getByRole('heading', { name: 'Edytuj profil', exact: true })).toBeVisible();
+  await page.screenshot({ path: `.expo/passport-${width}-reference-edit-profile.png` });
+  await button(page, 'Wróć do profilu').click();
   await button(page, 'Otwórz paszport').click();
   await expect(page).toHaveURL(/\/traveler-passport$/);
+  await page.screenshot({ path: `.expo/passport-${width}-header.png` });
   await expect(page.getByTestId('passport-badge-messages')).toContainText('49 / 50');
   await page.getByTestId('passport-badge-messages').click();
   const dialog = page.getByRole('dialog', { name: 'Rozmówca' });
@@ -62,11 +67,14 @@ test('load failure can be retried and public passport shows awards without activ
 });
 test('directory cards carry levels without requesting a passport for each card', async ({ page }) => {
   const store = state();
-  store.directoryRows = [{ crew: { ...profile(B).group, passport: passportFixture(groupId(B), { messages: 50, plans: 5 }).summary }, about: '', active_trip_count: 0 }];
+  store.directoryRows = [{ crew: { ...profile(B).group, passport: passportFixture(groupId(B), { messages: 500, plans: 40, active_days: 100, ideas: 25 }).summary }, about: '', active_trip_count: 0 }];
   await backend(page.context(), store);await login(page);await page.goto('/explore');
   await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
   const card = page.getByTestId('group-card-' + groupId(B));
-  await expect(card.getByTestId('passport-level-' + groupId(B))).toContainText('Poz. 2');
+  await expect(card.getByTestId('passport-level-' + groupId(B))).toContainText('Doświadczona ekipa');
   expect(store.passportCalls.filter(call => call.endpoint === 'get_public_traveler_passport')).toHaveLength(0);
-  await card.screenshot({ path: '.expo/passport-directory-level.png' });
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await card.screenshot({ path: `.expo/passport-directory-level-${width}.png` });
+  }
 });

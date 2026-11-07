@@ -56,7 +56,7 @@ export const GroupCard = memo(function GroupCard({ item, onNavigate }: { item: P
       </>}
     </Pressable>
     <View pointerEvents="none" style={styles.level}>
-      <PassportLevelBadge group={group} showIcon={false} />
+      <PassportLevelBadge group={group} emblem />
     </View>
     <View style={styles.favorite}>
       <CardShareActions kind="group" targetId={group.id} />

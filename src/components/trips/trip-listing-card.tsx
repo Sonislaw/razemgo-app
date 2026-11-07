@@ -36,6 +36,7 @@ interface TripListingCardProps {
   nativeID?: string;
   favoriteAction?: ReactNode;
   disabled?: boolean;
+  showCrewParticipants?: boolean;
 }
 
 export function TripListingCard({
@@ -56,6 +57,7 @@ export function TripListingCard({
   nativeID,
   favoriteAction,
   disabled = false,
+  showCrewParticipants = true,
 }: TripListingCardProps) {
   const theme = useTheme();
   const ageBands = trip.participants?.childCount ? trip.participants.childAgeBands : [];
@@ -113,9 +115,9 @@ export function TripListingCard({
             <View style={styles.flex}>
               <AppText variant="label">{group.name}</AppText>
               <PassportLevelBadge group={group} compact levelOnly showIcon={false} />
-              <AppText variant="caption" color="textSecondary">
+              {showCrewParticipants ? <AppText variant="caption" color="textSecondary">
                 {participantsSummary}
-              </AppText>
+              </AppText> : null}
             </View>
             {travelModes.length ? <TravelModeBadges modes={travelModes} /> : null}
             {onPress || onPressGroup ? <Icon name="chevron" size={18} color={theme.textSecondary} /> : null}

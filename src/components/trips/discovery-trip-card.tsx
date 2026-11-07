@@ -24,6 +24,7 @@ export const DiscoveryTripCard = memo(function DiscoveryTripCard({ trip, group, 
       testID={testID ?? 'discovery-trip-' + trip.id}
       trip={trip}
       group={group}
+      showCrewParticipants={false}
       disabled={preview}
       onPressDetails={preview ? undefined : openTrip}
       locationLabel={locationLabel}

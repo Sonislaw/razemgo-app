@@ -16,7 +16,7 @@ test('trip participants differ from the profile, survive reload and editing, and
   await page.getByRole('button', { name: 'Więcej: Dorośli na wyjeździe', exact: true }).click();
   await page.getByRole('button', { name: 'Mniej: Dzieci na wyjeździe', exact: true }).click();
   await page.getByRole('button', { name: 'Podgląd planu', exact: true }).click();
-  await expect(page.getByTestId('trip-editor-preview')).toContainText('4 dorosłych');
+  await expect(page.getByTestId('trip-editor-preview')).not.toContainText('4 dorosłych');
   await expect(page.getByTestId('trip-editor-preview')).not.toContainText('Dzieci 4–6');
   await page.getByRole('button', { name: 'Opublikuj wyjazd', exact: true }).click();
   await expect(page).toHaveURL('http://localhost:8085/trips');
@@ -29,7 +29,7 @@ test('trip participants differ from the profile, survive reload and editing, and
     await backend(second, store); const other = await second.newPage(); await login(other, 'b@example.com');
     await other.goto('/explore');
     const listing = other.getByTestId('discovery-trip-' + trip.id);
-    await expect(listing).toContainText('4 dorosłych');
+    await expect(listing).not.toContainText('4 dorosłych');
     await expect(listing).not.toContainText(/Dzieci 4–6|Podobny wiek dzieci/);
     await listing.getByRole('button', { name: 'Zobacz wyjazd', exact: true }).click();
     await expect(other.getByTestId('trip-participants')).toContainText('4 dorosłych');
@@ -69,7 +69,7 @@ test('legacy trips display an unknown composition instead of the owner profile',
   };
   store.trips.set(trip.id, trip); await backend(context, store); await login(page); await page.goto('/explore');
   const card = page.getByTestId('discovery-trip-' + trip.id);
-  await expect(card).toContainText('Skład wyjazdu do uzupełnienia');
+  await expect(card).not.toContainText('Skład wyjazdu do uzupełnienia');
   await expect(card).not.toContainText(/2 dorosłych|Dzieci 4–6|Podobny wiek dzieci/);
   await card.getByRole('button', { name: 'Zobacz wyjazd', exact: true }).click();
   await expect(page.getByTestId('trip-participants')).toContainText('Skład wyjazdu do uzupełnienia');

@@ -6,6 +6,7 @@ import { USE_DEMO_DATA } from '@/constants/app';
 import { useAuth } from '@/features/auth/auth-context';
 import { useAccountSyncJob } from '@/features/auth/account-sync-context';
 import { useProfile } from '@/features/profile/profile-context';
+import { PASSPORT_ENABLED } from '@/features/passport/passport-config';
 import { sessionStorage } from '@/lib/session-storage';
 import { createTutorialStore, type TutorialDecision } from './tutorial-store';
 import { fetchTutorialState, saveTutorialState } from './tutorial-repository';
@@ -24,7 +25,8 @@ export const TUTORIAL_STEPS = [
   { target: 'messages', title: 'Wiadomości',
     text: 'Tutaj znajdziesz otrzymane i wysłane zaproszenia do kontaktu. Aby kogoś poznać, w Odkrywaj otwórz wybrany wyjazd lub profil ekipy i wybierz „Zaproś do kontaktu”.\n\nPo przyjęciu zaproszenia w „Rozmowach” pojawi się czat, w którym ustalicie wspólne plany.' },
   { target: 'profile', title: 'Profil',
-    text: 'Przedstaw swoją ekipę innym podróżnikom. Uzupełnij opis, skład ekipy, sposób podróżowania i zainteresowania, żeby łatwiej znaleźć wspólny język. Stąd przejdziesz też do ustawień aplikacji.' },
+    text: 'Przedstaw swoją ekipę innym podróżnikom. Uzupełnij opis, skład ekipy, sposób podróżowania i zainteresowania, żeby łatwiej znaleźć wspólny język. Stąd przejdziesz też do ustawień aplikacji.' +
+      (PASSPORT_ENABLED ? '\n\nW Paszporcie podróżnika zbierasz odznaki za aktywność w aplikacji, np. dodawanie wyjazdów i wysyłanie wiadomości. Punkty z odznak podnoszą poziom ekipy.' : '') },
 ] as const;
 export type TutorialTargetId = typeof TUTORIAL_STEPS[number]['target'];
 export type TutorialAnchor = { node: ComponentRef<typeof View> };

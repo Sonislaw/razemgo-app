@@ -12,11 +12,15 @@ for (const width of [320, 390]) test(`passport collection, thresholds and level 
   const section = page.getByTestId('passport-profile-section');
   await expect(section.getByText('Paszport podróżnika', { exact: true })).toBeVisible();
   await expect(section.getByText('5 z 53 odznak', { exact: true })).toBeVisible();
-  await expect(page.getByTestId('passport-level-' + groupId(A))).toContainText('Poziom 2 · W drodze');
+  await expect(page.getByTestId('passport-card-emblem-' + groupId(A))).toHaveAccessibleName('Poziom ekipy 2. W drodze');
   await button(page, 'Edytuj profil').click();
   await expect(page.getByRole('heading', { name: 'Edytuj profil', exact: true })).toBeVisible();
   await page.screenshot({ path: `.expo/passport-${width}-reference-edit-profile.png` });
   await button(page, 'Wróć do profilu').click();
+  await page.getByTestId('passport-card-emblem-' + groupId(A)).click();
+  await expect(page).toHaveURL(url => url.pathname === '/traveler-passport' && url.searchParams.get('groupId') === groupId(A));
+  await expect(page.getByTestId('passport-summary').getByText('Ekipa A', { exact: true })).toBeVisible();
+  await button(page, 'Wróć').click();
   await button(page, 'Otwórz paszport').click();
   await expect(page).toHaveURL(/\/traveler-passport$/);
   await expect.poll(() => page.getByTestId('passport-cover-artwork').evaluate(el => {
@@ -89,7 +93,7 @@ test('directory cards carry levels without requesting a passport for each card',
   await backend(page.context(), store);await login(page);await page.goto('/explore');
   await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
   const card = page.getByTestId('group-card-' + groupId(B));
-  await expect(card.getByTestId('passport-level-' + groupId(B))).toHaveText('Poziom 5 · Doświadczona ekipa');
+  await expect(card.getByTestId('passport-level-' + groupId(B))).toHaveText('Doświadczona ekipa');
   expect(store.passportCalls.filter(call => call.endpoint === 'get_public_traveler_passport')).toHaveLength(0);
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 844 });

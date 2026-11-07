@@ -10,6 +10,8 @@ import { useOwnPassport } from './passport-context';
 import { EMPTY_PASSPORT_SUMMARY, PASSPORT_BADGE_COUNT, PASSPORT_CATEGORIES } from './passport-data';
 import { PassportLevelProgress, PassportStamp } from './passport-ui';
 import { PassportLevelArtwork } from './passport-level-artwork';
+import { PassportLevelBadge } from './passport-level-badge';
+import { PassportLevelEmblem } from './passport-level-emblem';
 
 export function PassportCard({ group, own = false }: { group: TravelGroup; own?: boolean }) {
   const theme = useTheme();
@@ -18,33 +20,40 @@ export function PassportCard({ group, own = false }: { group: TravelGroup; own?:
   const summary = own ? state.data?.summary : group.passport ?? EMPTY_PASSPORT_SUMMARY;
   const earned = own ? [...(state.data?.categories ?? [])].filter(c => c.tier > 0)
     .sort((a, b) => (b.awards.at(-1)?.earned_at ?? '').localeCompare(a.awards.at(-1)?.earned_at ?? '')).slice(0, 3) : [];
-  return <Card testID="passport-profile-section" style={[styles.card, { borderColor: theme.border }]}>
-    {summary ? <View style={styles.cover}><PassportLevelArtwork level={summary.level} /></View> : null}
-    <View style={[styles.content, summary && styles.overlaidContent]}>
-      <View style={{ gap: 4 }}>
-        <AppText variant="heading" accessibilityRole="header" style={styles.title}>Paszport podróżnika</AppText>
-        <AppText variant="caption" style={styles.secondary}>Pamiątki ze wspólnych przygód w RazemGo</AppText>
+  return <View style={styles.frame}>
+    <Card testID="passport-profile-section" style={[styles.card, { borderColor: theme.border }]}>
+      {summary ? <View style={styles.cover}><PassportLevelArtwork level={summary.level} /></View> : null}
+      <View style={[styles.content, summary && styles.overlaidContent]}>
+        <View style={{ gap: 4 }}>
+          <AppText variant="heading" accessibilityRole="header" style={styles.title}>Paszport podróżnika</AppText>
+          <AppText variant="caption" style={styles.secondary}>Pamiątki ze wspólnych przygód w RazemGo</AppText>
+        </View>
+        {own && !state.data ? <DataStatus status={state.status} error={state.error} label="Wczytywanie paszportu" onRetry={() => void state.refresh?.()} /> : null}
+        {summary ? <>
+          <PassportLevelBadge group={group} showIcon={false} />
+          <AppText style={styles.secondary}>{summary.badge_count} z {PASSPORT_BADGE_COUNT} odznak</AppText>
+          {own ? <PassportLevelProgress summary={summary} onArtwork /> : null}
+          {earned.length ? <View style={styles.stamps}>{earned.map(item => {
+            const category = PASSPORT_CATEGORIES.find(c => c.id === item.id)!;
+            return <View key={item.id} style={{ alignItems: 'center', gap: 6, flex: 1 }}>
+              <PassportStamp category={category} tier={item.tier} small />
+              <AppText variant="caption" numberOfLines={2} style={[styles.text, { textAlign: 'center' }]}>{category.name}</AppText>
+            </View>;
+          })}</View> : own ? <AppText variant="caption" style={styles.secondary}>Każda zdobyta odznaka dodaje punkty do poziomu ekipy.</AppText> : null}
+          <Button label={own ? 'Otwórz paszport' : 'Zobacz odznaki ekipy'} variant="secondary" icon={own ? 'passport' : undefined}
+            onPress={() => router.push(own ? '/traveler-passport' : { pathname: '/traveler-passport', params: { groupId: group.id, name: group.name } })} />
+        </> : null}
+        {own && state.data && state.error ? <AppText variant="caption" style={styles.secondary}>{state.error}</AppText> : null}
       </View>
-      {own && !state.data ? <DataStatus status={state.status} error={state.error} label="Wczytywanie paszportu" onRetry={() => void state.refresh?.()} /> : null}
-      {summary ? <>
-        <AppText variant="label" style={styles.text}>Poziom {summary.level} · {summary.title}</AppText>
-        <AppText style={styles.secondary}>{summary.badge_count} z {PASSPORT_BADGE_COUNT} odznak</AppText>
-        {own ? <PassportLevelProgress summary={summary} onArtwork /> : null}
-        {earned.length ? <View style={styles.stamps}>{earned.map(item => {
-          const category = PASSPORT_CATEGORIES.find(c => c.id === item.id)!;
-          return <View key={item.id} style={{ alignItems: 'center', gap: 6, flex: 1 }}>
-            <PassportStamp category={category} tier={item.tier} small />
-            <AppText variant="caption" numberOfLines={2} style={[styles.text, { textAlign: 'center' }]}>{category.name}</AppText>
-          </View>;
-        })}</View> : own ? <AppText variant="caption" style={styles.secondary}>Każda zdobyta odznaka dodaje punkty do poziomu ekipy.</AppText> : null}
-        <Button label={own ? 'Otwórz paszport' : 'Zobacz odznaki ekipy'} variant="secondary" icon="passport"
-          onPress={() => router.push(own ? '/traveler-passport' : { pathname: '/traveler-passport', params: { groupId: group.id, name: group.name } })} />
-      </> : null}
-      {own && state.data && state.error ? <AppText variant="caption" style={styles.secondary}>{state.error}</AppText> : null}
-    </View>
-  </Card>;
+    </Card>
+    {summary ? <View style={styles.emblem}>
+      <PassportLevelEmblem group={group} size={72} testID={'passport-card-emblem-' + group.id} />
+    </View> : null}
+  </View>;
 }
 const styles = StyleSheet.create({
+  frame: { paddingTop: 12 },
+  emblem: { position: 'absolute', top: 0, left: '50%', marginLeft: -36, zIndex: 1 },
   card: { borderRadius: 24, borderWidth: 1, padding: 0, gap: 0, overflow: 'hidden', backgroundColor: '#FAFCF8', boxShadow: Shadows.profileCard },
   cover: { height: 260 },
   content: { padding: 16, gap: 14 },

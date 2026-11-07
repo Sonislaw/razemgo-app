@@ -3,6 +3,9 @@
 (function () {
   'use strict';
   const channel = 'razemgo-discovery-map-v1';
+  const travelModeImages = JSON.parse(
+    document.getElementById('travel-mode-images').textContent,
+  );
   let map = null,
     markers = null,
     token = null,
@@ -109,19 +112,36 @@
     if (message.type === 'points') {
       markers.clearLayers();
       (message.points || []).forEach(function (point) {
-        const label = document.createElement('span');
-        label.textContent = point.count > 1 ? String(point.count) : '●';
+        const cluster = point.count > 1;
+        const source = !cluster && Object.hasOwn(travelModeImages, point.travelMode)
+          ? travelModeImages[point.travelMode]
+          : null;
+        const label = document.createElement(source ? 'img' : 'span');
+        if (source) {
+          label.src = source;
+          label.alt = '';
+          label.draggable = false;
+          label.dataset.travelMode = point.travelMode;
+        } else {
+          label.textContent = cluster ? String(point.count) : '●';
+        }
+        const size = cluster ? 42 : 48;
         const icon = L.divIcon({
           html: label,
-          className: point.count > 1 ? 'crew-cluster' : 'crew-pin',
-          iconSize: [42, 42],
-          iconAnchor: [21, 21],
+          className: cluster ? 'crew-cluster' : 'crew-pin',
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
         });
+        const modeLabel = point.travelMode === 'Van' ? 'Kampervan' : point.travelMode;
+        const title = cluster
+          ? 'Wyjazdy: ' + point.count
+          : point.label + (source ? ' · ' + modeLabel : '');
         const marker = L.marker([point.latitude, point.longitude], {
           icon: icon,
-          title: point.count > 1 ? 'Wyjazdy: ' + point.count : point.label,
+          title: title,
           keyboard: true,
         }).addTo(markers);
+        marker.getElement().setAttribute('aria-label', title);
         marker.on('click', function () {
           send({ type: 'select', key: point.key });
         });

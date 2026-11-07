@@ -68,6 +68,7 @@ export function mockMapResponse(
     const points = [...clusters].map(([key, items]) => ({
       key,
       count: items.length,
+      travel_mode: items.length === 1 ? items[0].group.travelModes[0] : null,
       latitude: items.reduce((n, p) => n + p.area.latitude, 0) / items.length,
       longitude: items.reduce((n, p) => n + p.area.longitude, 0) / items.length,
       south: Math.min(...items.map((p) => p.area.latitude)),

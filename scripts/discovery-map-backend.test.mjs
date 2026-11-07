@@ -113,6 +113,7 @@ test('discovery map: full filtered counts, bounded clusters, exact pages and aut
         assert.equal(page.total_count, 13);
         assert.equal(page.points.length, 1);
         assert.equal(page.points[0].count, 13);
+        assert.equal(page.points[0].travel_mode, null);
         assert.deepEqual(page.areas, []);
         assert.equal(
           page.points.reduce((n, p) => n + p.count, 0),
@@ -125,6 +126,21 @@ test('discovery map: full filtered counts, bounded clusters, exact pages and aut
         ]);
         assert.equal(list.items.length, 5);
         assert.equal(list.total_count, page.total_count);
+      },
+    );
+    await scenario(
+      'single markers follow all five crew transport modes rather than the trip transport',
+      async () => {
+        for (const mode of ['Kamper', 'Van', 'Przyczepa', 'Samochód', 'Namiot']) {
+          await as(1);
+          await rpc('save_my_profile', [JSON.stringify({ ...profile('Mapa 1'), travel_mode: mode })]);
+          const page = await map({ landscapes: ['lake'] });
+          assert.equal(page.points.length, 1);
+          assert.equal(page.points[0].count, 1);
+          assert.equal(page.points[0].travel_mode, mode);
+          assert.equal(published[0].travel_mode, 'Kamper');
+          assert.equal((await map()).points[0].travel_mode, null);
+        }
       },
     );
     await scenario(

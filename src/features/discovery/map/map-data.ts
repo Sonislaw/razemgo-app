@@ -1,6 +1,7 @@
 import type { DiscoveryFilters, TripProposal } from '../../../types/travel';
 import { findTripLocation } from '../../trips/trip-locations.ts';
 import { getLocationMapArea } from '../../trips/trip-map-data.ts';
+import { TRAVEL_MODE_OPTIONS } from '../../profile/profile-options.ts';
 
 export interface MapBounds {
   south: number;
@@ -23,6 +24,7 @@ export interface MapPoint extends MapBounds {
   latitude: number;
   longitude: number;
   label: string;
+  travelMode: string | null;
 }
 export interface TripMapPage {
   points: MapPoint[];
@@ -135,10 +137,17 @@ function parseMapPoints(value: unknown): MapPoint[] {
       west = coordinate(p.west, false),
       east = coordinate(p.east, false);
     if (south > north || west > east) fail();
+    const count = integer(p.count, 1);
+    if (
+      p.travel_mode != null &&
+      (typeof p.travel_mode !== 'string' || !TRAVEL_MODE_OPTIONS.includes(p.travel_mode))
+    )
+      fail();
     return {
       key: p.key as string,
       label: p.label as string,
-      count: integer(p.count, 1),
+      count,
+      travelMode: count === 1 ? (p.travel_mode as string | null | undefined) ?? null : null,
       latitude: coordinate(p.latitude, true),
       longitude: coordinate(p.longitude, false),
       south,

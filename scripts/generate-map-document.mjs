@@ -9,6 +9,20 @@ const browser = readFileSync(
   'src/features/discovery/map/map-browser.js',
   'utf8',
 );
+// Bundled once with the map, without requests per marker or external image URLs.
+const travelModeImages = Object.fromEntries(
+  Object.entries({
+    Kamper: 'motorhome',
+    Van: 'van',
+    Przyczepa: 'caravan',
+    Samochód: 'car',
+    Namiot: 'tent',
+  }).map(([mode, file]) => [
+    mode,
+    'data:image/webp;base64,' +
+      readFileSync(`assets/images/travel-modes/${file}.webp`).toString('base64'),
+  ]),
+);
 const html = `<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none';img-src https://tile.openstreetmap.org data:;style-src 'unsafe-inline';script-src 'unsafe-inline';base-uri 'none';form-action 'none'">
@@ -17,10 +31,11 @@ html,body,#map{margin:0;width:100%;height:100%;overflow:hidden;background:#EAF5F
 .leaflet-control-zoom a{width:42px!important;height:42px!important;line-height:42px!important;color:#086996!important}
 .leaflet-control-attribution{font-size:10px!important;max-width:100%;background:#ffffffee!important}
 .crew-pin,.crew-cluster{display:flex;align-items:center;justify-content:center;background:#086996;color:white;border:3px solid white;border-radius:50%;box-sizing:border-box;box-shadow:0 2px 8px #24384244;font-weight:700;font-size:16px}
-.crew-pin{background:#fff;color:#086996;border-color:#086996;font-size:24px}
+.crew-pin{background:#EAF5F8;color:#086996;border-width:2px;font-size:24px}
+.crew-pin img{width:100%;height:100%;object-fit:contain;border-radius:50%;pointer-events:none;user-select:none;-webkit-user-drag:none}
 .crew-pin:focus,.crew-cluster:focus{outline:3px solid #FE881E;outline-offset:3px}
 #hint{position:absolute;top:45%;left:10%;right:10%;text-align:center;color:#344952}
-</style></head><body><div id="map" role="application" aria-label="Mapa wyjazdów"></div><p id="hint">Otwórz mapę w RazemGo.</p><script>${leaflet}</script><script>${browser}</script></body></html>`;
+</style></head><body><div id="map" role="application" aria-label="Mapa wyjazdów"></div><p id="hint">Otwórz mapę w RazemGo.</p><script type="application/json" id="travel-mode-images">${JSON.stringify(travelModeImages)}</script><script>${leaflet}</script><script>${browser}</script></body></html>`;
 const outputs = {
   'public/razemgo-map.html': html,
   'src/features/discovery/map/map-document.cjs':

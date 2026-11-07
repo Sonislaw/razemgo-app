@@ -25,7 +25,7 @@ begin
       'location_kind',case when i=3 then 'country' else 'village' end,
       'location_region',case when i=3 then '' else 'pomorskie' end,
       'campground_name','','campground_address','','description','Test mapy: spokojny urlop nad morzem.',
-      'travel_mode','Kamper','landscape','coast','interests','[]'::jsonb,'animal_kinds','[]'::jsonb,
+      'travel_mode','Namiot','landscape','coast','interests','[]'::jsonb,'animal_kinds','[]'::jsonb,
       'matching_group_kinds','[]'::jsonb,'matching_child_age_bands','[]'::jsonb);
     saved:=public.save_my_trip(payload,null,false,gen_random_uuid());
     perform set_config('qa.map_trip_'||i,saved->>'id',true);
@@ -47,12 +47,19 @@ begin
     raise exception 'Map totals differ';
   end if;
   if jsonb_array_length(result->'points')<>1 or result->'points'->0->>'count'<>'2' then raise exception 'Co-located cluster differs'; end if;
+  if result->'points'->0->'travel_mode' is distinct from 'null'::jsonb then raise exception 'Cluster exposes one crew transport'; end if;
   if result->'areas'<>'[]'::jsonb then raise exception 'Flexible marker exposed'; end if;
   key:=result->'points'->0->>'key';
   first_page:=public.get_trip_map_items(filters,bounds,5,key,null,1);
   next_page:=public.get_trip_map_items(filters,bounds,5,key,first_page->'cursor',1);
   if first_page->>'has_more'<>'true' or next_page->>'has_more'<>'false'
     or first_page->'items'->0->'trip'->>'id'=next_page->'items'->0->'trip'->>'id' then raise exception 'Map pagination differs'; end if;
+  perform public.set_my_trip_favorite(current_setting('qa.map_trip_2')::uuid,false);
+  result:=public.search_trip_map(filters,bounds,5);
+  if result->'points'->0->>'count'<>'1' or result->'points'->0->>'travel_mode' is distinct from 'Kamper' then
+    raise exception 'Marker does not use organizing crew transport';
+  end if;
+  perform public.set_my_trip_favorite(current_setting('qa.map_trip_2')::uuid,true);
   result:=public.get_trip_map_items(filters,bounds,5,'areas',null,5);
   if result->>'total_count'<>'0' then raise exception 'Retired area selector exposed results'; end if;
   result:=public.search_trip_map(filters,'{"south":49,"north":50,"west":22,"east":23}',5);

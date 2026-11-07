@@ -575,6 +575,8 @@ test('a single point at maximum zoom opens its preview without ever mounting a l
     await route.fallback();
   });
   try {
+    // The trip uses a trailer; its organizing crew travels by motorhome.
+    await expect(frame.locator('.crew-pin img')).toHaveAttribute('data-travel-mode', 'Kamper');
     await frame.locator('.crew-pin').click();
     await expect.poll(() => !!release).toBe(true);
     await expect(

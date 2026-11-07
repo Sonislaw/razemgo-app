@@ -121,6 +121,24 @@ test('map responses preserve all counts and reject invalid coordinates or mislea
     }),
   );
 });
+test('single markers preserve known crew transport and older responses remain readable', () => {
+  const single = {
+    ...row,
+    points: [{ ...row.points[0], count: 1 }],
+    planned_count: 1,
+  };
+  for (const mode of ['Kamper', 'Van', 'Przyczepa', 'Samochód', 'Namiot']) {
+    const value = { ...single, points: [{ ...single.points[0], travel_mode: mode }] };
+    assert.equal(parseTripMapPage(value).points[0].travelMode, mode);
+  }
+  assert.equal(parseTripMapPage(single).points[0].travelMode, null);
+  assert.equal(parseTripMapPage(row).points[0].travelMode, null);
+  for (const mode of ['https://example.com/icon.webp', '__proto__', 123])
+    assert.throws(() => parseTripMapPage({
+      ...single, points: [{ ...single.points[0], travel_mode: mode }],
+    }));
+});
+
 test('the bridge only accepts bounded camera messages, known selections and attribution destinations', () => {
   assert.equal(
     parseMapMessage({ channel: MAP_CHANNEL, type: 'select', key: 'a:4:5' }),

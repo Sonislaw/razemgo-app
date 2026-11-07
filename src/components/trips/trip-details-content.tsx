@@ -41,7 +41,7 @@ export function TripDetailsContent({
               >
                 {group.name}
               </AppText>
-              <PassportLevelBadge group={group} compact />
+              <PassportLevelBadge group={group} emblem />
             </View>
             <TravelModeBadges modes={trip.travelModes ?? group.travelModes} />
           </View>

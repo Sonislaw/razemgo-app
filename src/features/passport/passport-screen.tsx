@@ -12,7 +12,7 @@ import { Colors } from '@/constants/theme';
 import { PASSPORT_ENABLED } from './passport-config';
 import { PassportBadgeArtwork } from './passport-badge-artwork';
 import { useOwnPassport, usePublicPassport } from './passport-context';
-import { badgeProgress, PASSPORT_BADGE_COUNT, PASSPORT_CATEGORIES, PASSPORT_TIERS, PASSPORT_TIER_POINTS } from './passport-data';
+import { badgeProgress, PASSPORT_BADGE_COUNT, PASSPORT_CATEGORIES, PASSPORT_LEVELS, PASSPORT_TIERS, PASSPORT_TIER_POINTS } from './passport-data';
 import { PassportLevelProgress, PassportProgressBar, PassportStamp } from './passport-ui';
 
 export function PassportScreen() {
@@ -98,6 +98,11 @@ export function PassportScreen() {
         <Card>
           <AppText variant="label">Jak rośnie poziom ekipy?</AppText>
           <AppText color="textSecondary">Kolejne stopnie odznak dodają 10, 20, 35 i 60 punktów. Punkty wszystkich kategorii składają się na poziom ekipy.</AppText>
+          {PASSPORT_LEVELS.map(level => (
+            <AppText key={level.level} variant="caption" color="textSecondary">
+              Poziom {level.level} · {level.title} — od {level.points} pkt
+            </AppText>
+          ))}
           <AppText variant="caption" color="textSecondary">Zdobyte odznaki zostają w paszporcie. Ponowne dodanie tej samej rzeczy nie nalicza jej drugi raz. Poziom opisuje aktywność w aplikacji; odznaki za opublikowane plany nie potwierdzają odbycia podróży.</AppText>
         </Card>
         {state.error ? <Card><AppText color="textSecondary">{state.error}</AppText><Button label="Spróbuj ponownie" variant="secondary" onPress={() => void state.refresh?.()} /></Card> : null}

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { A, B, groupId, state, backend, login } from './trip-fixtures.mjs';
+import { openSuggestions, suggestionField } from './autocomplete-helpers.mjs';
 
 const id = '00000000-0000-4000-8000-000000009701';
 function trip() {
@@ -56,7 +57,7 @@ for (const width of [320,390]) test(`grouped trip fields focus errors and retain
   await expect(location).toBeFocused(); await expect(location).toHaveAttribute('aria-invalid','true');
   await location.fill('Chłapowo pomorskie'); await page.getByRole('button',{name:/^Wybierz lokalizację: Chłapowo,/}).first().click();
   const destination=page.getByTestId('trip-editor-location');
-  await expect(destination.getByRole('textbox',{name:'Nazwa kempingu',exact:true})).toBeAttached();
+  await expect(suggestionField(destination, 'Nazwa kempingu')).toBeAttached();
   await expect(destination.getByRole('textbox',{name:'Adres kempingu',exact:true})).toBeAttached();
   await expect(page.getByRole('button',{name:'Szczegóły kempingu',exact:true})).toHaveCount(0);
   await page.screenshot({path:'.expo/trip-editor-location-'+width+'.png'});
@@ -70,7 +71,9 @@ for (const width of [320,390]) test(`grouped trip fields focus errors and retain
   await expect(page.getByTestId('trip-field-participants')).toBeFocused();
   await expect(page.getByTestId('trip-field-participants').getByRole('alert')).toContainText('Wybierz przedziały');
   await page.getByRole('button',{name:'Wiek dzieci na wyjeździe: 7–9 lat',exact:true}).click();
-  await page.getByRole('textbox',{name:'Nazwa kempingu',exact:true}).fill('Kemping Testowy'); await page.getByRole('textbox',{name:'Adres kempingu',exact:true}).fill('Wczasowa 10');
+  await (await openSuggestions(page, 'Nazwa kempingu')).fill('Kemping Testowy');
+  await page.getByRole('button', { name: 'Użyj wpisanej nazwy kempingu', exact: true }).click();
+  await page.getByRole('textbox',{name:'Adres kempingu',exact:true}).fill('Wczasowa 10');
   await page.getByRole('button',{name:'Rowery',exact:true}).click(); await page.getByRole('checkbox',{name:'Zwierzę w ekipie: Pies',exact:true}).click();
   for(const section of ['location','plan','crew','visibility']) {
     const card=page.getByTestId('trip-editor-'+section);
@@ -90,7 +93,7 @@ for (const width of [320,390]) test(`grouped trip fields focus errors and retain
   const saved=[...store.trips.values()][0]; expect(saved.visibility).toBe('private'); expect(saved.campground_name).toBe('Kemping Testowy');
   expect(saved.campground_address).toBe('Wczasowa 10'); expect(saved.interests).toEqual(['Rowery']); expect(saved.animal_kinds).toEqual(['dog']);
   await page.goto('/trip-editor?id='+saved.id); await page.getByRole('button',{name:'Dalej',exact:true}).click();
-  await expect(page.getByRole('textbox',{name:'Nazwa kempingu',exact:true})).toHaveValue('Kemping Testowy');
+  await expect(suggestionField(page, 'Nazwa kempingu')).toContainText('Kemping Testowy');
   await expect(page.getByRole('textbox',{name:'Adres kempingu',exact:true})).toHaveValue('Wczasowa 10');
   await expect(page.getByRole('checkbox',{name:'Zwierzę w ekipie: Pies',exact:true})).toBeChecked();
   await expect(page.getByTestId('trip-editor-preview')).toHaveCount(0);

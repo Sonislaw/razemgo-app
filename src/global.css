@@ -14,3 +14,9 @@
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
 }
+
+/* The complete search bar already provides the focus border. */
+#autocomplete-search-input:focus {
+  outline: none;
+  box-shadow: none;
+}

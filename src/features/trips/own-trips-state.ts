@@ -13,6 +13,7 @@ import type {
 } from '../../types/owned-trip';
 import type { TravelerProfile } from '../../types/profile';
 import type { DiscoveryFilters, TripMode } from '../../types/travel';
+import type { Campground } from './campgrounds';
 import { cloneAnimals, validateAnimals } from '../animals/animal-data.ts';
 import {
   findTripLocation,
@@ -136,6 +137,10 @@ export function newTripForm(profile: TravelerProfile): TripForm {
     animals: cloneAnimals(profile.group.animals),
   };
 }
+export function selectTripCampground(form: TripForm, campground: Campground): TripForm {
+  return { ...form, campgroundName: campground.name, campgroundAddress: campground.address };
+}
+
 export function changeTripLocation(
   form: TripForm,
   locationId: string,

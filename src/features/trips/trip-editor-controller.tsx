@@ -19,6 +19,7 @@ import {
   changeTripMode,
   getTripStatus,
   newTripForm,
+  selectTripCampground,
   toTripForm,
   todayDate,
   tripFromForm,
@@ -36,6 +37,7 @@ import type { TripEditorFields, TripFieldTarget } from './trip-editor-field';
 import { useTheme } from '@/hooks/use-theme';
 import { createRequestKey } from '@/lib/request-key';
 import type { TripForm } from '@/types/owned-trip';
+import type { Campground } from './campgrounds';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -61,6 +63,7 @@ export function TripEditorScreen() {
     return changeTripMode(values, values.mode);
   });
   const [form, setForm] = useState<TripForm>(initial);
+  const selectedCampground = useRef<Campground | null>(null);
   const modeLabel = form.mode === 'planned' ? 'Mam plan' : 'Szukam pomysłu';
   const titles = [
     'Jaki masz plan?',
@@ -121,7 +124,13 @@ export function TripEditorScreen() {
     }
   };
   const update = <K extends keyof TripForm>(key: K, value: TripForm[K]) => {
-    setForm((current) => ({ ...current, [key]: value }));
+    const selected = selectedCampground.current;
+    const changedCampground = key === 'campgroundName' && selected && value !== selected.name;
+    if (changedCampground) selectedCampground.current = null;
+    setForm((current) => ({ ...current,
+      ...(changedCampground && current.campgroundAddress === selected.address ? { campgroundAddress: '' } : {}),
+      [key]: value,
+    }));
     clearFieldErrors(key === 'startDate' || key === 'endDate' ? 'dates' : key);
   };
   const close = () => {
@@ -358,6 +367,7 @@ export function TripEditorScreen() {
                 form={form}
                 fields={fields}
                 onModeChange={(mode) => {
+                  selectedCampground.current = null;
                   setForm((current) => changeTripMode(current, mode));
                   clearFieldErrors('locationId');
                 }}
@@ -372,7 +382,14 @@ export function TripEditorScreen() {
                   form={form}
                   fields={fields}
                   update={update}
+                  onCampgroundSelect={(campground) => {
+                    selectedCampground.current = campground;
+                    setForm((current) => selectTripCampground(current, campground));
+                    clearFieldErrors('campgroundName');
+                    clearFieldErrors('campgroundAddress');
+                  }}
                   onLocationChange={(id) => {
+                    selectedCampground.current = null;
                     setForm((current) => changeTripLocation(current, id));
                     clearFieldErrors('locationId');
                   }}

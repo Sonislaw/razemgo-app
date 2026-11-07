@@ -1,0 +1,47 @@
+import { test, expect } from '@playwright/test';
+import { state, backend, login } from './trip-fixtures.mjs';
+import { openSuggestions, suggestionField } from './autocomplete-helpers.mjs';
+
+const label = 'Miejscowość, region lub kraj';
+const button = (page, name) => page.getByRole('button', { name, exact: true });
+
+for (const width of [320, 390]) test(`a full-screen search above filters keeps the header visible and back only closes that layer at ${width}px`, async ({ page, context }) => {
+  await page.setViewportSize({ width, height: 844 });
+  const store = state();
+  await backend(context, store); await login(page); await page.goto('/explore');
+  await button(page, 'Otwórz filtry').click();
+  const input = await openSuggestions(page, label);
+  const layer = page.getByRole('dialog', { name: 'Wyszukiwanie: ' + label });
+  await expect(layer).toBeVisible();
+  await expect(input).toBeFocused();
+  const bounds = await layer.boundingBox();
+  expect(bounds.x).toBe(0); expect(bounds.y).toBe(0);
+  expect(bounds.width).toBe(width); expect(bounds.height).toBe(844);
+  await input.fill('Chłapowo pomorskie');
+  const result = page.getByRole('button', { name: /^Wybierz lokalizację: Chłapowo,/ }).first();
+  await expect(result).toBeVisible();
+  await page.screenshot({ path: `.expo/autocomplete-location-${width}.png` });
+  await page.setViewportSize({ width, height: 480 });
+  await expect(input).toBeInViewport({ ratio: 1 });
+  await expect(result).toBeInViewport({ ratio: 1 });
+  await result.click();
+  await expect(layer).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: 'Filtry wyjazdów', exact: true })).toBeVisible();
+  await expect(suggestionField(page, label)).toContainText('Chłapowo');
+  await page.setViewportSize({ width, height: 844 });
+  await openSuggestions(page, label);
+  await button(page, 'Wróć do formularza').click();
+  await expect(layer).toHaveCount(0);
+  await expect(suggestionField(page, label)).toContainText('Chłapowo');
+  await openSuggestions(page, label);
+  await page.keyboard.press('Escape');
+  await expect(layer).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: 'Filtry wyjazdów', exact: true })).toBeVisible();
+  await openSuggestions(page, label);
+  await button(layer, 'Wyczyść lokalizację').click();
+  await expect(input).toHaveValue('');
+  await expect(input).toBeFocused();
+  await button(page, 'Wróć do formularza').click();
+  await expect(suggestionField(page, label)).toContainText('Wpisz nazwę lokalizacji');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});

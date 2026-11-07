@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { B, groupId, state, backend, login } from './trip-fixtures.mjs';
+import { openSuggestions } from './autocomplete-helpers.mjs';
 
 test('trip participants differ from the profile, survive reload and editing, and drive cards and filters', async ({ page, context, browser }) => {
   test.setTimeout(120000);
@@ -9,7 +10,7 @@ test('trip participants differ from the profile, survive reload and editing, and
   await page.getByLabel(/^25 października 2026/).click(); await page.getByLabel(/^28 października 2026/).click();
   await page.getByRole('button', { name: 'Wybierz daty', exact: true }).click();
   await page.getByRole('button', { name: 'Dalej', exact: true }).click();
-  await page.getByRole('textbox', { name: 'Miasto lub wieś', exact: true }).fill('Chłapowo pomorskie');
+  await (await openSuggestions(page, 'Miasto lub wieś')).fill('Chłapowo pomorskie');
   await page.getByRole('button', { name: /^Wybierz lokalizację: Chłapowo,/ }).first().click();
   await page.getByRole('textbox', { name: 'Opis wyjazdu', exact: true }).fill('Wyjazd nad morze w większym gronie dorosłych.');
   await page.getByRole('button', { name: 'Więcej: Dorośli na wyjeździe', exact: true }).click();

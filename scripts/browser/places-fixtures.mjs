@@ -7,7 +7,7 @@ export function mockPlaces(body) {
   if(body.action==='manual-address')return {geometry:{placeId:'qa_manual_address',latitude:54.579,longitude:16.862}};
   if(body.action==='autocomplete') {
     const rows=/camp|kemp/i.test(body.query) ? camps : searchTripLocations(body.query,body.mode==='planned'?'planned':'flexible').map(p=>({id:qaPlaceId(p.id),name:p.name,context:locationContext(p),kind:['country','region'].includes(p.kind)?p.kind:'locality'}));
-    return {predictions:rows.slice(0,8)};
+    return {predictions:rows.filter(p=>!body.areasOnly||['locality','region','country'].includes(p.kind)).slice(0,8)};
   }
   const camp=body.placeId==='qa_manual_address'?camps[0]:camps.find(p=>p.id===body.placeId);
   const legacy=body.placeId?.startsWith('qa_')?findTripLocation(Buffer.from(body.placeId.slice(3),'base64url').toString()):undefined;

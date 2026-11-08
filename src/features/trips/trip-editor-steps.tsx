@@ -14,6 +14,7 @@ import {
   MAX_TRIP_DESCRIPTION_LENGTH,
   MIN_TRIP_DESCRIPTION_LENGTH,
   tripDescriptionLength,
+  changeTripMode,
 } from '@/features/trips/own-trips-state';
 import { TripLandscapePicker } from '@/features/trips/trip-landscape-picker';
 import { TripLocationField, type TripLocationFieldHandle } from '@/features/trips/trip-location-field';
@@ -48,6 +49,7 @@ export function TripTimingStep({
 }) {
   const theme = useTheme();
   const dateButton = useRef<ViewInstance>(null);
+  const [locationNotice,setLocationNotice]=useState('');
   return (
     <>
       <View
@@ -78,6 +80,8 @@ export function TripTimingStep({
               checked: form.mode === option.mode,
             }}
             onPress={() => {
+                const cleared=!!form.locationId&&!changeTripMode(form,option.mode).locationId;
+                setLocationNotice(cleared?(option.mode==='flexible'?'W kolejnym kroku wybierz obszar poszukiwań: miejscowość, wieś, region lub kraj.':'W kolejnym kroku wybierz miejscowość lub konkretne miejsce wyjazdu.'):'');
               onModeChange(option.mode);
             }}
             style={[
@@ -109,6 +113,7 @@ export function TripTimingStep({
           </Pressable>
         ))}
       </View>
+      {locationNotice?<AppText variant="caption" color="textSecondary" accessibilityLiveRegion="polite">{locationNotice}</AppText>:null}
       <TripEditorField name="dates" label="Termin wyjazdu" fields={fields} focus={() => dateButton.current?.focus()}>
         <FieldLabel required>Termin wyjazdu</FieldLabel>
         <DateRangeField
@@ -141,18 +146,19 @@ export function TripDestinationStep({
   return (
     <>
       <Card testID="trip-editor-location" style={{ gap: 20 }}>
-        <SectionTitle title="Lokalizacja" />
-        <TripEditorField name="locationId" label="Miejsce wyjazdu" fields={fields} focus={() => locationInput.current?.focus()}>
+        <SectionTitle title={form.mode==='flexible'?'Obszar poszukiwań':'Lokalizacja'} />
+        <TripEditorField name="locationId" label={form.mode==='flexible'?'Obszar poszukiwań':'Miejsce wyjazdu'} fields={fields} focus={() => locationInput.current?.focus()}>
           <TripLocationField
             inputRef={locationInput}
             errorId={fields.errors.locationId ? tripFieldErrorId('locationId') : undefined}
             mode={form.mode}
+            areasOnly={form.mode==='flexible'}
             value={form.locationId}
             place={form.place}
             onPlaceChange={onPlaceChange}
-            label={form.mode === 'flexible' ? 'Preferowany obszar wyjazdu' : undefined}
+            label={form.mode === 'flexible' ? 'Jaki obszar Was interesuje?' : undefined}
             hint={form.mode === 'flexible'
-              ? 'Wskaż miejscowość, region lub kraj, w którym chcesz podróżować. Konkretne miejsce wybierzesz wspólnie z ekipą.'
+              ? 'Wskaż miejscowość, wieś, region lub kraj. Konkretne miejsce wybierzesz wspólnie z ekipą.'
               : undefined}
             onChange={onLocationChange}
           />

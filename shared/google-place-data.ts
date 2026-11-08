@@ -1,5 +1,7 @@
 // Provider data stays transient. Only IDs and time-limited geometry are cached.
 export const GOOGLE_PLACE_ID = /^[A-Za-z0-9_-]{5,256}$/;
+export const AREA_PLACE_KINDS = ['locality','region','country'] as const;
+export function isAreaPlaceKind(kind:string): boolean {return (AREA_PLACE_KINDS as readonly string[]).includes(kind);}
 function object(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }
@@ -9,7 +11,7 @@ export function placeKind(types: string[]): 'locality' | 'campground' | 'place' 
   if (types.some(type => ['campground', 'rv_park', 'camping'].includes(type))) return 'campground';
   if (types.includes('country')) return 'country';
   if (types.some(type => ['administrative_area_level_1', 'administrative_area_level_2'].includes(type))) return 'region';
-  if (types.some(type => ['locality', 'postal_town', 'sublocality'].includes(type))) return 'locality';
+  if (types.some(type => ['locality', 'postal_town', 'sublocality','sublocality_level_1','administrative_area_level_3'].includes(type))) return 'locality';
   return 'place';
 }
 export function googlePlacePredictions(raw: unknown) {

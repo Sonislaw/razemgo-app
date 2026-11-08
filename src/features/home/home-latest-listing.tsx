@@ -18,6 +18,7 @@ export function HomeLatestListing({ trip, group, travelModes, isOwn, onPress }: 
       testID="home-latest-listing"
       trip={trip}
       group={group}
+      showCrewParticipants={false}
       travelModes={travelModes}
       favoriteAction={!isOwn ? <FavoriteButton kind="trip" targetId={trip.id} compact translucent /> : undefined}
       accessibilityLabel={'Ostatnio dodane ogłoszenie: ' + getTripHeadline(trip)}

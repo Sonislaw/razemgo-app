@@ -120,7 +120,7 @@ test('flexible trips publish and edit in two steps with visibility and preview i
   await page.getByRole('button',{name:'Opublikuj wyjazd',exact:true}).click();
   await expect(page.getByTestId('trip-field-locationId').getByRole('alert')).toContainText('Wybierz');
   // Validation has already opened and focused the location search layer.
-  await page.getByRole('textbox',{name:'Preferowany obszar wyjazdu',exact:true}).fill('Chłapowo pomorskie');
+  await page.getByRole('textbox',{name:'Jaki obszar Was interesuje?',exact:true}).fill('Chłapowo pomorskie');
   await page.getByRole('button',{name:/^Wybierz miejsce: Chłapowo,/}).first().click();
   await page.getByRole('textbox',{name:'Opis wyjazdu',exact:true}).fill('Szukam inspiracji na wspólny wyjazd nad morze.');
   await page.getByRole('button',{name:'Tylko dla nas',exact:true}).click();

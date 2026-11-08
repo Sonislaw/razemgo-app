@@ -1,5 +1,6 @@
 export type PlaceKind = 'locality' | 'campground' | 'place' | 'region' | 'country';
 export interface SelectedPlace {
+  scope?: 'area';
   bounds?: {south:number;north:number;west:number;east:number};
   id: string;
   source: 'google' | 'manual' | 'legacy';

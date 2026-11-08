@@ -74,3 +74,36 @@ test('a chosen pin permits saving without address, region or country and without
   expect(Number.isFinite(p.latitude)).toBe(true);expect(p.googlePlaceId).toBeUndefined();
   expect((store.placeCalls??[]).some(call=>call.action==='manual-address')).toBe(false);
 });
+
+for(const width of [320,390])test(`flexible trips select areas only and support manual towns without street or pin at ${width}px`,async({page,context})=>{
+  await page.setViewportSize({width,height:844});const store=seed();await backend(context,store);await login(page);
+  await page.goto('/trip-editor?id='+id);await page.getByRole('radio',{name:'Szukam pomysłu',exact:true}).click();await button(page,'Dalej').click();
+  const label='Jaki obszar Was interesuje?';let input=await openSuggestions(page,label);await input.fill('Camping Morski');
+  await expect(page.getByText('Brak pasujących obszarów. Możesz dodać własny.',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:/^Wybierz miejsce: Camping/})).toHaveCount(0);
+  await input.fill('Giżycko');await page.getByRole('button',{name:/^Wybierz miejsce: Giżycko,/}).first().click();
+  await expect(page.getByTestId('trip-editor-location')).toContainText('Giżycko i okolice');
+  expect(store.placeCalls.filter(c=>c.action==='autocomplete').every(c=>c.areasOnly===true)).toBe(true);
+  await openSuggestions(page,label);await button(page,'Nie ma tego obszaru? Dodaj ręcznie').click();
+  await expect(field(page,'Adres miejsca')).toHaveCount(0);await expect(button(page,'Wskaż punkt na mapie')).toHaveCount(0);
+  await expect(button(page,'Kemping')).toHaveCount(0);await field(page,'Nazwa obszaru').fill('Zielona Wieś');
+  await button(page,'Użyj tego obszaru').click();await expect(page.getByRole('alert')).toContainText('Podaj region');
+  await field(page,'Region').fill('pomorskie');await button(page,'Użyj tego obszaru').click();
+  await expect(page.getByTestId('trip-editor-location')).toContainText('Zielona Wieś i okolice');
+  await page.getByTestId('trip-editor-location').screenshot({path:'.expo/flexible-area-'+width+'.png'});
+  await button(page,'Zapisz zmiany').click();await expect(page).toHaveURL('http://localhost:8085/trips');
+  const p=store.trips.get(id).place_data;expect(p.scope).toBe('area');expect(p.address).toBe('');expect(p.latitude).toBeUndefined();expect(p.googlePlaceId).toBeUndefined();
+  await edit(page);await openSuggestions(page,label);await expect(field(page,'Nazwa obszaru')).toHaveValue('Zielona Wieś');
+  await expect(field(page,'Region')).toHaveValue('pomorskie');await expect(field(page,'Kraj')).toHaveValue('Polska');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+test('switching a concrete plan to flexible clears its campsite and explains that an area must be chosen',async({page,context})=>{
+  const store=seed();await backend(context,store);await login(page);await edit(page);
+  const input=await openSuggestions(page,'Dokąd jedziecie?');await input.fill('Camping Morski');
+  await page.getByRole('button',{name:/^Wybierz miejsce: Camping Morski,/}).click();
+  await button(page,'Poprzedni krok').click();await page.getByRole('radio',{name:'Szukam pomysłu',exact:true}).click();
+  await expect(page.getByText('W kolejnym kroku wybierz obszar poszukiwań:',{exact:false})).toBeVisible();await button(page,'Dalej').click();
+  await expect(suggestionField(page,'Jaki obszar Was interesuje?')).not.toContainText('Camping Morski');
+  await button(page,'Zapisz zmiany').click();await expect(page.getByRole('textbox',{name:'Jaki obszar Was interesuje?',exact:true})).toBeFocused();
+});

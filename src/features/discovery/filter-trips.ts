@@ -7,7 +7,7 @@ import type {
   TripPlace,
 } from '../../types/travel';
 import type { LocationOption } from '../../types/location';
-import { placeLocation } from '../trips/place-data.ts';
+import { placeLocation, areaPlaceLabel } from '../trips/place-data.ts';
 import { isValidDate } from '../trips/own-trips-state.ts';
 import {
   findTripLocation,
@@ -144,7 +144,8 @@ export function sharedNights(a: DateRange, b: DateRange): number {
 }
 export function getTripLocation(trip: TripPlan): string {
   const place = trip.mode === 'planned' ? trip.destination : trip.travelArea;
-  return [place.name, place.region].filter(Boolean).join(', ');
+  const kind=place.place?.kind??findTripLocation(tripLocationIdForPlace(place))?.kind;
+  return [trip.mode==='flexible'?areaPlaceLabel(place.name,kind):place.name,place.region].filter(Boolean).join(', ');
 }
 export function filterProposals(
   proposals: TripProposal[],

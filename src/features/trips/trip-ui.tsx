@@ -13,7 +13,7 @@ import { IS_DEMO_MODE } from '@/constants/app';
 import { useTheme } from '@/hooks/use-theme';
 import { useCurrentDate } from '@/hooks/use-current-date';
 import type { OwnedTrip, TripStatus } from '@/types/owned-trip';
-import { formatTripDates } from '@/features/discovery/filter-trips';
+import { formatTripDates, getTripLocation } from '@/features/discovery/filter-trips';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { useAccountAccess } from '@/features/moderation/account-access-context';
 import { TripReactionsButton } from '@/features/reactions/trip-reactions';
@@ -28,11 +28,7 @@ import type { ReactNode } from 'react';
 import { ShareLinkButton } from '@/features/sharing/share-link-button';
 
 export function ownTripPlace(trip: OwnedTrip): string {
-  const place = trip.mode === 'planned' ? trip.destination : trip.travelArea;
-  return (
-    [place.name, place.region].filter(Boolean).join(', ') ||
-    'Miejsce do uzupełnienia'
-  );
+  return getTripLocation(trip)||'Miejsce do uzupełnienia';
 }
 export function ownTripDates(trip: OwnedTrip): string {
   return isValidDate(trip.startDate) &&

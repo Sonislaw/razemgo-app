@@ -13,7 +13,7 @@ import type {
 } from '../../types/owned-trip';
 import type { TravelerProfile } from '../../types/profile';
 import type { DiscoveryFilters, TripMode } from '../../types/travel';
-import { placeLocation, storePlace, manualPlaceError } from './place-data.ts';
+import { placeLocation, storePlace, manualPlaceError, isPlaceAllowedForTrip } from './place-data.ts';
 import { cloneAnimals, validateAnimals } from '../animals/animal-data.ts';
 import {
   isConcreteTripLocation,
@@ -160,7 +160,7 @@ export function changeTripMode(form: TripForm, mode: TripMode): TripForm {
   const location = placeLocation(form.place,form.locationId);
   return changeTripLocation(
     { ...form, mode },
-    location && !isLocationAllowedForTrip(location, mode)
+    (form.place&&!isPlaceAllowedForTrip(form.place,mode))||(location&&!isLocationAllowedForTrip(location,mode))
       ? ''
       : form.locationId,
   );
@@ -188,6 +188,8 @@ export function validateTripFormIssues(form: TripForm, step?: 1 | 2): TripFormIs
       const error=manualPlaceError(form.place);
       if(error)add('locationId',error);
     }
+    if(form.place&&!isPlaceAllowedForTrip(form.place,form.mode))
+      add('locationId',form.mode==='flexible'?'W trybie „Szukam pomysłu” wybierz miejscowość, region lub kraj. Kemping i konkretny punkt wybierzesz po ustaleniu planu.':'Wybierz miejscowość, kemping lub konkretne miejsce wyjazdu.');
     if (!location || !isLocationAllowedForTrip(location, form.mode))
       add('locationId',
         form.mode === 'planned'

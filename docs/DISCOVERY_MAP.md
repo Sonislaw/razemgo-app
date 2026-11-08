@@ -27,12 +27,21 @@ Miejsce Google zachowuje identyfikator i opis wpisany przez użytkownika. Nazwy
 i adresy dostawcy są pobierane do widoku, bez zapisywania katalogu miejsc w bazie.
 Zweryfikowane współrzędne i zasięg są przechowywane prywatnie przez 28 dni.
 
-Dla ręcznego miejsca wymagamy adresu, regionu i kraju albo punktu wybranego na mapie.
+W „Mam plan” dla ręcznego miejsca wymagamy adresu, regionu i kraju albo punktu wybranego na mapie.
 Pełny adres rozpoznajemy przez Text Search w Places API (New); zachowujemy własną
 nazwę i adres użytkownika, a położenie odczytujemy ze wspólnej pamięci geometrii
 Google z terminem ważności. Punkt wskazany ręcznie ma pierwszeństwo i nie wymaga
 zapytania do Places. Brak dopasowania adresu pozwala poprawić dane lub wybrać punkt;
 formularz nie zapisuje w tym przypadku nowego miejsca bez położenia.
+
+W „Szukam pomysłu” pole „Jaki obszar Was interesuje?” przyjmuje miejscowości,
+wsie, regiony i kraje. Google Autocomplete używa kolekcji `(regions)` i dodatkowej
+walidacji kategorii, bez kempingów, ulic i punktów zainteresowania. Miejscowości
+pokazujemy jako „Giżycko i okolice”. Ręczny obszar ma `scope: area`, nazwę, rodzaj,
+kraj oraz region rozróżniający miejscowości; nie zawiera ulicy ani punktu.
+Zmiana typu ogłoszenia usuwa niepasującą lokalizację i wyjaśnia kolejny krok.
+Ogólne filtry Odkrywaj nadal przyjmują konkretne miejsca i obszary.
+
 Starsze wyjazdy nadal korzystają z istniejących
 współrzędnych miejscowości; nie przypisujemy środka miejscowości do bramy kempingu.
 Katalog kempingów OSM, Leaflet, stare osadzanie map i zależność WebView usunięto.

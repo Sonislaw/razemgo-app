@@ -5,6 +5,7 @@ import { getTripLocation } from '@/features/discovery/filter-trips';
 import { useTheme } from '@/hooks/use-theme';
 import type { TripPlan } from '@/types/travel';
 import { useLivePlace } from '@/features/trips/use-live-place';
+import { areaPlaceLabel } from '@/features/trips/place-data';
 
 export function TripLocationSummary({ trip, locationLabel, compact = false }: {
   trip: TripPlan;
@@ -15,7 +16,8 @@ export function TripLocationSummary({ trip, locationLabel, compact = false }: {
   const original=trip.mode==='planned' ? trip.destination : trip.travelArea;
   const place=useLivePlace(original.place);
   const campground = trip.mode === 'planned' ? trip.campgroundName?.trim() : '';
-  const address = !compact ? place?.address || (trip.mode === 'planned' ? trip.campgroundAddress?.trim() : '') : '';
+  const address = !compact&&trip.mode==='planned' ? place?.address || trip.campgroundAddress?.trim() : '';
+  const title=trip.mode==='flexible'&&place?areaPlaceLabel(place.name,place.kind):place?.name??locationLabel??getTripLocation(trip);
   return (
     <View style={[
       styles.container,
@@ -25,7 +27,7 @@ export function TripLocationSummary({ trip, locationLabel, compact = false }: {
       <View style={styles.row}>
         <Icon name="pin" size={compact ? 20 : 22} />
         <AppText color="primaryStrong" style={[styles.text, styles.location, !compact && styles.detailLocation]}>
-          {place?.name ?? locationLabel ?? getTripLocation(trip)}
+          {title}
           {trip.mode === 'flexible' ? ' · cel do ustalenia' : ''}
         </AppText>
       </View>

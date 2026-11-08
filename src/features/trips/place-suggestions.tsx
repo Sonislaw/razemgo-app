@@ -6,16 +6,17 @@ import { createRequestKey } from '@/lib/request-key';
 import { useTheme } from '@/hooks/use-theme';
 import type { PlacePrediction, SelectedPlace } from '@/types/place';
 import { ManualPlaceFields } from './manual-place-fields';
+import { ManualAreaFields } from './manual-area-fields';
 import { predictPlaces, resolvePlace } from './places-repository';
 import { PLACE_KIND_LABELS } from './place-data';
 
-export function PlaceSuggestions({ query, mode, onSelect, initial }: {
-  query:string;mode:string;onSelect:(place:SelectedPlace)=>void;initial?:SelectedPlace;
+export function PlaceSuggestions({ query, mode, onSelect, initial, areasOnly=false }: {
+  query:string;mode:string;onSelect:(place:SelectedPlace)=>void;initial?:SelectedPlace;areasOnly?:boolean;
 }) {
   const theme = useTheme(), [token] = useState(createRequestKey);
   const [snapshot,setSnapshot] = useState<{key:string;results:PlacePrediction[];error:string}>({key:'',results:[],error:''});
   const [selectionError,setSelectionError] = useState({key:'',message:''}), [retry,setRetry] = useState(0), [manual,setManual] = useState(initial?.source==='manual'), [choosing,setChoosing] = useState(false);
-  const requestKey=mode+':'+query+':'+retry;
+  const requestKey=mode+':'+areasOnly+':'+query+':'+retry;
   const results=snapshot.key===requestKey ? snapshot.results : [];
   const loading=!manual&&query.trim().length>=2&&snapshot.key!==requestKey;
   const error=(selectionError.key===requestKey?selectionError.message:'')||(snapshot.key===requestKey?snapshot.error:'');
@@ -26,16 +27,17 @@ export function PlaceSuggestions({ query, mode, onSelect, initial }: {
     if(manual || query.trim().length<2)return;
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      void predictPlaces(query.trim(),mode,token,controller.signal).then(value => {
+      void predictPlaces(query.trim(),mode,token,controller.signal,areasOnly).then(value => {
         if(!controller.signal.aborted) setSnapshot({key:requestKey,results:value,error:''});
       }).catch(() => {if(!controller.signal.aborted) setSnapshot({key:requestKey,results:[],error:'Nie udało się pobrać podpowiedzi. Spróbuj ponownie lub dodaj miejsce ręcznie.'});});
     },350);
     return () => {clearTimeout(timer);controller.abort();};
-  },[query,mode,token,manual,requestKey]);
+  },[query,mode,token,manual,requestKey,areasOnly]);
+  if(manual&&areasOnly)return <ManualAreaFields query={query} initial={initial?.source==='manual'?initial:undefined} onSave={onSelect} onBack={()=>setManual(false)}/>;
   if(manual) return <ManualPlaceFields query={query} flexible={mode==='flexible'} initial={initial?.source==='manual'?initial:undefined} onSave={onSelect} onBack={() => setManual(false)}/>;
   return <View style={{gap:12}} testID="google-place-suggestions">
     <AppText variant="caption" color="textSecondary" accessibilityLiveRegion="polite">{loading ? 'Wyszukiwanie miejsc…' : query.trim().length<2 ?
-      'Wpisz co najmniej 2 znaki: miejscowość, nazwę kempingu lub inne miejsce.' : results.length ? 'Wybierz miejsce' : 'Brak pasujących miejsc. Możesz dodać własne.'}</AppText>
+      (areasOnly?'Wpisz co najmniej 2 znaki: miejscowość, wieś, region lub kraj.':'Wpisz co najmniej 2 znaki: miejscowość, nazwę kempingu lub inne miejsce.') : results.length ? (areasOnly?'Wybierz obszar':'Wybierz miejsce') : (areasOnly?'Brak pasujących obszarów. Możesz dodać własny.':'Brak pasujących miejsc. Możesz dodać własne.')}</AppText>
     {loading || choosing ? <ActivityIndicator color={theme.primaryStrong}/> : null}
     {results.map(place => <Pressable key={place.id} accessibilityRole="button" disabled={choosing}
       accessibilityLabel={'Wybierz miejsce: '+place.name+', '+place.context+', '+PLACE_KIND_LABELS[place.kind]}
@@ -43,7 +45,7 @@ export function PlaceSuggestions({ query, mode, onSelect, initial }: {
       onPress={() => {
         selection.current?.abort();const controller = new AbortController();selection.current=controller;
         setChoosing(true);setSelectionError({key:requestKey,message:''});
-        void resolvePlace(place.id,query.trim(),token,controller.signal).then(value => {if(!controller.signal.aborted) onSelect(value);})
+        void resolvePlace(place.id,query.trim(),token,controller.signal,areasOnly).then(value => {if(!controller.signal.aborted) onSelect(value);})
           .catch(() => {if(!controller.signal.aborted) setSelectionError({key:requestKey,message:'Nie udało się wczytać miejsca. Spróbuj ponownie lub dodaj je ręcznie.'});})
           .finally(() => setChoosing(false));
       }}>
@@ -54,7 +56,7 @@ export function PlaceSuggestions({ query, mode, onSelect, initial }: {
     </Pressable>)}
     {error ? <><AppText accessibilityRole="alert" variant="caption">{error}</AppText>
       <Button label="Spróbuj ponownie" variant="secondary" disabled={choosing} onPress={() => setRetry(value=>value+1)}/></> : null}
-    <Button label="Nie ma tego miejsca? Dodaj ręcznie" variant="secondary" disabled={choosing} onPress={() => {selection.current?.abort();setManual(true);}}/>
+    <Button label={areasOnly?'Nie ma tego obszaru? Dodaj ręcznie':'Nie ma tego miejsca? Dodaj ręcznie'} variant="secondary" disabled={choosing} onPress={() => {selection.current?.abort();setManual(true);}}/>
     <AppText style={{fontSize:14,fontWeight:'400',color:theme.textSecondary,textAlign:'right'}}>Google Maps</AppText>
   </View>;
 }

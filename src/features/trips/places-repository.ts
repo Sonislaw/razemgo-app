@@ -1,7 +1,7 @@
 import { getSupabase } from '@/lib/supabase';
 import { backendLifecycle } from '@/lib/request-lifecycle';
 import type { PlacePrediction, SelectedPlace } from '@/types/place';
-import { validPlace, PLACE_KINDS, manualPlaceError } from './place-data';
+import { validPlace, PLACE_KINDS, manualPlaceError, isAreaPlaceKind } from './place-data';
 import { GOOGLE_PLACE_ID } from '../../../shared/google-place-data';
 export async function placesRequest(body: Record<string, unknown>, signal?: AbortSignal) {
   const boundary = backendLifecycle.capture();
@@ -11,16 +11,17 @@ export async function placesRequest(body: Record<string, unknown>, signal?: Abor
   if (result.error) throw Error('Nie udało się pobrać miejsc. Spróbuj ponownie lub dodaj miejsce ręcznie.');
   return result.data;
 }
-export async function predictPlaces(query:string, mode:string, sessionToken:string, signal?:AbortSignal): Promise<PlacePrediction[]> {
-  const data = await placesRequest({ action:'autocomplete',query,mode,sessionToken },signal);
+export async function predictPlaces(query:string, mode:string, sessionToken:string, signal?:AbortSignal,areasOnly=false): Promise<PlacePrediction[]> {
+  const data = await placesRequest({ action:'autocomplete',query,mode,sessionToken,...(areasOnly?{areasOnly:true}:{}) },signal);
   if (!Array.isArray(data?.predictions) || data.predictions.length>8 || data.predictions.some((p:PlacePrediction)=>
     !p||typeof p.id!=='string'||!GOOGLE_PLACE_ID.test(p.id)||typeof p.name!=='string'||!p.name||p.name.length>160||typeof p.context!=='string'||p.context.length>300||!PLACE_KINDS.includes(p.kind))) throw Error('Niepoprawne podpowiedzi miejsc.');
-  return data.predictions;
+  return areasOnly?data.predictions.filter((p:PlacePrediction)=>isAreaPlaceKind(p.kind)):data.predictions;
 }
-export async function resolvePlace(placeId:string, userLabel:string, sessionToken?:string, signal?:AbortSignal): Promise<SelectedPlace> {
-  const data = await placesRequest({ action:'details',placeId,...(sessionToken ? {sessionToken} : {}) },signal);
+export async function resolvePlace(placeId:string, userLabel:string, sessionToken?:string, signal?:AbortSignal,areasOnly=false): Promise<SelectedPlace> {
+  const data = await placesRequest({ action:'details',placeId,...(sessionToken ? {sessionToken} : {}),...(areasOnly?{areasOnly:true}:{}) },signal);
   const place = { ...data?.place, userLabel };
   if (!validPlace(place)) throw Error('Nie udało się odczytać miejsca.');
+  if(areasOnly&&!isAreaPlaceKind(place.kind))throw Error('Wybierz miejscowość, region lub kraj.');
   return place;
 }
 export async function resolvePlaceGeometry(placeId:string, signal?:AbortSignal): Promise<{latitude:number;longitude:number;bounds?:SelectedPlace['bounds']}> {

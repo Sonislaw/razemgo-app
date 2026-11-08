@@ -1,5 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
-import { GOOGLE_PLACE_ID, googlePlaceDetails, googlePlacePredictions, manualAddressGeometry } from '../../../shared/google-place-data.ts';
+import { GOOGLE_PLACE_ID, googlePlaceDetails, googlePlacePredictions, manualAddressGeometry, isAreaPlaceKind } from '../../../shared/google-place-data.ts';
 import { validDispatchSecret } from '../dispatch-push/push-worker.ts';
 import { maintainPlaceGeometry } from './maintenance.ts';
 
@@ -30,6 +30,7 @@ export async function handlePlaces(request: Request) {
     let input;
     try { input = JSON.parse(raw); } catch { return respond(400, { error: 'Invalid request' }); }
     if (!input || Array.isArray(input) || !['autocomplete', 'details', 'geometry', 'refresh', 'manual-address'].includes(input.action)) return respond(400, { error: 'Invalid action' });
+    if(input.areasOnly!=null&&typeof input.areasOnly!=='boolean')return respond(400,{error:'Invalid area selector'});
     if(input.action==='manual-address'&&['address','region','country'].some(k=>typeof input[k]!=='string'||input[k].trim().length<2||input[k].length>(k==='address'?300:100)))
       return respond(400,{error:'Complete address required'});
     const token = input.sessionToken;
@@ -67,10 +68,15 @@ export async function handlePlaces(request: Request) {
       const raw = await google('https://places.googleapis.com/v1/places:autocomplete',
         'suggestions.placePrediction.placeId,suggestions.placePrediction.structuredFormat,suggestions.placePrediction.types',
         { input: input.query.trim(), languageCode: 'pl', regionCode: 'pl', includeQueryPredictions: false,
+          ...(input.areasOnly?{includedPrimaryTypes:['(regions)']} : {}),
           ...(token ? { sessionToken: token } : {}) });
-      return respond(200, { predictions: googlePlacePredictions(raw).filter(p => input.mode!=='planned'||!['region','country'].includes(p.kind)) });
+      return respond(200, { predictions: googlePlacePredictions(raw).filter(p => input.areasOnly?isAreaPlaceKind(p.kind):input.mode!=='planned'||!['region','country'].includes(p.kind)) });
     }
-    if (input.action === 'details') return respond(200, { place: await details(input.placeId, token) });
+    if (input.action === 'details') {
+      const place=await details(input.placeId,token);
+      if(input.areasOnly&&!isAreaPlaceKind(place.kind))return respond(422,{error:'Choose a locality, region or country',code:'area_required'});
+      return respond(200,{place});
+    }
     if (input.action === 'geometry') return respond(200, { place: await details(input.placeId, undefined, true) });
     if(input.action==='manual-address') {
       const raw=await google('https://places.googleapis.com/v1/places:searchText','places.id,places.location,places.viewport,places.addressComponents',

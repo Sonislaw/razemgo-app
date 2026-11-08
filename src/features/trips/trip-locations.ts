@@ -11,9 +11,9 @@ export const LOCATION_KIND_LABELS: Record<LocationOption['kind'], string> = {
   country: 'Kraj',
 };
 export const TRIP_LOCATION_REQUIRED_ERROR =
-  'Wybierz lokalizację z podpowiedzi — miejscowość, region lub kraj.';
+  'Wybierz miejsce z podpowiedzi lub dodaj je ręcznie.';
 export const PLANNED_TRIP_LOCATION_REQUIRED_ERROR =
-  'W trybie „Mam plan” wybierz miasto lub wieś z podpowiedzi.';
+  'W trybie „Mam plan” wybierz miejscowość, kemping lub inne konkretne miejsce. Możesz dodać je ręcznie.';
 
 export function isConcreteTripLocation(location?: LocationOption): boolean {
   return !!location && ['locality', 'city', 'village'].includes(location.kind);
@@ -265,6 +265,7 @@ export function locationContext(location: LocationOption): string {
 }
 
 export function tripLocationIdForPlace(place: TripPlace): string {
+  if (place.place) return place.place.id;
   const selected = findTripLocation(place.locationId);
   if (selected) return selected.id;
   const old = SUPPLEMENTARY_LOCATIONS.find(

@@ -17,12 +17,7 @@ import {
 } from '@/features/trips/own-trips-state';
 import { TripLandscapePicker } from '@/features/trips/trip-landscape-picker';
 import { TripLocationField, type TripLocationFieldHandle } from '@/features/trips/trip-location-field';
-import { TripCampgroundField, type TripCampgroundFieldHandle } from './trip-campground-field';
-import type { Campground } from './campgrounds';
-import {
-  findTripLocation,
-  isConcreteTripLocation,
-} from '@/features/trips/trip-locations';
+import type { SelectedPlace } from '@/types/place';
 import {
   ownTripDates,
   ownTripPlace,
@@ -132,18 +127,16 @@ export function TripDestinationStep({
   form,
   update,
   onLocationChange,
-  onCampgroundSelect,
+  onPlaceChange,
   fields,
 }: {
   form: TripForm;
   update: Update;
   onLocationChange: (id: string) => void;
-  onCampgroundSelect: (campground: Campground) => void;
+  onPlaceChange: (place: SelectedPlace) => void;
   fields: TripEditorFields;
 }) {
   const locationInput = useRef<TripLocationFieldHandle>(null);
-  const campgroundName = useRef<TripCampgroundFieldHandle>(null);
-  const campgroundAddress = useRef<TextInputInstance>(null);
   const descriptionInput = useRef<TextInputInstance>(null);
   return (
     <>
@@ -155,6 +148,8 @@ export function TripDestinationStep({
             errorId={fields.errors.locationId ? tripFieldErrorId('locationId') : undefined}
             mode={form.mode}
             value={form.locationId}
+            place={form.place}
+            onPlaceChange={onPlaceChange}
             label={form.mode === 'flexible' ? 'Preferowany obszar wyjazdu' : undefined}
             hint={form.mode === 'flexible'
               ? 'Wskaż miejscowość, region lub kraj, w którym chcesz podróżować. Konkretne miejsce wybierzesz wspólnie z ekipą.'
@@ -162,18 +157,11 @@ export function TripDestinationStep({
             onChange={onLocationChange}
           />
         </TripEditorField>
-        {form.mode === 'planned' && isConcreteTripLocation(findTripLocation(form.locationId)) ? <>
-          <TripEditorField name="campgroundName" label="Nazwa kempingu" fields={fields} focus={() => campgroundName.current?.focus()}>
-            <TripCampgroundField value={form.campgroundName} inputRef={campgroundName} locationId={form.locationId}
-              errorId={fields.errors.campgroundName ? tripFieldErrorId('campgroundName') : undefined}
-              onChangeText={value => update('campgroundName', value)} onSelect={onCampgroundSelect} />
-          </TripEditorField>
-          <TripEditorField name="campgroundAddress" label="Adres kempingu" fields={fields} focus={() => campgroundAddress.current?.focus()}>
-            <ProfileTextField label="Adres kempingu" value={form.campgroundAddress ?? ''} inputRef={campgroundAddress}
-              errorId={fields.errors.campgroundAddress ? tripFieldErrorId('campgroundAddress') : undefined}
-              onChangeText={value => update('campgroundAddress', value)} maxLength={200} hint="Opcjonalnie. Po wyborze kempingu uzupełnimy dostępny adres. Możesz go zmienić lub wpisać ręcznie." />
-          </TripEditorField>
-        </> : null}
+        {!form.place && (form.campgroundName || form.campgroundAddress) ? <View style={{gap:4}}>
+          <AppText variant="label">{form.campgroundName}</AppText>
+          {form.campgroundAddress ? <AppText variant="caption" color="textSecondary">{form.campgroundAddress}</AppText> : null}
+          <AppText variant="caption" color="textSecondary">Dotychczasowe dane miejsca. Aby je zmienić, wybierz miejsce w polu powyżej lub dodaj je ręcznie.</AppText>
+        </View> : null}
       </Card>
 
       <Card testID="trip-editor-plan" style={{ gap: 20 }}>

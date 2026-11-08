@@ -31,6 +31,7 @@ export function WelcomeFeaturedListing() {
         nativeID={trip.id}
         trip={trip}
         group={trip.group}
+        showCrewParticipants={false}
         favoriteAction={<CardShareActions kind="trip" targetId={trip.id} favoriteTestID="welcome-favorite"
           onExamplePress={() => router.push('/auth/sign-up')} />}
         accessibilityLabel={'Przykładowe ogłoszenie: ' + getTripHeadline(trip)}

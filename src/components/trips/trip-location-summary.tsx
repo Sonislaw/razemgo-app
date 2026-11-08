@@ -4,6 +4,7 @@ import { AppText } from '@/components/ui/primitives';
 import { getTripLocation } from '@/features/discovery/filter-trips';
 import { useTheme } from '@/hooks/use-theme';
 import type { TripPlan } from '@/types/travel';
+import { useLivePlace } from '@/features/trips/use-live-place';
 
 export function TripLocationSummary({ trip, locationLabel, compact = false }: {
   trip: TripPlan;
@@ -11,8 +12,10 @@ export function TripLocationSummary({ trip, locationLabel, compact = false }: {
   compact?: boolean;
 }) {
   const theme = useTheme();
+  const original=trip.mode==='planned' ? trip.destination : trip.travelArea;
+  const place=useLivePlace(original.place);
   const campground = trip.mode === 'planned' ? trip.campgroundName?.trim() : '';
-  const address = !compact && trip.mode === 'planned' ? trip.campgroundAddress?.trim() : '';
+  const address = !compact ? place?.address || (trip.mode === 'planned' ? trip.campgroundAddress?.trim() : '') : '';
   return (
     <View style={[
       styles.container,
@@ -22,7 +25,7 @@ export function TripLocationSummary({ trip, locationLabel, compact = false }: {
       <View style={styles.row}>
         <Icon name="pin" size={compact ? 20 : 22} />
         <AppText color="primaryStrong" style={[styles.text, styles.location, !compact && styles.detailLocation]}>
-          {locationLabel ?? getTripLocation(trip)}
+          {place?.name ?? locationLabel ?? getTripLocation(trip)}
           {trip.mode === 'flexible' ? ' · cel do ustalenia' : ''}
         </AppText>
       </View>
@@ -35,6 +38,7 @@ export function TripLocationSummary({ trip, locationLabel, compact = false }: {
         </View>
       ) : null}
       {address ? <AppText color="textSecondary" style={[styles.detailSecondary, styles.address]}>{address}</AppText> : null}
+      {place?.source==='google' ? <AppText style={{fontSize:12,fontWeight:'400',color:theme.textSecondary,marginLeft:30}}>Google Maps</AppText> : null}
     </View>
   );
 }

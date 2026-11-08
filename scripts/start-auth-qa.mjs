@@ -18,6 +18,7 @@ const child = spawn(
       EXPO_PUBLIC_SENTRY_DSN: 'https://testonly@monitoring.razemgo.invalid/1',
       EXPO_PUBLIC_MONITORING_IN_DEV: 'true',
       EXPO_PUBLIC_APP_ENV: 'development',
+      EXPO_PUBLIC_GOOGLE_MAPS_WEB_KEY: 'qa-google-maps-browser-only',
     },
   },
 );

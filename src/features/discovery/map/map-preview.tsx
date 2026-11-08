@@ -69,7 +69,7 @@ export function MapPreview({
         <FavoriteButton kind="trip" targetId={trip.id} compact />
       </View>
       <AppText variant="caption" color="textSecondary">
-        Lokalizacja orientacyjna — miejscowość.
+        {trip.destination.place?.kind==='campground'||trip.destination.place?.kind==='place' ? 'Punkt wskazuje miejsce wyjazdu.' : 'Lokalizacja orientacyjna — miejscowość.'}
       </AppText>
       <Button
         label="Zobacz wyjazd"

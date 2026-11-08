@@ -41,6 +41,8 @@ import { MapSelection } from './map-selection';
 import { MapPreview } from './map-preview';
 import { useFavoriteIds } from '@/features/favorites/favorites-context';
 import { useMessagingSelector } from '@/features/messaging/messaging-context';
+import { resolvePlaceGeometry } from '@/features/trips/places-repository';
+import { placeSearchRadiusKm } from '@/features/trips/place-data';
 import {
   hasResettableMapFilters,
   plannedMapFilters,
@@ -80,6 +82,25 @@ export function DiscoveryMap({
     [attempt, setAttempt] = useState(0);
   const [fit, setFit] = useState<MapFit | null>(null),
     fitVersion = useRef(0);
+  const placeKey=filters.locationId??filters.location.trim();
+  const lastPlace=useRef(memory.locationKey);
+  const selectedPlace=filters.place;
+  useEffect(()=>{
+    if(!selectedPlace){lastPlace.current=placeKey;return;}
+    if(lastPlace.current===placeKey)return;
+    lastPlace.current=placeKey;
+    const controller=new AbortController();
+    const geometry=selectedPlace.source==='google'&&selectedPlace.googlePlaceId ? resolvePlaceGeometry(selectedPlace.googlePlaceId,controller.signal) :
+      Promise.resolve(selectedPlace.latitude!=null&&selectedPlace.longitude!=null?{latitude:selectedPlace.latitude,longitude:selectedPlace.longitude,bounds:undefined}:undefined);
+    void geometry.then(point=>{
+      if(!point||controller.signal.aborted)return;
+      const delta=placeSearchRadiusKm(selectedPlace.kind)/111;
+      const bounds=point.bounds&&['country','region'].includes(selectedPlace.kind)?point.bounds:{south:Math.max(-85,point.latitude-delta),north:Math.min(85,point.latitude+delta),
+        west:Math.max(-180,point.longitude-delta/Math.max(.1,Math.cos(point.latitude*Math.PI/180))),east:Math.min(180,point.longitude+delta/Math.max(.1,Math.cos(point.latitude*Math.PI/180)))};
+      setFit({id:++fitVersion.current,bounds});
+    }).catch(()=>undefined);
+    return ()=>controller.abort();
+  },[selectedPlace,placeKey]);
   const [selection, setSelection] = useState<{
       key: string;
       count: number;

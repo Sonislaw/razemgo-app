@@ -4,17 +4,18 @@ import {
 } from '../../data/contracts/validate.ts';
 import type { OwnedTrip, TripForm } from '../../types/owned-trip';
 import type { TripProposal } from '../../types/travel';
-import { findTripLocation } from './trip-locations.ts';
+import { placeLocation, readPlace, storePlace } from './place-data.ts';
 
 export type { PublicTripRow, TripRow } from '../../data/contracts/trip';
 
 export function tripToPayload(form: TripForm) {
-  const location = findTripLocation(form.locationId);
+  const location = placeLocation(form.place,form.locationId);
   const concrete =
     form.mode === 'planned' &&
     location &&
     ['city', 'village', 'locality'].includes(location.kind);
   return {
+    place_data: form.place ? storePlace(form.place) : null,
     adult_count: form.participants?.adultCount ?? null,
     child_count: form.participants?.childCount ?? null,
     child_age_bands: [...(form.participants?.childAgeBands ?? [])],
@@ -69,6 +70,7 @@ export function tripFromRow(value: unknown): OwnedTrip {
     visibility: row.visibility,
   };
   const place = {
+    ...(row.place_data ? {place:readPlace(row.place_data)} : {}),
     name: row.location_name,
     region: row.location_region,
     ...(row.location_id ? { locationId: row.location_id } : {}),

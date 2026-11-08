@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRequestKey } from '@/lib/request-key';
+import { googleMapsWebKey } from '@/lib/google-maps-config';
 import { MAP_CHANNEL, parseMapMessage } from './map-data';
 import type { MapFrameProps } from './map-frame.types';
 
@@ -9,6 +10,9 @@ export function MapFrame({
   fit,
   onMessage,
   onError,
+  picker,
+  selectedPoint,
+  area,
 }: MapFrameProps) {
   const frame = useRef<HTMLIFrameElement>(null),
     [token] = useState(createRequestKey),
@@ -27,8 +31,8 @@ export function MapFrame({
     [token],
   );
   const init = useCallback(
-    () => send({ type: 'init', camera }),
-    [send, camera],
+    () => send({ type: 'init', camera, apiKey: googleMapsWebKey, picker, selectedPoint, area }),
+    [send, camera, picker, selectedPoint, area],
   );
   useEffect(() => {
     const receive = (event: MessageEvent) => {
@@ -44,6 +48,7 @@ export function MapFrame({
         return;
       }
       if (event.data.token !== token) return;
+      if (message.type === 'error') { callbacks.current.onError(); return; }
       if (message.type === 'viewport') setReady(true);
       if (message.type === 'attribution') {
         window.open(message.url, '_blank', 'noopener,noreferrer');
@@ -66,7 +71,7 @@ export function MapFrame({
       title="Mapa wyjazdów"
       data-testid="discovery-map-frame"
       src="/razemgo-map.html"
-      sandbox="allow-scripts allow-same-origin"
+      sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
       referrerPolicy="strict-origin-when-cross-origin"
       onLoad={init}
       onError={onError}

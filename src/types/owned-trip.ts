@@ -1,4 +1,5 @@
 import type { TripAnimals } from './animals';
+import type { SelectedPlace } from './place';
 import type {
   LandscapeKind,
   TripMode,
@@ -19,6 +20,7 @@ export type OwnedTrip = TripPlan & {
   travelModes: string[];
 };
 export interface TripForm {
+  place?: SelectedPlace;
   participants: TripParticipants | null;
   mode: TripMode;
   startDate: string;

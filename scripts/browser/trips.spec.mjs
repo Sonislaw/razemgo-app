@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { state,backend,login } from './trip-fixtures.mjs';
-import { openSuggestions } from './autocomplete-helpers.mjs';
+import { openSuggestions,manualDestination } from './autocomplete-helpers.mjs';
 
 test('real API flow: create, failed save, reload, second device, discovery, lifecycle and isolation',async({page,context,browser})=>{
   test.setTimeout(120000);
@@ -13,11 +13,9 @@ test('real API flow: create, failed save, reload, second device, discovery, life
   await page.getByLabel(/^28 października 2026/).click();
   await page.getByRole('button',{name:'Wybierz daty',exact:true}).click();
   await page.getByRole('button',{name:'Dalej',exact:true}).click();
-  await (await openSuggestions(page, 'Miasto lub wieś')).fill('Chłapowo pomorskie');
-  await page.getByRole('button',{name:/^Wybierz lokalizację: Chłapowo,/}).first().click();
-  await (await openSuggestions(page, 'Nazwa kempingu')).fill('Kemping Testowy');
-  await page.getByRole('button', { name: 'Użyj wpisanej nazwy kempingu', exact: true }).click();
-  await page.getByRole('textbox',{name:'Adres kempingu',exact:true}).fill('Testowa 12');
+  await (await openSuggestions(page, 'Dokąd jedziecie?')).fill('Chłapowo pomorskie');
+  await page.getByRole('button',{name:/^Wybierz miejsce: Chłapowo,/}).first().click();
+  await manualDestination(page,'Kemping Testowy','Testowa 12');
   const description='Spokojny wyjazd nad morze, rowery i wspolne ognisko. Zabieramy gry planszowe na wieczory.';
   await page.getByRole('textbox',{name:'Opis wyjazdu',exact:true}).fill(description);
   await expect(page.getByText('Krok 2 z 2',{exact:true})).toBeVisible();
@@ -123,7 +121,7 @@ test('flexible trips publish and edit in two steps with visibility and preview i
   await expect(page.getByTestId('trip-field-locationId').getByRole('alert')).toContainText('Wybierz');
   // Validation has already opened and focused the location search layer.
   await page.getByRole('textbox',{name:'Preferowany obszar wyjazdu',exact:true}).fill('Chłapowo pomorskie');
-  await page.getByRole('button',{name:/^Wybierz lokalizację: Chłapowo,/}).first().click();
+  await page.getByRole('button',{name:/^Wybierz miejsce: Chłapowo,/}).first().click();
   await page.getByRole('textbox',{name:'Opis wyjazdu',exact:true}).fill('Szukam inspiracji na wspólny wyjazd nad morze.');
   await page.getByRole('button',{name:'Tylko dla nas',exact:true}).click();
   await expect(page.getByText('Prywatny plan będzie wstrzymany i niewidoczny w wyszukiwarce. Wznowienie poszukiwań udostępni go społeczności.',{exact:true})).toBeVisible();

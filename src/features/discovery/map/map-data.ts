@@ -1,7 +1,7 @@
 import type { DiscoveryFilters, TripProposal } from '../../../types/travel';
-import { findTripLocation } from '../../trips/trip-locations.ts';
 import { getLocationMapArea } from '../../trips/trip-map-data.ts';
 import { TRAVEL_MODE_OPTIONS } from '../../profile/profile-options.ts';
+import { placeLocation } from '../../trips/place-data.ts';
 
 export interface MapBounds {
   south: number;
@@ -112,7 +112,7 @@ export function initialMapCamera(
 ): MapCamera {
   const key = filters.locationId ?? filters.location.trim();
   if (memory.camera && memory.locationKey === key) return memory.camera;
-  const area = getLocationMapArea(findTripLocation(filters.locationId));
+  const area = getLocationMapArea(placeLocation(filters.place,filters.locationId));
   if (!area) return { ...DEFAULT_MAP_CAMERA };
   return {
     latitude: area.latitude,
@@ -205,6 +205,8 @@ export function parseMapCursor(value: unknown): MapCursor | null {
 }
 export type MapMessage =
   | { type: 'ready' }
+  | { type: 'error'; code: 'not-configured' | 'load-failed' }
+  | { type: 'pin'; latitude: number; longitude: number }
   | {
       type: 'viewport';
       camera: MapCamera;
@@ -215,13 +217,16 @@ export type MapMessage =
   | { type: 'tiles'; ok: boolean }
   | {
       type: 'attribution';
-      url: 'https://www.openstreetmap.org/copyright' | 'https://leafletjs.com';
+      url: 'https://www.google.com/maps' | 'https://www.google.com/help/terms_maps/';
     };
 export function parseMapMessage(value: unknown): MapMessage | null {
   try {
     const v = mapObject(value);
     if (v.channel !== MAP_CHANNEL) return null;
     if (v.type === 'ready') return { type: 'ready' };
+    if (v.type === 'error' && ['not-configured', 'load-failed'].includes(v.code as string))
+      return { type: 'error', code: v.code as 'not-configured' | 'load-failed' };
+    if (v.type === 'pin') return { type: 'pin', latitude: coordinate(v.latitude, true), longitude: coordinate(v.longitude, false) };
     if (
       v.type === 'viewport' &&
       ['initial', 'pan', 'cluster'].includes(v.reason as string)
@@ -245,8 +250,8 @@ export function parseMapMessage(value: unknown): MapMessage | null {
       return { type: 'tiles', ok: v.ok };
     if (
       v.type === 'attribution' &&
-      (v.url === 'https://www.openstreetmap.org/copyright' ||
-        v.url === 'https://leafletjs.com')
+      (v.url === 'https://www.google.com/maps' ||
+        v.url === 'https://www.google.com/help/terms_maps/')
     )
       return { type: 'attribution', url: v.url };
   } catch {

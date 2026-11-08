@@ -8,8 +8,10 @@ import type {
   TripMode,
 } from '../../types/travel';
 import type { GroupRow } from './profile';
+import type { SelectedPlace } from '../../types/place';
 
 export type TripRow = {
+  place_data?: SelectedPlace | null;
   adult_count?: number | null;
   child_count?: number | null;
   child_age_bands?: ChildAgeBand[];

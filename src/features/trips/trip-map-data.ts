@@ -13,6 +13,8 @@ export interface MapArea {
   radiusMeters: number;
 }
 export interface TripMapTarget {
+  placeKind?: import('../../types/place').PlaceKind;
+  googlePlaceId?: string;
   kind: 'place' | 'area';
   query: string;
   label: string;
@@ -86,7 +88,7 @@ export function getLocationMapArea(location?: LocationOption): MapArea | undefin
     return {
       latitude: location.latitude!,
       longitude: location.longitude!,
-      radiusMeters: 3000,
+      radiusMeters: location.kind==='country'?700000:location.kind==='region'?150000:3000,
     };
   const natural = naturalRegions.get(normalize(location.name));
   if (natural) {
@@ -109,6 +111,11 @@ export function getLocationMapArea(location?: LocationOption): MapArea | undefin
 export function getTripMapTarget(trip: TripPlan): TripMapTarget | undefined {
   const place = trip.mode === 'planned' ? trip.destination : trip.travelArea;
   if (!place.name.trim()) return undefined;
+  if(place.place) {
+    const p=place.place,point=p.source==='manual'&&p.latitude!=null&&p.longitude!=null ? {latitude:p.latitude,longitude:p.longitude,radiusMeters:p.kind==='region'?150000:p.kind==='country'?700000:p.kind==='locality'?3000:0} : undefined;
+    return {kind:p.kind==='locality'||p.kind==='region'||p.kind==='country'?'area':'place',placeKind:p.kind,label:p.name,
+      query:[p.name,p.address,p.region,p.country].filter(Boolean).join(', '),...(p.googlePlaceId?{googlePlaceId:p.googlePlaceId}:{}),...(point?{area:point}:{})};
+  }
   const location = findTripLocation(tripLocationIdForPlace(place));
   const context = [
     place.name,
@@ -166,6 +173,8 @@ export function areaViewport(area: MapArea, width: number, height = 260) {
 }
 
 export function googleMapsSearchUrl(target: TripMapTarget): string {
+  if(target.googlePlaceId) return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(target.query)+'&query_place_id='+encodeURIComponent(target.googlePlaceId);
+  if(target.kind==='place'&&target.area) return 'https://www.google.com/maps/search/?api=1&query='+target.area.latitude+','+target.area.longitude;
   if (target.kind === 'area' && target.area) {
     const { latitude, longitude } = target.area;
     return (
@@ -181,26 +190,4 @@ export function googleMapsSearchUrl(target: TripMapTarget): string {
     'https://www.google.com/maps/search/?api=1&query=' +
     encodeURIComponent(target.query)
   );
-}
-
-export function googleMapsEmbedUrl(
-  target: TripMapTarget,
-  width: number,
-): string {
-  const base = 'https://maps.google.com/maps?hl=pl&t=m&output=embed';
-  if (target.kind === 'area' && target.area) {
-    const { latitude, longitude } = target.area;
-    return (
-      base +
-      '&ll=' +
-      latitude +
-      ',' +
-      longitude +
-      '&z=' +
-      areaViewport(target.area, width).zoom
-    );
-  }
-  // Google resolves a campground/address itself. A locality coordinate is never
-  // substituted for the campground's actual position.
-  return base + '&q=' + encodeURIComponent(target.query);
 }

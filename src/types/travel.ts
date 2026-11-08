@@ -1,6 +1,7 @@
 import type { AnimalKind, GroupAnimals, TripAnimals } from './animals';
 import type { ProfileAvatarId } from './avatar';
 import type { PassportSummary } from './passport';
+import type { SelectedPlace } from './place';
 
 export type ChildAgeBand = '0–3' | '4–6' | '7–9' | '10–12' | '13–17';
 export type TripMode = 'planned' | 'flexible';
@@ -44,6 +45,7 @@ interface TripBase extends DateRange {
   animals: TripAnimals;
 }
 export interface TripPlace {
+  place?: SelectedPlace;
   name: string;
   region: string;
   locationId?: string;
@@ -62,6 +64,7 @@ export type TripPlan = TripBase &
       }
   );
 export interface DiscoveryFilters {
+  place?: SelectedPlace;
   favoritesOnly?: boolean;
   tripModes: TripMode[];
   dateRangeId: 'all' | 'custom' | 'own-trip';

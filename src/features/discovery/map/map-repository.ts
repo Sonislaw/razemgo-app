@@ -1,6 +1,7 @@
 import { backendRequest } from '@/lib/backend-request';
 import { getSupabase } from '@/lib/supabase';
 import { proposalFromRow } from '@/features/trips/trip-mapper';
+import { ensurePlaceGeometry } from '@/features/trips/places-repository';
 import type { DiscoveryFilters } from '@/types/travel';
 import { discoveryFiltersPayload } from '../discovery-data';
 import {
@@ -29,6 +30,7 @@ export async function fetchTripMap(
   signal?: AbortSignal,
 ) {
   const auth = await token(userId);
+  await ensurePlaceGeometry(userId,filters.place,signal);
   const { data, error } = await backendRequest(
     (abort) =>
       getSupabase()

@@ -11,6 +11,7 @@ import type {
   MessagingContact,
 } from '../../types/messaging';
 import type { TripPlan } from '../../types/travel';
+import { readPlace } from '../../lib/place-format.ts';
 
 import type { TripSnapshot } from '../../data/contracts/messaging';
 export type {
@@ -48,7 +49,8 @@ function snapshotToTrip(row: TripSnapshot): TripPlan {
     animals: { animals: [] },
     ...(row.campground_name ? { campgroundName: row.campground_name } : {}),
   };
-  const place = { name: row.location_name, region: row.location_region };
+  const place = { name: row.location_name, region: row.location_region,
+    ...(row.location_id?{locationId:row.location_id}:{}),...(row.place_data?{place:readPlace(row.place_data)}:{}) };
   return row.mode === 'planned'
     ? { ...base, mode: 'planned', destination: place }
     : { ...base, mode: 'flexible', travelArea: place };

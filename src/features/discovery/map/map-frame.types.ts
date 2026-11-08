@@ -4,6 +4,9 @@ export interface MapFit {
   bounds: MapBounds;
 }
 export interface MapFrameProps {
+  area?: {latitude:number;longitude:number;radiusMeters:number};
+  picker?: boolean;
+  selectedPoint?: { latitude: number; longitude: number } | null;
   camera: MapCamera;
   points: MapPoint[];
   fit: MapFit | null;

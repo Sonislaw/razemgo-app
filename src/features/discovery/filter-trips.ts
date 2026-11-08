@@ -7,6 +7,7 @@ import type {
   TripPlace,
 } from '../../types/travel';
 import type { LocationOption } from '../../types/location';
+import { placeLocation } from '../trips/place-data.ts';
 import { isValidDate } from '../trips/own-trips-state.ts';
 import {
   findTripLocation,
@@ -30,6 +31,7 @@ export function selectDiscoveryLocation(
   return {
     ...filters,
     locationId: location?.id,
+    place: undefined,
     location: location?.name ?? '',
   };
 }
@@ -37,7 +39,7 @@ export function updateDiscoveryLocationQuery(
   filters: DiscoveryFilters,
   query: string,
 ): DiscoveryFilters {
-  return { ...filters, locationId: undefined, location: query };
+  return { ...filters, locationId: undefined, place:undefined, location: query };
 }
 
 // Older demo areas use geographic names instead of province names.
@@ -50,13 +52,22 @@ function matchesSelectedLocation(
   selected: LocationOption,
 ): boolean {
   const candidate =
-    findTripLocation(tripLocationIdForPlace(place)) ??
+    placeLocation(place.place,tripLocationIdForPlace(place)) ??
     findTripLocation(
       'pl-region:' +
         (LEGACY_DEMO_PROVINCES[normalizeLocation(place.region)] ??
           place.region.toLocaleLowerCase('pl-PL')),
     );
   if (!candidate) return false;
+  if(selected.id.startsWith('google:')||selected.id.startsWith('manual:')) {
+    if(selected.id===candidate.id)return true;
+    if(selected.latitude!=null&&selected.longitude!=null&&candidate.latitude!=null&&candidate.longitude!=null) {
+      const rad=(n:number)=>n*Math.PI/180;
+      const distance=6371*2*Math.asin(Math.sqrt(Math.min(1,Math.sin(rad(candidate.latitude-selected.latitude)/2)**2+Math.cos(rad(selected.latitude))*Math.cos(rad(candidate.latitude))*Math.sin(rad(candidate.longitude-selected.longitude)/2)**2)));
+      return distance<=(selected.kind==='country'?700:selected.kind==='region'?150:20);
+    }
+    return normalizeLocation(candidate.name)===normalizeLocation(selected.name);
+  }
   if (selected.kind === 'country')
     return (
       normalizeLocation(candidate.country) ===
@@ -142,7 +153,7 @@ export function filterProposals(
   favoriteTripIds: ReadonlySet<string> = new Set(),
 ): TripProposal[] {
   const location = normalizeLocation(filters.location);
-  const selectedLocation = findTripLocation(filters.locationId);
+  const selectedLocation = placeLocation(filters.place,filters.locationId);
   if (
     filters.dateRangeId !== 'all' &&
     getDiscoveryDateRangeError(filters.customDateRange)

@@ -7,6 +7,8 @@ import { getDiscoveryDateRangeError } from '../discovery/filter-trips.ts';
 import { groupFiltersPayload, type GroupFilters } from '../groups/group-data.ts';
 import { GROUP_KIND_OPTIONS, INTEREST_OPTIONS, TRAVEL_MODE_OPTIONS, travelModeLabel } from '../profile/profile-options.ts';
 import { findTripLocation } from '../trips/trip-locations.ts';
+import { readPlace } from '../trips/place-data.ts';
+import type { SelectedPlace } from '../../types/place';
 
 export type SavedFilterKind = 'trips' | 'groups';
 export type FilterSetDraft = { kind: 'trips'; filters: DiscoveryFilters } | { kind: 'groups'; filters: GroupFilters };
@@ -53,10 +55,12 @@ export function tripCriteriaFromPayload(value: unknown): DiscoveryFilters {
   const tripModes = values(p.trip_modes, ['planned','flexible'] as const);
   if (!tripModes.length) invalid();
   let locationId: string | undefined;
+  let selectedPlace: SelectedPlace | undefined;
   if (p.location !== null) {
     const place = object(p.location);
-    locationId = text(place.id, 160);
-    if (!findTripLocation(locationId)) invalid();
+    locationId = text(place.id, 263);
+    selectedPlace = readPlace(place.place);
+    if ((!selectedPlace || selectedPlace.id!==locationId) && !findTripLocation(locationId)) invalid();
     for (const key of ['name','region','country']) text(place[key], 160);
     if (!['country','region','city','village','locality'].includes(text(place.kind, 20))) invalid();
   }
@@ -68,6 +72,7 @@ export function tripCriteriaFromPayload(value: unknown): DiscoveryFilters {
     tripModes, favoritesOnly: bool(p.favorites_only), dateRangeId: customDateRange ? 'custom' : 'all',
     customDateRange, dateFlexibilityDays: customDateRange ? p.tolerance_days as number : 0,
     location: text(p.location_query, 200).trim(), locationId,
+    ...(selectedPlace ? {place:selectedPlace} : {}),
     groupKinds: values(p.group_kinds, GROUP_KIND_OPTIONS.map(option => option.value)),
     childAgeBands: values(p.child_age_bands, CHILD_AGE_BANDS),
     animalKinds: values(p.animal_kinds, ANIMAL_OPTIONS.map(option => option.kind)),
@@ -89,7 +94,7 @@ export function groupCriteriaFromPayload(value: unknown): GroupFilters {
 export function filterSetPayload(value: FilterSetDraft): FilterSetPayload {
   if (value.kind === 'groups') return groupFiltersPayload(groupCriteriaFromPayload(groupFiltersPayload(value.filters)));
   if (value.filters.dateRangeId !== 'all' && (!value.filters.customDateRange || getDiscoveryDateRangeError(value.filters.customDateRange))) invalid();
-  if (value.filters.locationId && !findTripLocation(value.filters.locationId)) invalid();
+  if (value.filters.locationId && !(value.filters.place && value.filters.place.id===value.filters.locationId && readPlace(value.filters.place)) && !findTripLocation(value.filters.locationId)) invalid();
   return discoveryFiltersPayload(tripCriteriaFromPayload(discoveryFiltersPayload(value.filters)));
 }
 export function copyFilterCriteria(value: FilterSetDraft): FilterSetDraft {

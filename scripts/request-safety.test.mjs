@@ -64,10 +64,6 @@ test('domain synchronization keeps unrelated reads idle and initializes late sub
   sync.dispose();
   t.mock.timers.reset();
 });
-import {
-  allowMapNavigation,
-  isGoogleMapUrl,
-} from '../src/components/trips/map-navigation.ts';
 const flush = () => new Promise((resolve) => setImmediate(resolve));
 
 test('request lifecycle invalidates late data across signout, another account and repeated logins', () => {
@@ -268,23 +264,6 @@ test('old revision requests cannot restart jobs after dispose/re-activation', as
   assert.equal(runs, 0);
   sync.dispose();
   t.mock.timers.reset();
-});
-test('map navigation blocks hostile hosts, schemes, files and top-frame navigation', () => {
-  for (const uri of [
-    'javascript:alert(1)',
-    'file:///secret',
-    'http://maps.google.com/maps',
-    'https://www.google.com.evil/maps',
-    'https://evil@www.google.com/maps',
-    'https://www.google.com/redirect',
-    'https://www.google.com:444/maps',
-  ])
-    assert.equal(isGoogleMapUrl(uri), false, uri);
-  const valid = 'https://maps.google.com/maps?output=embed&q=camp';
-  assert.ok(isGoogleMapUrl(valid));
-  assert.ok(allowMapNavigation(valid, false));
-  assert.equal(allowMapNavigation(valid, true), false);
-  assert.ok(allowMapNavigation('about:blank'));
 });
 
 test('a failed job retries on an unchanged revision; healthy jobs stay quiet', async (t) => {

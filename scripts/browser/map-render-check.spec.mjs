@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { mockMapTiles } from './map-fixtures.mjs';
-test('map tiles paint fully above the background', async ({
+test('the optional Google browser map loads above its background', async ({
   page,
   context,
 }) => {
@@ -11,17 +11,15 @@ test('map tiles paint fully above the background', async ({
       channel: 'razemgo-discovery-map-v1',
       token: 'qa',
       type: 'init',
+      apiKey: 'qa-google-maps-browser-only',
       camera: { latitude: 52, longitude: 19, zoom: 5 },
     }),
   );
-  const tile = page.locator('.leaflet-tile-loaded').first();
+  const tile = page.locator('.google-map-canvas').first();
   await expect(tile).toBeVisible();
   await expect
     .poll(() => tile.evaluate((el) => Number(getComputedStyle(el).opacity)))
     .toBe(1);
-  expect(
-    await tile.evaluate((el) => el.complete && el.naturalWidth === 256),
-  ).toBe(true);
   await page.screenshot({ path: '.expo/discovery-map-render.png' });
 });
 
@@ -31,8 +29,12 @@ test('single markers render every bundled transport image and clusters keep thei
   await page.evaluate(() => {
     window.RazemGoMap.receive({
       channel: 'razemgo-discovery-map-v1', token: 'qa', type: 'init',
+      apiKey: 'qa-google-maps-browser-only',
       camera: { latitude: 52, longitude: 19, zoom: 5 },
     });
+  });
+  await expect(page.locator('.google-map-canvas')).toBeVisible();
+  await page.evaluate(() => {
     window.RazemGoMap.receive({
       channel: 'razemgo-discovery-map-v1', token: 'qa', type: 'points',
       points: ['Kamper', 'Van', 'Przyczepa', 'Samochód', 'Namiot', null].map((travelMode, i) => ({

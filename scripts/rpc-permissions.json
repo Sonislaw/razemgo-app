@@ -768,6 +768,56 @@
     "roles": []
   },
   {
+    "schema": "places_private",
+    "name": "expire_geometry",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "places_private",
+    "name": "location_matches",
+    "arguments": "t trip_plans, l jsonb",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "places_private",
+    "name": "normalize_place",
+    "arguments": "p jsonb",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "places_private",
+    "name": "normalize_trip_place",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "places_private",
+    "name": "trip_geometry",
+    "arguments": "t trip_plans",
+    "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
     "schema": "presence_private",
     "name": "group_is_online",
     "arguments": "target_group_id uuid",
@@ -818,6 +868,18 @@
     "name": "change_my_trip_status",
     "arguments": "trip_id uuid, new_status text",
     "definer": false,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "claim_my_place_request",
+    "arguments": "",
+    "definer": true,
     "settings": [
       "search_path=\"\""
     ],
@@ -1313,7 +1375,31 @@
   },
   {
     "schema": "public",
+    "name": "list_google_place_refreshes",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
+    ]
+  },
+  {
+    "schema": "public",
     "name": "list_my_filter_sets",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "list_my_map_place_refreshes",
     "arguments": "",
     "definer": true,
     "settings": [
@@ -1454,6 +1540,18 @@
     ],
     "roles": [
       "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "record_google_place_geometry",
+    "arguments": "place_id text, latitude double precision, longitude double precision, bounds jsonb",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
     ]
   },
   {

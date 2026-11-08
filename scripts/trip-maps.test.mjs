@@ -4,7 +4,6 @@ import { DEMO_TRIPS, MY_GROUP, MY_TRIPS } from '../src/data/mocks/travel.ts';
 import {
   areaViewport,
   getTripMapTarget,
-  googleMapsEmbedUrl,
   googleMapsSearchUrl,
 } from '../src/features/trips/trip-map-data.ts';
 import {
@@ -38,7 +37,6 @@ test('a campground/address search includes the locality, administrative context 
     /Chłapowo.*Władysławowo.*pucki.*pomorskie.*Polska/u,
   );
   for (const address of [
-    googleMapsEmbedUrl(target, 350),
     googleMapsSearchUrl(target),
   ]) {
     const url = new URL(address);
@@ -67,16 +65,6 @@ test('a street address works without a campground name; whitespace never creates
   assert.equal(target.kind, 'area');
   assert.equal(target.area.radiusMeters, 3000);
   assert.ok(target.area.latitude > 54 && target.area.latitude < 55);
-  const embed = new URL(googleMapsEmbedUrl(target, 280));
-  assert.equal(
-    embed.searchParams.has('q'),
-    false,
-    'no Google pin at the locality centre',
-  );
-  assert.equal(
-    embed.searchParams.get('ll'),
-    target.area.latitude + ',' + target.area.longitude,
-  );
   const external = new URL(googleMapsSearchUrl(target));
   assert.equal(external.searchParams.get('map_action'), 'map');
   assert.equal(external.searchParams.has('query'), false);
@@ -88,10 +76,7 @@ test('all existing listings get a map and natural regions get an area rather tha
     assert.ok(target?.query);
     if (target.kind === 'area') {
       assert.ok(target.area?.radiusMeters >= 3000, trip.id);
-      assert.equal(
-        new URL(googleMapsEmbedUrl(target, 350)).searchParams.has('q'),
-        false,
-      );
+
     }
   }
   const kaszuby = getTripMapTarget(
@@ -137,13 +122,7 @@ test('area circles fit mobile/tablet map previews and correspond to the displaye
       const area = { latitude: 54.8, longitude: 18.3, radiusMeters };
       const { zoom, diameter } = areaViewport(area, width);
       assert.ok(diameter > 0 && diameter <= Math.min(width, 260) * 0.7);
-      const target = { kind: 'area', label: 'Okolica', query: 'Okolica', area };
-      assert.equal(
-        Number(
-          new URL(googleMapsEmbedUrl(target, width)).searchParams.get('z'),
-        ),
-        zoom,
-      );
+      assert.ok(zoom>=2 && zoom<=15);
     }
   }
 });

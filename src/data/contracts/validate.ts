@@ -2,6 +2,7 @@ import { MAX_TRIP_PARTICIPANTS, validateTripParticipants } from '../../lib/trip-
 import type { MailboxRow, MessageRow } from './messaging';
 import type { GroupRow } from './profile';
 import type { PublicTripRow, TripRow } from './trip';
+import { validPlace } from '../../lib/place-format.ts';
 
 export function object(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value))
@@ -78,11 +79,12 @@ export function parseTripRow(value: unknown): TripRow {
   for (const key of [
     'id',
     'group_id',
-    'location_id',
     'location_name',
     'location_region',
   ])
     text(row[key], 200);
+  text(row.location_id,263);
+  if (row.place_data!=null && !validPlace(row.place_data)) throw Error('Invalid place');
   text(row.description, 2000);
   text(row.campground_name, 200);
   text(row.campground_address, 300);

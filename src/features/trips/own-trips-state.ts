@@ -13,10 +13,9 @@ import type {
 } from '../../types/owned-trip';
 import type { TravelerProfile } from '../../types/profile';
 import type { DiscoveryFilters, TripMode } from '../../types/travel';
-import type { Campground } from './campgrounds';
+import { placeLocation, storePlace } from './place-data.ts';
 import { cloneAnimals, validateAnimals } from '../animals/animal-data.ts';
 import {
-  findTripLocation,
   isConcreteTripLocation,
   isLocationAllowedForTrip,
   PLANNED_TRIP_LOCATION_REQUIRED_ERROR,
@@ -90,7 +89,8 @@ export function discoveryFiltersForTrip(trip: OwnedTrip): DiscoveryFilters {
           endDate: trip.endDate,
         }
       : undefined,
-    location: place.region || place.name,
+    location: place.place ? place.place.userLabel??place.place.name : place.region || place.name,
+    ...(place.place ? {place:storePlace(place.place),locationId:place.place.id} : {}),
     dateFlexibilityDays: 0,
     groupKinds: [],
     childAgeBands: [],
@@ -109,6 +109,7 @@ export function toTripForm(
     startDate: trip.startDate,
     endDate: trip.endDate,
     locationId: tripLocationIdForPlace(place),
+    ...(place.place ? { place:{...place.place} } : {}),
     campgroundName: trip.mode === 'planned' ? (trip.campgroundName ?? '') : '',
     campgroundAddress:
       trip.mode === 'planned' ? (trip.campgroundAddress ?? '') : '',
@@ -137,10 +138,6 @@ export function newTripForm(profile: TravelerProfile): TripForm {
     animals: cloneAnimals(profile.group.animals),
   };
 }
-export function selectTripCampground(form: TripForm, campground: Campground): TripForm {
-  return { ...form, campgroundName: campground.name, campgroundAddress: campground.address };
-}
-
 export function changeTripLocation(
   form: TripForm,
   locationId: string,
@@ -148,10 +145,11 @@ export function changeTripLocation(
   const keepCampground =
     form.mode === 'planned' &&
     locationId === form.locationId &&
-    isConcreteTripLocation(findTripLocation(locationId));
+    isConcreteTripLocation(placeLocation(form.place,locationId));
   return {
     ...form,
     locationId,
+    ...(form.place && form.place.id!==locationId ? {place:undefined} : {}),
     campgroundName: keepCampground ? form.campgroundName : '',
     ...(form.campgroundAddress !== undefined
       ? { campgroundAddress: keepCampground ? form.campgroundAddress : '' }
@@ -159,7 +157,7 @@ export function changeTripLocation(
   };
 }
 export function changeTripMode(form: TripForm, mode: TripMode): TripForm {
-  const location = findTripLocation(form.locationId);
+  const location = placeLocation(form.place,form.locationId);
   return changeTripLocation(
     { ...form, mode },
     location && !isLocationAllowedForTrip(location, mode)
@@ -185,7 +183,7 @@ export function validateTripFormIssues(form: TripForm, step?: 1 | 2): TripFormIs
   if (!step || step === 2) {
     validateAnimals(form.animals.animals).forEach(message => add('animals', message));
     validateTripParticipants(form.participants).forEach(message => add('participants', message));
-    const location = findTripLocation(form.locationId);
+    const location = placeLocation(form.place,form.locationId);
     if (!location || !isLocationAllowedForTrip(location, form.mode))
       add('locationId',
         form.mode === 'planned'
@@ -225,7 +223,7 @@ export function tripFromForm(
   status: TripStatus,
   publishedAt?: string,
 ): OwnedTrip {
-  const location = findTripLocation(form.locationId);
+  const location = placeLocation(form.place,form.locationId);
   const campgroundName =
     form.mode === 'planned' && isConcreteTripLocation(location)
       ? form.campgroundName.trim()
@@ -252,6 +250,7 @@ export function tripFromForm(
     animals: cloneAnimals(form.animals),
   };
   const place = {
+    ...(form.place ? {place:{...form.place}} : {}),
     name: location?.name ?? '',
     region: location?.region ?? '',
     ...(location ? { locationId: location.id } : {}),

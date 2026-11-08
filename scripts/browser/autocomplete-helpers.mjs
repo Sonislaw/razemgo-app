@@ -6,3 +6,14 @@ export async function openSuggestions(page, label) {
   return page.getByRole('dialog', { name: 'Wyszukiwanie: ' + label, exact: true })
     .getByRole('textbox', { name: label, exact: true });
 }
+
+export async function manualDestination(page,name,address) {
+  const input=await openSuggestions(page,'Dokąd jedziecie?');
+  await input.waitFor({state:'visible'});
+  if(await page.getByTestId('manual-place-form').count()===0)
+    await page.getByRole('button',{name:'Nie ma tego miejsca? Dodaj ręcznie',exact:true}).click();
+  await page.getByRole('textbox',{name:'Nazwa miejsca',exact:true}).fill(name);
+  await page.getByRole('button',{name:'Kemping',exact:true}).click();
+  await page.getByRole('textbox',{name:'Adres miejsca',exact:true}).fill(address);
+  await page.getByRole('button',{name:'Użyj tego miejsca',exact:true}).click();
+}

@@ -21,6 +21,7 @@ import { filterPublicGroups, publicGroupFromRow } from '../../src/features/group
 import { groupCriteriaFromPayload } from '../../src/features/saved-filters/saved-filter-data.ts';
 import { mockMapResponse } from './map-fixtures.mjs';
 import { passportFixture } from './passport-fixtures.mjs';
+import { mockPlaces } from './places-fixtures.mjs';
 export const TEST_API_ORIGIN = process.env.RAZEMGO_TEST_API_ORIGIN ?? 'http://127.0.0.1:54321';
 
 const A = '00000000-0000-4000-8000-000000000001';
@@ -161,6 +162,12 @@ async function backend(context, store) {
       ).sub;
     } catch {}
     const endpoint = url.pathname.split('/').at(-1);
+    if(url.pathname==='/functions/v1/places') {
+      (store.placeCalls??=[]).push(body);
+      if(store.failPlaces)return respond({error:'Unavailable'},503);
+      const value=mockPlaces(body);
+      return value?respond(value):respond({error:'Not found'},404);
+    }
     if (endpoint === 'get_my_traveler_passport' || endpoint === 'get_public_traveler_passport') {
       (store.passportCalls ??= []).push({ endpoint, user: id });
       if (store.failPassport) return respond({ message: 'offline' }, 503);
@@ -713,6 +720,7 @@ async function backend(context, store) {
         favoritesOnly: f.favorites_only ?? false,
         location: f.location_query ?? '',
         locationId: f.location?.id,
+        ...(f.location?.place?{place:{...f.location.place,...(mockPlaces({action:'geometry',placeId:f.location.place.googlePlaceId})?.place??{})}}:{}),
         sourceTripId: f.source_trip_id ?? undefined,
         dateRangeId: f.start_date ? 'custom' : 'all',
         customDateRange: f.start_date

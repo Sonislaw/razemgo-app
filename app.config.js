@@ -19,7 +19,9 @@ module.exports = ({ config }) => {
     android: { ...config.android, package: settings.package, ...(googleServicesFile ? { googleServicesFile } : {}) },
     extra: { ...config.extra, appVariant: variant, authScheme: settings.scheme,
       monitoringRelease: monitoringRelease(__dirname, config.version ?? 'unknown', variant) },
-    plugins: [...(config.plugins ?? []), ...(['development', 'preview'].includes(variant) ? [['@sentry/react-native/expo', {
+    plugins: [...(config.plugins ?? []), ['react-native-maps', {
+      androidGoogleMapsApiKey: process.env.GOOGLE_MAPS_ANDROID_API_KEY?.trim(),
+    }], ...(['development', 'preview'].includes(variant) ? [['@sentry/react-native/expo', {
       organization: 'zgranago', project: 'react-native', url: 'https://sentry.io/',
     }]] : [])],
   };

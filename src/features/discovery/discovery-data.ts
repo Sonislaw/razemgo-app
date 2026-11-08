@@ -1,6 +1,6 @@
 import type { DiscoveryFilters, TripProposal } from '../../types/travel';
 import { resolveDiscoveryRange } from './filter-trips.ts';
-import { findTripLocation } from '../trips/trip-locations.ts';
+import { placeLocation, storePlace } from '../trips/place-data.ts';
 
 export const TRIP_SEARCH_PAGE_SIZE = 5;
 
@@ -19,7 +19,7 @@ export interface TripSearchPage {
   cursor: TripSearchCursor | null;
 }
 export function discoveryFiltersPayload(filters: DiscoveryFilters) {
-  const selected = findTripLocation(filters.locationId);
+  const selected = placeLocation(filters.place,filters.locationId);
   const range = resolveDiscoveryRange(filters);
   return {
     trip_modes: [...new Set(filters.tripModes)].sort(),
@@ -31,6 +31,7 @@ export function discoveryFiltersPayload(filters: DiscoveryFilters) {
     location_query: filters.location.trim(),
     location: selected
       ? {
+          ...(filters.place ? { place:storePlace(filters.place) } : {}),
           id: selected.id,
           kind: selected.kind,
           name: selected.name,

@@ -77,16 +77,16 @@ for (const width of [320, 390])
     const frame = page.frameLocator(
       'iframe[data-testid="discovery-map-frame"]',
     );
-    await expect(frame.locator('.leaflet-tile-loaded').first()).toBeVisible();
+    await expect(frame.locator('.google-map-canvas').first()).toBeVisible();
     await expect
       .poll(() =>
         frame
-          .locator('.leaflet-tile-loaded')
+          .locator('.google-map-canvas')
           .first()
           .evaluate((el) => Number(getComputedStyle(el).opacity)),
       )
       .toBe(1);
-    await frame.locator('.leaflet-marker-icon[title="Wyjazdy: 13"]').click();
+    await frame.locator('.crew-cluster[title="Wyjazdy: 13"]').click();
     await expect(
       page.getByRole('dialog', { name: 'Wyjazdy w tym miejscu', exact: true }),
     ).toBeVisible();
@@ -317,7 +317,7 @@ test('zoom and pan automatically search the visible area while filters remain un
   const searches = () =>
     store.mapCalls.filter((c) => c.endpoint === 'search_trip_map');
   const initialFilters = searches().at(-1).filters;
-  await frame.getByTitle('Przybliż mapę', { exact: true }).click();
+  await frame.getByRole('button',{name:'Powiększ',exact:true}).click();
   await expect.poll(() => searches().at(-1).map_zoom).toBe(6);
   await expect(button(page, 'Szukaj w tym obszarze')).toHaveCount(0);
   await button(page, 'Wróć do listy wyjazdów').click();
@@ -329,7 +329,7 @@ test('zoom and pan automatically search the visible area while filters remain un
     store.mapCalls.filter((c) => c.endpoint === 'search_trip_map').at(-1)
       .map_zoom,
   ).toBe(6);
-  await frame.getByTitle('Oddal mapę', { exact: true }).click();
+  await frame.getByRole('button',{name:'Pomniejsz',exact:true}).click();
   await expect.poll(() => searches().at(-1).map_zoom).toBe(5);
   const beforePan = searches().at(-1).viewport;
   const box = await frame.locator('#map').boundingBox();
@@ -386,7 +386,7 @@ test('quick zoom steps search only the final viewport and keep existing points w
     await route.fallback();
   });
   try {
-    await frame.getByTitle('Przybliż mapę', { exact: true }).evaluate((el) => {
+    await frame.getByRole('button',{name:'Powiększ',exact:true}).evaluate((el) => {
       el.click();
       el.click();
       el.click();
@@ -467,7 +467,7 @@ test('list pages and scroll, map camera and selected trip survive switching and 
     page.getByText('Plany w obszarze: 13', { exact: true }),
   ).toBeVisible();
   const frame = page.frameLocator('iframe[data-testid="discovery-map-frame"]');
-  await frame.getByTitle('Przybliż mapę', { exact: true }).click();
+  await frame.getByRole('button',{name:'Powiększ',exact:true}).click();
   await expect
     .poll(
       () =>
@@ -486,7 +486,7 @@ test('list pages and scroll, map camera and selected trip survive switching and 
     store.mapCalls.filter((c) => c.endpoint === 'search_trip_map').at(-1)
       .map_zoom,
   ).toBe(6);
-  await frame.locator('.leaflet-marker-icon[title="Wyjazdy: 13"]').click();
+  await frame.locator('.crew-cluster[title="Wyjazdy: 13"]').click();
   await page
     .getByRole('button', {
       name: 'Wybierz wyjazd: Wspólny urlop nad morzem numer 0.',
@@ -539,7 +539,7 @@ test('a single point at maximum zoom opens its preview without ever mounting a l
     page.getByText('Plany w obszarze: 1', { exact: true }),
   ).toBeVisible();
   const frame = page.frameLocator('iframe[data-testid="discovery-map-frame"]');
-  await frame.getByTitle('Przybliż mapę', { exact: true }).evaluate((el) => {
+  await frame.getByRole('button',{name:'Powiększ',exact:true}).evaluate((el) => {
     for (let i = 0; i < 8; i++) el.click();
   });
   await expect
@@ -677,7 +677,7 @@ test('a cluster spanning nearby localities zooms and fetches its points without 
     page.getByText('Plany w obszarze: 14', { exact: true }),
   ).toBeVisible();
   const frame = page.frameLocator('iframe[data-testid="discovery-map-frame"]');
-  await frame.locator('.leaflet-marker-icon[title="Wyjazdy: 14"]').click();
+  await frame.locator('.crew-cluster[title="Wyjazdy: 14"]').click();
   await expect
     .poll(
       () =>

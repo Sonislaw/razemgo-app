@@ -307,6 +307,8 @@ export function DiscoveryFiltersSheet({
           mode="flexible"
           required={false}
           value={draft.locationId ?? ''}
+          place={draft.place}
+          onPlaceChange={place => setDraft(current => ({...current,place,locationId:place.id,location:place.userLabel??place.name}))}
           query={draft.location}
           onChange={(id) =>
             setDraft((current) => selectDiscoveryLocation(current, id))

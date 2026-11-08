@@ -54,7 +54,7 @@ export function getFirstMessageSuggestions(
       meet,
     ];
 
-  const campground = shortDetail(trip.campgroundName);
+  const campground = shortDetail(trip.campgroundName || (trip.destination.place?.kind==='campground'?trip.destination.name:undefined));
   return [
     {
       id: 'join',

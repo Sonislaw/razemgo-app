@@ -5,6 +5,7 @@ import {
 } from '@/features/trips/trip-mapper';
 import { backendRequest } from '@/lib/backend-request';
 import { getSupabase } from '@/lib/supabase';
+import { ensurePlaceGeometry } from '@/features/trips/places-repository';
 import type { DiscoveryFilters } from '@/types/travel';
 import {
   discoveryFiltersPayload,
@@ -41,6 +42,7 @@ export async function fetchTripPage(
   parentSignal?: AbortSignal,
 ): Promise<TripSearchPage> {
   const token = await accountToken(userId);
+  if(!cursor) await ensurePlaceGeometry(userId,filters.place,parentSignal);
   const { data, error } = await backendRequest(
     (signal) =>
       getSupabase()
@@ -78,6 +80,7 @@ export async function fetchTripCount(
   parentSignal?: AbortSignal,
 ) {
   const token = await accountToken(userId);
+  await ensurePlaceGeometry(userId,filters.place,parentSignal);
   const { data, error } = await backendRequest(
     (signal) =>
       getSupabase()

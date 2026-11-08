@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { filterProposals } from '../../src/features/discovery/filter-trips.ts';
 import { tripCriteriaFromPayload } from '../../src/features/saved-filters/saved-filter-data.ts';
 import { proposalFromRow } from '../../src/features/trips/trip-mapper.ts';
@@ -135,10 +136,10 @@ export function mockMapResponse(
   };
 }
 export async function mockMapTiles(context) {
-  await context.route('https://tile.openstreetmap.org/**', (route) =>
+  await context.route('https://maps.googleapis.com/maps/api/js?**', (route) =>
     route.fulfill({
-      contentType: 'image/svg+xml',
-      body: '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#eef1e7"/><path d="M0 180Q100 100 256 140" stroke="#bfdbe8" stroke-width="25" fill="none"/><path d="M0 0L256 256M-30 80L220 280" stroke="white" stroke-width="6" fill="none"/></svg>',
+      contentType: 'application/javascript',
+      body: readFileSync(new URL('./google-map-stub.js',import.meta.url),'utf8'),
     }),
   );
 }

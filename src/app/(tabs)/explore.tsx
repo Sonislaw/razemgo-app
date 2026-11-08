@@ -1,4 +1,5 @@
 import { DataStatus } from '@/components/ui/data-status';
+import { googleMapAvailable } from '@/lib/google-map-availability';
 import { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -162,7 +163,7 @@ export default function ExploreScreen() {
           </View>
         ) : null}
         <DiscoveryFilterBar activeCount={activeCount} summary={summary} placeholder="Typ, termin, miejsce i klimat"
-          action={USE_DEMO_DATA?undefined:<Pressable accessibilityRole="button" accessibilityLabel="Pokaż mapę wyjazdów" onPress={openTripMap}
+          action={USE_DEMO_DATA||!googleMapAvailable?undefined:<Pressable accessibilityRole="button" accessibilityLabel="Pokaż mapę wyjazdów" onPress={openTripMap}
             style={({pressed})=>({minHeight:56,minWidth:48,alignItems:'center',justifyContent:'center',gap:3,opacity:pressed?0.65:1})}>
             <Icon name="map" size={21} color={theme.primaryStrong} /><AppText variant="caption" style={{color:theme.primaryStrong}}>Mapa</AppText>
           </Pressable>}

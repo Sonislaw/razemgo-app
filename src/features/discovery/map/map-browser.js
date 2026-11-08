@@ -1,184 +1,116 @@
-/* global L */
-// Runs only inside the isolated map document. No tokens, profiles or trip text enter it.
+/* global google */
+// Isolated Google Maps page. It never receives account tokens or private trip data.
 (function () {
   'use strict';
   const channel = 'razemgo-discovery-map-v1';
-  const travelModeImages = JSON.parse(
-    document.getElementById('travel-mode-images').textContent,
-  );
-  let map = null,
-    markers = null,
-    token = null,
-    nextReason = 'initial',
-    tileError = false;
+  const travelModeImages = JSON.parse(document.getElementById('travel-mode-images').textContent);
+  let map = null, markers = [], token = null, loading = false, nextReason = 'initial', picker = false, pin = null;
+  const parentOrigin = document.referrer ? new URL(document.referrer).origin : window.location.origin;
   function send(value) {
-    value.channel = channel;
-    value.token = token;
-    if (window.ReactNativeWebView)
-      window.ReactNativeWebView.postMessage(JSON.stringify(value));
-    else if (window.parent !== window)
-      window.parent.postMessage(value, window.location.origin);
+    value.channel = channel; value.token = token;
+    if (window.parent !== window) window.parent.postMessage(value, parentOrigin);
   }
+  function fail(code) {
+    document.getElementById('hint').textContent = 'Mapa jest chwilowo niedostępna.';
+    document.getElementById('hint').hidden = false;
+    send({ type: 'error', code: code });
+  }
+  window.gm_authFailure = function () { fail('load-failed'); };
   function viewport() {
-    if (!map) return;
-    const b = map.getBounds(),
-      c = map.getCenter();
-    const bounds = {
-      south: Math.max(-85, b.getSouth()),
-      north: Math.min(85, b.getNorth()),
-      west: Math.max(-180, b.getWest()),
-      east: Math.min(180, b.getEast()),
-    };
-    if (bounds.south >= bounds.north || bounds.west >= bounds.east) return;
-    send({
-      type: 'viewport',
-      bounds: bounds,
-      camera: {
-        latitude: Math.max(-85, Math.min(85, c.lat)),
-        longitude: Math.max(-180, Math.min(180, c.lng)),
-        zoom: Math.round(map.getZoom()),
-      },
-      reason: nextReason,
-    });
+    if (!map || !map.getBounds()) return;
+    const b = map.getBounds(), c = map.getCenter(), ne = b.getNorthEast(), sw = b.getSouthWest();
+    const crosses = sw.lng() >= ne.lng();
+    send({ type: 'viewport', bounds: {
+      south: Math.max(-85, sw.lat()), north: Math.min(85, ne.lat()),
+      west: crosses ? -180 : Math.max(-180, sw.lng()), east: crosses ? 180 : Math.min(180, ne.lng())
+    }, camera: { latitude: c.lat(), longitude: c.lng(), zoom: Math.max(2, Math.min(18, Math.round(map.getZoom()))) },
+      reason: nextReason });
     nextReason = 'pan';
+  }
+  function movePin(latitude, longitude, notify) {
+    if (!pin) {
+      pin = new google.maps.Marker({ map: map, draggable: true, title: 'Wybrane miejsce' });
+      pin.addListener('dragend', function (event) {
+        if (event.latLng) send({ type: 'pin', latitude: event.latLng.lat(), longitude: event.latLng.lng() });
+      });
+    }
+    pin.setPosition({ lat: latitude, lng: longitude });
+    if (notify) send({ type: 'pin', latitude: latitude, longitude: longitude });
+  }
+  function start(message) {
+    const camera = message.camera;
+    picker = !!message.picker;
+    map = new google.maps.Map(document.getElementById('map'), {
+      center: { lat: camera.latitude, lng: camera.longitude }, zoom: camera.zoom,
+      minZoom: 2, maxZoom: 18, mapTypeControl: false, streetViewControl: false, fullscreenControl: false,
+      clickableIcons: false, gestureHandling: 'greedy',
+      restriction: { latLngBounds: { south: -85, north: 85, west: -180, east: 180 }, strictBounds: true }
+    });
+    map.addListener('idle', viewport);
+    map.addListener('tilesloaded', function () { send({ type: 'tiles', ok: true }); });
+    if(message.area) new google.maps.Circle({map:map,center:{lat:message.area.latitude,lng:message.area.longitude},radius:message.area.radiusMeters,fillColor:'#086996',fillOpacity:0.15,strokeColor:'#086996',strokeWeight:2});
+    if(!picker&&message.selectedPoint) {movePin(message.selectedPoint.latitude,message.selectedPoint.longitude,false);pin.setDraggable(false);}
+    if (picker) {
+      if (message.selectedPoint) movePin(message.selectedPoint.latitude, message.selectedPoint.longitude, false);
+      map.addListener('click', function (e) { if (e.latLng) movePin(e.latLng.lat(), e.latLng.lng(), true); });
+    }
+    document.getElementById('hint').hidden = true;
+  }
+  function makeMarker(point) {
+    const cluster = point.count > 1;
+    const source = !cluster && Object.hasOwn(travelModeImages, point.travelMode) ? travelModeImages[point.travelMode] : null;
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = cluster ? 'crew-cluster' : 'crew-pin';
+    const title = cluster ? 'Wyjazdy: ' + point.count : point.label + (source ? ' · '+(point.travelMode==='Van'?'Kampervan':point.travelMode) : '');
+    button.title = title; button.setAttribute('aria-label', title);
+    if (source) {
+      const img = document.createElement('img'); img.src = source; img.alt = ''; img.draggable = false;
+      img.dataset.travelMode = point.travelMode; button.appendChild(img);
+    } else button.textContent = cluster ? String(point.count) : '●';
+    button.addEventListener('click', function () { send({ type: 'select', key: point.key }); });
+    class TripMarker extends google.maps.OverlayView {
+      onAdd() {
+        this.getPanes().overlayMouseTarget.appendChild(button);
+        google.maps.OverlayView.preventMapHitsAndGesturesFrom(button);
+      }
+      draw() {
+        const p = this.getProjection().fromLatLngToDivPixel(new google.maps.LatLng(point.latitude, point.longitude));
+        if (p) { button.style.left = p.x + 'px'; button.style.top = p.y + 'px'; }
+      }
+      onRemove() { button.remove(); }
+    }
+    const marker = new TripMarker(); marker.setMap(map); return marker;
   }
   function receive(message) {
     if (!message || message.channel !== channel) return;
-    if (message.type === 'init' && !map) {
-      token = message.token;
-      const camera = message.camera;
-      map = L.map('map', {
-        minZoom: 2,
-        maxZoom: 18,
-        zoomControl: false,
-        attributionControl: true,
-        maxBounds: [
-          [-85, -180],
-          [85, 180],
-        ],
-        maxBoundsViscosity: 1,
-        zoomAnimation: false,
-        fadeAnimation: false,
-      });
-      L.control
-        .zoom({
-          position: 'topright',
-          zoomInTitle: 'Przybliż mapę',
-          zoomOutTitle: 'Oddal mapę',
-        })
-        .addTo(map);
-      map.attributionControl.setPrefix(
-        '<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>',
-      );
-      markers = L.layerGroup().addTo(map);
-      const layer = L.tileLayer(
-        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        {
-          maxZoom: 18,
-          noWrap: true,
-          keepBuffer: 0,
-          updateWhenIdle: true,
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
-        },
-      ).addTo(map);
-      layer.on('tileerror', function () {
-        if (!tileError) {
-          tileError = true;
-          send({ type: 'tiles', ok: false });
-        }
-      });
-      layer.on('tileload', function () {
-        if (tileError) {
-          tileError = false;
-          send({ type: 'tiles', ok: true });
-        }
-      });
-      map.on('moveend', viewport);
-      map.setView([camera.latitude, camera.longitude], camera.zoom);
-      if (typeof ResizeObserver !== 'undefined') {
-        new ResizeObserver(function () {
-          map.invalidateSize({ pan: false });
-        }).observe(document.getElementById('map'));
-      }
-      document.getElementById('hint').hidden = true;
-      setTimeout(function () {
-        map.invalidateSize();
-        viewport();
-      }, 0);
-      return;
+    if (message.type === 'init' && !loading) {
+      loading = true; token = message.token;
+      if (typeof message.apiKey !== 'string' || !message.apiKey) { fail('not-configured'); return; }
+      const callback = '__razemgoGoogleReady';
+      window[callback] = function () { start(message); };
+      const script = document.createElement('script');
+      const params = new URLSearchParams({ key: message.apiKey, v: 'quarterly', language: 'pl', region: 'PL', loading: 'async', callback: callback });
+      script.src = 'https://maps.googleapis.com/maps/api/js?' + params.toString();
+      script.onerror = function () { fail('load-failed'); };
+      document.head.appendChild(script); return;
     }
     if (!map || message.token !== token) return;
     if (message.type === 'points') {
-      markers.clearLayers();
-      (message.points || []).forEach(function (point) {
-        const cluster = point.count > 1;
-        const source = !cluster && Object.hasOwn(travelModeImages, point.travelMode)
-          ? travelModeImages[point.travelMode]
-          : null;
-        const label = document.createElement(source ? 'img' : 'span');
-        if (source) {
-          label.src = source;
-          label.alt = '';
-          label.draggable = false;
-          label.dataset.travelMode = point.travelMode;
-        } else {
-          label.textContent = cluster ? String(point.count) : '●';
-        }
-        const size = cluster ? 42 : 48;
-        const icon = L.divIcon({
-          html: label,
-          className: cluster ? 'crew-cluster' : 'crew-pin',
-          iconSize: [size, size],
-          iconAnchor: [size / 2, size / 2],
-        });
-        const modeLabel = point.travelMode === 'Van' ? 'Kampervan' : point.travelMode;
-        const title = cluster
-          ? 'Wyjazdy: ' + point.count
-          : point.label + (source ? ' · ' + modeLabel : '');
-        const marker = L.marker([point.latitude, point.longitude], {
-          icon: icon,
-          title: title,
-          keyboard: true,
-        }).addTo(markers);
-        marker.getElement().setAttribute('aria-label', title);
-        marker.on('click', function () {
-          send({ type: 'select', key: point.key });
-        });
-      });
+      markers.forEach(function (marker) { marker.setMap(null); });
+      markers = (message.points || []).map(makeMarker);
     }
     if (message.type === 'fit') {
       nextReason = 'cluster';
-      map.fitBounds(
-        [
-          [message.bounds.south, message.bounds.west],
-          [message.bounds.north, message.bounds.east],
-        ],
-        {
-          padding: [55, 55],
-          maxZoom: Math.min(18, map.getZoom() + 3),
-          animate: false,
-        },
-      );
+      const listener = map.addListener('idle', function () {
+        listener.remove(); if (map.getZoom() > Math.min(18, message.maxZoom || 18)) map.setZoom(Math.min(18, message.maxZoom || 18));
+      });
+      map.fitBounds(message.bounds, 55);
     }
+    if (message.type === 'pin' && picker) movePin(message.latitude, message.longitude, false);
   }
   window.RazemGoMap = { receive: receive };
   window.addEventListener('message', function (event) {
-    if (
-      event.source === window.parent &&
-      event.origin === window.location.origin
-    )
-      receive(event.data);
-  });
-  document.addEventListener('click', function (event) {
-    const a = event.target.closest && event.target.closest('a');
-    if (!a) return;
-    event.preventDefault();
-    if (
-      a.href === 'https://www.openstreetmap.org/copyright' ||
-      a.href === 'https://leafletjs.com'
-    )
-      send({ type: 'attribution', url: a.href });
+    if (event.source === window.parent && event.origin === parentOrigin) receive(event.data);
   });
   send({ type: 'ready' });
 })();

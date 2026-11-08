@@ -16,12 +16,14 @@ export function DateRangeField({
   leadingIcon,
   onPress,
   buttonRef,
+  boldLabel = false,
 }: {
   range?: DateRange;
   caption?: string;
   leadingIcon?: ReactNode;
   onPress: () => void;
   buttonRef?: Ref<ViewInstance>;
+  boldLabel?: boolean;
 }) {
   const theme = useTheme();
   const title =
@@ -47,7 +49,7 @@ export function DateRangeField({
     >
       {leadingIcon ?? <Icon name="calendar" size={22} />}
       <View style={{ flex: 1 }}>
-        <AppText variant="label">{title}</AppText>
+        <AppText variant="label" style={boldLabel ? { fontWeight: '700' } : undefined}>{title}</AppText>
         <AppText variant="caption" color="textSecondary">
           {detail}
         </AppText>

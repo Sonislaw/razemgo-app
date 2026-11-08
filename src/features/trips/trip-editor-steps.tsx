@@ -105,7 +105,7 @@ export function TripTimingStep({
           >
             <TripPlanningIcon kind={option.mode} />
             <View style={{ flex: 1, gap: 4 }}>
-              <AppText variant="label">{option.label}</AppText>
+              <AppText variant="label" style={{ fontWeight: '700' }}>{option.label}</AppText>
               <AppText variant="caption" color="textSecondary">
                 {option.description}
               </AppText>
@@ -118,6 +118,7 @@ export function TripTimingStep({
       <TripEditorField name="dates" label="Termin wyjazdu" fields={fields} focus={() => dateButton.current?.focus()}>
         <FieldLabel required>Termin wyjazdu</FieldLabel>
         <DateRangeField
+          boldLabel
           buttonRef={dateButton}
           leadingIcon={<TripPlanningIcon kind="dates" size={40} />}
           range={{ startDate: form.startDate, endDate: form.endDate }}

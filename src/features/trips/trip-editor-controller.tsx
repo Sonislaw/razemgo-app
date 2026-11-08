@@ -43,6 +43,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  useWindowDimensions,
   View,
   type ScrollViewInstance,
   type ViewInstance,
@@ -55,6 +56,8 @@ export function TripEditorScreen() {
   const { profile } = useProfile();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const {width, fontScale} = useWindowDimensions();
+  const footerWidth = Math.min(MaxContentWidth, width - 2 * Math.max(16, insets.left, insets.right));
   const existing = state.trips.find((trip) => trip.id === id);
   const [initial] = useState(() => {
     const values = existing ? toTripForm(existing, profile) : newTripForm(profile);
@@ -407,8 +410,8 @@ export function TripEditorScreen() {
             borderTopWidth: 1,
             borderTopColor: theme.border,
             paddingHorizontal: Math.max(16, insets.left, insets.right),
-            paddingTop: 8,
-            paddingBottom: Math.max(8, insets.bottom),
+            paddingTop: 12,
+            paddingBottom: insets.bottom + 20,
           }}
         >
           <View
@@ -422,9 +425,10 @@ export function TripEditorScreen() {
             }}
           >
             {canDraft ? (
-              <View style={{ flex: 1, minWidth: 100 }}>
+              <View style={{ flex: 1, minWidth: Math.min(footerWidth, 160 * Math.max(1, fontScale)) }}>
                 <Button
                   label="Zapisz szkic"
+                  singleLine
                   disabled={saving}
                   icon="edit"
                   variant="secondary"
@@ -432,7 +436,7 @@ export function TripEditorScreen() {
                 />
               </View>
             ) : null}
-            <View style={{ flex: 1, minWidth: 140 }}>
+            <View style={{ flex: 1, minWidth: step === 1 ? 112 : 140 }}>
               <Button
                 label={
                   step < 2

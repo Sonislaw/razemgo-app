@@ -237,6 +237,7 @@ export interface ButtonProps {
   leading?: ReactNode;
   variant?: 'primary' | 'secondary';
   disabled?: boolean;
+  singleLine?: boolean;
 }
 export function IconButton({
   label,
@@ -274,6 +275,7 @@ export function Button({
   leading,
   variant = 'primary',
   disabled = false,
+  singleLine = false,
 }: ButtonProps) {
   const theme = useTheme();
   const background = disabled
@@ -301,6 +303,9 @@ export function Button({
       {leading}
       <AppText
         variant="label"
+        numberOfLines={singleLine ? 1 : undefined}
+        adjustsFontSizeToFit={singleLine}
+        minimumFontScale={singleLine ? 0.9 : undefined}
         style={{ color: foreground, flexShrink: 1, textAlign: 'center' }}
       >
         {label}

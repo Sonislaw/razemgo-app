@@ -47,7 +47,7 @@ export function suggestTripDescription(form: Pick<TripForm, 'mode' | 'place' | '
   const solo = form.participants?.adultCount === 1 && !form.participants.childCount;
   const alternative = variant % 2 !== 0;
   const label = form.place && (form.mode === 'planned' || ['locality', 'region', 'country'].includes(form.place.kind))
-    ? (form.place.userLabel ?? form.place.name).trim().replace(/\s+/gu, ' ') : '';
+    ? form.place.name.trim().replace(/\s+/gu, ' ') : '';
   let opening: string;
   if (form.mode === 'flexible') {
     opening = alternative

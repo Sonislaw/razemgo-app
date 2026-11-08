@@ -54,3 +54,29 @@ test('flexible descriptions preserve existing text on close, retain answers on b
  await page.getByRole('button',{name:'Opublikuj wyjazd',exact:true}).click();await expect(page).toHaveURL('http://localhost:8085/trips');
  const saved=[...store.trips.values()][0];expect(saved.mode).toBe('flexible');expect(saved.description).toContain('wspólnie');expect(saved.matching_group_kinds).toEqual([]);
 });
+
+test('descriptions use the full Google name after a partial search and after reloading; unavailable names never quote the partial query',async({page,context})=>{
+ const store=state();await backend(context,store);await login(page);await editor(page);
+ await (await openSuggestions(page,'Dokąd jedziecie?')).fill('Camp');
+ await page.getByRole('button',{name:/^Wybierz miejsce: Camping Morski,/}).click();
+ const open=async()=>{
+  await page.getByRole('button',{name:'Pomóż mi napisać opis',exact:true}).click();
+  const dialog=page.getByRole('dialog',{name:'Pomóż mi napisać opis',exact:true});
+  await dialog.getByRole('radio',{name:'Dowolna ekipa',exact:true}).click();await dialog.getByRole('radio',{name:'Spokojnie, na luzie',exact:true}).click();
+  await dialog.getByRole('button',{name:'Utwórz propozycję opisu',exact:true}).click();return dialog;
+ };
+ let dialog=await open();let proposal=dialog.getByRole('textbox',{name:'Propozycja opisu',exact:true});
+ await expect(proposal).toHaveValue(/„Camping Morski”/);await expect(proposal).not.toHaveValue(/„Camp”/);
+ await dialog.getByRole('button',{name:'Zaproponuj inaczej',exact:true}).click();await expect(proposal).toHaveValue(/„Camping Morski”/);
+ await dialog.getByRole('button',{name:'Wstaw opis',exact:true}).click();await page.getByRole('button',{name:'Opublikuj wyjazd',exact:true}).click();
+ await expect(page).toHaveURL('http://localhost:8085/trips');const saved=[...store.trips.values()][0];
+ expect(saved.place_data.name).toBe('Camp');expect(saved.description).toContain('„Camping Morski”');
+ await page.goto('/trip-editor?id='+saved.id);await page.getByRole('button',{name:'Dalej',exact:true}).click();
+ dialog=await open();proposal=dialog.getByRole('textbox',{name:'Propozycja opisu',exact:true});
+ await expect(proposal).toHaveValue(/„Camping Morski”/);await expect(proposal).not.toHaveValue(/„Camp”/);
+ await dialog.getByRole('button',{name:'Zamknij',exact:true}).click();
+ store.failPlaces=true;dialog=await open();proposal=dialog.getByRole('textbox',{name:'Propozycja opisu',exact:true});
+ await expect(proposal).toBeVisible();await expect(proposal).not.toHaveValue(/„Camp”/);
+ await dialog.getByRole('button',{name:'Zamknij',exact:true}).click();
+ await expect(page.getByRole('textbox',{name:'Opis wyjazdu',exact:true})).toHaveValue(saved.description);
+});

@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {Keyboard, Pressable, StyleSheet, View} from 'react-native';
 import {BottomSheet} from '@/components/ui/bottom-sheet';
 import {Icon} from '@/components/ui/icon';
@@ -6,6 +6,8 @@ import {AppText, Button, Card} from '@/components/ui/primitives';
 import {ProfileTextField} from '@/features/profile/profile-form-fields';
 import {useTheme} from '@/hooks/use-theme';
 import type {TripForm} from '@/types/owned-trip';
+import type {SelectedPlace} from '@/types/place';
+import {resolvePlace} from './places-repository';
 import {MAX_TRIP_DESCRIPTION_LENGTH, MIN_TRIP_DESCRIPTION_LENGTH, tripDescriptionLength} from './own-trips-state';
 import {
   DESCRIPTION_ACTIVITIES, DESCRIPTION_COMPANIES, DESCRIPTION_PACES,
@@ -32,9 +34,32 @@ function DescriptionSheet({form, onClose, onApply}: {form: TripForm; onClose: ()
   const [stage, setStage] = useState<'questions' | 'preview' | 'replace'>('questions');
   const [text, setText] = useState('');
   const [variant, setVariant] = useState(0);
+  const [generating, setGenerating] = useState(false);
+  const resolvedPlace = useRef<SelectedPlace | undefined>(form.place);
+  const request = useRef<AbortController | null>(null);
+  useEffect(() => () => {request.current?.abort(); request.current = null;}, []);
   const ready = !!answers.company && !!answers.pace;
   const validText = tripDescriptionLength(text) >= MIN_TRIP_DESCRIPTION_LENGTH && text.trim().length <= MAX_TRIP_DESCRIPTION_LENGTH;
-  const create = () => { setText(suggestTripDescription(form, answers, variant)); setStage('preview'); };
+  const create = async (nextVariant = variant) => {
+    if (request.current) return;
+    const controller = new AbortController(); request.current = controller; setGenerating(true);
+    try {
+      let place = resolvedPlace.current;
+      // Saved Google metadata contains the user's original search label. Fetch
+      // the provider's name for this preview, keeping it out of the place cache.
+      if (place?.source === 'google' && !place.resolvedAt) {
+        try { place = await resolvePlace(place.googlePlaceId!, place.userLabel ?? place.name, undefined, controller.signal, form.mode === 'flexible'); }
+        catch { place = undefined; }
+      }
+      if (controller.signal.aborted) return;
+      resolvedPlace.current = place;
+      setVariant(nextVariant);
+      setText(suggestTripDescription({...form, place}, answers, nextVariant));
+      setStage('preview');
+    } finally {
+      if (request.current === controller) { request.current = null; setGenerating(false); }
+    }
+  };
   const apply = () => {
     Keyboard.dismiss();
     if (form.description.trim() && form.description.trim() !== text.trim()) setStage('replace');
@@ -44,10 +69,10 @@ function DescriptionSheet({form, onClose, onApply}: {form: TripForm; onClose: ()
   return <BottomSheet title="Pomóż mi napisać opis" onClose={onClose} footer={
     stage === 'questions' ? <>
       {!ready ? <AppText variant="caption" color="textSecondary">Wybierz towarzystwo i tempo wyjazdu.</AppText> : null}
-      <Button label="Utwórz propozycję opisu" disabled={!ready} onPress={create} icon="edit" />
+      <Button label={generating ? 'Pobieranie nazwy miejsca…' : 'Utwórz propozycję opisu'} disabled={!ready || generating} onPress={() => {void create();}} icon="edit" />
     </> : stage === 'preview' ? <>
-      <Button label="Wstaw opis" disabled={!validText} onPress={apply} icon="check" />
-      <Button label="Zmień odpowiedzi" variant="secondary" onPress={() => {Keyboard.dismiss(); setStage('questions');}} />
+      <Button label="Wstaw opis" disabled={!validText || generating} onPress={apply} icon="check" />
+      <Button label="Zmień odpowiedzi" disabled={generating} variant="secondary" onPress={() => {Keyboard.dismiss(); setStage('questions');}} />
     </> : <>
       <Button label="Zastąp opis" onPress={() => onApply(text.trim())} />
       <Button label="Wróć do propozycji" variant="secondary" onPress={() => setStage('preview')} />
@@ -79,8 +104,8 @@ function DescriptionSheet({form, onClose, onApply}: {form: TripForm; onClose: ()
       <AppText color="textSecondary">To propozycja na podstawie Twoich odpowiedzi. Możesz ją teraz zmienić albo edytować później w formularzu.</AppText>
       <ProfileTextField label="Propozycja opisu" value={text} onChangeText={setText} multiline maxLength={MAX_TRIP_DESCRIPTION_LENGTH}
         hint={`${tripDescriptionLength(text)}/${MAX_TRIP_DESCRIPTION_LENGTH} znaków · minimum ${MIN_TRIP_DESCRIPTION_LENGTH}`} />
-      <Button label="Zaproponuj inaczej" variant="secondary" onPress={() => {
-        Keyboard.dismiss(); const next = variant + 1; setVariant(next); setText(suggestTripDescription(form, answers, next));
+      <Button label="Zaproponuj inaczej" disabled={generating} variant="secondary" onPress={() => {
+        Keyboard.dismiss(); void create(variant + 1);
       }} />
     </> : <>
       <AppText variant="label" accessibilityRole="header">Zastąpić dotychczasowy opis?</AppText>

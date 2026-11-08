@@ -1,5 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
-import { GOOGLE_PLACE_ID, googlePlaceDetails, googlePlacePredictions } from '../../../shared/google-place-data.ts';
+import { GOOGLE_PLACE_ID, googlePlaceDetails, googlePlacePredictions, manualAddressGeometry } from '../../../shared/google-place-data.ts';
 import { validDispatchSecret } from '../dispatch-push/push-worker.ts';
 import { maintainPlaceGeometry } from './maintenance.ts';
 
@@ -29,7 +29,9 @@ export async function handlePlaces(request: Request) {
     if (raw.length > 4000) return respond(413, { error: 'Request too large' });
     let input;
     try { input = JSON.parse(raw); } catch { return respond(400, { error: 'Invalid request' }); }
-    if (!input || Array.isArray(input) || !['autocomplete', 'details', 'geometry', 'refresh'].includes(input.action)) return respond(400, { error: 'Invalid action' });
+    if (!input || Array.isArray(input) || !['autocomplete', 'details', 'geometry', 'refresh', 'manual-address'].includes(input.action)) return respond(400, { error: 'Invalid action' });
+    if(input.action==='manual-address'&&['address','region','country'].some(k=>typeof input[k]!=='string'||input[k].trim().length<2||input[k].length>(k==='address'?300:100)))
+      return respond(400,{error:'Complete address required'});
     const token = input.sessionToken;
     if (token != null && (typeof token !== 'string' || !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(token))) return respond(400, { error: 'Invalid session' });
     if (input.action === 'autocomplete' && (typeof input.query !== 'string' || input.query.trim().length < 2 || input.query.length > 160))
@@ -70,6 +72,15 @@ export async function handlePlaces(request: Request) {
     }
     if (input.action === 'details') return respond(200, { place: await details(input.placeId, token) });
     if (input.action === 'geometry') return respond(200, { place: await details(input.placeId, undefined, true) });
+    if(input.action==='manual-address') {
+      const raw=await google('https://places.googleapis.com/v1/places:searchText','places.id,places.location,places.viewport,places.addressComponents',
+        {textQuery:[input.address.trim(),input.region.trim(),input.country.trim()].join(', '),languageCode:'pl',regionCode:'pl',pageSize:3});
+      const geometry=manualAddressGeometry(raw,input.region,input.country);
+      if(!geometry)return respond(422,{error:'Address not found',code:'address_not_found'});
+      const saved=await admin.rpc('record_google_place_geometry',{place_id:geometry.placeId,latitude:geometry.latitude,longitude:geometry.longitude,bounds:geometry.bounds??null});
+      if(saved.error)throw Error('Geometry unavailable');
+      return respond(200,{geometry});
+    }
     const pending = await client.rpc('list_my_map_place_refreshes');
     if (pending.error) return respond(403, { error: 'Unavailable' });
     let refreshed = 0;

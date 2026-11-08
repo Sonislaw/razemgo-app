@@ -90,7 +90,7 @@ export function DiscoveryMap({
     if(lastPlace.current===placeKey)return;
     lastPlace.current=placeKey;
     const controller=new AbortController();
-    const geometry=selectedPlace.source==='google'&&selectedPlace.googlePlaceId ? resolvePlaceGeometry(selectedPlace.googlePlaceId,controller.signal) :
+    const geometry=selectedPlace.googlePlaceId ? resolvePlaceGeometry(selectedPlace.googlePlaceId,controller.signal) :
       Promise.resolve(selectedPlace.latitude!=null&&selectedPlace.longitude!=null?{latitude:selectedPlace.latitude,longitude:selectedPlace.longitude,bounds:undefined}:undefined);
     void geometry.then(point=>{
       if(!point||controller.signal.aborted)return;

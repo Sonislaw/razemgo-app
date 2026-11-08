@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { testDatabase, asUser } from './support/database.mjs';
-import { googlePlaceDetails, googlePlacePredictions } from '../shared/google-place-data.ts';
+import { googlePlaceDetails, googlePlacePredictions, manualAddressGeometry } from '../shared/google-place-data.ts';
 
 test('Google data parser rejects missing IDs and invalid geometry and returns only requested fields', () => {
   const data = { id: 'ChIJ_place', location: { latitude: 54.1, longitude: 18.2 },
@@ -14,6 +14,19 @@ test('Google data parser rejects missing IDs and invalid geometry and returns on
     { ...data, location: { latitude: NaN, longitude: 12 } },
     { ...data, location: { latitude: 54, longitude: 181 } }]) assert.throws(() => googlePlaceDetails(value));
   assert.deepEqual(googlePlacePredictions({ suggestions: [{ placePrediction: { placeId: undefined } }] }), []);
+});
+
+test('manual addresses use valid geometry in the requested region and country, never an unrelated or malformed match',()=>{
+  const candidate={id:'ChIJ_address',location:{latitude:54,longitude:18},addressComponents:[
+    {longText:'Polska',shortText:'PL',types:['country']},
+    {longText:'Województwo pomorskie',shortText:'Pomorskie',types:['administrative_area_level_1']},
+  ]};
+  assert.equal(manualAddressGeometry({places:[candidate]},'pomorskie','Polska').placeId,'ChIJ_address');
+  assert.equal(manualAddressGeometry({places:[candidate]},'woj. pomorskie','PL').latitude,54);
+  for(const raw of [{},{places:[]},{places:[{...candidate,id:'../secret'}]},{places:[{...candidate,location:{latitude:95,longitude:18}}]}])
+    assert.equal(manualAddressGeometry(raw,'pomorskie','Polska'),undefined);
+  assert.equal(manualAddressGeometry({places:[candidate]},'mazowieckie','Polska'),undefined);
+  assert.equal(manualAddressGeometry({places:[candidate]},'pomorskie','Niemcy'),undefined);
 });
 
 test('Places budgets are isolated and atomic; only the server can write geometry and expired coordinates are removed', async () => {

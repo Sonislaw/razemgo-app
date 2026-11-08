@@ -1,7 +1,7 @@
 import { getSupabase } from '@/lib/supabase';
 import { backendLifecycle } from '@/lib/request-lifecycle';
 import type { PlacePrediction, SelectedPlace } from '@/types/place';
-import { validPlace, PLACE_KINDS } from './place-data';
+import { validPlace, PLACE_KINDS, manualPlaceError } from './place-data';
 import { GOOGLE_PLACE_ID } from '../../../shared/google-place-data';
 export async function placesRequest(body: Record<string, unknown>, signal?: AbortSignal) {
   const boundary = backendLifecycle.capture();
@@ -29,10 +29,18 @@ export async function resolvePlaceGeometry(placeId:string, signal?:AbortSignal):
     throw Error('Nie udało się odczytać położenia miejsca.');
   return {latitude:p.latitude,longitude:p.longitude,...(p.bounds?{bounds:p.bounds}:{})};
 }
+export async function resolveManualPlaceAddress(place:SelectedPlace,signal?:AbortSignal): Promise<SelectedPlace> {
+  if(place.source!=='manual'||manualPlaceError(place))throw Error('Niepełny adres miejsca.');
+  const data=await placesRequest({action:'manual-address',address:place.address.trim(),region:place.region.trim(),country:place.country.trim()},signal);
+  const p=data?.geometry;
+  if(typeof p?.placeId!=='string'||!GOOGLE_PLACE_ID.test(p.placeId)||typeof p.latitude!=='number'||!Number.isFinite(p.latitude)||Math.abs(p.latitude)>85||
+    typeof p.longitude!=='number'||!Number.isFinite(p.longitude)||Math.abs(p.longitude)>180)throw Error('Nie udało się ustalić położenia adresu.');
+  return {...place,googlePlaceId:p.placeId,latitude:p.latitude,longitude:p.longitude};
+}
 const geometryChecks=new Map<string,number>();
 export async function ensurePlaceGeometry(userId:string,place:SelectedPlace|undefined,signal?:AbortSignal) {
-  if(place?.source!=='google'||!place.googlePlaceId)return;
-  const key=userId+':'+place.id;
+  if(!place?.googlePlaceId)return;
+  const key=userId+':'+place.googlePlaceId;
   if(Date.now()-(geometryChecks.get(key)??0)<30*60*1000)return;
   await resolvePlaceGeometry(place.googlePlaceId,signal);
   if(geometryChecks.size>=64)geometryChecks.delete(geometryChecks.keys().next().value!);

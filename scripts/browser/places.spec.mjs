@@ -41,3 +41,36 @@ test('provider failure still permits a manual campsite with address and a map po
   await field(page,'Adres miejsca').fill('Leśna 19, Ustka');await button(page,'Użyj tego miejsca').click();await button(page,'Zapisz zmiany').click();
   await expect(page).toHaveURL('http://localhost:8085/trips');expect(store.trips.get(id).place_data.address).toBe('Leśna 19, Ustka');
 });
+
+for(const width of [320,390])test(`manual address requires all three fields, resolves coordinates and retains user data after a provider failure at ${width}px`,async({page,context})=>{
+  await page.setViewportSize({width,height:844});const store=seed();await backend(context,store);await login(page);await edit(page);
+  await openSuggestions(page,'Dokąd jedziecie?');await button(page,'Nie ma tego miejsca? Dodaj ręcznie').click();
+  await field(page,'Nazwa miejsca').fill('Nasza polana nad morzem');await button(page,'Użyj tego miejsca').click();
+  await expect(page.getByRole('alert')).toContainText('Uzupełnij adres miejsca, region i kraj lub wskaż punkt');
+  await field(page,'Adres miejsca').fill('Armii Krajowej 4, Ustka');await button(page,'Użyj tego miejsca').click();
+  await expect(page.getByRole('alert')).toContainText('Uzupełnij adres miejsca, region i kraj lub wskaż punkt');
+  await field(page,'Region').fill('pomorskie');store.failPlaces=true;await button(page,'Użyj tego miejsca').click();
+  await expect(page.getByRole('alert')).toContainText('Nie udało się ustalić położenia adresu');
+  await expect(field(page,'Nazwa miejsca')).toHaveValue('Nasza polana nad morzem');await expect(field(page,'Adres miejsca')).toHaveValue('Armii Krajowej 4, Ustka');
+  store.failPlaces=false;await button(page,'Użyj tego miejsca').click();await expect(page.getByTestId('manual-place-form')).toHaveCount(0);
+  await button(page,'Zapisz zmiany').click();await expect(page).toHaveURL('http://localhost:8085/trips');
+  const p=store.trips.get(id).place_data;expect(p.source).toBe('manual');expect(p.name).toBe('Nasza polana nad morzem');
+  expect(p.address).toBe('Armii Krajowej 4, Ustka');expect(p.googlePlaceId).toBe('qa_manual_address');expect(p.latitude).toBeUndefined();
+  expect(store.placeCalls.filter(call=>call.action==='manual-address')).toHaveLength(2);
+  await edit(page);await openSuggestions(page,'Dokąd jedziecie?');await expect(field(page,'Adres miejsca')).toHaveValue('Armii Krajowej 4, Ustka');
+  await expect(field(page,'Region')).toHaveValue('pomorskie');await expect(field(page,'Kraj')).toHaveValue('Polska');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+test('a chosen pin permits saving without address, region or country and without contacting Places',async({page,context})=>{
+  const store=seed();await backend(context,store);await mockMapTiles(context);await login(page);await edit(page);
+  await openSuggestions(page,'Dokąd jedziecie?');await button(page,'Nie ma tego miejsca? Dodaj ręcznie').click();
+  await field(page,'Nazwa miejsca').fill('Polana poza bazą');await field(page,'Kraj').fill('');
+  await button(page,'Wskaż punkt na mapie').click();const map=page.getByTestId('manual-place-map').frameLocator('iframe');
+  await expect(map.locator('.google-map-canvas')).toBeVisible();await map.locator('#map').click({position:{x:140,y:130}});
+  await expect(page.getByText('Punkt wybrany.',{exact:false})).toBeVisible();
+  await button(page,'Użyj tego miejsca').click();await button(page,'Zapisz zmiany').click();await expect(page).toHaveURL('http://localhost:8085/trips');
+  const p=store.trips.get(id).place_data;expect(p.address).toBe('');expect(p.region).toBe('');expect(p.country).toBe('');
+  expect(Number.isFinite(p.latitude)).toBe(true);expect(p.googlePlaceId).toBeUndefined();
+  expect((store.placeCalls??[]).some(call=>call.action==='manual-address')).toBe(false);
+});

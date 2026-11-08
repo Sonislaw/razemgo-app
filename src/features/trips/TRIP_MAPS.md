@@ -4,8 +4,10 @@ TripMapCard w szczegółach publicznego i własnego wyjazdu używa wspólnego Ma
 Android renderuje natywną mapę Google. Konkretny kemping lub punkt ma znacznik,
 miejscowość lub obszar — orientacyjny krąg dopasowany do szerokości podglądu.
 Identyfikator Google jest rozwiązywany przez serwerową funkcję places. Zapis
-ręczny korzysta ze współrzędnych użytkownika. Bez punktu dostępny jest odnośnik
-Otwórz w Google Maps; nie podstawiamy przypadkowych współrzędnych kempingu.
+ręczny korzysta z punktu wskazanego przez użytkownika lub z położenia pełnego
+adresu rozpoznanego przez Places Text Search. Taki adres zachowuje własną nazwę
+i dane użytkownika; położenie Google jest odświeżane we wspólnej pamięci geometrii.
+Nie przypisujemy przypadkowych współrzędnych do adresu bez dopasowania.
 
 Starsze lokalizacje zachowują przybliżenia miejscowości ze słownika. Nowe miejsca
 nie korzystają z lokalnego katalogu kempingów. W przypadku Google odnośnik

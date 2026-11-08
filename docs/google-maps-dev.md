@@ -14,6 +14,10 @@ W [Google Cloud Console](https://console.cloud.google.com/) wybierz projekt
 
 Nie trzeba włączać Geocoding API do pobrania adresu i współrzędnych miejsca
 wybranego z Places. Te dane dostarcza Place Details.
+Ręcznie wpisany adres ustalamy przez Text Search w tym samym Places API (New),
+bez dodatkowego klucza ani włączania Geocoding API. Zapis wymaga pełnego adresu
+(adres miejsca, region, kraj) albo punktu wybranego na mapie. Gdy adres nie ma
+dopasowania w podanym regionie i kraju, użytkownik poprawia go lub wybiera punkt.
 
 ## 2. Klucz mapy Android
 

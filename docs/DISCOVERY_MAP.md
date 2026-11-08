@@ -27,14 +27,19 @@ Miejsce Google zachowuje identyfikator i opis wpisany przez użytkownika. Nazwy
 i adresy dostawcy są pobierane do widoku, bez zapisywania katalogu miejsc w bazie.
 Zweryfikowane współrzędne i zasięg są przechowywane prywatnie przez 28 dni.
 
-Dla ręcznego miejsca zapisujemy dane użytkownika i opcjonalny punkt. Bez punktu
-wyjazd pozostaje na liście. Starsze wyjazdy nadal korzystają z istniejących
+Dla ręcznego miejsca wymagamy adresu, regionu i kraju albo punktu wybranego na mapie.
+Pełny adres rozpoznajemy przez Text Search w Places API (New); zachowujemy własną
+nazwę i adres użytkownika, a położenie odczytujemy ze wspólnej pamięci geometrii
+Google z terminem ważności. Punkt wskazany ręcznie ma pierwszeństwo i nie wymaga
+zapytania do Places. Brak dopasowania adresu pozwala poprawić dane lub wybrać punkt;
+formularz nie zapisuje w tym przypadku nowego miejsca bez położenia.
+Starsze wyjazdy nadal korzystają z istniejących
 współrzędnych miejscowości; nie przypisujemy środka miejscowości do bramy kempingu.
 Katalog kempingów OSM, Leaflet, stare osadzanie map i zależność WebView usunięto.
 
 Nowe filtry miejscowości obejmują okolicę do 20 km, konkretnego miejsca do 1 km.
-Regiony i kraje Google wykorzystują zasięg zwrócony przez dostawcę. Ręczne regiony
-i kraje bez współrzędnych zachowują wyszukiwanie po nazwie. Zestawy filtrów zapisują
+Regiony i kraje Google wykorzystują zasięg zwrócony przez dostawcę. Starsze ręczne
+regiony i kraje bez współrzędnych zachowują wyszukiwanie po nazwie. Zestawy filtrów zapisują
 kryteria miejsca, bez zapisywania aktualnego widoku mapy.
 
 ## Backend

@@ -13,7 +13,7 @@ import type {
 } from '../../types/owned-trip';
 import type { TravelerProfile } from '../../types/profile';
 import type { DiscoveryFilters, TripMode } from '../../types/travel';
-import { placeLocation, storePlace } from './place-data.ts';
+import { placeLocation, storePlace, manualPlaceError } from './place-data.ts';
 import { cloneAnimals, validateAnimals } from '../animals/animal-data.ts';
 import {
   isConcreteTripLocation,
@@ -184,6 +184,10 @@ export function validateTripFormIssues(form: TripForm, step?: 1 | 2): TripFormIs
     validateAnimals(form.animals.animals).forEach(message => add('animals', message));
     validateTripParticipants(form.participants).forEach(message => add('participants', message));
     const location = placeLocation(form.place,form.locationId);
+    if(form.place?.source==='manual') {
+      const error=manualPlaceError(form.place);
+      if(error)add('locationId',error);
+    }
     if (!location || !isLocationAllowedForTrip(location, form.mode))
       add('locationId',
         form.mode === 'planned'

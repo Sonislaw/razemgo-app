@@ -37,3 +37,22 @@ export function googlePlaceDetails(raw: unknown) {
     region: text(component('administrative_area_level_1').longText, 100),
     country: text(component('country').shortText, 2), latitude: lat, longitude: lng, ...(bounds&&bounds.south<bounds.north?{bounds}:{}), resolvedAt: new Date().toISOString() };
 }
+export function manualAddressGeometry(raw:unknown,region:string,country:string) {
+  const normalize=(value:string)=>value.toLocaleLowerCase('pl-PL').replace(/ł/g,'l').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/\b(wojewodztwo|woj|province|region|state)\b/g,'').replace(/[^a-z0-9]/g,'');
+  const countryKey=(value:string)=>['pl','polska','poland'].includes(normalize(value))?'pl':normalize(value);
+  const places=object(raw).places;
+  for(const item of Array.isArray(places)?places:[]) {
+    const p=object(item),components=Array.isArray(p.addressComponents)?p.addressComponents.map(object):[];
+    const component=(type:string)=>components.find(c=>strings(c.types).includes(type))??{};
+    const nation=component('country'),area=component('administrative_area_level_1');
+    const countries=[text(nation.longText,100),text(nation.shortText,100)].map(countryKey);
+    const areas=[text(area.longText,100),text(area.shortText,100)].map(normalize),requested=normalize(region);
+    if(!countries.includes(countryKey(country))||requested.length<2||!areas.some(value=>value.length>=2&&(value.includes(requested)||requested.includes(value))))continue;
+    try {
+      const place=googlePlaceDetails(p);
+      return {placeId:place.googlePlaceId,latitude:place.latitude,longitude:place.longitude,bounds:place.bounds};
+    } catch { /* A malformed candidate is never used as a map point. */ }
+  }
+  return undefined;
+}

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { testDatabase, asUser, profile, trip } from './support/database.mjs';
-import { storePlace, validPlace } from '../src/features/trips/place-data.ts';
+import { storePlace, validPlace, manualPlaceError } from '../src/features/trips/place-data.ts';
 import { newTripForm, toTripForm, tripFromForm, changeTripMode, validateTripForm } from '../src/features/trips/own-trips-state.ts';
 import { tripToPayload, tripFromRow } from '../src/features/trips/trip-mapper.ts';
 import { MY_GROUP } from '../src/data/mocks/travel.ts';
@@ -11,6 +11,20 @@ import { INITIAL_FILTERS } from '../src/features/discovery/filter-trips.ts';
 import { getTripMapTarget, googleMapsSearchUrl } from '../src/features/trips/trip-map-data.ts';
 const google={id:'google:ChIJ_selected',googlePlaceId:'ChIJ_selected',source:'google',kind:'campground',name:'Nazwa dostawcy',address:'Adres dostawcy',region:'Region dostawcy',country:'PL',userLabel:'Mój cel',latitude:54,longitude:18};
 const manual={id:'manual:'+randomUUID(),source:'manual',kind:'campground',name:'Kemping poza bazą',address:'Leśna 4, Ustka',region:'pomorskie',country:'Polska',latitude:54,longitude:18};
+
+test('manual locations require a complete address or a valid pin; address-derived points keep user labels and use expiring geometry',()=>{
+  const noPoint={...manual,latitude:undefined,longitude:undefined};
+  assert.equal(manualPlaceError(noPoint),'');
+  for(const field of ['address','region','country'])assert(manualPlaceError({...noPoint,[field]:'  '}));
+  assert.equal(manualPlaceError({...manual,address:'',region:'',country:'',latitude:0,longitude:0}),'');
+  assert(manualPlaceError({...manual,address:'',latitude:91}));
+  assert(manualPlaceError({...manual,name:' '}));
+  const located={...manual,googlePlaceId:'ChIJ_address'};
+  assert(manualPlaceError({...located,address:''}));
+  assert.equal(validPlace({...located,googlePlaceId:'../bad'}),false);
+  const stored=storePlace(located);assert.equal(stored.name,manual.name);assert.equal(stored.address,manual.address);
+  assert.equal(stored.googlePlaceId,'ChIJ_address');assert.equal(stored.latitude,undefined);assert.equal(stored.longitude,undefined);
+});
 
 test('new place formats round-trip through forms, payloads and saved filters without persisting Google provider text or geometry',()=>{
   const expected=storePlace(google);
@@ -34,6 +48,33 @@ test('new place formats round-trip through forms, payloads and saved filters wit
   const broad={...manual,id:'manual:'+randomUUID(),kind:'region'};
   const flexible={...newTripForm({group:MY_GROUP}),mode:'flexible',place:broad,locationId:broad.id};
   assert.equal(changeTripMode(flexible,'planned').place,undefined);
+});
+
+test('manual addresses appear on maps using server geometry, survive copying and filtering, and are refreshed after expiry',async()=>{
+  const db=await testDatabase();const owner=randomUUID(),viewer=randomUUID();
+  const call=async(name,args=[]) => (await db.query(`select public.${name}(${args.map((_,i)=>'$'+(i+1)).join(',')}) as result`,args)).rows[0].result;
+  try {
+    for(const user of [owner,viewer]){await db.exec('reset role');await db.query('insert into auth.users(id) values($1)',[user]);await asUser(db,user);await call('save_my_profile',[profile('Adres '+user.slice(0,4))]);}
+    await asUser(db,owner);
+    const located={...manual,googlePlaceId:'ChIJ_manual_address',latitude:1,longitude:2};
+    const saved=await call('save_my_trip',[{...trip,location_id:located.id,place_data:located},null,false,randomUUID()]);
+    assert.deepEqual(saved.place_data,storePlace(located));
+    const copy=await call('duplicate_my_trip',[saved.id]);assert.deepEqual(copy.place_data,saved.place_data);
+    await assert.rejects(call('save_my_trip',[{...trip,location_id:manual.id,place_data:{...manual,latitude:undefined,longitude:undefined,address:''}},null,false,randomUUID()]),{code:'22023'});
+    const pin={...manual,id:'manual:'+randomUUID(),address:'',region:'',country:''};
+    const pinned=await call('save_my_trip',[{...trip,location_id:pin.id,place_data:pin},null,false,randomUUID()]);assert.equal(pinned.place_data.latitude,54);
+    await asUser(db,viewer);await assert.rejects(call('record_google_place_geometry',['ChIJ_manual_address',54,18]),{code:'42501'});
+    await db.exec('reset role;set role service_role');await call('record_google_place_geometry',['ChIJ_manual_address',54,18]);
+    await asUser(db,viewer);assert.equal((await call('search_trip_map')).planned_count,2);
+    const criteria=filterSetPayload({kind:'trips',filters:{...INITIAL_FILTERS,locationId:located.id,place:located,location:located.name}});
+    assert.equal((await call('search_trip_map',[criteria])).planned_count,2);
+    const set=await call('save_my_filter_set',[randomUUID(),'trips','Ręczny adres',criteria]);assert.equal(set.filters.location.place.googlePlaceId,'ChIJ_manual_address');
+    assert.equal(set.filters.location.place.address,manual.address);
+    await db.exec('reset role');await db.query("update places_private.geometry set expires_at=now()-interval '1 second'");
+    await asUser(db,viewer);assert.equal((await call('search_trip_map')).planned_count,1);
+    assert((await call('list_my_map_place_refreshes')).includes('ChIJ_manual_address'));
+    await db.exec('reset role;set role service_role');assert((await db.query('select * from public.list_google_place_refreshes()')).rows.some(row=>Object.values(row).includes('ChIJ_manual_address')));
+  }finally{await db.close();}
 });
 
 test('modern destinations publish, copy and filter securely; only verified Google geometry reaches map results',async()=>{

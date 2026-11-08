@@ -64,6 +64,22 @@ wyjazdów i zapisanych filtrów co pięć minut, w ograniczonych porcjach; czysz
 usuwa wygasłe rekordy. Konfiguracja: scripts/configure-google-places.mjs.
 Klucz serwerowy nie trafia do APK.
 
+## Propozycje do własnych wyjazdów
+Migracja `202611080006_google_proposal_locations.sql` korzysta w powiadomieniach
+z tego samego dopasowania lokalizacji co wyszukiwanie: 20 km dla miejscowości,
+1 km dla konkretnego miejsca i zasięg Google dla regionu lub kraju. Dopasowanie
+jest dwustronne: obszar „Szukam pomysłu” może obejmować kemping organizatora.
+Daty muszą mieć wspólny pobyt; blokady, moderacja i prywatność nadal obowiązują.
+
+Ręczne punkty i adresy z rozpoznaną geometrią uczestniczą w dopasowaniu.
+Ręczne obszary bez współrzędnych zachowują reguły tekstowe wyszukiwarki;
+sama nazwa konkretnego miejsca nie zastępuje brakujących współrzędnych Google.
+Identyczny identyfikator Google nadal oznacza to samo miejsce po wygaśnięciu
+cache. Odzyskanie lub zmiana geometrii kolejkuje ponowną kontrolę powiązanych
+aktywnych wyjazdów. Zwykłe odświeżenie aktualnych współrzędnych nie dodaje pracy.
+Historia, rozpoznane pary i zbiorcze powiadomienia push zachowują deduplikację.
+Migracja nie kolejkuje hurtowo poprzednich ogłoszeń ani nie zeruje historii.
+
 ## Sprawdzanie
 - npm run test:places
 - node --test scripts/discovery-map.test.mjs scripts/discovery-map-backend.test.mjs

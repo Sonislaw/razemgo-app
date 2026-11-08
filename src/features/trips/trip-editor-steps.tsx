@@ -1,4 +1,5 @@
 import { TripParticipantsFields } from './trip-participants-fields';
+import { TripDescriptionHelper } from './trip-description-helper';
 import { DateRangeField } from '@/components/trips/date-range-field';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
 import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
@@ -184,6 +185,7 @@ export function TripDestinationStep({
             multiline
             hint={`Min. ${MIN_TRIP_DESCRIPTION_LENGTH} znaków · ${tripDescriptionLength(form.description)}/${MAX_TRIP_DESCRIPTION_LENGTH}. Początek opisu pokażemy na karcie wyjazdu.`}
           />
+          <TripDescriptionHelper form={form} onApply={text => update('description', text)} />
         </TripEditorField>
         <View style={{ gap: 8 }}>
           <FieldLabel>Klimat wyjazdu</FieldLabel>

@@ -21,11 +21,13 @@ export function BottomSheet({
   children,
   onClose,
   pagination,
+  footer,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
   pagination?: AutoPagination;
+  footer?: ReactNode;
 }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -84,11 +86,13 @@ export function BottomSheet({
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
             style={{ flexShrink: 1 }}
-            contentContainerStyle={{ padding: 16, paddingBottom: 24 + Math.max(insets.bottom, 16), gap: 12 }}
+            contentContainerStyle={{ padding: 16, paddingBottom: footer ? 16 : 24 + Math.max(insets.bottom, 16), gap: 12 }}
           >
             {children}
             {pagination ? <PaginationFooter pagination={{...pagination,loading:pagination.loading||paging.requesting}} onRetry={paging.retry} /> : null}
           </ScrollView>
+          {footer ? <View style={{padding: 16, paddingBottom: Math.max(insets.bottom, 16), gap: 8,
+            borderTopWidth: 1, borderTopColor: theme.border}}>{footer}</View> : null}
         </SheetSurface>
       </KeyboardAvoidingView>
     </SheetModal>

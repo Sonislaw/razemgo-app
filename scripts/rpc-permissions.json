@@ -667,6 +667,16 @@
   },
   {
     "schema": "notifications_private",
+    "name": "queue_proposal_geometry",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "notifications_private",
     "name": "queue_proposal_trip",
     "arguments": "",
     "definer": true,

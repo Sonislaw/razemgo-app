@@ -18,10 +18,13 @@ import {
   type SavedFilterSet,
 } from '../saved-filters/saved-filter-data';
 import { tripDiscoveryReducer } from './trip-discovery-state';
+import {DEFAULT_TRIP_SORT, type TripSortOrder} from './trip-sorting';
 
 interface DiscoveryState {
   filters: DiscoveryFilters;
   setFilters: Dispatch<SetStateAction<DiscoveryFilters>>;
+  tripSort: TripSortOrder;
+  setTripSort: Dispatch<SetStateAction<TripSortOrder>>;
   tripMapOpen: boolean;
   openTripMap: () => void;
   closeTripMap: () => void;
@@ -36,6 +39,7 @@ interface DiscoveryState {
 }
 const DiscoveryContext = createContext<DiscoveryState | null>(null);
 export function DiscoveryProvider({ children }: { children: ReactNode }) {
+  const [tripSort, setTripSort] = useState<TripSortOrder>(DEFAULT_TRIP_SORT);
   const [{ filters, mapOpen: tripMapOpen }, dispatchTrips] = useReducer(
     tripDiscoveryReducer,
     { filters: INITIAL_FILTERS, mapOpen: false },
@@ -99,6 +103,8 @@ export function DiscoveryProvider({ children }: { children: ReactNode }) {
       value={{
         filters,
         setFilters,
+        tripSort,
+        setTripSort,
         tripMapOpen,
         openTripMap,
         closeTripMap,

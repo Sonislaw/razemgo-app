@@ -18,6 +18,7 @@ import { useDiscovery } from './discovery-context';
 import {
   discoveryError,
   discoveryFiltersPayload,
+  discoverySearchPayload,
   TRIP_SEARCH_PAGE_SIZE,
   type DiscoveryTripProposal,
   type TripSearchCursor,
@@ -30,11 +31,13 @@ import {
 } from './discovery-repository';
 import { createTripSearchStore } from './discovery-store';
 import { filterProposals } from './filter-trips';
+import {compareTripProposals, DEFAULT_TRIP_SORT, type TripSortOrder} from './trip-sorting';
 
 export function useTripSearch(
   filters: DiscoveryFilters,
   pageSize = TRIP_SEARCH_PAGE_SIZE,
   enabled = true,
+  order: TripSortOrder = DEFAULT_TRIP_SORT,
 ) {
   const { session } = useAuth();
   const { hasProfile, status: profileStatus } = useProfile();
@@ -45,7 +48,7 @@ export function useTripSearch(
   const demoFavoriteIds = USE_DEMO_DATA ? favoriteTripIds : null;
   const { revision, tripFilterRevision } = useDiscovery();
   const userId = session?.user.id ?? '';
-  const key = 'discovery:3:' + JSON.stringify(discoveryFiltersPayload(filters));
+  const key = 'discovery:3:' + JSON.stringify(discoverySearchPayload(filters, order));
   const ready =
     USE_DEMO_DATA || (!!userId && hasProfile && profileStatus === 'ready');
   const store = useMemo(
@@ -53,18 +56,13 @@ export function useTripSearch(
       createTripSearchStore(
         async (cursor?: TripSearchCursor, signal?: AbortSignal) => {
           if (!USE_DEMO_DATA)
-            return fetchTripPage(userId, filters, cursor, pageSize, signal);
+            return fetchTripPage(userId, filters, cursor, pageSize, signal, order);
           const sorted = filterProposals(
             DEMO_PROPOSALS,
             filters,
             undefined,
             favoriteTripIds,
-          ).sort(
-            (a, b) =>
-              (b.trip.publishedAt ?? '').localeCompare(
-                a.trip.publishedAt ?? '',
-              ) || a.trip.id.localeCompare(b.trip.id),
-          );
+          ).sort((a, b) => compareTripProposals(a, b, order));
           const offset = cursor
             ? sorted.findIndex((item) => item.trip.id === cursor.id) + 1
             : 0;
@@ -80,6 +78,7 @@ export function useTripSearch(
                   published_at: last.trip.publishedAt ?? '',
                   version: 3,
                   query_key: key,
+                  ...(order === 'newest' ? {} : {start_date: last.trip.startDate}),
                 }
               : null,
           };

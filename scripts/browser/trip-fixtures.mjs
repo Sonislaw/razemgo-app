@@ -762,6 +762,8 @@ async function backend(context, store) {
         .filter((r) => allowed.has(r.trip.id))
         .sort(
           (a, b) =>
+            (f.sort_order === 'date_asc' ? a.trip.start_date.localeCompare(b.trip.start_date)
+              : f.sort_order === 'date_desc' ? b.trip.start_date.localeCompare(a.trip.start_date) : 0) ||
             b.trip.published_at.localeCompare(a.trip.published_at) ||
             a.trip.id.localeCompare(b.trip.id),
         );
@@ -778,7 +780,7 @@ async function backend(context, store) {
         items,
         total_count: result.length,
         result_revision: resultRevision(
-          result.map((r) => [r.trip.id, r.trip.published_at]),
+          result.map((r) => [r.trip.id, r.trip.published_at, ...(f.sort_order ? [r.trip.start_date] : [])]),
         ),
         has_more: offset + items.length < result.length,
         cursor: last
@@ -787,6 +789,7 @@ async function backend(context, store) {
               published_at: last.trip.published_at,
               version: 3,
               query_key: 'mock',
+              ...(f.sort_order ? {start_date: last.trip.start_date} : {}),
             }
           : null,
       });

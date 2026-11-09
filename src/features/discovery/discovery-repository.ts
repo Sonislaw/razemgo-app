@@ -9,11 +9,13 @@ import { ensurePlaceGeometry } from '@/features/trips/places-repository';
 import type { DiscoveryFilters } from '@/types/travel';
 import {
   discoveryFiltersPayload,
+  discoverySearchPayload,
   TRIP_SEARCH_PAGE_SIZE,
   type DiscoveryTripProposal,
   type TripSearchCursor,
   type TripSearchPage,
 } from './discovery-data';
+import {DEFAULT_TRIP_SORT, type TripSortOrder} from './trip-sorting';
 
 async function accountToken(userId: string) {
   const {
@@ -40,6 +42,7 @@ export async function fetchTripPage(
   cursor?: TripSearchCursor,
   pageSize = TRIP_SEARCH_PAGE_SIZE,
   parentSignal?: AbortSignal,
+  order: TripSortOrder = DEFAULT_TRIP_SORT,
 ): Promise<TripSearchPage> {
   const token = await accountToken(userId);
   if(!cursor) await ensurePlaceGeometry(userId,filters.place,parentSignal);
@@ -47,7 +50,7 @@ export async function fetchTripPage(
     (signal) =>
       getSupabase()
         .rpc('search_public_trips_v3', {
-          filters: discoveryFiltersPayload(filters),
+          filters: discoverySearchPayload(filters, order),
           after_cursor: cursor ?? null,
           page_size: pageSize,
         })

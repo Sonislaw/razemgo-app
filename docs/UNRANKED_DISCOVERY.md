@@ -6,9 +6,11 @@ Dev nie prezentuje etykiet dopasowania, procentów ani uzasadnień. Karty Start,
 Odkrywaj, powitania i ogłoszeń ekipy pokazują zwykłe dane ogłoszenia. Profile
 pokazują zainteresowania i wiek dzieci bez ukrywania ich pod rekomendacją.
 
-- Wyjazdy są uporządkowane według publikacji od najnowszych; remisy rozstrzyga ID.
+- Wyjazdy domyślnie są uporządkowane według publikacji od najnowszych; remisy rozstrzyga ID.
+  Od 09.11.2026 ikona obok „Zapisane” pozwala też wybrać termin rozpoczęcia
+  rosnąco lub malejąco. Przy tym samym terminie decydują najnowsza publikacja i ID.
 - Ekipy są uporządkowane alfabetycznie według znormalizowanej nazwy, potem ID.
-- Usunięto sortowanie „Polecane” i niepotrzebne kontrolki zmiany kolejności.
+- Sortowanie „Polecane” pozostaje usunięte.
 - Filtry pozostają jawne i niezależne od profilu oglądającego. Rozmiar strony
   pozostaje równy 5, a powrót ze szczegółów zachowuje pozycję listy.
 - „Znajdź towarzystwo” ustawia kryteria terminu i regionu konkretnego wyjazdu.
@@ -37,6 +39,18 @@ referencyjne znajdują się wyłącznie w `scripts/support/legacy-matching` i ni
 są importowane przez aplikację. Dawne pola preferencji pozostają neutralnymi
 polami starszego kontraktu zapisu, bez wpływu na bieżące listy.
 
+Migracja `202611090001_trip_date_sorting.sql`, wdrożona na Dev, rozszerza
+`search_public_trips_v3` o opcjonalne `filters.sort_order`: `newest` (domyślne),
+`date_asc`, `date_desc`. Sortowanie obejmuje cały pasujący zbiór przed limitem
+strony. Kursor dat zawiera `start_date`; jego klucz obejmuje również sortowanie.
+Rewizja uwzględnia zmianę terminu, aby odświeżenie zachowało właściwą kolejność.
+Podpis funkcji i domyślny kontrakt starych klientów pozostają zgodne.
+
+Wybór sortowania jest oddzielony od kryteriów: nie zmienia filtrów ani nazwy
+wczytanego zestawu i pozostaje zachowany po powrocie ze szczegółów. Zmiana
+kolejności zaczyna listę od pierwszych pięciu wyników. Start nadal niezależnie
+pobiera najnowsze ogłoszenie; mapa i licznik wyników nie przejmują sortowania.
+
 ## Powiadomienia i środowiska
 
 Na wyraźne życzenie użytkownika automatyczne propozycje w dzwonku i push
@@ -48,6 +62,15 @@ Zmiany dotyczą wyłącznie Dev. Preview zachowuje swoją aplikację, bazę i da
 Migracja nie zmienia kont ani treści ogłoszeń i nie wymaga nowego APK Dev.
 
 ## Weryfikacja
+
+09.11.2026: przeszło 14 testów Node/PGlite, w tym kolejność terminów przed
+limitem strony, remisy, błędne sortowanie i kursory oraz zmiana terminu.
+Przeszły scenariusze Playwright sortowania i pustej listy przy 320 i 390 px
+(cztery scenariusze), lint, TypeScript i kontrola granic modułów/sekretów.
+Testy potwierdzają zachowanie filtrów, reset stron, kompletne doładowanie
+13 wyników i niezależny wybór najnowszego ogłoszenia na Starcie. Plan migracji
+potwierdził aktualną bazę Dev, a kontrola SQL w transakcji tylko do odczytu
+potwierdziła obecność wdrożonej migracji i nowego kontraktu funkcji.
 
 Testy PostgreSQL zastępują dawne funkcje dopasowania funkcjami zgłaszającymi
 błąd i potwierdzają działanie wszystkich sześciu odczytów V3. Sprawdzają też

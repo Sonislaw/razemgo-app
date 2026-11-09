@@ -59,6 +59,54 @@ test('unranked discovery: stable five-item pages, explicit filters and authorize
       await assert.rejects(rpc('search_public_trips_v3', [{ child_age_bands: ['4–6'] }, first.cursor]), e => e.code === '22023');
       await as(2); await assert.rejects(rpc('search_public_trips_v3', [{}, first.cursor]), e => e.code === '22023'); await as(0);
     });
+    await t.test('trip departure sorting is global, stable across pages, bound to its cursor and sensitive to date edits', async () => {
+      await db.exec('reset role');
+      const original=(await db.query('select id,start_date,end_date,published_at from public.trip_plans where group_id=$1',[groups[1]])).rows;
+      const patch=async restore=>{
+        await db.exec('reset role;alter table public.trip_plans disable trigger user');
+        try {
+          const days=[25,23,28,21,23,28,21,22];
+          for(const [i,row] of original.entries()) {
+            const start=restore?row.start_date:`2099-05-${days[i]}`;
+            const end=restore?row.end_date:`2099-06-02`;
+            const published=restore?row.published_at:`2026-11-0${1+i%2}T12:00:00Z`;
+            await db.query('update public.trip_plans set start_date=$2,end_date=$3,published_at=$4 where id=$1',[row.id,start,end,published]);
+          }
+        } finally {await db.exec('alter table public.trip_plans enable trigger user');await as(0);}
+      };
+      await patch(false);
+      try {
+        for(const [order,sql] of [['newest','published_at desc,id'],['date_asc','start_date,published_at desc,id'],['date_desc','start_date desc,published_at desc,id']]) {
+          await db.exec('reset role');
+          const expected=(await db.query(`select id from public.trip_plans where group_id=$1 order by ${sql}`,[groups[1]])).rows.map(row=>row.id);
+          await as(0);
+          const all=[];let cursor=null;
+          do {
+            const page=await rpc('search_public_trips_v3',[{sort_order:order},cursor,3]);
+            assert.equal(page.total_count,8);assert(page.items.length<=3);plain(page);
+            if(order!=='newest') assert.equal(page.cursor.start_date,page.items.at(-1).trip.start_date);
+            all.push(...page.items.map(row=>row.trip.id));cursor=page.has_more?page.cursor:null;
+          } while(cursor);
+          assert.deepEqual(all,expected);assert.equal(new Set(all).size,8);
+        }
+        const ascending=await rpc('search_public_trips_v3',[{sort_order:'date_asc'},null,3]);
+        await assert.rejects(rpc('search_public_trips_v3',[{sort_order:'date_desc'},ascending.cursor,3]),e=>e.code==='22023');
+        await assert.rejects(rpc('search_public_trips_v3',[{},ascending.cursor,3]),e=>e.code==='22023');
+        for(const start_date of [undefined,'2099-02-30','infinity'])
+          await assert.rejects(rpc('search_public_trips_v3',[{sort_order:'date_asc'},{...ascending.cursor,start_date},3]),e=>e.code==='22023');
+        for(const sort_order of ['unknown',null,3,{}])
+          await assert.rejects(rpc('search_public_trips_v3',[{sort_order},null,3]),e=>e.code==='22023');
+        const filtered=await rpc('search_public_trips_v3',[{sort_order:'date_desc',child_age_bands:['4–6']}]);
+        assert.deepEqual(filtered.items.map(row=>row.trip.id),[trips[0].id]);
+        assert.equal(await rpc('count_public_trips',[{sort_order:'date_desc'}]),8);
+        await db.exec('reset role;alter table public.trip_plans disable trigger user');
+        await db.query("update public.trip_plans set start_date='2099-05-20' where id=$1",[ascending.items.at(-1).trip.id]);
+        await db.exec('alter table public.trip_plans enable trigger user');await as(0);
+        const changed=await rpc('search_public_trips_v3',[{sort_order:'date_asc'},null,3]);
+        assert.notEqual(changed.result_revision,ascending.result_revision);
+        assert.equal(changed.items[0].trip.id,ascending.items.at(-1).trip.id);
+      } finally {await patch(true);}
+    });
     await t.test('alphabetical directory pages retain 5+5+2 and bind cursors to account and filters', async () => {
       const all = []; let cursor = null;
       do {

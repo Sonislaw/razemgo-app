@@ -1,6 +1,7 @@
 import type { DiscoveryFilters, TripProposal } from '../../types/travel';
 import { resolveDiscoveryRange } from './filter-trips.ts';
 import { placeLocation, storePlace } from '../trips/place-data.ts';
+import {DEFAULT_TRIP_SORT, type TripSortOrder} from './trip-sorting.ts';
 
 export const TRIP_SEARCH_PAGE_SIZE = 5;
 
@@ -9,6 +10,7 @@ export interface TripSearchCursor {
   published_at: string;
   query_key: string;
   version?: 3;
+  start_date?: string;
 }
 export type DiscoveryTripProposal = TripProposal;
 export interface TripSearchPage {
@@ -46,6 +48,10 @@ export function discoveryFiltersPayload(filters: DiscoveryFilters) {
       : 0,
   };
 }
+export function discoverySearchPayload(filters: DiscoveryFilters, order: TripSortOrder = DEFAULT_TRIP_SORT) {
+  return {...discoveryFiltersPayload(filters), ...(order === 'newest' ? {} : {sort_order: order})};
+}
+
 export function discoveryError(error: unknown) {
   const code =
     error && typeof error === 'object' && 'code' in error

@@ -1,12 +1,33 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {createTripSearchStore} from '../src/features/discovery/discovery-store.ts';
-import {discoveryFiltersPayload} from '../src/features/discovery/discovery-data.ts';
+import {discoveryFiltersPayload, discoverySearchPayload} from '../src/features/discovery/discovery-data.ts';
+import {compareTripProposals} from '../src/features/discovery/trip-sorting.ts';
 import {INITIAL_FILTERS} from '../src/features/discovery/filter-trips.ts';
 const item=id=>({trip:{id},group:{id:'crew'},compatibility:{score:50,reasons:[]}});
 const cursor=id=>({id,published_at:'2026-10-26T10:00:00Z',score:50,sort:'default',query_key:'test'});
 const page=(ids,total=ids.length,more=false)=>({items:ids.map(item),totalCount:total,hasMore:more,cursor:ids.length?cursor(ids.at(-1)):null});
 const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return{promise,resolve,reject};};
+
+test('trip sorting uses departure date with stable publication/id ties and leaves filter criteria independent',()=>{
+  const rows=[
+    {trip:{id:'a',startDate:'2027-05-22',publishedAt:'2026-11-01T12:00:00Z'}},
+    {trip:{id:'c',startDate:'2027-05-21',publishedAt:'2026-11-02T12:00:00Z'}},
+    {trip:{id:'b',startDate:'2027-05-21',publishedAt:'2026-11-02T12:00:00Z'}},
+    {trip:{id:'d',startDate:'2027-05-23',publishedAt:'2026-11-03T12:00:00Z'}},
+  ];
+  const sorted=order=>[...rows].sort((a,b)=>compareTripProposals(a,b,order)).map(p=>p.trip.id);
+  assert.deepEqual(sorted('newest'),['d','b','c','a']);
+  assert.deepEqual(sorted('date_asc'),['b','c','a','d']);
+  assert.deepEqual(sorted('date_desc'),['d','a','b','c']);
+  assert.deepEqual(rows.map(p=>p.trip.id),['a','c','b','d']);
+  const filters={...INITIAL_FILTERS,favoritesOnly:true,landscapeKinds:['coast']};
+  assert.deepEqual(discoverySearchPayload(filters),discoveryFiltersPayload(filters));
+  assert.deepEqual(discoverySearchPayload(filters,'date_asc'),{...discoveryFiltersPayload(filters),sort_order:'date_asc'});
+  assert.equal(discoverySearchPayload(filters,'date_desc').sort_order,'date_desc');
+  assert.equal(discoveryFiltersPayload(filters).sort_order,undefined);
+  assert.equal(filters.sort_order,undefined);
+});
 
 test('a trip list initially requests one page and loads additional results only on demand',async()=>{
   const calls=[];const store=createTripSearchStore(async c=>{calls.push(c);return c?page(['b','c'],65):page(['a','b'],65,true);},2);

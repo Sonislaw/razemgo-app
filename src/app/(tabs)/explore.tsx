@@ -21,6 +21,7 @@ import {
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { DiscoveryFiltersSheet } from '@/features/discovery/discovery-filters-sheet';
 import { DiscoveryQuickDates } from '@/features/discovery/discovery-quick-dates';
+import { DiscoverySortButton } from '@/features/discovery/discovery-sort-button';
 import { DiscoveryFilterBar, DiscoveryResultsHeader } from '@/features/discovery/discovery-controls';
 import { useTripSearch, useTripResultCount } from '@/features/discovery/use-trip-search';
 import { discoveryFiltersPayload,TRIP_SEARCH_PAGE_SIZE } from '@/features/discovery/discovery-data';
@@ -47,9 +48,9 @@ export default function ExploreScreen() {
   const view = selection.openTrips === openTrips ? selection.view : 'trips';
   const setView = (next: 'trips' | 'groups') => setSelection({ view: next, openTrips });
   const theme = useTheme();
-  const { filters, setFilters, activeTripSet, applySavedFilterSet,tripFilterRevision,tripMapOpen:mapOpen,openTripMap,closeTripMap } = useDiscovery();
+  const { filters, setFilters, tripSort, activeTripSet, applySavedFilterSet,tripFilterRevision,tripMapOpen:mapOpen,openTripMap,closeTripMap } = useDiscovery();
   const today = useCurrentDate();
-  const { items: proposals, totalCount, hasMore, status, loadingMore, error, retry, loadMore, preserveOnReturn } = useTripSearch(filters, TRIP_SEARCH_PAGE_SIZE, view === 'trips');
+  const { items: proposals, totalCount, hasMore, status, loadingMore, error, retry, loadMore, preserveOnReturn } = useTripSearch(filters, TRIP_SEARCH_PAGE_SIZE, view === 'trips', tripSort);
   const { state: ownTrips } = useOwnTrips();
   const sourceTrip = ownTrips.trips.find(
     (trip) => trip.id === filters.sourceTripId,
@@ -180,7 +181,10 @@ export default function ExploreScreen() {
         <DiscoveryQuickDates />
       </View>
         <DiscoveryResultsHeader title={totalCount === null ? 'Propozycje' : 'Propozycje · ' + totalCount}
-          action={<SavedFiltersButton kind="trips" onApply={applySavedFilterSet} />} />
+          action={<View style={styles.resultActions}>
+            <SavedFiltersButton kind="trips" onApply={applySavedFilterSet} />
+            <DiscoverySortButton />
+          </View>} />
       </>}
       empty={status === 'ready' ? (
         checkingAvailability ? <DataStatus status="loading" error={null} label="Sprawdzanie dostępnych wyjazdów" onRetry={retryCount} /> : (
@@ -216,5 +220,6 @@ const styles = StyleSheet.create({
   },
   viewLabel: { flexShrink: 1, fontSize: 14, lineHeight: 20, fontWeight: '600' },
   controls: { gap: 12 },
+  resultActions: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   results: { gap: 12 },
 });

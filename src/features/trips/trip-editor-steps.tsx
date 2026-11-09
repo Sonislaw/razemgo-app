@@ -183,8 +183,10 @@ export function TripDestinationStep({
             value={form.description}
             onChangeText={value => update('description', value)}
             maxLength={MAX_TRIP_DESCRIPTION_LENGTH}
+            showCounter
+            counterValue={tripDescriptionLength(form.description)}
             multiline
-            hint={`Min. ${MIN_TRIP_DESCRIPTION_LENGTH} znaków · ${tripDescriptionLength(form.description)}/${MAX_TRIP_DESCRIPTION_LENGTH}. Początek opisu pokażemy na karcie wyjazdu.`}
+            hint={`Min. ${MIN_TRIP_DESCRIPTION_LENGTH} znaków. Początek opisu pokażemy na karcie wyjazdu.`}
           />
           <TripDescriptionHelper form={form} onApply={text => update('description', text)} />
         </TripEditorField>

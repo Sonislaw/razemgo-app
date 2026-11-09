@@ -252,13 +252,18 @@ export function resolveDiscoveryRange(
     ? filters.customDateRange
     : undefined;
 }
-export function formatTripDates(trip: DateRange): string {
-  const format = (date: string) =>
-    new Intl.DateTimeFormat('pl-PL', {
-      day: 'numeric',
-      month: 'short',
-      timeZone: 'UTC',
-    }).format(new Date(date + 'T00:00:00Z'));
+const tripDateFormatter = new Intl.DateTimeFormat('pl-PL', {
+  day: 'numeric',
+  month: 'short',
+  timeZone: 'UTC',
+});
+const TRIP_WEEKDAYS = ['niedz.', 'pon.', 'wt.', 'śr.', 'czw.', 'pt.', 'sob.'];
+
+export function formatTripDates(trip: DateRange, {weekdays = true}: {weekdays?: boolean} = {}): string {
+  const format = (date: string) => {
+    const day = new Date(date + 'T00:00:00Z');
+    return tripDateFormatter.format(day) + (weekdays ? ` (${TRIP_WEEKDAYS[day.getUTCDay()]})` : '');
+  };
   return (
     format(trip.startDate) +
     (trip.startDate.slice(0, 4) !== trip.endDate.slice(0, 4)

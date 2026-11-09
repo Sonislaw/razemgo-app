@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, TextInput, View, type TextInputInstance } from '
 import type { Ref } from 'react';
 import { AppText, FieldLabel, layout } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/icon';
+import { CountedTextInput } from '@/components/ui/counted-text-input';
 import { Fonts, Radius, Typography } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -15,6 +16,8 @@ export function ProfileTextField({
   required = false,
   inputRef,
   errorId,
+  showCounter = false,
+  counterValue,
 }: {
   label: string;
   value: string;
@@ -25,12 +28,26 @@ export function ProfileTextField({
   required?: boolean;
   inputRef?: Ref<TextInputInstance>;
   errorId?: string;
+  showCounter?: boolean;
+  counterValue?: number;
 }) {
   const theme = useTheme();
   return (
     <View style={styles.field}>
       <FieldLabel required={required}>{label}</FieldLabel>
-      <TextInput
+      {showCounter ? <CountedTextInput
+        inputRef={inputRef}
+        aria-invalid={!!errorId}
+        aria-describedby={errorId}
+        accessibilityLabel={label}
+        accessibilityHint={required ? 'Pole wymagane.' : undefined}
+        value={value}
+        onChangeText={onChangeText}
+        maxLength={maxLength}
+        multiline={multiline}
+        autoCorrect={false}
+        counterValue={counterValue}
+      /> : <TextInput
         ref={inputRef}
         aria-invalid={!!errorId}
         aria-describedby={errorId}
@@ -50,7 +67,7 @@ export function ProfileTextField({
           },
           multiline && styles.multiline,
         ]}
-      />
+      />}
       {hint ? (
         <AppText variant="caption" color="textSecondary">
           {hint}

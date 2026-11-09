@@ -1,4 +1,5 @@
 import { BottomSheet } from '@/components/ui/bottom-sheet';
+import { CountedTextInput } from '@/components/ui/counted-text-input';
 import { PaginationFooter } from '@/components/ui/pagination-footer';
 import { useAutoPagination } from '@/hooks/use-auto-pagination';
 import { Icon } from '@/components/ui/icon';
@@ -748,7 +749,7 @@ export default function AdminScreen() {
         >
           <AppText>{ACTION_DESCRIPTIONS[confirmation.action]}</AppText>
           <FieldLabel required>Uzasadnienie</FieldLabel>
-          <TextInput
+          <CountedTextInput
             accessibilityLabel="Uzasadnienie działania"
             multiline
             maxLength={500}
@@ -757,18 +758,10 @@ export default function AdminScreen() {
             value={note}
             editable={!saving}
             onChangeText={setNote}
-            style={[
-              styles.input,
-              {
-                minHeight: 110,
-                textAlignVertical: 'top',
-                color: theme.text,
-                borderColor: theme.border,
-              },
-            ]}
+            counterValue={note.trim().length}
           />
           <AppText variant="caption" color="textSecondary">
-            {note.trim().length}/500 · zapis zostanie dodany do historii.
+            Zapis zostanie dodany do historii.
           </AppText>
           {actionError ? (
             <AppText accessibilityRole="alert">{actionError}</AppText>

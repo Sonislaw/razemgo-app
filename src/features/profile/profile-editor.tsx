@@ -15,6 +15,7 @@ import { GroupAnimalFields } from '@/features/animals/animal-fields';
 import { ChipRow } from '@/components/ui/chip-row';
 import { useAuth } from '@/features/auth/auth-context';
 import { ProfileAvatarPicker } from '@/features/profile/profile-avatar-picker';
+import { ProfileDescriptionHelper } from '@/features/profile/profile-description-helper';
 import { useProfile } from '@/features/profile/profile-context';
 import {
   cloneProfile,
@@ -150,7 +151,7 @@ export default function ProfileEditor({
             required
             value={draft.group.name}
             maxLength={MAX_GROUP_NAME_LENGTH}
-            hint={`Pozostałe znaki: ${Math.max(0, MAX_GROUP_NAME_LENGTH - draft.group.name.length)}`}
+            showCounter
             onChangeText={(name) =>
               setDraft((current) => ({
                 ...current,
@@ -158,23 +159,16 @@ export default function ProfileEditor({
               }))
             }
           />
-          {!onboarding ? (
-            <>
-              <ProfileTextField
-                label="O mojej ekipie"
-                value={draft.about ?? ''}
-                maxLength={MAX_GROUP_ABOUT_LENGTH}
-                multiline
-                onChangeText={(about) =>
-                  setDraft((current) => ({ ...current, about }))
-                }
-                hint="Publiczny opis: co lubisz i jak podróżujesz? Bez adresu zamieszkania, danych kontaktowych i szczegółowych danych dzieci."
-              />
-              <AppText variant="caption" color="textSecondary">
-                {(draft.about ?? '').length}/{MAX_GROUP_ABOUT_LENGTH}
-              </AppText>
-            </>
-          ) : null}
+          <ProfileTextField
+            label="O mojej ekipie"
+            value={draft.about ?? ''}
+            maxLength={MAX_GROUP_ABOUT_LENGTH}
+            showCounter
+            multiline
+            onChangeText={(about) => setDraft((current) => ({ ...current, about }))}
+            hint="Opcjonalny publiczny opis: co lubisz i jak podróżujesz? Bez adresu zamieszkania, danych kontaktowych i szczegółowych danych dzieci."
+          />
+          <ProfileDescriptionHelper profile={draft} onApply={(about) => setDraft((current) => ({ ...current, about }))} />
           <FieldLabel required>Rodzaj ekipy</FieldLabel>
           <ChipRow horizontal label="Rodzaj ekipy">
             {GROUP_KIND_OPTIONS.map((option) => (

@@ -273,6 +273,92 @@ async function createProfile(page, name) {
     .click();
 }
 
+for (const width of [320, 390]) test(`profile description helper: onboarding and editing preserve user control at ${width}px`, async ({page, context}) => {
+  test.setTimeout(120000);
+  await page.setViewportSize({width, height: 844});
+  const state = await backend(context);
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await login(page);
+  const about = page.getByRole('textbox', {name: 'O mojej ekipie', exact: true});
+  await expect(about).toHaveValue('');
+  await page.getByRole('textbox', {name: 'Nazwa ekipy', exact: true}).fill('Solo w drodze');
+  await page.getByRole('button', {name: 'Osoba solo', exact: true}).click();
+  await page.getByRole('radio', {name: 'Sposób podróżowania: Kampervan', exact: true}).click();
+  const open = () => page.getByRole('button', {name: 'Pomóż mi napisać opis', exact: true}).click();
+  const dialog = page.getByRole('dialog', {name: 'Pomóż mi napisać opis', exact: true});
+  const proposal = dialog.getByRole('textbox', {name: 'Propozycja opisu', exact: true});
+  const generate = dialog.getByRole('button', {name: 'Utwórz propozycję opisu', exact: true});
+  const answer = async () => {
+    await dialog.getByRole('radio', {name: 'Spokojnie, na luzie', exact: true}).click();
+    await dialog.getByRole('checkbox', {name: 'Gry planszowe', exact: true}).click();
+    await dialog.getByRole('radio', {name: 'Rozmowy i poznawanie ludzi', exact: true}).click();
+  };
+  await open();
+  await expect(generate).toBeDisabled();
+  await answer();
+  await generate.click();
+  const first = await proposal.inputValue();
+  expect(first).toContain('Podróżuję solo');
+  expect(first).toContain('kampervanem');
+  expect(first).toContain('grać w planszówki');
+  expect(state.profiles.size).toBe(0);
+  await dialog.getByRole('button', {name: 'Zaproponuj inaczej', exact: true}).click();
+  await expect(proposal).not.toHaveValue(first);
+  const edited = await proposal.inputValue() + ' Zabieram ulubioną grę.';
+  await proposal.fill(edited);
+  await dialog.getByRole('button', {name: 'Wstaw opis', exact: true}).click();
+  await expect(about).toHaveValue(edited);
+  state.saveFail = true;
+  await page.getByRole('button', {name: 'Zapisz profil i zacznij', exact: true}).click();
+  await expect(page.getByRole('alert')).toContainText('Nie udało się zapisać');
+  await expect(about).toHaveValue(edited);
+  state.saveFail = false;
+  await page.getByRole('button', {name: 'Zapisz profil i zacznij', exact: true}).click();
+  await expect(page).toHaveURL('http://localhost:8085/');
+  expect(state.profiles.get(A).about).toBe(edited);
+  expect(state.profiles.get(A).group.interests).toEqual([]);
+  await page.goto('/edit-profile');
+  await expect(about).toHaveValue(edited);
+  await open(); await answer(); await generate.click();
+  await proposal.fill('   ');
+  await expect(dialog.getByRole('button', {name: 'Wstaw opis', exact: true})).toBeDisabled();
+  await dialog.getByRole('button', {name: 'Zmień odpowiedzi', exact: true}).click();
+  await expect(dialog.getByRole('radio', {name: 'Rozmowy i poznawanie ludzi', exact: true})).toBeChecked();
+  await generate.click();
+  await proposal.screenshot({path: `.expo/profile-description-preview-${width}.png`});
+  const replacement = await proposal.inputValue();
+  await dialog.getByRole('button', {name: 'Wstaw opis', exact: true}).click();
+  await expect(dialog.getByRole('heading', {name: 'Zastąpić dotychczasowy opis?', exact: true})).toBeVisible();
+  await dialog.getByRole('button', {name: 'Zamknij', exact: true}).click();
+  await expect(about).toHaveValue(edited);
+  await open(); await answer(); await generate.click();
+  await dialog.getByRole('button', {name: 'Wstaw opis', exact: true}).click();
+  await dialog.getByRole('button', {name: 'Wróć do propozycji', exact: true}).click();
+  await expect(proposal).toHaveValue(replacement);
+  await dialog.getByRole('button', {name: 'Wstaw opis', exact: true}).click();
+  await dialog.getByRole('button', {name: 'Zastąp opis', exact: true}).click();
+  await expect(about).toHaveValue(replacement);
+  expect(state.profiles.get(A).about).toBe(edited);
+  await page.getByRole('button', {name: 'Zapisz zmiany', exact: true}).click();
+  await expect(page).toHaveURL('http://localhost:8085/profile');
+  await page.reload();
+  await expect(page.getByTestId('group-about-card')).toContainText(replacement);
+  expect(state.profiles.get(A).group.interests).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+test('profile description helper: a new user can skip the optional description', async ({page, context}) => {
+  const state = await backend(context);
+  await login(page);
+  await page.getByRole('button', {name: 'Pomóż mi napisać opis', exact: true}).click();
+  const dialog = page.getByRole('dialog', {name: 'Pomóż mi napisać opis', exact: true});
+  await dialog.getByRole('button', {name: 'Zamknij', exact: true}).click();
+  await createProfile(page, 'Bez opisu');
+  await expect(page).toHaveURL('http://localhost:8085/');
+  expect(state.profiles.get(A).about).toBe('');
+});
+
 test('guest protection, registration validation and email confirmation', async ({
   page,
   context,

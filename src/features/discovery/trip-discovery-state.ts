@@ -40,7 +40,10 @@ export function tripDiscoveryReducer(
 ): TripDiscoveryState {
   if (action.type === 'open-map')
     return { mapOpen: true, filters: plannedMapFilters(state.filters) };
-  if (action.type === 'close-map') return { ...state, mapOpen: false };
+  if (action.type === 'close-map') return state.mapOpen ? {
+    mapOpen: false,
+    filters: { ...state.filters, tripModes: ['planned', 'flexible'] },
+  } : state;
   const filters =
     typeof action.value === 'function'
       ? action.value(state.filters)

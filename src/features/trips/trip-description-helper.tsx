@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
-import {Keyboard, Pressable, StyleSheet, View} from 'react-native';
+import {Keyboard, StyleSheet, View} from 'react-native';
 import {BottomSheet} from '@/components/ui/bottom-sheet';
-import {Icon} from '@/components/ui/icon';
+import {DescriptionHelperChoice as Choice, DescriptionHelperTrigger} from '@/components/ui/description-helper-controls';
 import {AppText, Button, Card} from '@/components/ui/primitives';
 import {ProfileTextField} from '@/features/profile/profile-form-fields';
 import {useTheme} from '@/hooks/use-theme';
@@ -15,15 +15,9 @@ import {
 } from './trip-description';
 
 export function TripDescriptionHelper({form, onApply}: {form: TripForm; onApply: (text: string) => void}) {
-  const theme = useTheme();
   const [open, setOpen] = useState(false);
   return <>
-    <Pressable accessibilityRole="button" accessibilityLabel="Pomóż mi napisać opis" accessibilityHint="Odpowiedz na trzy krótkie pytania i ułóż propozycję opisu."
-      onPress={() => { Keyboard.dismiss(); setOpen(true); }}
-      style={({pressed}) => [styles.trigger, {backgroundColor: theme.backgroundSelected, opacity: pressed ? 0.7 : 1}]}>
-      <AppText accessible={false} aria-hidden style={{fontSize: 18}}>✨</AppText>
-      <AppText variant="caption" color="primaryStrong" style={{fontWeight: '700', flexShrink: 1}}>Pomóż mi napisać opis</AppText>
-    </Pressable>
+    <DescriptionHelperTrigger onPress={() => setOpen(true)} hint="Odpowiedz na trzy krótkie pytania i ułóż propozycję opisu." />
     {open ? <DescriptionSheet form={form} onClose={() => setOpen(false)} onApply={text => {onApply(text); setOpen(false);}} /> : null}
   </>;
 }
@@ -103,7 +97,7 @@ function DescriptionSheet({form, onClose, onApply}: {form: TripForm; onClose: ()
     </> : stage === 'preview' ? <>
       <AppText color="textSecondary">To propozycja na podstawie Twoich odpowiedzi. Możesz ją teraz zmienić albo edytować później w formularzu.</AppText>
       <ProfileTextField label="Propozycja opisu" value={text} onChangeText={setText} multiline maxLength={MAX_TRIP_DESCRIPTION_LENGTH}
-        hint={`${tripDescriptionLength(text)}/${MAX_TRIP_DESCRIPTION_LENGTH} znaków · minimum ${MIN_TRIP_DESCRIPTION_LENGTH}`} />
+        showCounter counterValue={tripDescriptionLength(text)} hint={`Minimum ${MIN_TRIP_DESCRIPTION_LENGTH} znaków`} />
       <Button label="Zaproponuj inaczej" disabled={generating} variant="secondary" onPress={() => {
         Keyboard.dismiss(); void create(variant + 1);
       }} />
@@ -122,22 +116,7 @@ function DescriptionSheet({form, onClose, onApply}: {form: TripForm; onClose: ()
   </BottomSheet>;
 }
 
-function Choice({label, selected, onPress, multiple = false}: {label: string; selected: boolean; onPress: () => void; multiple?: boolean}) {
-  const theme = useTheme();
-  return <Pressable accessibilityRole={multiple ? 'checkbox' : 'radio'} accessibilityLabel={label} aria-checked={selected}
-    accessibilityState={{checked: selected}} onPress={onPress} style={({pressed}) => [styles.choice, {
-      borderColor: selected ? theme.primaryStrong : theme.border, backgroundColor: selected ? theme.backgroundSelected : theme.background,
-      opacity: pressed ? 0.7 : 1,
-    }]}>
-    {selected ? <Icon name="check" size={16} /> : <View style={[styles.unchecked, {borderColor: theme.textSecondary, borderRadius: multiple ? 4 : 8}]} />}
-    <AppText variant="caption" color={selected ? 'primaryStrong' : 'text'} style={{flexShrink: 1, fontWeight: selected ? '700' : '400'}}>{label}</AppText>
-  </Pressable>;
-}
-
 const styles = StyleSheet.create({
-  trigger: {alignSelf: 'flex-start', minHeight: 44, borderRadius: 16, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 8},
   section: {gap: 10, marginTop: 4},
   choices: {flexDirection: 'row', flexWrap: 'wrap', gap: 8},
-  choice: {flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44, maxWidth: '100%', borderWidth: 1, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 10},
-  unchecked: {width: 16, height: 16, borderWidth: 1},
 });

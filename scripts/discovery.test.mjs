@@ -8,6 +8,7 @@ import {
   MY_GROUP,
 } from '../src/data/mocks/travel.ts';
 import { INITIAL_FILTERS, filterProposals, sharedNights, formatTripDates, toggleDiscoveryTripMode, updateDiscoveryDateRange, clearDiscoveryDates, getDiscoveryDateRangeError, resolveDiscoveryRange, getDiscoveryReferenceRange, selectDiscoveryLocation, updateDiscoveryLocationQuery } from '../src/features/discovery/filter-trips.ts';
+import {QUICK_DATE_FILTERS, quickDateRange, activeQuickDateFilter, toggleQuickDateFilter} from '../src/features/discovery/quick-date-filters.ts';
 import { DEMO_COMPATIBILITY_SCORES } from './support/legacy-matching/scores.ts';
 import { sortDiscoveryProposals } from './support/legacy-matching/sort-proposals.ts';
 import {
@@ -16,6 +17,64 @@ import {
   shiftCalendarMonth,
   rangeDurationLabel,
 } from '../src/features/trips/date-range-calendar.ts';
+
+test('quick dates span whole calendar days and weekends, including Sunday, leap day, DST and year boundaries', () => {
+  assert.deepEqual(quickDateRange('today', '2027-03-28'), {startDate: '2027-03-28', endDate: '2027-03-29'});
+  assert.deepEqual(quickDateRange('tomorrow', '2026-12-31'), {startDate: '2027-01-01', endDate: '2027-01-02'});
+  assert.deepEqual(quickDateRange('week', '2028-02-28'), {startDate: '2028-02-28', endDate: '2028-03-06'});
+  assert.deepEqual(quickDateRange('30-days', '2028-02-28'), {startDate: '2028-02-28', endDate: '2028-03-29'});
+  assert.deepEqual(quickDateRange('30-days', '2026-12-20'), {startDate: '2026-12-20', endDate: '2027-01-19'});
+  for (const today of ['2026-11-09', '2026-11-10', '2026-11-11', '2026-11-12', '2026-11-13', '2026-11-14', '2026-11-15']) {
+    assert.deepEqual(quickDateRange('weekend', today), {startDate: '2026-11-13', endDate: '2026-11-16'});
+    assert.deepEqual(quickDateRange('next-weekend', today), {startDate: '2026-11-20', endDate: '2026-11-23'});
+  }
+  assert.deepEqual(quickDateRange('weekend', '2026-12-31'), {startDate: '2027-01-01', endDate: '2027-01-04'});
+  assert.deepEqual(quickDateRange('weekend', '2027-03-27'), {startDate: '2027-03-26', endDate: '2027-03-29'});
+  assert.equal(quickDateRange('today', ''), undefined);
+  assert.equal(quickDateRange('today', '2027-02-29'), undefined);
+});
+
+test('quick-date search matches ongoing stays and the selected days, without leaking into the next period', () => {
+  const periods = [
+    ['checkout-today', '2027-05-20', '2027-05-21'],
+    ['ongoing', '2027-05-20', '2027-05-24'],
+    ['today', '2027-05-21', '2027-05-22'],
+    ['tomorrow', '2027-05-22', '2027-05-23'],
+    ['sunday', '2027-05-23', '2027-05-24'],
+    ['monday', '2027-05-24', '2027-05-25'],
+    ['next-weekend', '2027-05-28', '2027-05-31'],
+  ];
+  const proposals = periods.map(([id, startDate, endDate]) => ({...DEMO_PROPOSALS[0], trip: {...DEMO_PROPOSALS[0].trip, id, startDate, endDate}}));
+  const matches = id => filterProposals(proposals, toggleQuickDateFilter(INITIAL_FILTERS, id, '2027-05-21')).map(p => p.trip.id);
+  assert.deepEqual(matches('today'), ['ongoing', 'today']);
+  assert.deepEqual(matches('tomorrow'), ['ongoing', 'tomorrow']);
+  assert.deepEqual(matches('weekend'), ['ongoing', 'today', 'tomorrow', 'sunday']);
+  assert.deepEqual(matches('week'), ['ongoing', 'today', 'tomorrow', 'sunday', 'monday']);
+  assert.deepEqual(matches('next-weekend'), ['next-weekend']);
+  assert.deepEqual(matches('30-days'), ['ongoing', 'today', 'tomorrow', 'sunday', 'monday', 'next-weekend']);
+});
+
+test('quick dates replace only the current period, toggle off, and reflect calendar or saved criteria without hidden selection state', () => {
+  const filters = {...INITIAL_FILTERS, favoritesOnly: true, tripModes: ['planned'], location: 'Pomorskie', locationId: 'pl-region:pomorskie',
+    groupKinds: ['family'], childAgeBands: ['4–6'], animalKinds: ['dog'], landscapeKinds: ['coast'], sourceTripId: 'own-trip',
+    dateRangeId: 'own-trip', customDateRange: {startDate: '2027-05-01', endDate: '2027-05-04'}, dateFlexibilityDays: 3};
+  const before = JSON.stringify(filters);
+  for (const option of QUICK_DATE_FILTERS) {
+    const selected = toggleQuickDateFilter(filters, option.id, '2027-05-21');
+    assert.equal(activeQuickDateFilter(selected, '2027-05-21'), option.id);
+    assert.equal(selected.dateRangeId, 'custom');
+    assert.equal(selected.dateFlexibilityDays, 0);
+    assert.deepEqual(clearDiscoveryDates(selected), clearDiscoveryDates(filters));
+    assert.deepEqual(toggleQuickDateFilter(selected, option.id, '2027-05-21'), clearDiscoveryDates(filters));
+    assert.equal(activeQuickDateFilter({...selected, dateFlexibilityDays: 1}, '2027-05-21'), undefined);
+  }
+  const manual = updateDiscoveryDateRange(filters, {startDate: '2027-05-21', endDate: '2027-05-22'});
+  assert.equal(activeQuickDateFilter(manual, '2027-05-21'), 'today');
+  assert.equal(activeQuickDateFilter(manual, '2027-05-22'), undefined);
+  assert.equal(activeQuickDateFilter(INITIAL_FILTERS, '2027-05-21'), undefined);
+  assert.equal(toggleQuickDateFilter(filters, 'today', ''), filters);
+  assert.equal(JSON.stringify(filters), before);
+});
 
 test('calendar range selection spans months and restarts on an earlier, equal or third date', () => {
   const first = selectCalendarDate(

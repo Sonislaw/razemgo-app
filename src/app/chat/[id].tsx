@@ -1,5 +1,6 @@
 import { TripTimeline } from '@/components/trips/trip-timeline';
 import { DataStatus } from '@/components/ui/data-status';
+import { CountedTextInput } from '@/components/ui/counted-text-input';
 import { PaginationFooter } from '@/components/ui/pagination-footer';
 import { useAutoPagination } from '@/hooks/use-auto-pagination';
 import { Icon } from '@/components/ui/icon';
@@ -16,7 +17,7 @@ import {
   ScenicHeaderBackground,
 } from '@/components/ui/scenic-header';
 import { IS_DEMO_MODE } from '@/constants/app';
-import { Fonts, MaxContentWidth, Typography } from '@/constants/theme';
+import { MaxContentWidth } from '@/constants/theme';
 import { DEMO_MAILBOX } from '@/data/mocks/messaging';
 import {
   formatTripDates,
@@ -43,7 +44,6 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  TextInput,
   useWindowDimensions,
   View,
   type FlatListInstance,
@@ -450,7 +450,7 @@ export default function ChatScreen() {
               <View
                 style={[layout.row, { alignItems: 'flex-end', padding: 8 }]}
               >
-                <TextInput
+                <CountedTextInput
                   accessibilityLabel="Treść wiadomości"
                   placeholder="Napisz wiadomość…"
                   placeholderTextColor={theme.textSecondary}
@@ -459,14 +459,9 @@ export default function ChatScreen() {
                   multiline
                   maxLength={MAX_MESSAGE_LENGTH}
                   editable={canSend}
-                  style={[
-                    styles.input,
-                    {
-                      color: theme.text,
-                      borderColor: theme.border,
-                      backgroundColor: theme.background,
-                    },
-                  ]}
+                  showCounter={draft.length > 1800}
+                  containerStyle={{flex: 1, borderRadius: 16}}
+                  style={{minHeight: 46, maxHeight: 126}}
                 />
                 <Pressable
                   accessibilityRole="button"
@@ -498,15 +493,6 @@ export default function ChatScreen() {
                   />
                 </Pressable>
               </View>
-              {draft.length > 1800 ? (
-                <AppText
-                  variant="caption"
-                  color="textSecondary"
-                  style={{ paddingHorizontal: 16 }}
-                >
-                  {draft.length}/{MAX_MESSAGE_LENGTH}
-                </AppText>
-              ) : null}
             </>
           )}
         </View>
@@ -563,17 +549,5 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     gap: 4,
-  },
-  input: {
-    flex: 1,
-    minWidth: 0,
-    minHeight: 48,
-    maxHeight: 128,
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontFamily: Fonts.sans,
-    ...Typography.body,
   },
 });

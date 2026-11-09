@@ -39,12 +39,14 @@ export function DateRangeSheet({
   initialRange,
   initialTolerance = 0,
   allowTolerance = false,
+  showWeekdays = true,
   onApply,
   onClose,
 }: {
   initialRange?: DateRange;
   initialTolerance?: number;
   allowTolerance?: boolean;
+  showWeekdays?: boolean;
   onApply: (range: DateRange, tolerance: number) => void;
   onClose: () => void;
 }) {
@@ -352,7 +354,7 @@ export function DateRangeSheet({
               style={styles.center}
             >
               {complete
-                ? formatTripDates(range) + ' · ' + rangeDurationLabel(range)
+                ? formatTripDates(range, {weekdays: showWeekdays}) + ' · ' + rangeDurationLabel(range)
                 : range.startDate
                   ? dateLabel(range.startDate) + ' → wybierz powrót'
                   : 'Wybierz początek i koniec wyjazdu'}

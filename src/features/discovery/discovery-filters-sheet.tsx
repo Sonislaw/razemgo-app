@@ -151,6 +151,7 @@ export function DiscoveryFiltersSheet({
         showDateRange ? (
           <DateRangeSheet
             allowTolerance
+            showWeekdays={false}
             initialRange={dateRange}
             initialTolerance={draft.dateFlexibilityDays}
             onClose={() => setShowDateRange(false)}
@@ -282,6 +283,7 @@ export function DiscoveryFiltersSheet({
         </AppText>
         <DateRangeField
           range={dateRange}
+          showWeekdays={false}
           caption={
             dateRange
               ? dateToleranceLabel(draft.dateFlexibilityDays ?? 0)

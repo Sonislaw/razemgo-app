@@ -20,6 +20,7 @@ import {
 } from '@/features/discovery/filter-trips';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { DiscoveryFiltersSheet } from '@/features/discovery/discovery-filters-sheet';
+import { DiscoveryQuickDates } from '@/features/discovery/discovery-quick-dates';
 import { DiscoveryFilterBar, DiscoveryResultsHeader } from '@/features/discovery/discovery-controls';
 import { useTripSearch, useTripResultCount } from '@/features/discovery/use-trip-search';
 import { discoveryFiltersPayload,TRIP_SEARCH_PAGE_SIZE } from '@/features/discovery/discovery-data';
@@ -74,7 +75,7 @@ export default function ExploreScreen() {
         : 'Szukam pomysłu'
       : '',
     dateRange
-      ? formatTripDates(dateRange) +
+      ? formatTripDates(dateRange, {weekdays: false}) +
         (filters.dateFlexibilityDays
           ? ` (±${filters.dateFlexibilityDays} ${filters.dateFlexibilityDays === 1 ? 'dzień' : 'dni'})`
           : '')
@@ -176,6 +177,7 @@ export default function ExploreScreen() {
               onSaved={item => { applySavedFilterSet(item); onClose(); }}
               onApply={(nextFilters) => { setFilters(nextFilters); onClose(); }} />
           )} />
+        <DiscoveryQuickDates />
       </View>
         <DiscoveryResultsHeader title={totalCount === null ? 'Propozycje' : 'Propozycje · ' + totalCount}
           action={<SavedFiltersButton kind="trips" onApply={applySavedFilterSet} />} />
@@ -183,7 +185,7 @@ export default function ExploreScreen() {
       empty={status === 'ready' ? (
         checkingAvailability ? <DataStatus status="loading" error={null} label="Sprawdzanie dostępnych wyjazdów" onRetry={retryCount} /> : (
           <EmptyState
-            compact
+            compact="dense"
             icon={noAvailableTrips ? 'tent' : 'search'}
             title={noAvailableTrips ? 'Brak wyjazdów do odkrycia' : 'Brak pasujących wyjazdów'}
             description={noAvailableTrips

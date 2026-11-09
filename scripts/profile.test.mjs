@@ -14,6 +14,10 @@ import {
   DEFAULT_PROFILE_AVATAR_ID,
   PROFILE_AVATARS,
 } from '../src/features/profile/profile-avatar-data.ts';
+import {
+  initialProfileDescriptionAnswers, PROFILE_DESCRIPTION_ACTIVITIES,
+  PROFILE_DESCRIPTION_CONNECTIONS, PROFILE_DESCRIPTION_PACES, suggestProfileDescription,
+} from '../src/features/profile/profile-description.ts';
 
 const example = {
   group: MY_GROUP,
@@ -23,6 +27,48 @@ const example = {
     description: 'Spokojne wyjazdy.',
   },
 };
+
+test('profile writing helper uses explicit interests and answers without changing the profile', () => {
+  const profile = {...example, about: 'Własny opis.', group: {...example.group, interests: ['Rowery', 'Spokojny wypoczynek', 'Nieznane']}};
+  const before = JSON.stringify(profile);
+  const answers = initialProfileDescriptionAnswers(profile.group);
+  assert.deepEqual(answers, {pace: 'relaxed', activities: ['Rowery'], connection: null});
+  assert.equal(suggestProfileDescription(profile.group, answers), '');
+  assert.equal(suggestProfileDescription(profile.group, {...answers, pace: null, connection: 'conversation'}), '');
+  answers.connection = 'conversation';
+  answers.activities.push('Gry planszowe');
+  const text = suggestProfileDescription({...profile.group, travelModes: ['Van']}, answers);
+  assert(text.includes('kampervanem'));
+  assert(text.includes('jeździć na rowerach i grać w planszówki'));
+  assert(!text.includes('Nieznane'));
+  assert.equal(JSON.stringify(profile), before);
+});
+
+test('profile proposals fit the 600-character limit for every crew, transport and answer combination', () => {
+  for (const kind of ['family', 'couple', 'solo', 'friends']) for (const mode of ['Przyczepa', 'Kamper', 'Namiot', 'Van', 'Samochód', undefined])
+    for (const pace of PROFILE_DESCRIPTION_PACES) for (const connection of PROFILE_DESCRIPTION_CONNECTIONS) for (const variant of [0, 1]) {
+      const group = {...example.group, kind, travelModes: mode ? [mode] : []};
+      const text = suggestProfileDescription(group, {pace: pace.id, connection: connection.id, activities: PROFILE_DESCRIPTION_ACTIVITIES.map(a => a.id)}, variant);
+      assert(text.length > 100);
+      assert(text.length <= 600);
+      assert.deepEqual(validateProfile({...example, group, about: text}), mode ? [] : ['Wybierz jeden sposób podróżowania.']);
+      for (const activity of PROFILE_DESCRIPTION_ACTIVITIES) assert(text.includes(activity.phrase));
+      assert(!/undefined|null|\d/.test(text));
+    }
+});
+
+test('solo profile proposals use the singular, allow no activities or transport, and offer two variants', () => {
+  const group = {...example.group, kind: 'solo', travelModes: [], name: 'Prywatna nazwa', childAgeBands: ['4–6']};
+  const answers = {pace: 'active', connection: 'conversation', activities: []};
+  const text = suggestProfileDescription(group, answers);
+  assert(text.includes('Podróżuję solo'));
+  assert(text.includes('Lubię być w ruchu'));
+  assert(text.includes('cenię rozmowy'));
+  assert(text.includes('Chętnie poznam ekipę'));
+  assert(!/nas|Lubimy|cenimy|poznamy|Prywatna|4–6/.test(text));
+  assert.notEqual(text, suggestProfileDescription(group, answers, 1));
+  assert.equal(text, suggestProfileDescription(group, answers, 2));
+});
 
 test('avatar selection survives profile save and later edits without changing the original profile', () => {
   for (const avatar of PROFILE_AVATARS) {

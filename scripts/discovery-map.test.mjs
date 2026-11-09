@@ -40,13 +40,16 @@ const row = {
   viewport: bounds,
   zoom: 5,
 };
-test('opening the map locks the type through resets, saved criteria and deferred filter actions; closing unlocks the list', () => {
+test('opening the map locks Mam plan; returning removes the type restriction and preserves other criteria', () => {
   const filters = {
     ...INITIAL_FILTERS,
     tripModes: ['flexible'],
     location: 'Pomorskie',
     favoritesOnly: true,
     childAgeBands: ['4–6'],
+    dateRangeId: 'custom',
+    customDateRange: {startDate: '2027-05-21', endDate: '2027-05-24'},
+    dateFlexibilityDays: 2,
   };
   const original = structuredClone(filters);
   let state = tripDiscoveryReducer(
@@ -73,11 +76,13 @@ test('opening the map locks the type through resets, saved criteria and deferred
   });
   assert.deepEqual(state.filters.tripModes, ['planned']);
   assert.equal(state.filters.location, 'Mazury');
+  const mapFilters = structuredClone(state.filters);
   state = tripDiscoveryReducer(state, { type: 'close-map' });
   assert.equal(state.mapOpen, false);
-  assert.deepEqual(state.filters.tripModes, ['planned']);
+  assert.deepEqual(state.filters, {...mapFilters, tripModes: ['planned', 'flexible']});
   state = tripDiscoveryReducer(state, { type: 'filters', value: filters });
   assert.deepEqual(state.filters.tripModes, ['flexible']);
+  assert.equal(tripDiscoveryReducer(state, {type: 'close-map'}), state);
   assert.deepEqual(filters, original);
   const planned = plannedMapFilters(INITIAL_FILTERS);
   assert.equal(

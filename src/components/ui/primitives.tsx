@@ -319,12 +319,14 @@ export interface ChipProps {
   selected?: boolean;
   onPress?: () => void;
   accessibilityLabel?: string;
+  compact?: boolean;
 }
 export function Chip({
   label,
   selected = false,
   onPress,
   accessibilityLabel,
+  compact = false,
 }: ChipProps) {
   const theme = useTheme();
   const content = (
@@ -338,6 +340,7 @@ export function Chip({
   );
   const baseStyle = [
     styles.chip,
+    compact && styles.compactChip,
     {
       backgroundColor: selected ? theme.backgroundSelected : theme.muted,
       borderColor: selected ? theme.primaryStrong : theme.border,
@@ -348,10 +351,12 @@ export function Chip({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ selected }}
+      aria-pressed={selected}
+      hitSlop={compact ? { top: 6, bottom: 6 } : undefined}
       onPress={onPress}
       style={({ pressed }) => [
         ...baseStyle,
-        styles.touchChip,
+        !compact && styles.touchChip,
         { opacity: pressed ? 0.65 : 1 },
       ]}
     >
@@ -380,7 +385,7 @@ export interface EmptyStateProps {
   description: string;
   icon?: IconName;
   action?: ReactNode;
-  compact?: boolean;
+  compact?: boolean | 'dense';
 }
 export function EmptyState({
   title,
@@ -391,9 +396,9 @@ export function EmptyState({
 }: EmptyStateProps) {
   const theme = useTheme();
   return (
-    <Card style={[styles.empty, compact && styles.emptyCompact]}>
-      <View style={[styles.emptyIcon, compact && styles.emptyIconCompact, { backgroundColor: theme.hero }]}>
-        <Icon name={icon} size={compact ? 32 : 44} />
+    <Card style={[styles.empty, compact && styles.emptyCompact, compact === 'dense' && styles.emptyDense]}>
+      <View style={[styles.emptyIcon, compact && styles.emptyIconCompact, compact === 'dense' && styles.emptyIconDense, { backgroundColor: theme.hero }]}>
+        <Icon name={icon} size={compact === 'dense' ? 28 : compact ? 32 : 44} />
       </View>
       <AppText
         accessibilityRole="header"
@@ -493,6 +498,7 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
   },
   touchChip: { minHeight: 48 },
+  compactChip: { minHeight: 32, paddingVertical: 4, paddingHorizontal: 10 },
   card: {
     borderWidth: 1,
     borderRadius: Radius.card,
@@ -515,5 +521,7 @@ const styles = StyleSheet.create({
   },
   emptyCompact: { paddingVertical: Spacing.four },
   emptyIconCompact: { width: 64, height: 64, borderRadius: Radius.card, marginBottom: 0 },
+  emptyDense: { paddingVertical: 12, paddingHorizontal: Spacing.three, gap: 10 },
+  emptyIconDense: { width: 48, height: 48, borderRadius: 16 },
   center: { textAlign: 'center' },
 });

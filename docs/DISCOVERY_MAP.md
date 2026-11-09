@@ -3,8 +3,9 @@ Wdrożenie Google Maps: Dev, 8 listopada 2026. Preview i Production nie są zmie
 
 ## Obsługa
 W Odkrywaj → Wyjazdy przycisk Mapa otwiera gotowe plany. Typ Mam plan jest wtedy
-zaznaczony i zablokowany; Szukam pomysłu pozostaje na liście. Powrót zachowuje
-filtry, wczytane strony i pozycję przewijania. Kamera mapy jest pamiętana w sesji.
+zaznaczony i zablokowany; Szukam pomysłu pozostaje na liście. Powrót usuwa ograniczenie
+typu do „Mam plan” i pokazuje oba typy ogłoszeń, zachowując pozostałe kryteria.
+Zmiana typu uruchamia listę od pierwszej strony. Kamera mapy jest pamiętana w sesji.
 
 Przesunięcie i zmiana przybliżenia pobierają wyniki po 450 ms od zakończenia ruchu.
 Pobliskie wyjazdy są grupowane; kliknięcie przybliża grupę albo otwiera jej

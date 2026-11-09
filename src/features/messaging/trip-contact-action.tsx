@@ -1,6 +1,6 @@
 import { DataStatus } from '@/components/ui/data-status';
+import { CountedTextInput } from '@/components/ui/counted-text-input';
 import { AppText, Button, layout } from '@/components/ui/primitives';
-import { Fonts, Typography } from '@/constants/theme';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { GroupAvatar } from '@/features/profile/group-avatar';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
@@ -11,7 +11,7 @@ import { createRequestKey } from '@/lib/request-key';
 import type { TravelGroup, TripProposal } from '@/types/travel';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { TextInput, View, type TextInputInstance } from 'react-native';
+import { View, type TextInputInstance } from 'react-native';
 import { useMessaging } from './messaging-context';
 import { FirstMessageSuggestions } from './first-message-suggestions-ui';
 import {
@@ -176,8 +176,8 @@ function ContactAction({
               input.current?.focus();
             }}
           />
-          <TextInput
-            ref={input}
+          <CountedTextInput
+            inputRef={input}
             accessibilityLabel="Treść zaproszenia"
             placeholder="Cześć! Chętnie porozmawiam o wspólnym wyjeździe…"
             placeholderTextColor={theme.textSecondary}
@@ -190,19 +190,8 @@ function ContactAction({
               minHeight: 128,
               maxHeight: 220,
               textAlignVertical: 'top',
-              borderWidth: 1,
-              borderColor: theme.border,
-              backgroundColor: theme.background,
-              color: theme.text,
-              borderRadius: 12,
-              padding: 12,
-              fontFamily: Fonts.sans,
-              ...Typography.body,
             }}
           />
-          <AppText variant="caption" color="textSecondary">
-            {text.length}/{MAX_INVITATION_LENGTH}
-          </AppText>
           {actionError ? (
             <AppText accessibilityRole="alert" color="textSecondary">
               {actionError}

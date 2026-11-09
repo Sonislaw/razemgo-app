@@ -28,6 +28,12 @@ Wszystkie endpointy wymagają aktywnej sesji i profilu. Uwzględniają obustronn
 
 Żądania aplikacji są przypinane do tokenu konkretnego konta. Zmiana konta, filtrów lub ekranu unieważnia spóźnione odpowiedzi. Podgląd demonstracyjny nadal filtruje lokalnie; zwykły Dev korzysta z nowych RPC, bez automatycznego powrotu do pobierania całego katalogu.
 
+## Szybkie terminy na Dev
+
+Pod paskiem filtrów w **Odkrywaj → Wyjazdy** znajduje się poziomo przewijany wiersz: **Dzisiaj, Jutro, Weekend, 7 dni, Następny weekend, 30 dni**. Wybór stosuje dokładny zakres bez tolerancji i uruchamia wyszukiwanie od pierwszej strony. Ponowne kliknięcie aktywnej opcji usuwa tylko kryterium dat; pozostałe filtry pozostają wybrane. Zaznaczenie wynika z faktycznych kryteriów, również po edycji w kalendarzu lub wczytaniu zestawu.
+
+Dzisiaj i Jutro obejmują pojedynczy dzień, a 7 dni i 30 dni liczą się od dziś. Weekend obejmuje piątek, sobotę i niedzielę — podczas weekendu wskazuje bieżący, a Następny weekend kolejny. Zakresy wyszukiwania mają wyłączny koniec, dlatego dla weekendu górną granicą jest poniedziałek. Bieżący dzień pochodzi z lokalnej daty telefonu, przesunięcia dat są liczone w UTC, niezależnie od zmiany czasu. Zapisany zestaw zachowuje konkretne daty. Funkcja nie wymaga migracji ani nowego APK.
+
 ## Weryfikacja
 
 - 372 testy Node, w tym rzeczywiste migracje PostgreSQL/PGlite: ponad 20 wyjazdów, remisy, sortowanie całego zbioru, wszystkie filtry i licznik, tolerancja dat, zgodność z dotychczasowym modelem, ulubione, bezpośrednie linki, prywatność, brak sesji i dostęp anonimowy.

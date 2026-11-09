@@ -85,7 +85,7 @@ function TutorialContent() {
     <Animated.View
       key={offer ? 'offer' : step}
       role="dialog" accessibilityViewIsModal aria-modal
-      accessibilityLabel={`Samouczek: ${offer ? 'Poznaj menu RazemGO' : current?.title}`}
+      accessibilityLabel={`Samouczek: ${offer ? 'Witaj w społeczności RazemGO!' : current?.title}`}
       testID={offer ? 'tutorial-offer' : 'tutorial-step'}
       onLayout={animation.onLayout}
       style={[styles.card, {
@@ -116,8 +116,8 @@ function TutorialContent() {
           </Pressable>
         </View>
         <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={styles.body}>
-          <AppText variant="heading" accessibilityRole="header" style={styles.title}>{offer ? 'Poznaj menu RazemGO' : current?.title}</AppText>
-          <AppText color="textSecondary" style={styles.description}>{offer ? 'Poznaj dolne menu oraz dzwoneczek z powiadomieniami. Samouczek możesz pominąć w dowolnej chwili.' : current?.text}</AppText>
+          <AppText variant="heading" accessibilityRole="header" style={styles.title}>{offer ? 'Witaj w społeczności RazemGO!' : current?.title}</AppText>
+          <AppText color="textSecondary" style={styles.description}>{offer ? 'Dziękujemy za rejestrację! Cieszymy się, że jesteś z nami. W krótkim samouczku poznasz podstawowe funkcje aplikacji. Możesz go pominąć w dowolnej chwili.' : current?.text}</AppText>
         </ScrollView>
         <View style={styles.actions}>
           {!offer && step !== null && step > 0 ? <Pressable

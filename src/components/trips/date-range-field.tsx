@@ -17,6 +17,7 @@ export function DateRangeField({
   onPress,
   buttonRef,
   boldLabel = false,
+  showWeekdays = true,
 }: {
   range?: DateRange;
   caption?: string;
@@ -24,11 +25,12 @@ export function DateRangeField({
   onPress: () => void;
   buttonRef?: Ref<ViewInstance>;
   boldLabel?: boolean;
+  showWeekdays?: boolean;
 }) {
   const theme = useTheme();
   const title =
     range && !getDiscoveryDateRangeError(range)
-      ? formatTripDates(range)
+      ? formatTripDates(range, {weekdays: showWeekdays})
       : 'Wybierz daty';
   const detail = caption ?? 'Dzień wyjazdu i powrotu';
   return (

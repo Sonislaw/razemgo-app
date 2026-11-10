@@ -162,6 +162,11 @@ async function backend(context, store) {
       ).sub;
     } catch {}
     const endpoint = url.pathname.split('/').at(-1);
+    if (url.pathname === '/functions/v1/trip-weather') {
+      (store.weatherCalls ??= []).push(body);
+      if (store.failWeather) return respond({error: 'Unavailable'}, 503);
+      return respond(store.weatherByTrip?.get(body.tripId) ?? {state: 'unavailable'});
+    }
     if(url.pathname==='/functions/v1/places') {
       (store.placeCalls??=[]).push(body);
       if(store.failPlaces)return respond({error:'Unavailable'},503);

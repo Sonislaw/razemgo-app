@@ -1140,6 +1140,12 @@ export type Database = {
                 };
                 Returns: Json;
             };
+            "get_my_trip_weather_context": {
+                Args: {
+                    "target_trip_id": string;
+                };
+                Returns: Json;
+            };
             "get_my_tutorial_state": {
                 Args: Record<PropertyKey, never>;
                 Returns: Json;
@@ -1203,6 +1209,12 @@ export type Database = {
             "get_trip_reactions": {
                 Args: {
                     "trip_ids": (string)[];
+                };
+                Returns: Json;
+            };
+            "get_trip_weather_cache": {
+                Args: {
+                    "cache_key": string;
                 };
                 Returns: Json;
             };
@@ -1303,6 +1315,13 @@ export type Database = {
                     "maximum": number;
                 };
                 Returns: boolean;
+            };
+            "put_trip_weather_cache": {
+                Args: {
+                    "cache_key": string;
+                    "forecast": Json;
+                };
+                Returns: undefined;
             };
             record_google_place_geometry: {
                 Args: {

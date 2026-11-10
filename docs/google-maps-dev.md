@@ -11,6 +11,8 @@ W [Google Cloud Console](https://console.cloud.google.com/) wybierz projekt
 
 - **Maps SDK for Android** — mapa i znaczniki wyjazdów;
 - **Places API (New)** — podpowiedzi oraz szczegóły wybranego miejsca.
+- **Weather API** — opcjonalna sekcja pogody w szczegółach wyjazdu,
+  [osobny sekret i konfiguracja](TRIP_WEATHER.md).
 
 Nie trzeba włączać Geocoding API do pobrania adresu i współrzędnych miejsca
 wybranego z Places. Te dane dostarcza Place Details.

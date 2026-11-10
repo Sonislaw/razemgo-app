@@ -8,6 +8,7 @@ import { TripLocationSummary } from './trip-location-summary';
 import { TripMapCard } from './trip-map-card';
 import { TripParticipantsCard } from './trip-participants-card';
 import { PassportLevelBadge } from '@/features/passport/passport-level-badge';
+import { TripWeatherCard } from '@/features/weather/trip-weather-card';
 
 export function TripDetailsContent({
   trip,
@@ -63,6 +64,7 @@ export function TripDetailsContent({
           ) : null}
         </Card>
       </View>
+      <TripWeatherCard trip={trip} />
       <TripMapCard trip={trip} />
       <TripParticipantsCard value={trip.participants} animals={trip.animals} />
     </>

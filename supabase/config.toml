@@ -62,3 +62,6 @@ verify_jwt = false
 
 [functions.places]
 verify_jwt = false
+
+[functions.trip-weather]
+verify_jwt = false

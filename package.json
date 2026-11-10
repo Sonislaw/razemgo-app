@@ -71,6 +71,7 @@
     "test:trips": "node --test scripts/trips.test.mjs scripts/trip-description.test.mjs",
     "test:trip-maps": "node --test scripts/trip-maps.test.mjs",
     "test:places": "node --test scripts/google-places-backend.test.mjs scripts/google-locations.test.mjs",
+    "test:weather": "node --test scripts/weather.test.mjs scripts/weather-backend.test.mjs",
     "test:locations": "node --test scripts/locations.test.mjs",
     "test:home": "node --test scripts/home.test.mjs",
     "test:notifications": "node --test scripts/notifications.test.mjs scripts/push.test.mjs scripts/push-backend.test.mjs scripts/notification-center-backend.test.mjs scripts/google-proposals-backend.test.mjs",
@@ -97,7 +98,7 @@
     "benchmark:sql": "node scripts/benchmark-sql.mjs",
     "benchmark:load": "node scripts/benchmark-load.mjs",
     "benchmark:sessions": "node scripts/benchmark-sessions.mjs",
-    "test:edge": "npx --yes deno@2.9.6 test --config supabase/functions/deno.json --frozen --allow-env --allow-net --allow-sys --allow-read supabase/functions/_shared/monitoring.test.ts supabase/functions/_shared/monitoring-dev.test.ts supabase/functions/dispatch-push/handler.test.ts supabase/functions/monitor-push/handler.test.ts supabase/functions/delete-account/handler.test.ts supabase/functions/places/handler.test.ts",
+    "test:edge": "npx --yes deno@2.9.6 test --config supabase/functions/deno.json --frozen --allow-env --allow-net --allow-sys --allow-read supabase/functions/_shared/monitoring.test.ts supabase/functions/_shared/monitoring-dev.test.ts supabase/functions/dispatch-push/handler.test.ts supabase/functions/monitor-push/handler.test.ts supabase/functions/delete-account/handler.test.ts supabase/functions/places/handler.test.ts supabase/functions/trip-weather/handler.test.ts",
     "build:performance": "npx eas-cli@latest build --platform android --profile performance"
   },
   "private": true

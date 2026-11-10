@@ -50,6 +50,8 @@ Deno.test('Places authenticates, enforces budgets and hides the server key while
     assert((await invoke({action:'autocomplete',query:'Camp'},{})).status === 401);
     assert((await invoke({action:'autocomplete',query:'Camp'},{origin:'https://foreign.invalid',authorization:'Bearer test'})).status === 403);
     assert((await invoke({action:'details',placeId:'../secrets'})).status === 400);
+    assert((await invoke({action:'autocomplete',query:'Ca',sessionToken:session})).status === 400);
+    assert((await invoke({action:'autocomplete',query:'Camp'})).status === 400);
     assert((await invoke({action:'autocomplete',query:'Camp',areasOnly:'true'})).status===400);
     assert((await invoke({action:'manual-address',address:'Leśna 4',region:'',country:'Polska'})).status===400);
     assert(calls.length === 0);
@@ -79,5 +81,44 @@ Deno.test('Places authenticates, enforces budgets and hides the server key while
   } finally {
     globalThis.fetch = original;
     Object.keys(values).forEach((key,i) => previous[i] === undefined ? Deno.env.delete(key) : Deno.env.set(key, previous[i]!));
+  }
+});
+
+Deno.test('Geometry uses the existing server cache and calls Google only when geometry is missing', async () => {
+  const values: Record<string, string> = {SUPABASE_URL: 'https://backend.invalid', APP_SUPABASE_PUBLISHABLE_KEY: 'public-test',
+    APP_SUPABASE_SECRET_KEY: 'server-test', GOOGLE_PLACES_API_KEY: 'google-test'};
+  const previous = Object.keys(values).map(key => Deno.env.get(key));
+  Object.entries(values).forEach(([key, value]) => Deno.env.set(key, value));
+  const original = globalThis.fetch;
+  let cached: unknown = null, googleCalls = 0, authenticated = true;
+  const assert = (value: unknown) => {if (!value) throw Error('Geometry optimization failed');};
+  globalThis.fetch = async (input, init) => {
+    const url = String(input);
+    if (url.endsWith('/auth/v1/user')) return Response.json(authenticated ? {id: crypto.randomUUID()} : {message: 'invalid'}, {status: authenticated ? 200 : 401});
+    if (url.endsWith('/rest/v1/rpc/claim_my_place_request')) return Response.json(null);
+    if (url.endsWith('/rest/v1/rpc/get_google_place_geometry')) {
+      assert(new Headers(init?.headers).get('apikey') === 'server-test'); return Response.json(cached);
+    }
+    if (url.endsWith('/rest/v1/rpc/record_google_place_geometry')) {
+      const data = JSON.parse(String(init?.body));
+      cached = {latitude: data.latitude, longitude: data.longitude, bounds: data.bounds, geometryExpiresAt: new Date(Date.now() + 86400000).toISOString()};
+      return Response.json(null);
+    }
+    if (url.startsWith('https://places.googleapis.com/')) {
+      googleCalls++; assert(new Headers(init?.headers).get('X-Goog-FieldMask') === 'id,location,viewport');
+      return Response.json({id: 'ChIJ_cached', location: {latitude: 54, longitude: 18}});
+    }
+    throw Error('Unexpected transport');
+  };
+  const invoke = () => handlePlaces(new Request('https://edge.invalid/places', {method: 'POST', headers: {authorization: 'Bearer test'},
+    body: JSON.stringify({action: 'geometry', placeId: 'ChIJ_cached'})}));
+  try {
+    const first = await invoke(); assert(first.status === 200 && (await first.json()).place.latitude === 54); assert(googleCalls === 1);
+    const second = await invoke(); assert(second.status === 200 && (await second.json()).place.longitude === 18); assert(googleCalls === 1);
+    authenticated = false; assert((await invoke()).status === 401); assert(googleCalls === 1); authenticated = true;
+    cached = null; await invoke(); assert(googleCalls === 2);
+  } finally {
+    globalThis.fetch = original;
+    Object.keys(values).forEach((key, i) => previous[i] === undefined ? Deno.env.delete(key) : Deno.env.set(key, previous[i]!));
   }
 });

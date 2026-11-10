@@ -35,7 +35,7 @@ export async function handlePlaces(request: Request) {
       return respond(400,{error:'Complete address required'});
     const token = input.sessionToken;
     if (token != null && (typeof token !== 'string' || !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(token))) return respond(400, { error: 'Invalid session' });
-    if (input.action === 'autocomplete' && (typeof input.query !== 'string' || input.query.trim().length < 2 || input.query.length > 160))
+    if (input.action === 'autocomplete' && (typeof input.query !== 'string' || input.query.trim().length < 3 || input.query.length > 160 || !token))
       return respond(400, { error: 'Invalid query' });
     if (['details','geometry'].includes(input.action) && (typeof input.placeId !== 'string' || !GOOGLE_PLACE_ID.test(input.placeId)))
       return respond(400, { error: 'Invalid place' });
@@ -77,7 +77,11 @@ export async function handlePlaces(request: Request) {
       if(input.areasOnly&&!isAreaPlaceKind(place.kind))return respond(422,{error:'Choose a locality, region or country',code:'area_required'});
       return respond(200,{place});
     }
-    if (input.action === 'geometry') return respond(200, { place: await details(input.placeId, undefined, true) });
+    if (input.action === 'geometry') {
+      const cached = await admin.rpc('get_google_place_geometry', {place_id: input.placeId});
+      if (cached.error) throw Error('Geometry unavailable');
+      return respond(200, {place: cached.data ?? await details(input.placeId, undefined, true)});
+    }
     if(input.action==='manual-address') {
       const raw=await google('https://places.googleapis.com/v1/places:searchText','places.id,places.location,places.viewport,places.addressComponents',
         {textQuery:[input.address.trim(),input.region.trim(),input.country.trim()].join(', '),languageCode:'pl',regionCode:'pl',pageSize:3});

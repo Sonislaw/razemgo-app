@@ -13,41 +13,43 @@ import { PLACE_KIND_LABELS } from './place-data';
 export function PlaceSuggestions({ query, mode, onSelect, initial, areasOnly=false }: {
   query:string;mode:string;onSelect:(place:SelectedPlace)=>void;initial?:SelectedPlace;areasOnly?:boolean;
 }) {
-  const theme = useTheme(), [token] = useState(createRequestKey);
+  const theme = useTheme(), [token, setToken] = useState(createRequestKey);
   const [snapshot,setSnapshot] = useState<{key:string;results:PlacePrediction[];error:string}>({key:'',results:[],error:''});
   const [selectionError,setSelectionError] = useState({key:'',message:''}), [retry,setRetry] = useState(0), [manual,setManual] = useState(initial?.source==='manual'), [choosing,setChoosing] = useState(false);
-  const requestKey=mode+':'+areasOnly+':'+query+':'+retry;
+  const search = query.trim();
+  const queryKey=mode+':'+areasOnly+':'+search+':'+retry;
+  const requestKey=token+':'+queryKey;
   const results=snapshot.key===requestKey ? snapshot.results : [];
-  const loading=!manual&&query.trim().length>=2&&snapshot.key!==requestKey;
-  const error=(selectionError.key===requestKey?selectionError.message:'')||(snapshot.key===requestKey?snapshot.error:'');
+  const loading=!manual&&search.length>=3&&snapshot.key!==requestKey;
+  const error=(selectionError.key===queryKey?selectionError.message:'')||(snapshot.key===requestKey?snapshot.error:'');
   const selection = useRef<AbortController|null>(null);
   useEffect(() => () => selection.current?.abort(), []);
+  useEffect(() => {selection.current?.abort();}, [search, mode, manual]);
   useEffect(() => {
-    selection.current?.abort();
-    if(manual || query.trim().length<2)return;
+    if(manual || search.length<3)return;
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      void predictPlaces(query.trim(),mode,token,controller.signal,areasOnly).then(value => {
+      void predictPlaces(search,mode,token,controller.signal,areasOnly).then(value => {
         if(!controller.signal.aborted) setSnapshot({key:requestKey,results:value,error:''});
       }).catch(() => {if(!controller.signal.aborted) setSnapshot({key:requestKey,results:[],error:'Nie udało się pobrać podpowiedzi. Spróbuj ponownie lub dodaj miejsce ręcznie.'});});
-    },350);
+    },500);
     return () => {clearTimeout(timer);controller.abort();};
-  },[query,mode,token,manual,requestKey,areasOnly]);
+  },[search,mode,token,manual,requestKey,areasOnly]);
   if(manual&&areasOnly)return <ManualAreaFields query={query} initial={initial?.source==='manual'?initial:undefined} onSave={onSelect} onBack={()=>setManual(false)}/>;
   if(manual) return <ManualPlaceFields query={query} flexible={mode==='flexible'} initial={initial?.source==='manual'?initial:undefined} onSave={onSelect} onBack={() => setManual(false)}/>;
   return <View style={{gap:12}} testID="google-place-suggestions">
-    <AppText variant="caption" color="textSecondary" accessibilityLiveRegion="polite">{loading ? 'Wyszukiwanie miejsc…' : query.trim().length<2 ?
-      (areasOnly?'Wpisz co najmniej 2 znaki: miejscowość, wieś, region lub kraj.':'Wpisz co najmniej 2 znaki: miejscowość, nazwę kempingu lub inne miejsce.') : results.length ? (areasOnly?'Wybierz obszar':'Wybierz miejsce') : (areasOnly?'Brak pasujących obszarów. Możesz dodać własny.':'Brak pasujących miejsc. Możesz dodać własne.')}</AppText>
+    <AppText variant="caption" color="textSecondary" accessibilityLiveRegion="polite">{loading ? 'Wyszukiwanie miejsc…' : search.length<3 ?
+      (areasOnly?'Wpisz co najmniej 3 znaki: miejscowość, wieś, region lub kraj.':'Wpisz co najmniej 3 znaki: miejscowość, nazwę kempingu lub inne miejsce.') : results.length ? (areasOnly?'Wybierz obszar':'Wybierz miejsce') : (areasOnly?'Brak pasujących obszarów. Możesz dodać własny.':'Brak pasujących miejsc. Możesz dodać własne.')}</AppText>
     {loading || choosing ? <ActivityIndicator color={theme.primaryStrong}/> : null}
     {results.map(place => <Pressable key={place.id} accessibilityRole="button" disabled={choosing}
       accessibilityLabel={'Wybierz miejsce: '+place.name+', '+place.context+', '+PLACE_KIND_LABELS[place.kind]}
       style={({pressed}) => [layout.row,{paddingVertical:16,borderBottomWidth:1,borderColor:theme.border,opacity:pressed||choosing ? 0.65 : 1}]}
       onPress={() => {
         selection.current?.abort();const controller = new AbortController();selection.current=controller;
-        setChoosing(true);setSelectionError({key:requestKey,message:''});
+        setChoosing(true);setSelectionError({key:queryKey,message:''});
         void resolvePlace(place.id,query.trim(),token,controller.signal,areasOnly).then(value => {if(!controller.signal.aborted) onSelect(value);})
-          .catch(() => {if(!controller.signal.aborted) setSelectionError({key:requestKey,message:'Nie udało się wczytać miejsca. Spróbuj ponownie lub dodaj je ręcznie.'});})
-          .finally(() => setChoosing(false));
+          .catch(() => {if(!controller.signal.aborted) setSelectionError({key:queryKey,message:'Nie udało się wczytać miejsca. Spróbuj ponownie lub dodaj je ręcznie.'});})
+          .finally(() => {setChoosing(false); if (!controller.signal.aborted) setToken(createRequestKey());});
       }}>
       <Icon name={place.kind==='campground' ? 'tent' : 'pin'} size={24}/>
       <View style={{flex:1,minWidth:0,gap:4}}><AppText variant="label">{place.name}</AppText>

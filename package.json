@@ -70,7 +70,7 @@
     "test:messaging": "node --test scripts/messaging.test.mjs scripts/messaging-data.test.mjs scripts/messaging-backend.test.mjs",
     "test:trips": "node --test scripts/trips.test.mjs scripts/trip-description.test.mjs",
     "test:trip-maps": "node --test scripts/trip-maps.test.mjs",
-    "test:places": "node --test scripts/google-places-backend.test.mjs scripts/google-locations.test.mjs",
+    "test:places": "node --test scripts/google-places-backend.test.mjs scripts/google-locations.test.mjs scripts/place-requests.test.mjs",
     "test:weather": "node --test scripts/weather.test.mjs scripts/weather-backend.test.mjs",
     "test:locations": "node --test scripts/locations.test.mjs",
     "test:home": "node --test scripts/home.test.mjs",

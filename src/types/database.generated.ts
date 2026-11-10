@@ -1051,6 +1051,12 @@ export type Database = {
                 };
                 Returns: Json;
             };
+            "get_google_place_geometry": {
+                Args: {
+                    "place_id": string;
+                };
+                Returns: Json;
+            };
             "get_message_reactions": {
                 Args: {
                     "conversation_id": string;

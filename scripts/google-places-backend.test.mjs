@@ -37,14 +37,18 @@ test('Places budgets are isolated and atomic; only the server can write geometry
     await db.query('insert into auth.users(id) values ($1),($2)', [first, second]);
     await asUser(db, first);
     await assert.rejects(db.query("select public.record_google_place_geometry('ChIJ_place',54,18)"), { code: '42501' });
+    await assert.rejects(db.query("select public.get_google_place_geometry('ChIJ_place')"), {code: '42501'});
     await assert.rejects(db.query('select * from places_private.geometry'), { code: '42501' });
     for (let i=0;i<60;i++) await db.query('select public.claim_my_place_request()');
     await assert.rejects(db.query('select public.claim_my_place_request()'), { code: '54000' });
     await asUser(db, second);
     await db.query('select public.claim_my_place_request()');
     await db.exec('reset role;set role service_role');
+    assert.equal((await db.query("select public.get_google_place_geometry('ChIJ_place') value")).rows[0].value, null);
     await db.query("select public.record_google_place_geometry('ChIJ_place',54,18)");
     await db.query("select public.record_google_place_geometry('ChIJ_place',53,17)");
+    const cached = (await db.query("select public.get_google_place_geometry('ChIJ_place') value")).rows[0].value;
+    assert.equal(cached.latitude, 53); assert.equal(cached.longitude, 17); assert.equal(typeof cached.geometryExpiresAt, 'string');
     await assert.rejects(db.query("select public.record_google_place_geometry('ChIJ_bad',100,18)"), { code: '23514' });
     await db.exec('reset role');
     const result = (await db.query('select *, expires_at<=refreshed_at+interval \'28 days\' as limited from places_private.geometry')).rows;
@@ -53,6 +57,7 @@ test('Places budgets are isolated and atomic; only the server can write geometry
     assert.equal(result[0].limited, true);
     assert.deepEqual(Object.keys(result[0]).sort(), ['bounds','expires_at','latitude','limited','longitude','place_id','refreshed_at'].sort());
     await db.query("update places_private.geometry set refreshed_at=now()-interval '29 days',expires_at=now()-interval '1 day'");
+    assert.equal((await db.query("select public.get_google_place_geometry('ChIJ_place') value")).rows[0].value, null);
     await db.query('select places_private.expire_geometry()');
     assert.equal((await db.query('select count(*)::integer n from places_private.geometry')).rows[0].n, 0);
     await db.exec('set role anon');

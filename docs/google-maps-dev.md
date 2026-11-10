@@ -109,3 +109,78 @@ Google Maps. Nie pokazuje niedziałającego przełącznika mapy ani pustego podg
   Migracje danych, filtry, kontekst rozmów i odznaki za kempingi wdrożono na Dev.
   Usunięto katalog OSM, Leaflet i WebView. Testy rzeczywistej bazy kończą się
   wycofaniem danych kontrolnych; istniejące wyjazdy pozostają zachowane.
+
+## Ograniczenie zapytań Places — 10 listopada 2026
+
+- Autocomplete wymaga co najmniej **3 znaków** i **500 ms** przerwy w pisaniu.
+  Porównuje tekst po usunięciu skrajnych spacji. Krótsze zapytanie jest zatrzymywane
+  również w repozytorium i funkcji serwerowej. Serwer wymaga tokenu sesji.
+- Każde otwarcie wyszukiwania ma własny token; podpowiedzi i wybór miejsca
+  używają tego samego tokenu. Po nieudanej próbie Place Details nowa próba
+  rozpoczyna nową sesję. Szczegóły nie są pobierane dla całej listy podpowiedzi.
+- `createActivePlaceRequests` współdzieli odczyt szczegółów danego ID między
+  zamontowanymi widokami. Lokalizacja, pogoda, mapa i pomocnik opisu korzystają
+  z jednej odpowiedzi. Ponowny render i równoczesny odczyt nie tworzą duplikatów.
+  Zwolnienie jednego odbiorcy nie anuluje pozostałych. Niedokończone żądania
+  są anulowane po odejściu ostatniego odbiorcy; ukończone szczegóły korzystają
+  z opisanego poniżej cache sesji. Zmiana konta przerywa żądania i czyści zasoby.
+- Mapa wykorzystuje współrzędne już pobieranych szczegółów. Współrzędne są
+  dodatkowo współdzielone w ograniczonej pamięci aplikacji przez maksymalnie
+  30 minut, z uwzględnieniem terminu ważności po stronie dostawcy.
+- Migracja `202611100002_places_request_optimization.sql` udostępnia serwerowi
+  `get_google_place_geometry`. Funkcja `places` dla operacji `geometry` odczytuje
+  istniejącą, ważną geometrię z bazy; Google jest wywoływane dopiero przy braku
+  lub wygaśnięciu wpisu. Prywatny cache nadal ma limit 28 dni.
+- Zadanie serwerowe co 5 minut sprawdza wyłącznie brakującą lub wygasającą
+  geometrię. Samo uruchomienie zadania nie oznacza zapytania do Google;
+  aktualne współrzędne nie są odświeżane co 5 minut.
+
+Testy obejmują rzeczywisty próg 3 znaków i debounce 500 ms, wybór jednej
+podpowiedzi, wspólny i odnawiany token, odczyty współdzielone, anulowanie,
+izolację kont oraz prywatność i wygaśnięcie cache PostgreSQL. Scenariusz ekranu
+własnego wyjazdu potwierdza **1 odczyt szczegółów i 0 dodatkowych odczytów
+geometrii** dla lokalizacji, pogody i mapy. Test HTTP potwierdza **0 kolejnych
+wywołań Google** przy powtórnym żądaniu ważnej geometrii. Testy korzystają
+z atrap dostawcy; nie zwiększają licznika Google Places API.
+
+Zmiany wdrożono wyłącznie na Dev, bez zmiany APK. Przeszły testy Node/PostgreSQL,
+dwa testy HTTP Edge, pięć scenariuszy przeglądarkowych, lint, TypeScript
+i kontrola źródeł. Kontrola rzeczywistego Dev potwierdziła dwa kolejne odczyty
+ważnej geometrii bez odświeżenia przez Google i odrzucenie zapytania 2-znakowego.
+Tymczasowe konto kontrolne usunięto; nie publikowało żadnych ogłoszeń.
+Przeszłych 392 wywołań
+nie można przypisać do poszczególnych ekranów na podstawie samego zbiorczego
+licznika Google Cloud.
+
+## Cache miejsc podczas sesji aplikacji
+
+Na żądanie użytkownika odpowiedzi Place Details pozostają w RAM po zniknięciu
+ostatniej karty. Kluczem jest `place_id`, a zakres obejmuje jedno uruchomienie
+aplikacji dla jednego konta: listy, szczegóły, mapę, pogodę i pomocnik opisu.
+Powrót do listy, odmontowanie wirtualizowanego wiersza czy inne ogłoszenie
+z tym samym miejscem korzysta z pobranej odpowiedzi. Jest to mechanizm
+techniczny; sam fakt użycia RAM nie potwierdza uprawnień do przechowywania
+treści na podstawie warunków Google.
+
+- Do **100 ostatnio używanych nieaktywnych miejsc**; po przekroczeniu limitu
+  usuwane są najdawniej używane wpisy. Dane aktualnie używane przez widoki
+  pozostają dostępne do ich zamknięcia.
+- Wylogowanie i zmiana konta natychmiast czyszczą cache przez granicę sesji
+  `backendLifecycle`. Zamknięcie procesu lub przeładowanie aplikacji również
+  usuwa dane. Przejście między zakładkami ani krótkie przejście do innej
+  aplikacji nie kończy tej sesji.
+- Odpowiedź po wyborze podpowiedzi zasila cache, więc zapis ogłoszenia
+  i otwarcie jego karty nie wymagają ponownego Place Details.
+- Nowy wybór z Autocomplete zawsze kończy własny token sesji przez Place
+  Details; jego aktualna odpowiedź odświeża cache. Samo przeglądanie korzysta
+  z poprzednio pobranych danych.
+- Błędy i anulowane żądania nie są zachowywane. Nazwy i adresy nie są
+  zapisywane w bazie, AsyncStorage ani na dysku. Geometria zachowuje osobny
+  cache z dotychczasowym terminem ważności.
+
+Testy sprawdzają ponowne użycie po odmontowaniu wszystkich kart, limit LRU,
+ochronę aktywnych wpisów, wybór miejsca, odrzucenie błędów i czyszczenie konta.
+Scenariusz przeglądarkowy liczy żądania podczas zapisu, przełączenia do archiwum,
+powrotu na listę, otwarcia szczegółów i ponownego logowania, bez przeładowywania
+dokumentu pomiędzy tymi czynnościami. Zmiana jest dostępna przez Metro Dev,
+bez nowej migracji, wdrożenia Edge ani APK.

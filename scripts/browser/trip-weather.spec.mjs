@@ -11,7 +11,7 @@ function seed(store) {
   store.trips.set(id(1), {id: id(1), ...base, start_date: '2099-05-01', end_date: '2099-05-04'});
   store.trips.set(id(2), {id: id(2), ...base, mode: 'flexible', location_id: 'pl-region:pomorskie', location_kind: 'region', location_name: 'Pomorskie'});
   store.trips.set(id(3), {id: id(3), ...base, group_id: groupId(A), end_date: '2026-10-27'});
-  const forecast = {state: 'forecast', partial: true, timeZone: 'Europe/Warsaw', fetchedAt: '2026-10-24T11:55:00Z', alertsAvailable: true,
+  const forecast = {state: 'forecast', partial: true, timeZone: 'Europe/Warsaw', fetchedAt: '2026-10-24T11:55:00Z', alertsFetchedAt: '2026-10-24T12:05:00Z', alertsAvailable: true,
     days: [25, 26, 27].map(day => ({date: `2026-10-${day}`, condition: 'RAIN', description: 'Przelotny deszcz', minC: 4, maxC: 12,
       precipitationPercent: 70, precipitationMm: 3.5, windKmh: 18, gustKmh: 40})),
     alerts: [{id: 'wind', title: 'Silny wiatr', severity: 'SEVERE', description: 'Prognozowane silne porywy wiatru na wybrzeżu.',
@@ -33,6 +33,8 @@ for (const width of [320, 390]) test(`trip weather: retry, daily forecast, alert
   await expect(weather).toContainText('Wiatr: 18 km/h');
   await expect(weather).toContainText('Pozostałe pojawią się bliżej terminu');
   await expect(weather).toContainText('Google Maps');
+  await expect(weather).toContainText(/Aktualizacja.*13:55/);
+  await expect(weather).toContainText(/Ostrzeżenia sprawdzone.*14:05/);
   const days = weather.getByLabel('Prognoza dzienna na wyjazd', {exact: true});
   expect(await days.evaluate(el => el.scrollWidth > el.clientWidth)).toBe(true);
   await weather.screenshot({path: `.expo/trip-weather-${width}.png`});

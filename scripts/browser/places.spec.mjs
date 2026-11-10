@@ -19,10 +19,19 @@ test('Google search waits 500 ms, requires three characters, fetches one selecte
   await input.fill('Ca'); await page.clock.runFor(800); expect(searches()).toHaveLength(before);
   await input.fill('Cam'); await page.clock.runFor(499); expect(searches()).toHaveLength(before);
   await page.clock.runFor(1); await expect.poll(() => searches().length).toBe(before + 1);
+  await expect(page.getByText('Brak pasujących miejsc. Możesz dodać własne.', {exact: true})).toBeVisible();
   await input.fill('Camp'); await page.clock.runFor(200);
   await input.fill('Campi'); await page.clock.runFor(200);
   await input.fill('Camping'); await page.clock.runFor(499); expect(searches()).toHaveLength(before + 1);
   await page.clock.runFor(1); await expect.poll(() => searches().length).toBe(before + 2);
+  await expect(page.getByRole('button', {name: /^Wybierz miejsce: Camping Morski,/})).toBeVisible();
+  // Returning to an earlier phrase in this session reuses predictions.
+  await input.fill('Cam'); await page.clock.runFor(600);
+  await expect(page.getByText('Brak pasujących miejsc. Możesz dodać własne.', {exact: true})).toBeVisible();
+  expect(searches()).toHaveLength(before + 2);
+  await input.fill('Camping'); await page.clock.runFor(600);
+  await expect(page.getByRole('button', {name: /^Wybierz miejsce: Camping Morski,/})).toBeVisible();
+  expect(searches()).toHaveLength(before + 2);
   expect((store.placeCalls ?? []).filter(call => call.action === 'details')).toHaveLength(0);
   const token = searches().at(-1).sessionToken;
   await page.clock.resume();
@@ -30,7 +39,13 @@ test('Google search waits 500 ms, requires three characters, fetches one selecte
   await expect(page.getByTestId('trip-editor-location')).toContainText('Camping Morski');
   const details = store.placeCalls.filter(call => call.action === 'details'); expect(details).toHaveLength(1);
   expect(details[0].sessionToken).toBe(token);
-  const next = await openSuggestions(page, 'Dokąd jedziecie?'); await next.fill('Camping');
+  let next = await openSuggestions(page, 'Dokąd jedziecie?');
+  const callsBeforeReopen = store.placeCalls.length;
+  await page.waitForTimeout(650);
+  expect(store.placeCalls).toHaveLength(callsBeforeReopen);
+  await page.getByRole('button', {name: 'Użyj wybranego miejsca: Camping Morski', exact: true}).click();
+  expect(store.placeCalls).toHaveLength(callsBeforeReopen);
+  next = await openSuggestions(page, 'Dokąd jedziecie?'); await next.fill('Camping');
   await expect.poll(() => searches().at(-1).sessionToken).not.toBe(token);
 });
 
@@ -148,6 +163,14 @@ for(const width of [320,390])test(`manual address requires all three fields, res
   expect(store.placeCalls.filter(call=>call.action==='manual-address')).toHaveLength(2);
   await edit(page);await openSuggestions(page,'Dokąd jedziecie?');await expect(field(page,'Adres miejsca')).toHaveValue('Armii Krajowej 4, Ustka');
   await expect(field(page,'Region')).toHaveValue('pomorskie');await expect(field(page,'Kraj')).toHaveValue('Polska');
+  await field(page,'Nazwa miejsca').fill('Nowa nazwa polany');
+  await button(page,'Kemping').click();await button(page,'Użyj tego miejsca').click();
+  await expect(page.getByTestId('manual-place-form')).toHaveCount(0);
+  expect(store.placeCalls.filter(call=>call.action==='manual-address')).toHaveLength(2);
+  await openSuggestions(page,'Dokąd jedziecie?');
+  await field(page,'Adres miejsca').fill('Armii Krajowej 6, Ustka');await button(page,'Użyj tego miejsca').click();
+  await expect(page.getByTestId('manual-place-form')).toHaveCount(0);
+  expect(store.placeCalls.filter(call=>call.action==='manual-address')).toHaveLength(3);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 

@@ -26,6 +26,7 @@ export interface WeatherForecast {
   alertsAvailable: boolean;
   timeZone: string;
   fetchedAt: string;
+  alertsFetchedAt?: string | null;
 }
 export type WeatherMessageState = 'future' | 'past' | 'needs_dates' | 'needs_location' | 'area' | 'unavailable';
 export type TripWeather = {state: WeatherMessageState} | (WeatherForecast & {state: 'forecast'; partial: boolean});

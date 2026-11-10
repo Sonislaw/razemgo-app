@@ -56,6 +56,7 @@ function WeatherContent({trip}: {trip: TripPlan}) {
         {forecast.alerts.length ? <Button label={'Ostrzeżenia pogodowe · ' + forecast.alerts.length} icon="warning" variant="secondary" onPress={() => setAlertsOpen(true)} /> : null}
         {!forecast.alertsAvailable ? <AppText variant="caption" color="textSecondary">Nie udało się sprawdzić wszystkich ostrzeżeń pogodowych.</AppText> : null}
         <AppText variant="caption" color="textSecondary">Google Maps · Aktualizacja {new Intl.DateTimeFormat('pl-PL', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: forecast.timeZone}).format(new Date(forecast.fetchedAt))} (czas miejsca)</AppText>
+        {forecast.alertsFetchedAt ? <AppText variant="caption" color="textSecondary">Ostrzeżenia sprawdzone {new Intl.DateTimeFormat('pl-PL', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: forecast.timeZone}).format(new Date(forecast.alertsFetchedAt))} (czas miejsca)</AppText> : null}
         {forecast.timeZone === 'Asia/Tokyo' ? <AppText variant="caption" color="textSecondary">気象データ提供：株式会社ウェザーニューズ</AppText> : null}
         {forecast.timeZone === 'Asia/Seoul' ? <AppText variant="caption" color="textSecondary">날씨 정보 제공: 웨더뉴스</AppText> : null}
       </>}

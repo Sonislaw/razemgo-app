@@ -9,7 +9,8 @@ import { MapFrame } from '@/features/discovery/map/map-frame';
 import { DEFAULT_MAP_CAMERA } from '@/features/discovery/map/map-data';
 import { googleMapAvailable } from '@/lib/google-map-availability';
 import { PLACE_KIND_LABELS, manualPlaceError } from './place-data';
-import { resolveManualPlaceAddress } from './places-repository';
+import { resolveManualPlaceAddress, resolvePlaceGeometry } from './places-repository';
+import { sameManualAddress } from './place-query-cache';
 
 export function ManualPlaceFields({ query, flexible, onSave, onBack, initial }: {
   query:string; flexible:boolean; onSave:(place:SelectedPlace)=>void; onBack:()=>void; initial?:SelectedPlace;
@@ -34,7 +35,9 @@ export function ManualPlaceFields({ query, flexible, onSave, onBack, initial }: 
     if(point){onSave(place);return;}
     const controller=new AbortController();request.current=controller;setSaving(true);setError('');
     try {
-      const located=await resolveManualPlaceAddress(place,controller.signal);
+      const located = sameManualAddress(initial, place)
+        ? {...place, googlePlaceId: initial!.googlePlaceId, ...await resolvePlaceGeometry(initial!.googlePlaceId!, controller.signal)}
+        : await resolveManualPlaceAddress(place,controller.signal);
       if(!controller.signal.aborted)onSave(located);
     } catch {
       if(!controller.signal.aborted)setError('Nie udało się ustalić położenia adresu. Sprawdź adres, region i kraj, spróbuj ponownie lub wskaż punkt na mapie.');

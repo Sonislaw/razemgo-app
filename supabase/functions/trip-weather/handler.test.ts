@@ -1,3 +1,4 @@
+import {cacheFixture} from '../_shared/shared-api-cache.fixture.ts';
 import {handleTripWeather} from './handler.ts';
 
 Deno.test('Weather authenticates and authorizes trips before provider requests; respects dates, cache and provider failures without leaking keys', async () => {
@@ -9,20 +10,20 @@ Deno.test('Weather authenticates and authorizes trips before provider requests; 
   const calls: string[] = [];
   const today = new Date().toISOString().slice(0, 10), day = new Date(today);
   let trip: Record<string, unknown> | null = {start_date: today, end_date: today, place_kind: 'campground', latitude: 54, longitude: 18, google_place_id: 'ChIJ_camp'};
-  let authenticated = true, limited = false, providerFailure = false, alertsFailure = false, cache: unknown = null;
+  let authenticated = true, limited = false, providerFailure = false, alertsFailure = false;
+  const cache = cacheFixture('private-test');
   const assert = (value: unknown) => {if (!value) throw Error('Weather boundary failed');};
   globalThis.fetch = async (input, init) => {
     const url = String(input); calls.push(url);
     if (url.endsWith('/auth/v1/user')) return Response.json(authenticated ? {id: crypto.randomUUID()} : {message: 'invalid'}, {status: authenticated ? 200 : 401});
     if (url.endsWith('/rest/v1/rpc/get_my_trip_weather_context')) return limited ? Response.json({code: '54000'}, {status: 400}) : Response.json(trip);
-    if (url.endsWith('/rest/v1/rpc/get_trip_weather_cache')) {assert(new Headers(init?.headers).get('apikey') === 'private-test'); return Response.json(cache);}
-    if (url.endsWith('/rest/v1/rpc/put_trip_weather_cache')) {cache = JSON.parse(String(init?.body)).forecast; return Response.json(null);}
-    if (url.endsWith('/rest/v1/rpc/record_google_place_geometry')) return Response.json(null);
+    const cached = cache.handle(url, init); if (cached) return cached;
     if (url.startsWith('https://places.googleapis.com/')) {
       assert(new Headers(init?.headers).get('X-Goog-Api-Key') === 'places-private-test');
       return Response.json({id: 'ChIJ_camp', location: {latitude: 54, longitude: 18}});
     }
     if (url.startsWith('https://weather.googleapis.com/')) {
+      await new Promise(resolve => setTimeout(resolve, 15));
       assert(new Headers(init?.headers).get('X-Goog-Api-Key') === 'weather-private-test');
       assert(!url.includes('weather-private-test'));
       if (providerFailure) return Response.json({error: 'weather-private-test'}, {status: 403});
@@ -56,11 +57,24 @@ Deno.test('Weather authenticates and authorizes trips before provider requests; 
     assert(data.days[0].maxC === 12 && data.alertsAvailable === true && data.partial === false);
     assert(providerCalls() === 2);
     await invoke(); assert(providerCalls() === 2);
-    cache = null; alertsFailure = true;
+    // Independent authorized requests must share provider refreshes, not just a JS promise.
+    cache.components.clear(); calls.length = 0;
+    const parallel = await Promise.all(Array.from({length: 20}, () => invoke()));
+    assert(parallel.every(response => response.status === 200));
+    const parallelData = await Promise.all(parallel.map(response => response.json()));
+    assert(parallelData.every(result => result.days[0].maxC === 12));
+    assert(providerCalls() === 2);
+    const dailyBefore = parallelData[0].fetchedAt;
+    for (const key of cache.components.keys()) if (key.startsWith('alerts:')) cache.components.delete(key);
+    const refreshedAlerts = await (await invoke()).json();
+    assert(providerCalls() === 3 && refreshedAlerts.fetchedAt === dailyBefore && refreshedAlerts.alertsFetchedAt);
+    for (const key of cache.components.keys()) if (key.startsWith('forecast:')) cache.components.delete(key);
+    await invoke(); assert(providerCalls() === 4);
+    cache.components.clear(); alertsFailure = true;
     assert((await (await invoke()).json()).alertsAvailable === false); alertsFailure = false;
-    cache = null; trip = {...saved, latitude: null, longitude: null};
+    cache.components.clear(); cache.leases.clear(); trip = {...saved, latitude: null, longitude: null};
     assert((await (await invoke()).json()).state === 'forecast');
-    cache = null; providerFailure = true;
+    cache.components.clear(); cache.leases.clear(); providerFailure = true;
     const failed = await invoke(); assert(failed.status === 503 && !(await failed.text()).includes('private-test'));
     providerFailure = false; Deno.env.delete('GOOGLE_WEATHER_API_KEY');
     assert((await (await invoke()).json()).code === 'not_configured');

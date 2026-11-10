@@ -2,6 +2,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 import { GOOGLE_PLACE_ID, googlePlaceDetails, googlePlacePredictions, manualAddressGeometry, isAreaPlaceKind } from '../../../shared/google-place-data.ts';
 import { validDispatchSecret } from '../dispatch-push/push-worker.ts';
 import { maintainPlaceGeometry } from './maintenance.ts';
+import { googleGeometry } from '../_shared/google-geometry.ts';
 
 export async function handlePlaces(request: Request) {
   const origin = request.headers.get('origin');
@@ -78,9 +79,7 @@ export async function handlePlaces(request: Request) {
       return respond(200,{place});
     }
     if (input.action === 'geometry') {
-      const cached = await admin.rpc('get_google_place_geometry', {place_id: input.placeId});
-      if (cached.error) throw Error('Geometry unavailable');
-      return respond(200, {place: cached.data ?? await details(input.placeId, undefined, true)});
+      return respond(200, {place: await googleGeometry(admin, input.placeId, googleKey)});
     }
     if(input.action==='manual-address') {
       const raw=await google('https://places.googleapis.com/v1/places:searchText','places.id,places.location,places.viewport,places.addressComponents',
@@ -94,7 +93,7 @@ export async function handlePlaces(request: Request) {
     const pending = await client.rpc('list_my_map_place_refreshes');
     if (pending.error) return respond(403, { error: 'Unavailable' });
     let refreshed = 0;
-    for (const id of pending.data ?? []) { await details(id, undefined, true); refreshed++; }
+    for (const id of pending.data ?? []) { await googleGeometry(admin, id, googleKey, 3 * 86400000); refreshed++; }
     return respond(200, { refreshed });
   } catch (error) {
     const status = error && typeof error === 'object' && 'status' in error ? error.status : 503;

@@ -1,3 +1,4 @@
+import {cacheFixture} from '../_shared/shared-api-cache.fixture.ts';
 import { handlePlaces } from './handler.ts';
 
 Deno.test('Places authenticates, enforces budgets and hides the server key while preserving sessions and details', async () => {
@@ -90,21 +91,16 @@ Deno.test('Geometry uses the existing server cache and calls Google only when ge
   const previous = Object.keys(values).map(key => Deno.env.get(key));
   Object.entries(values).forEach(([key, value]) => Deno.env.set(key, value));
   const original = globalThis.fetch;
-  let cached: unknown = null, googleCalls = 0, authenticated = true;
+  let googleCalls = 0, authenticated = true;
+  const cache = cacheFixture('server-test');
   const assert = (value: unknown) => {if (!value) throw Error('Geometry optimization failed');};
   globalThis.fetch = async (input, init) => {
     const url = String(input);
     if (url.endsWith('/auth/v1/user')) return Response.json(authenticated ? {id: crypto.randomUUID()} : {message: 'invalid'}, {status: authenticated ? 200 : 401});
     if (url.endsWith('/rest/v1/rpc/claim_my_place_request')) return Response.json(null);
-    if (url.endsWith('/rest/v1/rpc/get_google_place_geometry')) {
-      assert(new Headers(init?.headers).get('apikey') === 'server-test'); return Response.json(cached);
-    }
-    if (url.endsWith('/rest/v1/rpc/record_google_place_geometry')) {
-      const data = JSON.parse(String(init?.body));
-      cached = {latitude: data.latitude, longitude: data.longitude, bounds: data.bounds, geometryExpiresAt: new Date(Date.now() + 86400000).toISOString()};
-      return Response.json(null);
-    }
+    const cached = cache.handle(url, init); if (cached) return cached;
     if (url.startsWith('https://places.googleapis.com/')) {
+      await new Promise(resolve => setTimeout(resolve, 15));
       googleCalls++; assert(new Headers(init?.headers).get('X-Goog-FieldMask') === 'id,location,viewport');
       return Response.json({id: 'ChIJ_cached', location: {latitude: 54, longitude: 18}});
     }
@@ -116,7 +112,9 @@ Deno.test('Geometry uses the existing server cache and calls Google only when ge
     const first = await invoke(); assert(first.status === 200 && (await first.json()).place.latitude === 54); assert(googleCalls === 1);
     const second = await invoke(); assert(second.status === 200 && (await second.json()).place.longitude === 18); assert(googleCalls === 1);
     authenticated = false; assert((await invoke()).status === 401); assert(googleCalls === 1); authenticated = true;
-    cached = null; await invoke(); assert(googleCalls === 2);
+    cache.geometry.clear();
+    const parallel = await Promise.all(Array.from({length: 20}, () => invoke()));
+    assert(parallel.every(response => response.status === 200)); assert(googleCalls === 2);
   } finally {
     globalThis.fetch = original;
     Object.keys(values).forEach((key, i) => previous[i] === undefined ? Deno.env.delete(key) : Deno.env.set(key, previous[i]!));

@@ -184,3 +184,41 @@ Scenariusz przeglądarkowy liczy żądania podczas zapisu, przełączenia do arc
 powrotu na listę, otwarcia szczegółów i ponownego logowania, bez przeładowywania
 dokumentu pomiędzy tymi czynnościami. Zmiana jest dostępna przez Metro Dev,
 bez nowej migracji, wdrożenia Edge ani APK.
+
+## Dodatkowe ograniczenie zapytań — pięć usprawnień
+
+1. Autocomplete przechowuje w RAM do 20 ostatnich zapytań w obrębie jednego
+   tokenu wyszukiwania. Powrót do wcześniejszej frazy (także bez wyników)
+   korzysta z cache. Klucz obejmuje tekst, tryb i ograniczenie do obszarów;
+   zmiana tokenu usuwa poprzednie podpowiedzi. Błędy nie są zapamiętywane.
+2. Otwarcie pola z już wybranym miejscem pokazuje ten wybór bez Autocomplete.
+   Użytkownik może zatwierdzić miejsce bez zapytań albo zmienić tekst.
+   Nowy wybór z podpowiedzi nadal kończy własną sesję przez Place Details.
+3. Ręczne miejsce ze znanym Google Place ID zachowuje rozpoznany adres przy
+   zmianie samej nazwy lub rodzaju. Zmiana adresu, regionu albo kraju ponawia
+   wyszukiwanie adresu; nieaktualna geometria odnawia się osobno. Własny punkt
+   wskazany na mapie nie wymaga Places.
+4. Prognoza dzienna ma cache 60 minut, ostrzeżenia 10 minut i osobne czasy
+   aktualizacji. Szczegóły w `TRIP_WEATHER.md`.
+5. `202611100003_shared_api_refresh.sql` dodaje prywatne blokady odświeżeń
+   PostgreSQL. Działają między instancjami Edge i między pogodą, mapą oraz
+   zadaniem odświeżania geometrii. Tylko jeden proces wywołuje dostawcę dla
+   danego klucza; pozostali czytają jego wynik. Blokada wygasa po 60 s,
+   oczekiwanie trwa maksymalnie 45 s, błąd daje 10 s przerwy w próbach.
+   Atomowy zapis sprawdza identyfikator właściciela i ważność blokady, więc
+   spóźniony proces nie nadpisze nowszych danych. RPC są tylko dla serwera.
+
+Testy `npm run test:api-cache` i Edge obejmują 20 konkurujących odczytów,
+jednego właściciela, awarię dostawcy, wygasłą blokadę, odrzucenie starego zapisu,
+prywatność i niezależne terminy ważności pogody. Testy formularzy sprawdzają
+powrót do frazy, otwarcie wybranego miejsca oraz zmianę nazwy i adresu ręcznego.
+Zmiana wymaga migracji oraz wdrożenia `places` i `trip-weather` tylko na Dev;
+nie wymaga nowego APK. Typy nowych RPC wyprowadzono z katalogu migracji
+PostgreSQL; generator lokalny CLI wymaga działającego Dockera.
+
+Weryfikacja Dev 10.11.2026: migracja i obie funkcje wdrożone. 20 równoległych
+żądań RPC na rzeczywistym PostgreSQL uzyskało 1 właściciela i 19 odpowiedzi
+oczekiwania; zapis starego właściciela został odrzucony. Kontrola nie wywoływała
+Google. Osobny test wdrożonej pogody wykonał trzy równoległe odczyty własnego
+szkicu i potwierdził wspólne dane oraz osobne czasy pobrania prognozy i alertów.
+Tymczasowe konto, szkic i kontrolną blokadę usunięto.

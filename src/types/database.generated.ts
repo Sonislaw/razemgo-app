@@ -919,6 +919,13 @@ export type Database = {
                 };
                 Returns: Json;
             };
+            "claim_api_cache_refresh": {
+                Args: {
+                    cache_key: string;
+                    refresh_id: string;
+                };
+                Returns: Json;
+            };
             claim_my_place_request: {
                 Args: never;
                 Returns: undefined;
@@ -953,6 +960,14 @@ export type Database = {
                     "code": string;
                     "lease": string;
                 }[];
+            };
+            "commit_api_cache_refresh": {
+                Args: {
+                    cache_key: string;
+                    refresh_id: string;
+                    payload: Json;
+                };
+                Returns: boolean;
             };
             "count_public_groups": {
                 Args: {
@@ -1224,6 +1239,13 @@ export type Database = {
                 };
                 Returns: Json;
             };
+            "get_weather_component": {
+                Args: {
+                    cache_key: string;
+                    component: string;
+                };
+                Returns: Json;
+            };
             list_google_place_refreshes: {
                 Args: never;
                 Returns: string[];
@@ -1389,6 +1411,14 @@ export type Database = {
                     "push_token": string;
                 };
                 Returns: string;
+            };
+            "release_api_cache_refresh": {
+                Args: {
+                    cache_key: string;
+                    refresh_id: string;
+                    failed?: boolean;
+                };
+                Returns: undefined;
             };
             "report_conversation": {
                 Args: {

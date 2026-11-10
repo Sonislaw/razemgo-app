@@ -1,6 +1,8 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.118.0';
-import {parseGoogleForecast, parseGoogleAlerts, selectTripWeather, weatherAvailability, type WeatherForecast} from '../../../shared/trip-weather.ts';
-import {GOOGLE_PLACE_ID, googlePlaceDetails} from '../../../shared/google-place-data.ts';
+import {parseGoogleForecast, parseGoogleAlerts, selectTripWeather, weatherAvailability, type WeatherForecast, type WeatherAlert} from '../../../shared/trip-weather.ts';
+import {GOOGLE_PLACE_ID} from '../../../shared/google-place-data.ts';
+import {googleGeometry} from '../_shared/google-geometry.ts';
+import {sharedApiCache} from '../_shared/shared-api-cache.ts';
 
 export async function handleTripWeather(request: Request): Promise<Response> {
   const origin = request.headers.get('origin');
@@ -44,47 +46,42 @@ export async function handleTripWeather(request: Request): Promise<Response> {
     if (latitude === null && typeof trip.google_place_id === 'string' && GOOGLE_PLACE_ID.test(trip.google_place_id)) {
       const placesKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
       if (!placesKey) return respond(200, {state: 'needs_location'});
-      const response = await fetch('https://places.googleapis.com/v1/places/' + encodeURIComponent(trip.google_place_id), {
-        headers: {'X-Goog-Api-Key': placesKey, 'X-Goog-FieldMask': 'id,location,viewport'}, signal: AbortSignal.timeout(10000),
-      });
-      if (!response.ok) throw Error('Location unavailable');
-      const place = googlePlaceDetails(await response.json());
-      if (place.googlePlaceId !== trip.google_place_id) throw Error('Location mismatch');
+      const place = await googleGeometry(admin, trip.google_place_id, placesKey);
       latitude = place.latitude; longitude = place.longitude;
-      const saved = await admin.rpc('record_google_place_geometry', {place_id: trip.google_place_id, latitude, longitude, bounds: place.bounds ?? null});
-      if (saved.error) throw Error('Location unavailable');
     }
     if (typeof latitude !== 'number' || !Number.isFinite(latitude) || Math.abs(latitude) > 85 ||
       typeof longitude !== 'number' || !Number.isFinite(longitude) || Math.abs(longitude) > 180) return respond(200, {state: 'needs_location'});
-    const cacheKey = latitude.toFixed(5) + ',' + longitude.toFixed(5) + ':pl:v1';
-    const cached = await admin.rpc('get_trip_weather_cache', {cache_key: cacheKey});
-    if (cached.error) throw Error('Cache unavailable');
-    let forecast: WeatherForecast | null = cached.data;
-    if (!forecast) {
-      const google = async (endpoint: string, extra: Record<string, string> = {}) => {
+    const cacheKey = latitude.toFixed(5) + ',' + longitude.toFixed(5) + ':pl:v2';
+    const google = async (endpoint: string, extra: Record<string, string> = {}) => {
         const params = new URLSearchParams({'location.latitude': String(latitude), 'location.longitude': String(longitude), languageCode: 'pl', ...extra});
         const response = await fetch('https://weather.googleapis.com/v1/' + endpoint + '?' + params, {
           headers: {'X-Goog-Api-Key': key}, signal: AbortSignal.timeout(12000),
         });
         if (!response.ok) throw Error('Weather provider unavailable');
         return response.json();
-      };
-      const alerts = (async () => {
-        try {
-          const result: ReturnType<typeof parseGoogleAlerts> = []; let token: string | undefined;
-          for (let page = 0; page < 3; page++) {
-            const data = await google('publicAlerts:lookup', {pageSize: '100', ...(token ? {pageToken: token} : {})});
-            result.push(...parseGoogleAlerts(data)); token = data.nextPageToken;
-            if (!token) return {alerts: result, alertsAvailable: true};
-          }
-          return {alerts: result, alertsAvailable: false};
-        } catch {return {alerts: [], alertsAvailable: false};}
-      })();
-      const daily = await google('forecast/days:lookup', {days: '10', pageSize: '10', unitsSystem: 'METRIC'});
-      forecast = {...parseGoogleForecast(daily), ...await alerts, fetchedAt: new Date().toISOString()};
-      const saved = await admin.rpc('put_trip_weather_cache', {cache_key: cacheKey, forecast});
-      if (saved.error) throw Error('Cache unavailable');
-    }
+    };
+    const read = async <T>(component: string): Promise<T | null> => {
+      const result = await admin.rpc('get_weather_component', {cache_key: cacheKey, component});
+      if (result.error) throw Error('Weather cache unavailable');
+      return result.data as T | null;
+    };
+    type Daily = Pick<WeatherForecast, 'days' | 'timeZone' | 'fetchedAt'>;
+    type Alerts = {alerts: WeatherAlert[]; fetchedAt: string};
+    const alerts = sharedApiCache<Alerts>(admin, 'weather:alerts:' + cacheKey, () => read<Alerts>('alerts'), async () => {
+      const result: WeatherAlert[] = []; let token: string | undefined;
+      for (let page = 0; page < 3; page++) {
+        const data = await google('publicAlerts:lookup', {pageSize: '100', ...(token ? {pageToken: token} : {})});
+        result.push(...parseGoogleAlerts(data)); token = data.nextPageToken;
+        if (!token) return {alerts: result, fetchedAt: new Date().toISOString()};
+      }
+      throw Error('Incomplete alerts');
+    }).then(value => ({alerts: value.alerts, alertsFetchedAt: value.fetchedAt, alertsAvailable: true}))
+      .catch(() => ({alerts: [], alertsFetchedAt: null, alertsAvailable: false}));
+    const daily = await sharedApiCache<Daily>(admin, 'weather:forecast:' + cacheKey, () => read<Daily>('forecast'), async () => {
+      const data = await google('forecast/days:lookup', {days: '10', pageSize: '10', unitsSystem: 'METRIC'});
+      return {...parseGoogleForecast(data), fetchedAt: new Date().toISOString()};
+    });
+    const forecast: WeatherForecast = {...daily, ...await alerts};
     return respond(200, selectTripWeather(forecast, trip.start_date, trip.end_date));
   } catch {return respond(503, {error: 'Weather temporarily unavailable'});}
 }

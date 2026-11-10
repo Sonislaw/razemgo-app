@@ -50,14 +50,29 @@ współrzędnych, URL ani dat. Uwzględnia blokady, moderację i widoczność og
 Limit to 30 odczytów na minutę i 300 dziennie na konto, także przy trafieniu
 w cache. Brak dostępu jest sprawdzany przed odczytem wspólnej pamięci.
 
-Prognoza i ostrzeżenia dla tego samego punktu są współdzielone przez 10 minut.
+Migracja `202611100003_shared_api_refresh.sql` rozdziela cache: prognoza
+dzienna jest współdzielona przez **60 minut**, a oficjalne ostrzeżenia przez
+**10 minut**. `get_weather_component` jest dostępne wyłącznie dla serwera.
+Każda część ma osobny czas pobrania i osobny podpis aktualizacji w interfejsie.
 Usunięcie fizycznego wpisu następuje podczas najbliższego cyklu czyszczenia,
-zwykle do 20 minut od pobrania; wygasły wpis nigdy nie jest zwracany.
+zwykle do 70 minut od pobrania prognozy i do 20 minut dla ostrzeżeń;
+wygasły wpis nigdy nie jest zwracany.
 Cache nie przechowuje identyfikatorów wyjazdów ani danych użytkowników.
 HTTP ma `Cache-Control: no-store`. Klucz Google i treści błędów dostawcy
 nie trafiają do klienta. Ekran odświeża pogodę po powrocie na ekran, wznowieniu
 aplikacji i co 10 minut podczas korzystania. Wylogowanie unieważnia żądania.
 Odległe terminy i duże obszary nie powodują zapytań do Google.
+
+Wszystkie instancje Edge używają blokady w PostgreSQL dla każdego punktu
+i części prognozy. Tylko właściciel blokady pobiera i zapisuje odpowiedź;
+pozostali czekają na wspólny cache. Blokada wygasa po 60 sekundach, oczekiwanie
+jest ograniczone do 45 sekund. Zapis i zwolnienie są chronione identyfikatorem
+żądania, więc spóźniony proces nie nadpisze odpowiedzi nowszego właściciela.
+Błąd dostawcy blokuje ponowne próby dla tego klucza na 10 sekund, zamiast
+wywoływać serię żądań od wszystkich oczekujących. Nie zapisujemy błędu
+ostrzeżeń jako pustej listy: prognoza nadal działa, z informacją o niedostępnych
+ostrzeżeniach. Geometria Google korzysta z tego samego mechanizmu między
+funkcjami `places`, `trip-weather` i zadaniem konserwacji.
 
 ## Weryfikacja
 

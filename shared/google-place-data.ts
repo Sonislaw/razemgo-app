@@ -1,7 +1,5 @@
-// Provider data stays transient. Only IDs and time-limited geometry are cached.
+// Google trip snapshots keep the provider ID and the user's label, not provider text.
 export const GOOGLE_PLACE_ID = /^[A-Za-z0-9_-]{5,256}$/;
-export const AREA_PLACE_KINDS = ['locality','region','country'] as const;
-export function isAreaPlaceKind(kind:string): boolean {return (AREA_PLACE_KINDS as readonly string[]).includes(kind);}
 function object(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }

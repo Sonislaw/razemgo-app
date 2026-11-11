@@ -13,6 +13,7 @@ export interface MapArea {
   radiusMeters: number;
 }
 export interface TripMapTarget {
+  source?: import('../../types/place').SelectedPlace['source'];
   placeKind?: import('../../types/place').PlaceKind;
   googlePlaceId?: string;
   kind: 'place' | 'area';
@@ -112,8 +113,13 @@ export function getTripMapTarget(trip: TripPlan): TripMapTarget | undefined {
   const place = trip.mode === 'planned' ? trip.destination : trip.travelArea;
   if (!place.name.trim()) return undefined;
   if(place.place) {
-    const p=place.place,point=p.source==='manual'&&p.latitude!=null&&p.longitude!=null ? {latitude:p.latitude,longitude:p.longitude,radiusMeters:p.kind==='region'?150000:p.kind==='country'?700000:p.kind==='locality'?3000:0} : undefined;
-    return {kind:p.kind==='locality'||p.kind==='region'||p.kind==='country'?'area':'place',placeKind:p.kind,label:p.name,
+    const p=place.place;
+    let point=p.source!=='google'&&p.latitude!=null&&p.longitude!=null ? {latitude:p.latitude,longitude:p.longitude,radiusMeters:p.kind==='region'?150000:p.kind==='country'?700000:p.kind==='locality'?3000:0} : undefined;
+    if (p.source==='geoapify' && p.bounds) {
+      const b=p.bounds,latitude=(b.north+b.south)/2;
+      point={latitude,longitude:(b.east+b.west)/2,radiusMeters:Math.max(3000,Math.hypot((b.north-b.south)*111320/2,(b.east-b.west)*111320*Math.cos(latitude*Math.PI/180)/2))};
+    }
+    return {source:p.source,kind:p.kind==='locality'||p.kind==='region'||p.kind==='country'?'area':'place',placeKind:p.kind,label:p.name,
       query:[p.name,p.address,p.region,p.country].filter(Boolean).join(', '),...(p.googlePlaceId?{googlePlaceId:p.googlePlaceId}:{}),...(point?{area:point}:{})};
   }
   const location = findTripLocation(tripLocationIdForPlace(place));

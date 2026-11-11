@@ -5,7 +5,7 @@ import { validPlace } from '../../lib/place-format.ts';
 export { PLACE_KINDS, PLACE_KIND_LABELS, validPlace, storePlace, readPlace, placeSearchRadiusKm, manualPlaceError, manualAreaError, isAreaPlaceKind, isPlaceAllowedForTrip, areaPlaceLabel } from '../../lib/place-format.ts';
 export function placeLocation(place?: SelectedPlace, legacyId?: string): LocationOption | undefined {
   if (!place || !validPlace(place)) return findTripLocation(legacyId);
-  return { id:place.id, name:place.source==='google' ? place.userLabel! : place.name, region:place.source==='manual' ? place.region : '',
-    country:place.source==='manual' ? place.country : '', kind:place.kind==='region'||place.kind==='country' ? place.kind : 'locality',
+  return { id:place.id, name:place.source==='google' ? place.userLabel! : place.name, region:place.source!=='google' ? place.region : '',
+    country:place.source!=='google' ? place.country : '', kind:place.kind==='region'||place.kind==='country' ? place.kind : 'locality',
     ...(place.latitude!=null && place.longitude!=null ? { latitude:place.latitude, longitude:place.longitude } : {}) };
 }

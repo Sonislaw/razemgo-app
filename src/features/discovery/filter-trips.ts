@@ -59,7 +59,7 @@ function matchesSelectedLocation(
           place.region.toLocaleLowerCase('pl-PL')),
     );
   if (!candidate) return false;
-  if(selected.id.startsWith('google:')||selected.id.startsWith('manual:')) {
+  if(selected.id.startsWith('google:')||selected.id.startsWith('manual:')||selected.id.startsWith('geoapify:')) {
     if(selected.id===candidate.id)return true;
     if(selected.latitude!=null&&selected.longitude!=null&&candidate.latitude!=null&&candidate.longitude!=null) {
       const rad=(n:number)=>n*Math.PI/180;

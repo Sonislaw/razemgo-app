@@ -2,21 +2,20 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {createPlaceQueryCache, sameManualAddress} from '../src/features/trips/place-query-cache.ts';
 
-test('predictions reuse normalized queries only within the same session, mode and area scope', () => {
+test('predictions reuse normalized queries only within the same session and mode', () => {
   const cache = createPlaceQueryCache(), rows = [{id: 'camp', name: 'Camping'}];
-  cache.set('session-a', ' Camping ', 'planned', false, rows);
-  assert.equal(cache.get('session-a', 'camping', 'planned', false), rows);
-  assert.equal(cache.get('session-a', 'camping', 'flexible', false), undefined);
-  assert.equal(cache.get('session-a', 'camping', 'planned', true), undefined);
-  cache.set('session-a', 'absent', 'planned', false, []);
-  assert.deepEqual(cache.get('session-a', 'absent', 'planned', false), []);
-  assert.equal(cache.get('session-b', 'camping', 'planned', false), undefined);
-  assert.equal(cache.get('session-a', 'camping', 'planned', false), undefined);
+  cache.set('session-a', ' Camping ', 'planned', rows);
+  assert.equal(cache.get('session-a', 'camping', 'planned'), rows);
+  assert.equal(cache.get('session-a', 'camping', 'flexible'), undefined);
+  cache.set('session-a', 'absent', 'planned', []);
+  assert.deepEqual(cache.get('session-a', 'absent', 'planned'), []);
+  assert.equal(cache.get('session-b', 'camping', 'planned'), undefined);
+  assert.equal(cache.get('session-a', 'camping', 'planned'), undefined);
 });
 test('prediction memory is bounded and evicts least recently used queries', () => {
   const cache = createPlaceQueryCache(2);
-  const set = query => cache.set('session', query, 'planned', false, []);
-  const get = query => cache.get('session', query, 'planned', false);
+  const set = query => cache.set('session', query, 'planned', []);
+  const get = query => cache.get('session', query, 'planned');
   set('first'); set('second'); get('first'); set('third');
   assert.deepEqual(get('first'), []); assert.equal(get('second'), undefined);
   assert.deepEqual(get('third'), []);

@@ -4,16 +4,16 @@ export function createPlaceQueryCache(limit = 20) {
   if (!Number.isInteger(limit) || limit < 1) throw Error('Invalid prediction cache limit');
   const entries = new Map<string, PlacePrediction[]>();
   let session = '';
-  const key = (query: string, mode: string, areasOnly: boolean) => JSON.stringify([query.trim().toLocaleLowerCase('pl-PL'), mode, areasOnly]);
+  const key = (query: string, mode: string) => JSON.stringify([query.trim().toLocaleLowerCase('pl-PL'), mode]);
   function selectSession(token: string) {if (session !== token) {entries.clear(); session = token;}}
   return {
-    get(token: string, query: string, mode: string, areasOnly: boolean) {
-      selectSession(token); const id = key(query, mode, areasOnly), value = entries.get(id);
+    get(token: string, query: string, mode: string) {
+      selectSession(token); const id = key(query, mode), value = entries.get(id);
       if (value !== undefined) {entries.delete(id); entries.set(id, value);}
       return value;
     },
-    set(token: string, query: string, mode: string, areasOnly: boolean, value: PlacePrediction[]) {
-      selectSession(token); const id = key(query, mode, areasOnly);
+    set(token: string, query: string, mode: string, value: PlacePrediction[]) {
+      selectSession(token); const id = key(query, mode);
       entries.delete(id); entries.set(id, value);
       while (entries.size > limit) entries.delete(entries.keys().next().value!);
     },

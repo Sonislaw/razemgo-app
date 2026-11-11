@@ -1,5 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
-import { GOOGLE_PLACE_ID, googlePlaceDetails, googlePlacePredictions, manualAddressGeometry, isAreaPlaceKind } from '../../../shared/google-place-data.ts';
+import { GOOGLE_PLACE_ID, googlePlaceDetails, googlePlacePredictions, manualAddressGeometry } from '../../../shared/google-place-data.ts';
 import { validDispatchSecret } from '../dispatch-push/push-worker.ts';
 import { maintainPlaceGeometry } from './maintenance.ts';
 import { googleGeometry } from '../_shared/google-geometry.ts';
@@ -31,7 +31,12 @@ export async function handlePlaces(request: Request) {
     let input;
     try { input = JSON.parse(raw); } catch { return respond(400, { error: 'Invalid request' }); }
     if (!input || Array.isArray(input) || !['autocomplete', 'details', 'geometry', 'refresh', 'manual-address'].includes(input.action)) return respond(400, { error: 'Invalid action' });
-    if(input.areasOnly!=null&&typeof input.areasOnly!=='boolean')return respond(400,{error:'Invalid area selector'});
+    const allowedFields:Record<string,readonly string[]>={
+      autocomplete:['action','query','mode','sessionToken'],details:['action','placeId','sessionToken'],
+      geometry:['action','placeId'],refresh:['action'],'manual-address':['action','address','region','country'],
+    };
+    if(Object.keys(input).some(key=>!allowedFields[input.action].includes(key)))return respond(400,{error:'Invalid request fields'});
+    if(input.action==='autocomplete'&&input.mode!=null&&!['planned','flexible'].includes(input.mode))return respond(400,{error:'Invalid search mode'});
     if(input.action==='manual-address'&&['address','region','country'].some(k=>typeof input[k]!=='string'||input[k].trim().length<2||input[k].length>(k==='address'?300:100)))
       return respond(400,{error:'Complete address required'});
     const token = input.sessionToken;
@@ -55,10 +60,10 @@ export async function handlePlaces(request: Request) {
       return response.json();
     };
     const admin = createClient(url, secret, { auth: { persistSession: false, autoRefreshToken: false } });
-    const details = async (id: string, session?: string, minimal = false) => {
+    const details = async (id: string, session?: string) => {
       const params = new URLSearchParams({ languageCode: 'pl', regionCode: 'pl', ...(session ? { sessionToken: session } : {}) });
       const raw = await google('https://places.googleapis.com/v1/places/' + encodeURIComponent(id) + '?' + params,
-        minimal ? 'id,location,viewport' : 'id,displayName,formattedAddress,addressComponents,location,viewport,types');
+        'id,displayName,formattedAddress,addressComponents,location,viewport,types');
       const place = googlePlaceDetails(raw);
       if (place.googlePlaceId !== id) throw Error('Place mismatch');
       const saved = await admin.rpc('record_google_place_geometry', { place_id: id, latitude: place.latitude, longitude: place.longitude, bounds:place.bounds??null });
@@ -69,13 +74,11 @@ export async function handlePlaces(request: Request) {
       const raw = await google('https://places.googleapis.com/v1/places:autocomplete',
         'suggestions.placePrediction.placeId,suggestions.placePrediction.structuredFormat,suggestions.placePrediction.types',
         { input: input.query.trim(), languageCode: 'pl', regionCode: 'pl', includeQueryPredictions: false,
-          ...(input.areasOnly?{includedPrimaryTypes:['(regions)']} : {}),
           ...(token ? { sessionToken: token } : {}) });
-      return respond(200, { predictions: googlePlacePredictions(raw).filter(p => input.areasOnly?isAreaPlaceKind(p.kind):input.mode!=='planned'||!['region','country'].includes(p.kind)) });
+      return respond(200, { predictions: googlePlacePredictions(raw).filter(p => input.mode!=='planned'||!['region','country'].includes(p.kind)) });
     }
     if (input.action === 'details') {
       const place=await details(input.placeId,token);
-      if(input.areasOnly&&!isAreaPlaceKind(place.kind))return respond(422,{error:'Choose a locality, region or country',code:'area_required'});
       return respond(200,{place});
     }
     if (input.action === 'geometry') {

@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { A,groupId,state,backend,login } from './trip-fixtures.mjs';
+import { A,B,groupId,state,backend,login } from './trip-fixtures.mjs';
 import { openSuggestions,suggestionField } from './autocomplete-helpers.mjs';
 import { mockMapTiles } from './map-fixtures.mjs';
+import { mockSearchAreas } from './places-fixtures.mjs';
 const id='00000000-0000-4000-8000-000000065432';
 const button=(page,name)=>page.getByRole('button',{name,exact:true});
 const field=(page,name)=>page.getByRole('textbox',{name,exact:true});
@@ -195,7 +196,8 @@ for(const width of [320,390])test(`flexible trips select areas only and support 
   await expect(page.getByRole('button',{name:/^Wybierz miejsce: Camping/})).toHaveCount(0);
   await input.fill('Giżycko');await page.getByRole('button',{name:/^Wybierz miejsce: Giżycko,/}).first().click();
   await expect(page.getByTestId('trip-editor-location')).toContainText('Giżycko i okolice');
-  expect(store.placeCalls.filter(c=>c.action==='autocomplete').every(c=>c.areasOnly===true)).toBe(true);
+  expect(store.areaCalls.length).toBeGreaterThan(0);
+  expect(store.placeCalls??[]).toHaveLength(0);
   await openSuggestions(page,label);await button(page,'Nie ma tego obszaru? Dodaj ręcznie').click();
   await expect(field(page,'Adres miejsca')).toHaveCount(0);await expect(button(page,'Wskaż punkt na mapie')).toHaveCount(0);
   await expect(button(page,'Kemping')).toHaveCount(0);await field(page,'Nazwa obszaru').fill('Zielona Wieś');
@@ -218,4 +220,51 @@ test('switching a concrete plan to flexible clears its campsite and explains tha
   await expect(page.getByText('W kolejnym kroku wybierz obszar poszukiwań:',{exact:false})).toBeVisible();await button(page,'Dalej').click();
   await expect(suggestionField(page,'Jaki obszar Was interesuje?')).not.toContainText('Camping Morski');
   await button(page,'Zapisz zmiany').click();await expect(page.getByRole('textbox',{name:'Jaki obszar Was interesuje?',exact:true})).toBeFocused();
+});
+
+for(const width of [320,390])test(`Geoapify flexible area keeps its full name and opens the Google map with zero place lookups after reload at ${width}px`,async({page,context})=>{
+  test.setTimeout(90000);
+  await page.setViewportSize({width,height:844});const store=seed();await backend(context,store);await mockMapTiles(context);await login(page);
+  await page.goto('/trip-editor?id='+id);await page.getByRole('radio',{name:'Szukam pomysłu',exact:true}).click();await button(page,'Dalej').click();
+  const label='Jaki obszar Was interesuje?';const input=await openSuggestions(page,label);await input.fill('Koz');
+  await expect(page.getByTestId('geoapify-area-suggestions').getByText('Geoapify',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:/^Wybierz miejsce: Kozienice,/}).click();
+  await expect(page.getByTestId('trip-editor-location')).toContainText('Kozienice i okolice');
+  expect(store.areaCalls).toHaveLength(1);expect(store.placeCalls??[]).toHaveLength(0);
+  await button(page,'Zapisz zmiany').click();await expect(page).toHaveURL('http://localhost:8085/trips');
+  const saved=store.trips.get(id).place_data;expect(saved.source).toBe('geoapify');expect(saved.name).toBe('Kozienice');expect(saved.bounds).toBeTruthy();expect(saved.latitude).toBe(51.585);
+  const card=page.getByTestId('own-trip-'+id);await expect(card).toContainText('Kozienice i okolice');
+  await card.getByRole('button',{name:/^Szczegóły wyjazdu:/}).click();
+  const map=page.getByTestId('trip-google-map').frameLocator('iframe');await expect(map.locator('.google-map-canvas')).toBeAttached();
+  await expect(page.getByTestId('trip-map-card')).toContainText('obszar wyjazdu');
+  expect(store.placeCalls??[]).toHaveLength(0);expect(store.areaCalls).toHaveLength(1);
+  // A fresh application load must use the persisted name and point, not RAM.
+  await page.reload();await expect(page.getByTestId('trip-map-card')).toContainText('Geoapify');
+  await expect(page.getByText('Kozienice i okolice · cel do ustalenia',{exact:true})).toBeAttached();
+  expect(store.placeCalls??[]).toHaveLength(0);expect(store.areaCalls).toHaveLength(1);
+  await edit(page);await openSuggestions(page,label);
+  await expect(button(page,'Użyj wybranego obszaru: Kozienice')).toBeVisible();await page.waitForTimeout(650);
+  expect(store.areaCalls).toHaveLength(1);expect(store.placeCalls??[]).toHaveLength(0);
+});
+
+test('Geoapify failure keeps the query and retries without falling back to Google',async({page,context})=>{
+  const store=seed();await backend(context,store);await login(page);await page.goto('/trip-editor?id='+id);
+  await page.getByRole('radio',{name:'Szukam pomysłu',exact:true}).click();await button(page,'Dalej').click();
+  store.failAreas=true;const input=await openSuggestions(page,'Jaki obszar Was interesuje?');await input.fill('Ko');
+  await page.waitForTimeout(650);expect(store.areaCalls??[]).toHaveLength(0);await input.fill('Koz');
+  await expect(page.getByRole('alert')).toContainText('Nie udało się pobrać obszarów');await expect(input).toHaveValue('Koz');
+  expect(store.placeCalls??[]).toHaveLength(0);store.failAreas=false;await button(page,'Spróbuj ponownie').click();
+  await page.getByRole('button',{name:/^Wybierz miejsce: Kozienice,/}).click();
+  await expect(page.getByTestId('trip-editor-location')).toContainText('Kozienice');expect(store.placeCalls??[]).toHaveLength(0);
+});
+
+for(const width of [320,390])test(`Odkrywaj reads the full Geoapify area name from the listing and shows its Google map without provider lookups at ${width}px`,async({page,context})=>{
+  const store=seed(),area=mockSearchAreas({query:'Koz'}) .areas[0];
+  store.trips.set(id,{...store.trips.get(id),group_id:groupId(B),mode:'flexible',location_id:area.id,location_name:area.name,location_kind:'locality',place_data:area});
+  await page.setViewportSize({width,height:844});await backend(context,store);await mockMapTiles(context);await login(page);await page.goto('/explore');
+  const screen=page.getByTestId('discovery-screen');await expect(screen).toContainText('Kozienice i okolice · cel do ustalenia');
+  expect(store.placeCalls??[]).toHaveLength(0);expect(store.areaCalls??[]).toHaveLength(0);
+  await page.goto('/trip/'+id);await expect(page.getByTestId('trip-map-card')).toContainText('Geoapify');
+  await expect(page.getByTestId('trip-google-map').frameLocator('iframe').locator('.google-map-canvas')).toBeAttached();
+  expect(store.placeCalls??[]).toHaveLength(0);expect(store.areaCalls??[]).toHaveLength(0);
 });

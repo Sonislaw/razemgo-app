@@ -40,9 +40,9 @@ function DescriptionSheet({form, onClose, onApply}: {form: TripForm; onClose: ()
     try {
       let place = resolvedPlace.current;
       // Saved Google metadata contains the user's original search label. Fetch
-      // the provider's name for this preview, keeping it out of the place cache.
+      // the provider's name using the shared place cache for this preview.
       if (place?.source === 'google' && !place.resolvedAt) {
-        try { place = await resolvePlace(place.googlePlaceId!, place.userLabel ?? place.name, undefined, controller.signal, form.mode === 'flexible'); }
+        try { place = await resolvePlace(place.googlePlaceId!, place.userLabel ?? place.name, undefined, controller.signal); }
         catch { place = undefined; }
       }
       if (controller.signal.aborted) return;

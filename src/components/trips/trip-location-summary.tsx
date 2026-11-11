@@ -6,6 +6,7 @@ import { useTheme } from '@/hooks/use-theme';
 import type { TripPlan } from '@/types/travel';
 import { useLivePlace } from '@/features/trips/use-live-place';
 import { areaPlaceLabel } from '@/features/trips/place-data';
+import { GeoapifyAttribution } from './geoapify-attribution';
 
 export function TripLocationSummary({ trip, locationLabel, compact = false }: {
   trip: TripPlan;
@@ -41,6 +42,7 @@ export function TripLocationSummary({ trip, locationLabel, compact = false }: {
       ) : null}
       {address ? <AppText color="textSecondary" style={[styles.detailSecondary, styles.address]}>{address}</AppText> : null}
       {place?.source==='google' ? <AppText style={{fontSize:12,fontWeight:'400',color:theme.textSecondary,marginLeft:30}}>Google Maps</AppText> : null}
+      {place?.source==='geoapify' ? <View style={{marginLeft:30}}><GeoapifyAttribution/></View> : null}
     </View>
   );
 }

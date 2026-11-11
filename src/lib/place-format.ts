@@ -1,12 +1,14 @@
 import type { SelectedPlace } from '../types/place';
-import { GOOGLE_PLACE_ID, isAreaPlaceKind } from '../../shared/google-place-data.ts';
-export { isAreaPlaceKind } from '../../shared/google-place-data.ts';
+import { GOOGLE_PLACE_ID } from '../../shared/google-place-data.ts';
+import { validGeoapifyArea } from '../../shared/geoapify-area-data.ts';
+export function isAreaPlaceKind(kind:string): boolean {return kind==='locality'||kind==='region'||kind==='country';}
 
 export const PLACE_KINDS = ['locality','campground','place','region','country'] as const;
 export const PLACE_KIND_LABELS = { locality:'Miejscowość', campground:'Kemping', place:'Miejsce', region:'Region', country:'Kraj' };
 export function validPlace(value: unknown): value is SelectedPlace {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const p = value as SelectedPlace;
+  if (p.source === 'geoapify') return validGeoapifyArea(p);
   if (!PLACE_KINDS.includes(p.kind) || typeof p.name !== 'string' || !p.name.trim() || p.name.length>160 ||
     typeof p.address !== 'string' || p.address.length>300 || typeof p.region !== 'string' || p.region.length>100 ||
     typeof p.country !== 'string' || p.country.length>100 || typeof p.id !== 'string' || p.id.length>263) return false;
@@ -45,6 +47,9 @@ export function manualPlaceError(p: Pick<SelectedPlace,'name'|'address'|'region'
 // the user's original description are stored with a trip or saved filter.
 export function storePlace(p: SelectedPlace): SelectedPlace {
   if (!validPlace(p)) throw Error('Invalid place');
+  if (p.source === 'geoapify') return {id:p.id,source:'geoapify',scope:'area',geoapifyPlaceId:p.geoapifyPlaceId,
+    kind:p.kind,name:p.name.trim(),address:'',region:p.region.trim(),country:p.country.trim(),latitude:p.latitude,longitude:p.longitude,
+    ...(p.bounds?{bounds:{...p.bounds}}:{})};
   return p.source==='google' ? { id:p.id, source:'google', kind:p.kind, googlePlaceId:p.googlePlaceId,
     userLabel:p.userLabel!.trim(), name:p.userLabel!.trim(), address:'', region:'', country:'' } :
     { id:p.id, source:'manual', kind:p.kind, name:p.name.trim(), address:p.address.trim(), region:p.region.trim(), country:p.country.trim(),

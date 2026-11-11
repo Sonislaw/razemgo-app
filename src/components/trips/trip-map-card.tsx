@@ -8,6 +8,7 @@ import { areaViewport, getTripMapTarget, googleMapsSearchUrl, type TripMapTarget
 import { resolvePlaceGeometry } from '@/features/trips/places-repository';
 import { MapFrame } from '@/features/discovery/map/map-frame';
 import { googleMapAvailable } from '@/lib/google-map-availability';
+import { GeoapifyAttribution } from './geoapify-attribution';
 
 export function TripMapCard({trip}:{trip:TripPlan}) {
   const target=getTripMapTarget(trip);
@@ -46,6 +47,7 @@ function TripMapContent({target}:{target:TripMapTarget}) {
         <Button label="Wczytaj mapę ponownie" variant="secondary" onPress={()=>{setFailed(false);setReady(false);setAttempt(value=>value+1);}}/></View> : null}
     </View></ScreenFullWidth> : <AppText variant="caption" color="textSecondary">{googleMapAvailable?'Dla tego miejsca nie wskazano punktu. Lokalizację możesz sprawdzić w Google Maps.':'Lokalizację możesz sprawdzić w Google Maps.'}</AppText>}
     {!precise ? <AppText variant="caption" color="textSecondary">Lokalizacja orientacyjna — obszar wyjazdu.</AppText> : null}
+    {target.source==='geoapify' ? <GeoapifyAttribution/> : null}
     <Button label="Otwórz w Google Maps" icon="arrow" variant="secondary" onPress={()=>{
       setOpenError(false);void openURL(googleMapsSearchUrl(target)).catch(()=>setOpenError(true));
     }}/>

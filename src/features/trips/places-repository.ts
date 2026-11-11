@@ -1,7 +1,7 @@
 import { getSupabase } from '@/lib/supabase';
 import { backendLifecycle } from '@/lib/request-lifecycle';
 import type { PlacePrediction, SelectedPlace } from '@/types/place';
-import { validPlace, PLACE_KINDS, manualPlaceError, isAreaPlaceKind } from './place-data';
+import { validPlace, PLACE_KINDS, manualPlaceError } from './place-data';
 import { GOOGLE_PLACE_ID } from '../../../shared/google-place-data';
 import { createActivePlaceRequests } from './active-place-requests';
 
@@ -45,29 +45,28 @@ export async function placesRequest(body: Record<string, unknown>, signal?: Abor
   if (result.error) throw Error('Nie udało się pobrać miejsc. Spróbuj ponownie lub dodaj miejsce ręcznie.');
   return result.data;
 }
-export async function predictPlaces(query:string, mode:string, sessionToken:string, signal?:AbortSignal,areasOnly=false): Promise<PlacePrediction[]> {
+export async function predictPlaces(query:string, mode:string, sessionToken:string, signal?:AbortSignal): Promise<PlacePrediction[]> {
   if (query.trim().length < 3) return [];
-  const data = await placesRequest({ action:'autocomplete',query,mode,sessionToken,...(areasOnly?{areasOnly:true}:{}) },signal);
+  const data = await placesRequest({ action:'autocomplete',query,mode,sessionToken },signal);
   if (!Array.isArray(data?.predictions) || data.predictions.length>8 || data.predictions.some((p:PlacePrediction)=>
     !p||typeof p.id!=='string'||!GOOGLE_PLACE_ID.test(p.id)||typeof p.name!=='string'||!p.name||p.name.length>160||typeof p.context!=='string'||p.context.length>300||!PLACE_KINDS.includes(p.kind))) throw Error('Niepoprawne podpowiedzi miejsc.');
-  return areasOnly?data.predictions.filter((p:PlacePrediction)=>isAreaPlaceKind(p.kind)):data.predictions;
+  return data.predictions;
 }
-async function fetchPlaceDetails(placeId:string, sessionToken?:string, signal?:AbortSignal, areasOnly=false): Promise<SelectedPlace> {
-  const data = await placesRequest({ action:'details',placeId,...(sessionToken ? {sessionToken} : {}),...(areasOnly?{areasOnly:true}:{}) },signal);
+async function fetchPlaceDetails(placeId:string, sessionToken?:string, signal?:AbortSignal): Promise<SelectedPlace> {
+  const data = await placesRequest({ action:'details',placeId,...(sessionToken ? {sessionToken} : {}) },signal);
   const place = {...data?.place, userLabel: data?.place?.name};
   if (!validPlace(place) || place.googlePlaceId !== placeId) throw Error('Nie udało się odczytać miejsca.');
   rememberGeometry(placeId, parseGeometry(place));
   return place;
 }
-export async function resolvePlace(placeId:string, userLabel:string, sessionToken?:string, signal?:AbortSignal,areasOnly=false): Promise<SelectedPlace> {
+export async function resolvePlace(placeId:string, userLabel:string, sessionToken?:string, signal?:AbortSignal): Promise<SelectedPlace> {
   syncPlaceRequests();
   const boundary = backendLifecycle.capture();
   // A selection always completes its own Autocomplete session with Google.
-  const details = sessionToken ? await fetchPlaceDetails(placeId, sessionToken, signal, areasOnly) : await detailsRequests.read(placeId, signal);
+  const details = sessionToken ? await fetchPlaceDetails(placeId, sessionToken, signal) : await detailsRequests.read(placeId, signal);
   boundary.assertCurrent();
   if (signal?.aborted) throw Object.assign(Error('Cancelled'), {name: 'AbortError'});
   const place = {...details, userLabel};
-  if(areasOnly&&!isAreaPlaceKind(place.kind))throw Error('Wybierz miejscowość, region lub kraj.');
   if (sessionToken) detailsRequests.retain(placeId, details);
   return place;
 }

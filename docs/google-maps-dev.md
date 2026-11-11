@@ -1,7 +1,8 @@
 # Google Maps i Places — konfiguracja Dev
 
-Android korzysta z **Maps SDK for Android**. Podpowiedzi miejsc korzystają z
-**Places API (New)** przez funkcję Supabase. Maps JavaScript API nie jest
+Android korzysta z **Maps SDK for Android**. Podpowiedzi dla „Mam plan” i filtrów
+korzystają z **Places API (New)** przez funkcję Supabase. Obszary „Szukam pomysłu”
+obsługuje [Geoapify](GEOAPIFY_AREAS_DEV.md). Maps JavaScript API nie jest
 potrzebne aplikacji Android; dotyczy wyłącznie opcjonalnej mapy w przeglądarce.
 
 ## 1. Projekt Google Cloud

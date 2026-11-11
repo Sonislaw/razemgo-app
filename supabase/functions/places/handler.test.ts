@@ -8,7 +8,7 @@ Deno.test('Places authenticates, enforces budgets and hides the server key while
   for (const [key, value] of Object.entries(values)) Deno.env.set(key, value);
   const original = globalThis.fetch;
   const calls: { url:string; init?:RequestInit }[] = [];
-  let authenticated = true, limited = false, googleFailure = false, missingAddress = false, areaDetails=false;
+  let authenticated = true, limited = false, googleFailure = false, missingAddress = false;
   const id = 'ChIJ_camp', session = crypto.randomUUID();
   const assert = (value: unknown) => { if (!value) throw Error('Places boundary failed'); };
   globalThis.fetch = async (input, init) => {
@@ -33,14 +33,14 @@ Deno.test('Places authenticates, enforces budgets and hides the server key while
       }
       if (url.includes('places:autocomplete')) {
         const data = JSON.parse(String(init?.body)); assert(data.sessionToken === session);
-        if(data.includedPrimaryTypes){assert(data.includedPrimaryTypes.join(',')==='(regions)');return Response.json({suggestions:[
-          {placePrediction:{placeId:'ChIJ_town',types:['locality'],structuredFormat:{mainText:{text:'Giżycko'},secondaryText:{text:'Polska'}}}},
-          {placePrediction:{placeId:id,types:['campground'],structuredFormat:{mainText:{text:'Kemping'},secondaryText:{text:'Adres'}}}},
-        ]});}
-        return Response.json({ suggestions:[{ placePrediction:{ placeId:id, types:['campground'], structuredFormat:{ mainText:{text:'Kemping'}, secondaryText:{text:'Adres'} } } }] });
+        assert(data.includedPrimaryTypes===undefined);
+        return Response.json({ suggestions:[
+          { placePrediction:{ placeId:id, types:['campground'], structuredFormat:{ mainText:{text:'Kemping'}, secondaryText:{text:'Adres'} } } },
+          { placePrediction:{ placeId:'ChIJ_country', types:['country'], structuredFormat:{ mainText:{text:'Polska'}, secondaryText:{text:''} } } },
+        ] });
       }
       assert(new URL(url).searchParams.get('sessionToken') === session);
-      return Response.json({ id, location:{latitude:54,longitude:18}, displayName:{text:areaDetails?'Giżycko':'Kemping'}, formattedAddress:'Adres', types:[areaDetails?'locality':'campground'] });
+      return Response.json({ id, location:{latitude:54,longitude:18}, displayName:{text:'Kemping'}, formattedAddress:'Adres', types:['campground'] });
     }
     throw Error('Unexpected transport');
   };
@@ -53,7 +53,9 @@ Deno.test('Places authenticates, enforces budgets and hides the server key while
     assert((await invoke({action:'details',placeId:'../secrets'})).status === 400);
     assert((await invoke({action:'autocomplete',query:'Ca',sessionToken:session})).status === 400);
     assert((await invoke({action:'autocomplete',query:'Camp'})).status === 400);
-    assert((await invoke({action:'autocomplete',query:'Camp',areasOnly:'true'})).status===400);
+    assert((await invoke({action:'autocomplete',query:'Camp',sessionToken:session,areasOnly:true})).status===400);
+    assert((await invoke({action:'details',placeId:id,sessionToken:session,areasOnly:true})).status===400);
+    assert((await invoke({action:'autocomplete',query:'Camp',sessionToken:session,mode:'invalid'})).status===400);
     assert((await invoke({action:'manual-address',address:'Leśna 4',region:'',country:'Polska'})).status===400);
     assert(calls.length === 0);
     authenticated = false;
@@ -62,16 +64,14 @@ Deno.test('Places authenticates, enforces budgets and hides the server key while
     assert((await invoke({action:'autocomplete',query:'Camp',sessionToken:session})).status === 429);
     assert(calls.every(call => !call.url.includes('googleapis')));
     limited = false;
-    const predictions = await invoke({action:'autocomplete',query:'Camp',sessionToken:session});
+    const predictions = await invoke({action:'autocomplete',query:'Camp',sessionToken:session,mode:'planned'});
     assert(predictions.status === 200 && predictions.headers.get('cache-control') === 'no-store');
-    assert((await predictions.json()).predictions[0].kind === 'campground');
+    const rows=(await predictions.json()).predictions;assert(rows.length===1&&rows[0].kind === 'campground');
     const details = await invoke({action:'details',placeId:id,sessionToken:session});
     assert(details.status === 200 && (await details.json()).place.address === 'Adres');
-    const areas=await invoke({action:'autocomplete',query:'Giżycko',sessionToken:session,areasOnly:true});
-    const areaRows=(await areas.json()).predictions;assert(areaRows.length===1&&areaRows[0].kind==='locality');
-    assert((await invoke({action:'details',placeId:id,sessionToken:session,areasOnly:true})).status===422);
-    areaDetails=true;const town=await invoke({action:'details',placeId:id,sessionToken:session,areasOnly:true});
-    assert(town.status===200&&(await town.json()).place.kind==='locality');areaDetails=false;
+    // The general discovery filter still searches countries through Google.
+    const filter=await invoke({action:'autocomplete',query:'Polska',sessionToken:session,mode:'flexible'});
+    const filterRows=(await filter.json()).predictions;assert(filterRows.length===2&&filterRows[1].kind==='country');
     const address={action:'manual-address',address:'Leśna 4, Ustka',region:'pomorskie',country:'Polska'};
     const located=await invoke(address);assert(located.status===200);
     const geometry=(await located.json()).geometry;assert(geometry.placeId===id&&geometry.latitude===54&&geometry.longitude===18);

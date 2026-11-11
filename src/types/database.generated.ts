@@ -926,6 +926,10 @@ export type Database = {
                 };
                 Returns: Json;
             };
+            "claim_geoapify_provider_request": {
+                Args: never;
+                Returns: boolean;
+            };
             claim_my_place_request: {
                 Args: never;
                 Returns: undefined;
@@ -1063,6 +1067,12 @@ export type Database = {
             "get_discovery_trip_v3": {
                 Args: {
                     "target_trip_id": string;
+                };
+                Returns: Json;
+            };
+            "get_geoapify_search_cache": {
+                Args: {
+                    cache_key: string;
                 };
                 Returns: Json;
             };

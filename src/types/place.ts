@@ -3,7 +3,7 @@ export interface SelectedPlace {
   scope?: 'area';
   bounds?: {south:number;north:number;west:number;east:number};
   id: string;
-  source: 'google' | 'manual' | 'legacy';
+  source: 'google' | 'geoapify' | 'manual';
   kind: PlaceKind;
   name: string;
   address: string;
@@ -12,6 +12,7 @@ export interface SelectedPlace {
   latitude?: number;
   longitude?: number;
   googlePlaceId?: string;
+  geoapifyPlaceId?: string;
   userLabel?: string;
   resolvedAt?: string;
 }

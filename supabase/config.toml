@@ -65,3 +65,6 @@ verify_jwt = false
 
 [functions.trip-weather]
 verify_jwt = false
+
+[functions.search-areas]
+verify_jwt = false

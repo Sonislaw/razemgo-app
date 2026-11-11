@@ -137,6 +137,7 @@ test('an empty draft does not pretend to have a location', () => {
 test('campground addresses survive saving, editing and duplication, and are trimmed', () => {
   const form = {
     ...newTripForm(profile),
+    mode: 'planned',
     locationId: 'pl-locality:4259',
     startDate: '2027-05-21',
     endDate: '2027-05-24',
@@ -181,6 +182,7 @@ test('campground addresses survive saving, editing and duplication, and are trim
 test('changing locality/mode clears a stale address; flexible drafts cannot retain it', () => {
   const form = {
     ...newTripForm(profile),
+    mode: 'planned',
     locationId: 'pl-locality:4259',
     campgroundAddress: 'ul. Polna 7',
   };

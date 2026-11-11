@@ -144,7 +144,6 @@ export default function ExploreScreen() {
       <DiscoveryTripModeSwitch value={tripMode} onChange={mode =>
         setFilters(current => ({ ...current, tripModes: [mode] }))
       } />
-      <DataStatus status={proposals.length && (hasMore || status === 'loading') ? 'ready' : status} error={error} onRetry={() => { void retry(); }} label="Wczytywanie ogłoszeń" />
       <View style={styles.controls}>
         {filters.sourceTripId ? (
           <View style={layout.row}>
@@ -184,6 +183,7 @@ export default function ExploreScreen() {
             <SavedFiltersButton kind="trips" onApply={applySavedFilterSet} />
             <DiscoverySortButton />
           </View>} />
+      <DataStatus status={proposals.length && (hasMore || status === 'loading') ? 'ready' : status} error={error} onRetry={() => { void retry(); }} label="Wczytywanie ogłoszeń" />
       </>}
       empty={status === 'ready' ? (
         checkingAvailability ? <DataStatus status="loading" error={null} label="Sprawdzanie dostępnych wyjazdów" onRetry={retryCount} /> : (

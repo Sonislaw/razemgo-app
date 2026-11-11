@@ -61,14 +61,14 @@ export function TripTimingStep({
         {(
           [
             {
-              mode: 'planned',
-              label: 'Mam plan',
-              description: 'Znam cel i termin. Szukam towarzystwa.',
-            },
-            {
               mode: 'flexible',
               label: 'Szukam pomysłu',
               description: 'Mam wolny termin. Miejsce wybiorę razem z ekipą.',
+            },
+            {
+              mode: 'planned',
+              label: 'Mam plan',
+              description: 'Znam cel i termin. Szukam towarzystwa.',
             },
           ] as const
         ).map((option) => (

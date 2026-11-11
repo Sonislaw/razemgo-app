@@ -124,7 +124,7 @@ export function toTripForm(
 export function newTripForm(profile: TravelerProfile): TripForm {
   return {
     participants: participantsFromProfile(profile.group),
-    mode: 'planned',
+    mode: 'flexible',
     startDate: '',
     endDate: '',
     locationId: '',

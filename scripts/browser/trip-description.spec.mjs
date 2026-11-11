@@ -4,7 +4,7 @@ import {openSuggestions} from './autocomplete-helpers.mjs';
 
 async function editor(page,mode='planned'){
  await page.goto('/trip-editor');
- if(mode==='flexible')await page.getByRole('radio',{name:'Szukam pomysłu',exact:true}).click();
+ await page.getByRole('radio',{name:mode==='flexible'?'Szukam pomysłu':'Mam plan',exact:true}).click();
  await page.getByRole('button',{name:'Wybierz zakres dat',exact:true}).click();
  await page.getByLabel(/^25 października 2026/).click();await page.getByLabel(/^28 października 2026/).click();
  await page.getByRole('button',{name:'Wybierz daty',exact:true}).click();await page.getByRole('button',{name:'Dalej',exact:true}).click();

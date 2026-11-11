@@ -6,6 +6,7 @@ test('trip participants differ from the profile, survive reload and editing, and
   test.setTimeout(120000);
   const store = state(); await backend(context, store); await login(page);
   await page.goto('/trip-editor');
+  await page.getByRole('radio',{name:'Mam plan',exact:true}).click();
   await page.getByRole('button', { name: 'Wybierz zakres dat', exact: true }).click();
   await page.getByLabel(/^25 października 2026/).click(); await page.getByLabel(/^28 października 2026/).click();
   await page.getByRole('button', { name: 'Wybierz daty', exact: true }).click();

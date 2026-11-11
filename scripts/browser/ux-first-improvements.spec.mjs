@@ -40,6 +40,7 @@ test('trip contact stays visible, organizer precedes description and contact sta
 for (const width of [320,390]) test(`grouped trip fields focus errors and retain optional details through publication at ${width}px`, async ({ page, context }) => {
   await page.setViewportSize({width,height:844});
   const store=state(); await backend(context,store); await login(page); await page.goto('/trip-editor');
+  await page.getByRole('radio',{name:'Mam plan',exact:true}).click();
   await page.getByRole('button',{name:'Dalej',exact:true}).click();
   await expect(page.getByTestId('trip-field-dates').getByRole('alert')).toContainText('datę');
   await expect(page.getByRole('button',{name:'Wybierz zakres dat',exact:true})).toBeFocused();

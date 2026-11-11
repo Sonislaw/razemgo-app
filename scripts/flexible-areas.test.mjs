@@ -17,7 +17,7 @@ test('flexible areas exclude campsites and precise pins; mode switches clear inc
  assert.equal(isPlaceAllowedForTrip(camp,'flexible'),false);assert.equal(isPlaceAllowedForTrip(area,'flexible'),true);
  assert.equal(isPlaceAllowedForTrip({...area,scope:undefined,latitude:54,longitude:18},'flexible'),false);
  assert.equal(isPlaceAllowedForTrip(area,'planned'),false);
- const form={...newTripForm({group:MY_GROUP}),startDate:'2099-05-21',endDate:'2099-05-24',place:camp,locationId:camp.id,description:'Chcemy poznać okolicę i wspólnie wybrać ciekawe miejsce.'};
+ const form={...newTripForm({group:MY_GROUP}),mode:'planned',startDate:'2099-05-21',endDate:'2099-05-24',place:camp,locationId:camp.id,description:'Chcemy poznać okolicę i wspólnie wybrać ciekawe miejsce.'};
  const switched=changeTripMode(form,'flexible');assert.equal(switched.locationId,'');assert.equal(switched.place,undefined);assert.equal(switched.startDate,form.startDate);
  assert(validateTripForm({...form,mode:'flexible'}).some(m=>m.includes('Szukam pomysłu')));
  assert.deepEqual(validateTripForm({...form,mode:'flexible',place:area,locationId:area.id}),[]);

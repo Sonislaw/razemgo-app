@@ -7,6 +7,7 @@ test('real API flow: create, failed save, reload, second device, discovery, life
   const store=state();await backend(context,store);
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await login(page);await page.goto('/trip-editor');
+  await page.getByRole('radio',{name:'Mam plan',exact:true}).click();
   await expect(page.getByText('Krok 1 z 2',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Wybierz zakres dat',exact:true}).click();
   await page.getByLabel(/^25 października 2026/).click();
@@ -106,7 +107,7 @@ test('real API flow: create, failed save, reload, second device, discovery, life
 test('flexible trips publish and edit in two steps with visibility and preview in the final step', async ({page,context}) => {
   const store=state();await backend(context,store);await login(page);
   await page.goto('/trip-editor');
-  await page.getByRole('radio',{name:'Szukam pomysłu',exact:true}).click();
+  await expect(page.getByRole('radio',{name:'Szukam pomysłu',exact:true})).toBeChecked();
   await expect(page.getByText('Krok 1 z 2',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Wybierz zakres dat',exact:true}).click();
   await page.getByLabel(/^25 października 2026/).click();

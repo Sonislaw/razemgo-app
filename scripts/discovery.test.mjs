@@ -7,7 +7,7 @@ import {
   MY_TRIPS,
   MY_GROUP,
 } from '../src/data/mocks/travel.ts';
-import { INITIAL_FILTERS, filterProposals, sharedNights, formatTripDates, toggleDiscoveryTripMode, updateDiscoveryDateRange, clearDiscoveryDates, getDiscoveryDateRangeError, resolveDiscoveryRange, getDiscoveryReferenceRange, selectDiscoveryLocation, updateDiscoveryLocationQuery } from '../src/features/discovery/filter-trips.ts';
+import { INITIAL_FILTERS, filterProposals, sharedNights, formatTripDates, updateDiscoveryDateRange, clearDiscoveryDates, getDiscoveryDateRangeError, resolveDiscoveryRange, getDiscoveryReferenceRange, selectDiscoveryLocation, updateDiscoveryLocationQuery } from '../src/features/discovery/filter-trips.ts';
 import {QUICK_DATE_FILTERS, quickDateRange, activeQuickDateFilter, toggleQuickDateFilter} from '../src/features/discovery/quick-date-filters.ts';
 import { DEMO_COMPATIBILITY_SCORES } from './support/legacy-matching/scores.ts';
 import { sortDiscoveryProposals } from './support/legacy-matching/sort-proposals.ts';
@@ -491,18 +491,6 @@ test('trip types combine with dates, location and ages without mutating filters 
     ['demo-forest'],
   );
   assert.equal(JSON.stringify(DEMO_PROPOSALS), snapshot);
-});
-
-test('type selection supports one or both choices and retains the last selected type', () => {
-  const initial = [...INITIAL_FILTERS.tripModes];
-  const single = toggleDiscoveryTripMode(initial, 'flexible');
-  assert.deepEqual(single, ['planned']);
-  assert.deepEqual(toggleDiscoveryTripMode(single, 'planned'), ['planned']);
-  const both = toggleDiscoveryTripMode(single, 'flexible');
-  assert.deepEqual(both, ['planned', 'flexible']);
-  assert.deepEqual(toggleDiscoveryTripMode(both, 'planned'), ['flexible']);
-  assert.deepEqual(initial, ['planned', 'flexible']);
-  assert.deepEqual(INITIAL_FILTERS.tripModes, initial);
 });
 
 test('same checkout/check-in date is not a shared night', () => {

@@ -10,7 +10,7 @@ import { createOwnTripsState } from '@/features/trips/own-trips-state';
 import { useMessaging } from '@/features/messaging/messaging-context';
 import { createMessagingState } from '@/features/messaging/messaging-state';
 import { useDiscovery } from '@/features/discovery/discovery-context';
-import { INITIAL_FILTERS } from '@/features/discovery/filter-trips';
+import { emptyDiscoveryFilters } from '@/features/discovery/trip-discovery-state';
 
 type HomeScenario = 'active' | 'new' | 'no-trips' | 'draft' | 'messages';
 export function HomeDemoControls({ onClose }: { onClose: () => void }) {
@@ -45,7 +45,7 @@ export function HomeDemoControls({ onClose }: { onClose: () => void }) {
             : 'empty',
       ),
     });
-    setFilters({ ...INITIAL_FILTERS });
+    setFilters(emptyDiscoveryFilters());
     onClose();
     if (scenario === 'new') router.push('/welcome');
   };

@@ -2,7 +2,6 @@ import type {
   DateRange,
   DiscoveryFilters,
   TripPlan,
-  TripMode,
   TripProposal,
   TripPlace,
 } from '../../types/travel';
@@ -115,16 +114,6 @@ export function getDiscoveryDateRangeError(
   if (range.endDate <= range.startDate)
     return 'Data „Do” musi przypadać po dacie „Od”.';
   return undefined;
-}
-export function toggleDiscoveryTripMode(
-  modes: TripMode[],
-  mode: TripMode,
-): TripMode[] {
-  return modes.includes(mode)
-    ? modes.length === 1
-      ? modes
-      : modes.filter((item) => item !== mode)
-    : [...modes, mode];
 }
 export function normalizeLocation(value: string): string {
   return value

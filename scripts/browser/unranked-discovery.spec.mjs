@@ -21,7 +21,7 @@ test('Start and trip cards show ordinary facts without personalized labels or ma
   await expect(home).not.toContainText(/Podobne plany|Wspólne zainteresowania|Podobny wiek dzieci/);
   await expect(home).not.toContainText('Terminy się pokrywają');
   await expect(home).not.toContainText(/\d+%/);
-  await page.goto('/explore');
+  await page.goto('/explore'); await page.getByRole('radio', {name: 'Mam plan', exact: true}).click();
   const card = page.getByTestId('discovery-trip-' + other.id);
   await expect(card).not.toContainText(/Podobne plany|Wspólne zainteresowania|Podobny wiek dzieci/);
   await expect(card).not.toContainText('Terminy się pokrywają');
@@ -54,7 +54,7 @@ test('a card without shared evidence has no rating and still permits contact', a
     if (route.request().method() === 'OPTIONS') return route.fallback();
     return route.fulfill({ json: item, headers: { 'access-control-allow-origin': 'http://localhost:8085' } });
   });
-  await login(page); await page.goto('/explore');
+  await login(page); await page.goto('/explore'); await page.getByRole('radio', {name: 'Mam plan', exact: true}).click();
   const card = page.getByTestId('discovery-trip-' + trip.id);
   await expect(card).toBeVisible();
   await expect(card).not.toContainText(/Podobne plany|Wspólne zainteresowania|Podobny wiek dzieci|Za mało danych|\d+%/);
@@ -89,7 +89,7 @@ test('Start and crew listings open direct details without personal context and p
     if(route.request().method()==='OPTIONS')return route.fallback();
     return route.fulfill({json:{items:[crewInfo],total_count:1,has_more:false,cursor:null},headers:{'access-control-allow-origin':'http://localhost:8085'}});
   });
-  await login(page);await page.goto('/explore');
+  await login(page);await page.goto('/explore'); await page.getByRole('radio', {name: 'Mam plan', exact: true}).click();
   await page.getByRole('button',{name:'Otwórz filtry',exact:true}).click();
   await page.getByRole('button',{name:'Wybierz zakres dat',exact:true}).click();
   await page.getByLabel(/^25 października 2026/).click();await page.getByLabel(/^28 października 2026/).click();

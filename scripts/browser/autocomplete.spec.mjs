@@ -42,6 +42,8 @@ for (const width of [320, 390]) test(`a full-screen search above filters keeps t
   await expect(input).toHaveValue('');
   await expect(input).toBeFocused();
   await button(page, 'Wróć do formularza').click();
-  await expect(suggestionField(page, label)).toContainText('np. Białowieża, Camping…');
+  await expect(suggestionField(page, label)).toContainText('np. Giżycko, pomorskie, Chorwacja…');
+  expect(store.placeCalls ?? []).toHaveLength(0);
+  expect(store.areaCalls.length).toBeGreaterThan(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

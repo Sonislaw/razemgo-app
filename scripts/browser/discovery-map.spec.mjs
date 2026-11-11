@@ -66,7 +66,7 @@ for (const width of [320, 390])
     await login(page);
     await page.goto('/explore');
     await expect(
-      page.getByText('Propozycje · 14', { exact: true }),
+      page.getByText('Propozycje · 1', { exact: true }),
     ).toBeVisible();
     await button(page, 'Pokaż mapę wyjazdów').click();
     const map = page.getByTestId('discovery-map-screen');
@@ -118,11 +118,11 @@ for (const width of [320, 390])
     await button(page, 'Wróć do listy wyjazdów').click();
     await expect(page.getByTestId('discovery-map-screen')).toHaveCount(0);
     await expect(
-      page.getByText('Propozycje · 14', { exact: true }),
+      page.getByText('Propozycje · 1', { exact: true }),
     ).toBeVisible();
   });
 for (const width of [320, 390])
-  test(`map locks Mam plan through clearing and saved filters; the list unlocks at ${width}px`, async ({
+  test(`map locks Mam plan through clearing and saved filters; the list restores ideas at ${width}px`, async ({
     page,
     context,
   }) => {
@@ -153,9 +153,7 @@ for (const width of [320, 390])
     await mockMapTiles(context);
     await login(page);
     await page.goto('/explore');
-    await button(page, 'Otwórz filtry').click();
-    await page.getByRole('checkbox', { name: 'Mam plan', exact: true }).click();
-    await page.getByRole('button', { name: /^Pokaż wyniki/ }).click();
+
     await expect(
       page.getByText('Propozycje · 1', { exact: true }),
     ).toBeVisible();
@@ -165,9 +163,7 @@ for (const width of [320, 390])
     ).toBeVisible();
     await expect(button(page, 'Wyczyść filtry')).toHaveCount(0);
     await button(page, 'Otwórz filtry').click();
-    const mode = page.getByRole('checkbox', { name: 'Mam plan', exact: true });
-    await expect(mode).toBeChecked();
-    await expect(mode).toBeDisabled();
+    await expect(page.getByRole('dialog', { name: 'Filtry wyjazdów', exact: true }).getByText('Typ ogłoszenia', { exact: true })).toHaveCount(0);
     await expect(
       page.getByRole('checkbox', { name: 'Szukam pomysłu', exact: true }),
     ).toHaveCount(0);
@@ -177,8 +173,7 @@ for (const width of [320, 390])
       .click();
     await button(page, 'Wyczyść').click();
     await expect(button(page, 'Wyczyść')).toHaveCount(0);
-    await expect(mode).toBeChecked();
-    await expect(mode).toBeDisabled();
+
     await page.getByRole('button', { name: /^Pokaż wyniki/ }).click();
     await button(page, 'Zapisane · 1').click();
     await button(page, 'Wczytaj zestaw: ' + saved.name).click();
@@ -212,22 +207,10 @@ for (const width of [320, 390])
     ).toBe(true);
     await button(page, 'Wróć do listy wyjazdów').click();
     await expect(
-      page.getByText('Propozycje · 14', { exact: true }),
-    ).toBeVisible();
-    await button(page, 'Otwórz filtry').click();
-    await expect(mode).toBeChecked();
-    await expect(mode).toBeEnabled();
-    const idea = page.getByRole('checkbox', {
-      name: 'Szukam pomysłu',
-      exact: true,
-    });
-    await expect(idea).toBeEnabled();
-    await expect(idea).toBeChecked();
-    await mode.click();
-    await page.getByRole('button', { name: /^Pokaż wyniki/ }).click();
-    await expect(
       page.getByText('Propozycje · 1', { exact: true }),
     ).toBeVisible();
+    await expect(page.getByRole('radio', {name: 'Szukam pomysłu', exact: true})).toBeChecked();
+    await expect(page.getByRole('radio', {name: 'Mam plan', exact: true})).not.toBeChecked();
   });
 
 test('a saved-filter alert leaves the map and applies its exact flexible criteria to the list', async ({
@@ -434,11 +417,11 @@ test('map network failure retries, preserves the list and does not claim fabrica
   ).toBeVisible();
   await button(page, 'Wróć do listy wyjazdów').click();
   await expect(
-    page.getByText('Propozycje · 14', { exact: true }),
+    page.getByText('Propozycje · 1', { exact: true }),
   ).toBeVisible();
 });
 
-test('returning removes Mam plan and restarts list pages while map camera and detail selection survive', async ({
+test('returning preserves Mam plan and list pages while map camera and detail selection survive', async ({
   page,
   context,
 }) => {
@@ -449,11 +432,7 @@ test('returning removes Mam plan and restarts list pages while map camera and de
   await mockMapTiles(context);
   await login(page);
   await page.goto('/explore');
-  await button(page, 'Otwórz filtry').click();
-  await page
-    .getByRole('checkbox', { name: 'Szukam pomysłu', exact: true })
-    .click();
-  await page.getByRole('button', { name: /^Pokaż wyniki/ }).click();
+  await page.getByRole('radio', { name: 'Mam plan', exact: true }).click();
   await expect(
     page.getByText('Propozycje · 13', { exact: true }),
   ).toBeVisible();
@@ -476,9 +455,9 @@ test('returning removes Mam plan and restarts list pages while map camera and de
     )
     .toBe(6);
   await button(page, 'Wróć do listy wyjazdów').click();
-  await expect(page.getByText('Propozycje · 14', {exact: true})).toBeVisible();
-  await expect(screen.getByTestId('discovery-screen-loaded-5')).toBeAttached();
-  expect(await screen.evaluate((el) => el.scrollTop)).toBe(0);
+  await expect(page.getByText('Propozycje · 13', {exact: true})).toBeVisible();
+  await expect(screen.getByTestId('discovery-screen-loaded-10')).toBeAttached();
+  expect(await screen.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
   await button(page, 'Pokaż mapę wyjazdów').evaluate((el) => el.click());
   await expect(
     page.getByText('Plany w obszarze: 13', { exact: true }),
@@ -499,8 +478,8 @@ test('returning removes Mam plan and restarts list pages while map camera and de
   await page.goBack();
   await expect(page.getByTestId('map-trip-preview')).toBeVisible();
   await button(page, 'Wróć do listy wyjazdów').click();
-  await expect(page.getByText('Propozycje · 14', {exact: true})).toBeVisible();
-  await expect(screen.getByTestId('discovery-screen-loaded-5')).toBeAttached();
+  await expect(page.getByText('Propozycje · 13', {exact: true})).toBeVisible();
+  await expect(screen.getByTestId('discovery-screen-loaded-10')).toBeAttached();
 });
 
 test('a single point at maximum zoom opens its preview without ever mounting a list sheet', async ({
@@ -647,7 +626,7 @@ test('saved filters load on the map and selection errors retry without losing cr
   await button(page, 'Spróbuj ponownie').click();
   await expect(page.getByTestId('map-trip-preview')).toContainText('numer 0');
   await button(page, 'Wróć do listy wyjazdów').click();
-  await expect(page.getByText('Propozycje · 2', { exact: true })).toBeVisible();
+  await expect(page.getByText('Propozycje · 1', { exact: true })).toBeVisible();
   await expect(button(page, 'Otwórz filtry')).not.toContainText(saved.name);
   await expect(button(page, 'Otwórz filtry')).toContainText('Jeziora');
   expect(store.filterSets.get(saved.id)).toEqual(saved);

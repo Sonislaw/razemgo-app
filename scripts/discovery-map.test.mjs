@@ -15,6 +15,9 @@ import { INITIAL_FILTERS } from '../src/features/discovery/filter-trips.ts';
 import {
   tripDiscoveryReducer,
   plannedMapFilters,
+  discoveryTripMode,
+  emptyDiscoveryFilters,
+  singleTripFilters,
 } from '../src/features/discovery/trip-discovery-state.ts';
 const bounds = { south: 48, north: 56, west: 13, east: 25 },
   query = { bounds, zoom: 5 };
@@ -40,7 +43,7 @@ const row = {
   viewport: bounds,
   zoom: 5,
 };
-test('opening the map locks Mam plan; returning removes the type restriction and preserves other criteria', () => {
+test('opening the map locks Mam plan; returning restores the previous type and preserves other criteria', () => {
   const filters = {
     ...INITIAL_FILTERS,
     tripModes: ['flexible'],
@@ -79,7 +82,7 @@ test('opening the map locks Mam plan; returning removes the type restriction and
   const mapFilters = structuredClone(state.filters);
   state = tripDiscoveryReducer(state, { type: 'close-map' });
   assert.equal(state.mapOpen, false);
-  assert.deepEqual(state.filters, {...mapFilters, tripModes: ['planned', 'flexible']});
+  assert.deepEqual(state.filters, {...mapFilters, tripModes: ['flexible']});
   state = tripDiscoveryReducer(state, { type: 'filters', value: filters });
   assert.deepEqual(state.filters.tripModes, ['flexible']);
   assert.equal(tripDiscoveryReducer(state, {type: 'close-map'}), state);
@@ -92,6 +95,25 @@ test('opening the map locks Mam plan; returning removes the type restriction and
     ).filters,
     planned,
   );
+  const plannedState = tripDiscoveryReducer({ filters: planned, mapOpen: false }, { type: 'open-map' });
+  assert.equal(tripDiscoveryReducer(plannedState, {type: 'open-map'}), plannedState);
+  assert.deepEqual(tripDiscoveryReducer(plannedState, {type: 'close-map'}).filters.tripModes, ['planned']);
+});
+
+test('discovery starts with ideas and accepts only one type, including legacy saved sets', () => {
+  const initial = emptyDiscoveryFilters();
+  assert.deepEqual(initial.tripModes, ['flexible']);
+  assert.equal(discoveryTripMode(initial), 'flexible');
+  let state = { filters: initial, mapOpen: false };
+  state = tripDiscoveryReducer(state, {type: 'filters', value: {...initial, tripModes: ['planned']}});
+  assert.equal(discoveryTripMode(state.filters), 'planned');
+  state = tripDiscoveryReducer(state, {type: 'filters', value: {...INITIAL_FILTERS, location: 'Pomorskie'}});
+  assert.deepEqual(state.filters.tripModes, ['planned']);
+  assert.equal(state.filters.location, 'Pomorskie');
+  state = tripDiscoveryReducer(state, {type: 'filters', value: initial});
+  assert.deepEqual(state.filters.tripModes, ['flexible']);
+  assert.deepEqual(singleTripFilters(INITIAL_FILTERS).tripModes, ['flexible']);
+  assert.deepEqual(INITIAL_FILTERS.tripModes, ['planned', 'flexible']);
 });
 
 test('map responses preserve all counts and reject invalid coordinates or misleading point totals', () => {

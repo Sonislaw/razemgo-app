@@ -1,4 +1,26 @@
-import type { DiscoveryFilters } from '../../types/travel';
+import type { DiscoveryFilters, TripMode } from '../../types/travel';
+import { INITIAL_FILTERS } from './filter-trips.ts';
+
+export function discoveryTripMode(filters: DiscoveryFilters): TripMode {
+  return filters.tripModes.length === 1 && filters.tripModes[0] === 'planned'
+    ? 'planned'
+    : 'flexible';
+}
+
+// Older saved sets can contain both types. Keep the current tab for those sets,
+// while single-type sets still select their original tab.
+export function singleTripFilters(
+  filters: DiscoveryFilters,
+  fallback: TripMode = 'flexible',
+): DiscoveryFilters {
+  return filters.tripModes.length === 1
+    ? filters
+    : { ...filters, tripModes: [fallback] };
+}
+
+export function emptyDiscoveryFilters(mode: TripMode = 'flexible'): DiscoveryFilters {
+  return { ...INITIAL_FILTERS, tripModes: [mode] };
+}
 
 export function plannedMapFilters(filters: DiscoveryFilters): DiscoveryFilters {
   return filters.tripModes.length === 1 && filters.tripModes[0] === 'planned'
@@ -21,6 +43,7 @@ export function hasResettableMapFilters(filters: DiscoveryFilters): boolean {
 export interface TripDiscoveryState {
   filters: DiscoveryFilters;
   mapOpen: boolean;
+  mapReturnMode?: TripMode;
 }
 type TripDiscoveryAction =
   | { type: 'open-map' }
@@ -39,10 +62,14 @@ export function tripDiscoveryReducer(
   action: TripDiscoveryAction,
 ): TripDiscoveryState {
   if (action.type === 'open-map')
-    return { mapOpen: true, filters: plannedMapFilters(state.filters) };
+    return state.mapOpen ? state : {
+      mapOpen: true,
+      mapReturnMode: discoveryTripMode(state.filters),
+      filters: plannedMapFilters(state.filters),
+    };
   if (action.type === 'close-map') return state.mapOpen ? {
     mapOpen: false,
-    filters: { ...state.filters, tripModes: ['planned', 'flexible'] },
+    filters: { ...state.filters, tripModes: [state.mapReturnMode ?? 'flexible'] },
   } : state;
   const filters =
     typeof action.value === 'function'
@@ -50,6 +77,8 @@ export function tripDiscoveryReducer(
       : action.value;
   return {
     ...state,
-    filters: state.mapOpen ? plannedMapFilters(filters) : filters,
+    filters: state.mapOpen
+      ? plannedMapFilters(filters)
+      : singleTripFilters(filters, discoveryTripMode(state.filters)),
   };
 }

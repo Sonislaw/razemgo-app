@@ -38,11 +38,32 @@ async function manage(page, count, name) {
   await button(page, `Opcje zestawu: ${name}`).click();
 }
 
+test('legacy sets keep the selected type; single-type sets switch it without changing stored criteria', async ({page,context}) => {
+  const store=state(); trips(store);
+  const legacy=preset(store,1901,'Nad morze',{kind:'trips',filters:{...INITIAL_FILTERS,landscapeKinds:['coast']}});
+  preset(store,1902,'Plany',{kind:'trips',filters:{...INITIAL_FILTERS,tripModes:['planned']}});
+  preset(store,1903,'Pomysły',{kind:'trips',filters:{...INITIAL_FILTERS,tripModes:['flexible']}});
+  const original=structuredClone(legacy);
+  await backend(context,store); await login(page); await page.goto('/explore');
+  const ideas=page.getByRole('radio',{name:'Szukam pomysłu',exact:true});
+  const plans=page.getByRole('radio',{name:'Mam plan',exact:true});
+  await load(page,3,'Nad morze');
+  await expect(ideas).toBeChecked(); await expect(button(page,'Otwórz filtry')).toContainText('Nad morze');
+  await plans.click(); await expect(button(page,'Otwórz filtry')).not.toContainText('Nad morze');
+  await load(page,3,'Nad morze');
+  await expect(plans).toBeChecked(); await expect(button(page,'Otwórz filtry')).toContainText('Nad morze');
+  await load(page,3,'Pomysły'); await expect(ideas).toBeChecked(); await expect(plans).not.toBeChecked();
+  await load(page,3,'Plany'); await expect(plans).toBeChecked(); await expect(ideas).not.toBeChecked();
+  await expect(button(page,'Otwórz filtry')).toContainText('Plany');
+  expect(store.filterSets.get(legacy.id)).toEqual(original);
+});
+
 for (const width of [320, 390]) test(`trip sets: retry, first-page reload, rename and deletion at ${width}px`, async ({ page, context }) => {
   test.setTimeout(120000);
   await page.setViewportSize({ width, height: 844 });
   const store = state(); trips(store);
   await backend(context, store); await login(page); await page.goto('/explore');
+  await page.getByRole('radio', {name: 'Mam plan', exact: true}).click();
   await expect(button(page, 'Zapisane · 0')).toBeVisible();
   await openTrips(page);
   store.loseFilterAcknowledgement = true;

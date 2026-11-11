@@ -44,9 +44,55 @@ function seed(store, n = 13) {
     });
   }
 }
+for (const width of [320, 390]) test(`discovery separates ideas from plans and keeps one type selected at ${width}px`, async ({page,context}) => {
+  await page.setViewportSize({width,height:844});
+  const store=state(); seed(store);
+  const idea={...store.trips.get(uuid(8000)), id:uuid(9000), mode:'flexible', campground_name:'', landscape:'coast'};
+  store.trips.set(idea.id,idea);
+  await backend(context,store); await login(page); await page.goto('/explore');
+  const screen=page.getByTestId('discovery-screen');
+  const types=screen.getByRole('radiogroup',{name:'Typ ogłoszenia',exact:true});
+  const ideas=types.getByRole('radio',{name:'Szukam pomysłu',exact:true});
+  const plans=types.getByRole('radio',{name:'Mam plan',exact:true});
+  await expect(ideas).toBeChecked(); await expect(plans).not.toBeChecked();
+  await expect(screen.getByText('Propozycje · 1',{exact:true})).toBeVisible();
+  await expect(screen.getByTestId('discovery-trip-'+idea.id)).toBeVisible();
+  expect(await types.getByRole('radio').allTextContents()).toEqual(['Szukam pomysłu','Mam plan']);
+  const tabsBox=await screen.getByRole('tablist',{name:'Odkrywaj',exact:true}).boundingBox();
+  const typesBox=await types.boundingBox();
+  expect(typesBox.y).toBeGreaterThanOrEqual(tabsBox.y+tabsBox.height);
+  expect(typesBox.width).toBeLessThanOrEqual(width);
+  for (const label of ['Szukam pomysłu','Mam plan']) {
+    expect(await types.getByText(label,{exact:true}).evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
+  }
+  const queries=()=>store.tripSearchCalls.filter(c=>c.endpoint==='search_public_trips_v3'&&c.page_size===5);
+  const count=queries().length;
+  await ideas.click(); await expect(ideas).toBeChecked(); expect(queries()).toHaveLength(count);
+  await plans.click(); await expect(plans).toBeChecked(); await expect(ideas).not.toBeChecked();
+  await expect(screen.getByText('Propozycje · 13',{exact:true})).toBeVisible();
+  await loadNextPage(screen,10); await screen.evaluate(el=>{el.scrollTop=0;});
+  await page.getByRole('button',{name:'Otwórz filtry',exact:true}).click();
+  const dialog=page.getByRole('dialog',{name:'Filtry wyjazdów',exact:true});
+  await expect(dialog.getByText('Typ ogłoszenia',{exact:true})).toHaveCount(0);
+  await expect(dialog.getByRole('checkbox',{name:'Mam plan',exact:true})).toHaveCount(0);
+  await page.getByRole('checkbox',{name:'Klimat wyjazdu: Morze',exact:true}).click();
+  await page.getByRole('button',{name:/^Pokaż wyniki/}).click();
+  await expect(screen.getByText('Propozycje · 1',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Wyczyść filtry',exact:true}).click();
+  await expect(plans).toBeChecked();
+  await expect(screen.getByText('Propozycje · 13',{exact:true})).toBeVisible();
+  await ideas.click(); await expect(screen.getByText('Propozycje · 1',{exact:true})).toBeVisible();
+  expect(queries().at(-1).after_cursor??null).toBeNull();
+  expect(queries().at(-1).filters.trip_modes).toEqual(['flexible']);
+  await page.screenshot({path:'.expo/discovery-types-'+width+'.png'});
+  await page.getByRole('tab',{name:'Ekipy',exact:true}).click();
+  await expect(page.getByRole('radiogroup',{name:'Typ ogłoszenia',exact:true})).toHaveCount(0);
+  await page.getByRole('tablist',{name:'Odkrywaj',exact:true}).getByRole('tab',{name:'Wyjazdy',exact:true}).click();
+  await expect(ideas).toBeChecked();
+});
 for (const width of [320,390]) test(`empty discovery offers creating a trip even with active filters at ${width}px`,async({page,context})=>{
   await page.setViewportSize({width,height:844});
-  const store=state();await backend(context,store);await login(page);await page.goto('/explore');
+  const store=state();await backend(context,store);await login(page);await page.goto('/explore'); await page.getByRole('radio', {name: 'Mam plan', exact: true}).click();
   const screen=page.getByTestId('discovery-screen');
   await expect(screen.getByRole('heading',{name:'Brak wyjazdów do odkrycia',exact:true})).toBeVisible();
   await expect(screen.getByRole('button',{name:'Pokaż wszystkie wyjazdy',exact:true})).toHaveCount(0);
@@ -56,6 +102,7 @@ for (const width of [320,390]) test(`empty discovery offers creating a trip even
   await expect(screen.getByRole('heading',{name:'Brak wyjazdów do odkrycia',exact:true})).toBeVisible();
   await expect(screen.getByRole('heading',{name:'Brak pasujących wyjazdów',exact:true})).toHaveCount(0);
   const create=screen.getByRole('button',{name:'Dodaj wyjazd',exact:true});
+  await scrollToRow(screen,create);
   await expect(create).toBeInViewport({ratio:1});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(1);
   await page.screenshot({path:'.expo/discovery-empty-'+width+'.png'});
@@ -65,7 +112,7 @@ for (const width of [320,390]) test(`empty discovery offers creating a trip even
 });
 
 test('empty filtered search distinguishes available trips and tolerates an availability count failure',async({page,context})=>{
-  const store=state();seed(store,3);await backend(context,store);await login(page);await page.goto('/explore');
+  const store=state();seed(store,3);await backend(context,store);await login(page);await page.goto('/explore'); await page.getByRole('radio', {name: 'Mam plan', exact: true}).click();
   const screen=page.getByTestId('discovery-screen');
   await expectLoaded(screen,3);
   expect(store.tripSearchCalls.filter(call=>call.endpoint==='count_public_trips')).toHaveLength(0);
@@ -97,7 +144,7 @@ test('bounded trip pages, load-more retry, full filter counts, global sorting an
   seed(store);
   await backend(context, store);
   await login(page);
-  await page.goto('/explore');
+  await page.goto('/explore'); await page.getByRole('radio', {name: 'Mam plan', exact: true}).click();
   const cards = page.locator('[data-testid^="discovery-trip-"]');
   const screen = page.getByTestId('discovery-screen');
   await expect(
@@ -215,7 +262,7 @@ test('returning from a listing or its crew restores all viewed pages and the scr
     });
   });
   await login(page);
-  await page.goto('/explore');
+  await page.goto('/explore'); await page.getByRole('radio', {name: 'Mam plan', exact: true}).click();
   const screen = page.getByTestId('discovery-screen'),
     cards = page.locator('[data-testid^="discovery-trip-"]');
   await expect(cards).toHaveCount(5);
@@ -284,7 +331,7 @@ test('failed trip count offers retry and never shows a fabricated zero', async (
   seed(store, 3);
   await backend(context, store);
   await login(page);
-  await page.goto('/explore');
+  await page.goto('/explore'); await page.getByRole('radio', {name: 'Mam plan', exact: true}).click();
   await page
     .getByRole('button', { name: 'Otwórz filtry', exact: true })
     .click();
@@ -321,7 +368,7 @@ test('a newly inserted middle listing reconciles pages and retains the visible r
   });
   await backend(context, store);
   await login(page);
-  await page.goto('/explore');
+  await page.goto('/explore'); await page.getByRole('radio', {name: 'Mam plan', exact: true}).click();
   const screen = page.getByTestId('discovery-screen');
   await expectLoaded(screen, 5);
   await loadNextPage(screen, 10);

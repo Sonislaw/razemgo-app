@@ -14,7 +14,6 @@ import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
 import { Icon } from '@/components/ui/icon';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
 import {
-  INITIAL_FILTERS,
   resolveDiscoveryRange,
   formatTripDates,
 } from '@/features/discovery/filter-trips';
@@ -22,6 +21,8 @@ import { useDiscovery } from '@/features/discovery/discovery-context';
 import { DiscoveryFiltersSheet } from '@/features/discovery/discovery-filters-sheet';
 import { DiscoveryQuickDates } from '@/features/discovery/discovery-quick-dates';
 import { DiscoverySortButton } from '@/features/discovery/discovery-sort-button';
+import { DiscoveryTripModeSwitch } from '@/features/discovery/discovery-trip-mode-switch';
+import { discoveryTripMode, emptyDiscoveryFilters } from '@/features/discovery/trip-discovery-state';
 import { DiscoveryFilterBar, DiscoveryResultsHeader } from '@/features/discovery/discovery-controls';
 import { useTripSearch, useTripResultCount } from '@/features/discovery/use-trip-search';
 import { discoveryFiltersPayload,TRIP_SEARCH_PAGE_SIZE } from '@/features/discovery/discovery-data';
@@ -56,8 +57,8 @@ export default function ExploreScreen() {
     (trip) => trip.id === filters.sourceTripId,
   );
   const dateRange = resolveDiscoveryRange(filters);
+  const tripMode = discoveryTripMode(filters);
   const activeCount =
-    Number(filters.tripModes.length === 1) +
     Number(filters.dateRangeId !== 'all') +
     Number(Boolean(filters.location.trim())) +
     Number(filters.childAgeBands.length > 0) +
@@ -65,16 +66,11 @@ export default function ExploreScreen() {
     Number(Boolean(filters.animalKinds?.length)) +
     Number(Boolean(filters.landscapeKinds?.length)) + Number(Boolean(filters.favoritesOnly));
   const checkAvailableTrips = view === 'trips' && !mapOpen && status === 'ready' && totalCount === 0 && activeCount > 0;
-  const { count: availableTripCount, countError, retryCount } = useTripResultCount(INITIAL_FILTERS, checkAvailableTrips);
+  const { count: availableTripCount, countError, retryCount } = useTripResultCount(emptyDiscoveryFilters(tripMode), checkAvailableTrips);
   const checkingAvailability = checkAvailableTrips && availableTripCount === null && !countError;
   const noAvailableTrips = activeCount === 0 || availableTripCount === 0;
   const summary = [
     filters.favoritesOnly ? 'Tylko ulubione' : '',
-    filters.tripModes.length === 1
-      ? filters.tripModes[0] === 'planned'
-        ? 'Mam plan'
-        : 'Szukam pomysłu'
-      : '',
     dateRange
       ? formatTripDates(dateRange, {weekdays: false}) +
         (filters.dateFlexibilityDays
@@ -104,7 +100,7 @@ export default function ExploreScreen() {
   ]
     .filter(Boolean)
     .join(' · ');
-  const reset = () => setFilters({ ...INITIAL_FILTERS });
+  const reset = () => setFilters(emptyDiscoveryFilters(tripMode));
   const header = <>
         <IllustratedPageHeader
           title="Odkrywaj"
@@ -145,6 +141,9 @@ export default function ExploreScreen() {
         onNavigate={preserveOnReturn} />}
       beforeList={<>
       {switcher}
+      <DiscoveryTripModeSwitch value={tripMode} onChange={mode =>
+        setFilters(current => ({ ...current, tripModes: [mode] }))
+      } />
       <DataStatus status={proposals.length && (hasMore || status === 'loading') ? 'ready' : status} error={error} onRetry={() => { void retry(); }} label="Wczytywanie ogłoszeń" />
       <View style={styles.controls}>
         {filters.sourceTripId ? (
@@ -164,14 +163,14 @@ export default function ExploreScreen() {
             />
           </View>
         ) : null}
-        <DiscoveryFilterBar activeCount={activeCount} summary={summary} placeholder="Typ, termin, miejsce i klimat"
+        <DiscoveryFilterBar activeCount={activeCount} summary={summary} placeholder="Termin, miejsce i klimat"
           action={USE_DEMO_DATA||!googleMapAvailable?undefined:<Pressable accessibilityRole="button" accessibilityLabel="Pokaż mapę wyjazdów" onPress={openTripMap}
             style={({pressed})=>({minHeight:56,minWidth:48,alignItems:'center',justifyContent:'center',gap:3,opacity:pressed?0.65:1})}>
             <Icon name="map" size={21} color={theme.primaryStrong} /><AppText variant="caption" style={{color:theme.primaryStrong}}>Mapa</AppText>
           </Pressable>}
           savedSetName={activeTripSet?.name}
           notice={filterSetExpired({ kind: 'trips', filters }, today) ? 'Termin w tym zestawie już minął' : undefined}
-          filterHint="Wybierz typ ogłoszenia, klimat, termin, miejsce i wiek dzieci"
+          filterHint="Wybierz klimat, termin, miejsce i wiek dzieci"
           onClear={reset}
           renderFilters={(onClose) => (
             <DiscoveryFiltersSheet initialFilters={filters} onClose={onClose}

@@ -9,7 +9,6 @@ import {
   type SetStateAction,
 } from 'react';
 import type { DiscoveryFilters } from '@/types/travel';
-import { INITIAL_FILTERS } from './filter-trips';
 import { INITIAL_GROUP_FILTERS, type GroupFilters } from '../groups/group-data';
 import { useSavedFilters } from '../saved-filters/saved-filter-context';
 import {
@@ -17,7 +16,7 @@ import {
   sameFilterCriteria,
   type SavedFilterSet,
 } from '../saved-filters/saved-filter-data';
-import { tripDiscoveryReducer } from './trip-discovery-state';
+import { discoveryTripMode, emptyDiscoveryFilters, singleTripFilters, tripDiscoveryReducer } from './trip-discovery-state';
 import {DEFAULT_TRIP_SORT, type TripSortOrder} from './trip-sorting';
 
 interface DiscoveryState {
@@ -42,7 +41,7 @@ export function DiscoveryProvider({ children }: { children: ReactNode }) {
   const [tripSort, setTripSort] = useState<TripSortOrder>(DEFAULT_TRIP_SORT);
   const [{ filters, mapOpen: tripMapOpen }, dispatchTrips] = useReducer(
     tripDiscoveryReducer,
-    { filters: INITIAL_FILTERS, mapOpen: false },
+    { filters: emptyDiscoveryFilters(), mapOpen: false },
   );
   const openTripMap = useCallback(
     () => dispatchTrips({ type: 'open-map' }),
@@ -87,7 +86,11 @@ export function DiscoveryProvider({ children }: { children: ReactNode }) {
   const activeTripSet = items.find(
     (item) =>
       item.id === tripSetId &&
-      sameFilterCriteria(item, { kind: 'trips', filters }),
+      item.kind === 'trips' &&
+      sameFilterCriteria(
+        { kind: 'trips', filters: singleTripFilters(item.filters, discoveryTripMode(filters)) },
+        { kind: 'trips', filters },
+      ),
   );
   const activeGroupSet = items.find(
     (item) =>

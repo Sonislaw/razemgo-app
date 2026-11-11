@@ -2,7 +2,6 @@ import { DateRangeField } from '@/components/trips/date-range-field';
 import { DateRangeSheet } from '@/components/trips/date-range-sheet';
 import { ChipRow } from '@/components/ui/chip-row';
 import { FilterSheet } from '@/components/ui/filter-sheet';
-import { Icon } from '@/components/ui/icon';
 import {
   AppText,
   Button,
@@ -11,7 +10,6 @@ import {
   IconButton,
   layout,
 } from '@/components/ui/primitives';
-import { Radius } from '@/constants/theme';
 import { CHILD_AGE_BANDS } from '@/constants/travel';
 import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
 import { AnimalChoice } from '@/features/animals/animal-portrait';
@@ -20,17 +18,14 @@ import { GROUP_KIND_OPTIONS } from '@/features/profile/profile-options';
 import { dateToleranceLabel } from '@/features/trips/date-range-calendar';
 import { TripLandscapePicker } from '@/features/trips/trip-landscape-picker';
 import { TripLocationField } from '@/features/trips/trip-location-field';
-import { useTheme } from '@/hooks/use-theme';
 import type { ChildAgeBand, DiscoveryFilters } from '@/types/travel';
 import { useState } from 'react';
-import { Keyboard, Pressable, Switch, View } from 'react-native';
+import { Keyboard, Switch, View } from 'react-native';
 import {
   clearDiscoveryDates,
   getDiscoveryDateRangeError,
-  INITIAL_FILTERS,
   resolveDiscoveryRange,
   selectDiscoveryLocation,
-  toggleDiscoveryTripMode,
   updateDiscoveryDateRange,
   updateDiscoveryLocationQuery,
 } from './filter-trips';
@@ -39,7 +34,10 @@ import { SaveFilterSetButton } from '../saved-filters/saved-filter-ui';
 import type { SavedFilterSet } from '../saved-filters/saved-filter-data';
 import {
   hasResettableMapFilters,
+  discoveryTripMode,
+  emptyDiscoveryFilters,
   plannedMapFilters,
+  singleTripFilters,
 } from './trip-discovery-state';
 
 interface DiscoveryFiltersSheetProps {
@@ -56,11 +54,10 @@ export function DiscoveryFiltersSheet({
   onSaved,
   plannedOnly = false,
 }: DiscoveryFiltersSheetProps) {
-  const theme = useTheme();
   const [showDateRange, setShowDateRange] = useState(false);
   const [draft, setDraft] = useState<DiscoveryFilters>(() => ({
     ...initialFilters,
-    tripModes: plannedOnly ? ['planned'] : [...initialFilters.tripModes],
+    tripModes: plannedOnly ? ['planned'] : [...singleTripFilters(initialFilters).tripModes],
     childAgeBands: [...initialFilters.childAgeBands],
     animalKinds: [...(initialFilters.animalKinds ?? [])],
     landscapeKinds: [...(initialFilters.landscapeKinds ?? [])],
@@ -69,6 +66,7 @@ export function DiscoveryFiltersSheet({
       : undefined,
   }));
   const dateRange = resolveDiscoveryRange(draft);
+  const tripMode = discoveryTripMode(draft);
   const dateError = getDiscoveryDateRangeError(draft.customDateRange);
   const {
     count: resultCount,
@@ -88,7 +86,7 @@ export function DiscoveryFiltersSheet({
       description={
         plannedOnly
           ? 'Wybierz termin, miejsce i klimat wyjazdów z gotowym planem.'
-          : 'Wybierz typ ogłoszenia, termin, miejsce i klimat.'
+          : 'Wybierz termin, miejsce i klimat.'
       }
       onClose={onClose}
       footer={
@@ -118,9 +116,7 @@ export function DiscoveryFiltersSheet({
                   variant="secondary"
                   onPress={() =>
                     setDraft(
-                      plannedOnly
-                        ? plannedMapFilters(INITIAL_FILTERS)
-                        : { ...INITIAL_FILTERS },
+                      emptyDiscoveryFilters(discoveryTripMode(draft)),
                     )
                   }
                 />
@@ -177,84 +173,6 @@ export function DiscoveryFiltersSheet({
         />
       </View>
       <View style={layout.stack}>
-        <FieldLabel>Typ ogłoszenia</FieldLabel>
-        <AppText variant="caption" color="textSecondary">
-          {plannedOnly
-            ? 'Na mapie pokazujemy wyłącznie ogłoszenia „Mam plan”.'
-            : 'Wybierz jeden lub oba typy. Co najmniej jeden musi pozostać zaznaczony.'}
-        </AppText>
-        <ChipRow horizontal label="Typ ogłoszenia">
-          {(
-            [
-              {
-                mode: 'planned',
-                label: 'Mam plan',
-              },
-              {
-                mode: 'flexible',
-                label: 'Szukam pomysłu',
-              },
-            ] as const
-          )
-            .filter((option) => !plannedOnly || option.mode === 'planned')
-            .map((option) => {
-              const selected = draft.tripModes.includes(option.mode);
-              return (
-                <Pressable
-                  key={option.mode}
-                  accessibilityRole="checkbox"
-                  accessibilityLabel={option.label}
-                  disabled={plannedOnly}
-                  accessibilityState={{
-                    checked: selected,
-                    disabled: plannedOnly,
-                  }}
-                  aria-checked={selected}
-                  accessibilityHint={
-                    selected && draft.tripModes.length === 1
-                      ? 'Zaznacz drugi typ, aby odznaczyć ten.'
-                      : undefined
-                  }
-                  onPress={() =>
-                    setDraft((current) => ({
-                      ...current,
-                      tripModes: toggleDiscoveryTripMode(
-                        current.tripModes,
-                        option.mode,
-                      ),
-                    }))
-                  }
-                  style={({ pressed }) => [
-                    layout.row,
-                    {
-                      minHeight: 48,
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: Radius.pill,
-                      borderWidth: 1,
-                      borderColor: selected
-                        ? theme.primaryStrong
-                        : theme.border,
-                      backgroundColor: selected
-                        ? theme.backgroundSelected
-                        : theme.muted,
-                      opacity: plannedOnly ? 0.7 : pressed ? 0.7 : 1,
-                    },
-                  ]}
-                >
-                  {selected ? <Icon name="check" size={15} /> : null}
-                  <AppText
-                    variant="label"
-                    color={selected ? 'primaryStrong' : 'text'}
-                  >
-                    {option.label}
-                  </AppText>
-                </Pressable>
-              );
-            })}
-        </ChipRow>
-      </View>
-      <View style={layout.stack}>
         <FieldLabel>Klimat wyjazdu</FieldLabel>
         <AppText variant="caption" color="textSecondary">
           Możesz wybrać kilka klimatów. Brak wyboru pokazuje wszystkie.
@@ -306,7 +224,10 @@ export function DiscoveryFiltersSheet({
       </View>
       <View style={layout.stack}>
         <TripLocationField
-          mode="flexible"
+          mode={tripMode}
+          areasOnly={tripMode === 'flexible'}
+          label="Gdzie chcecie pojechać?"
+          hint={tripMode === 'flexible' ? 'Wybierz miejscowość, wieś, region lub kraj.' : undefined}
           required={false}
           value={draft.locationId ?? ''}
           place={draft.place}
@@ -320,9 +241,9 @@ export function DiscoveryFiltersSheet({
           }
         />
         <AppText variant="caption" color="textSecondary">
-          {plannedOnly
+          {tripMode === 'planned'
             ? 'Wyszukiwanie obejmuje cele wyjazdów.'
-            : 'Wyszukiwanie obejmuje cele wyjazdów i obszary do wspólnego wyboru.'}
+            : 'Wyszukiwanie obejmuje obszary poszukiwań w ogłoszeniach „Szukam pomysłu”.'}
         </AppText>
       </View>
       {draft.sourceTripId ? (

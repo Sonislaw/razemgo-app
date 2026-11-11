@@ -3,6 +3,7 @@ import { AppText, Button, Screen } from '@/components/ui/primitives';
 import { Spacing } from '@/constants/theme';
 import { useDiscovery } from '@/features/discovery/discovery-context';
 import { INITIAL_FILTERS } from '@/features/discovery/filter-trips';
+import { emptyDiscoveryFilters } from '@/features/discovery/trip-discovery-state';
 import { useTripSearch } from '@/features/discovery/use-trip-search';
 import { HomeDemoControls } from '@/features/home/home-demo-controls';
 import { HomeHeader } from '@/features/home/home-header';
@@ -51,7 +52,7 @@ export default function HomeScreen() {
     : availableProposals.find((item) => item.trip.id === latestListing?.trip.id)
         ?.group;
   const discover = () => {
-    setFilters({ ...INITIAL_FILTERS });
+    setFilters(emptyDiscoveryFilters());
     router.navigate('/explore');
   };
 

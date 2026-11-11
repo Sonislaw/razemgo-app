@@ -1,8 +1,9 @@
 # Geoapify — obszary „Szukam pomysłu”, Dev
 
-Pole „Obszar poszukiwań” w kreatorze i edycji „Szukam pomysłu” korzysta
-wyłącznie z Geoapify Address Autocomplete. Pozostałe wyszukiwarki i „Mam plan”
-zachowują Google Places. Mapa w szczegółach nadal używa Google Maps.
+Pole „Obszar poszukiwań” w kreatorze i edycji „Szukam pomysłu” oraz pole
+„Gdzie chcecie pojechać?” w filtrach tej zakładki Odkrywaj korzystają wyłącznie
+z Geoapify Address Autocomplete. Filtry „Mam plan”, w tym na mapie, zachowują
+Google Places. Mapa w szczegółach nadal używa Google Maps.
 
 ## Konfiguracja
 
@@ -70,9 +71,11 @@ Kreator ma jeden przełącznik `areasOnly`: kieruje od razu do panelu Geoapify.
 Panel Google i jego repozytorium nie mają już trybu wyszukiwania samych obszarów,
 nieużywanych parametrów ani kopii formularza ręcznego obszaru. Serwer `places`
 odrzuca nieobsługiwane pola, w tym dawny parametr `areasOnly`, przed wywołaniem
-Google. Zwykłe wyszukiwanie krajów i regionów w filtrach Odkrywaj pozostaje
-dostępne. Odczyt zapisanych danych Google, bieżący cache geometrii i historia
-migracji nadal są potrzebne do pozostałych funkcji oraz istniejących środowisk.
+Google. Filtry Odkrywaj wybierają dostawcę według aktywnego typu ogłoszenia:
+Geoapify dla „Szukam pomysłu”, Google dla „Mam plan”. W obu trybach dostępne
+jest wyszukiwanie krajów i regionów. Odczyt zapisanych danych Google, bieżący
+cache geometrii i historia migracji nadal są potrzebne do pozostałych funkcji
+oraz istniejących środowisk.
 Typ `SelectedPlace` zawiera tylko trzy rzeczywiście obsługiwane źródła:
 `google`, `geoapify`, `manual`; formaty starszych lokalizacji obsługuje osobny
 słownik. Wynik Geoapify nie może zawierać `googlePlaceId`.

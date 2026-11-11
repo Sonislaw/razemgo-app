@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { state,backend,login } from './trip-fixtures.mjs';
-import { openSuggestions,manualDestination } from './autocomplete-helpers.mjs';
+import { manualDestination,plannedDestination } from './autocomplete-helpers.mjs';
 
 test('real API flow: create, failed save, reload, second device, discovery, lifecycle and isolation',async({page,context,browser})=>{
   test.setTimeout(120000);
@@ -14,8 +14,7 @@ test('real API flow: create, failed save, reload, second device, discovery, life
   await page.getByLabel(/^28 października 2026/).click();
   await page.getByRole('button',{name:'Wybierz daty',exact:true}).click();
   await page.getByRole('button',{name:'Dalej',exact:true}).click();
-  await (await openSuggestions(page, 'Dokąd jedziecie?')).fill('Chłapowo pomorskie');
-  await page.getByRole('button',{name:/^Wybierz miejsce: Chłapowo,/}).first().click();
+  await plannedDestination(page);
   await manualDestination(page,'Kemping Testowy','Testowa 12');
   const description='Spokojny wyjazd nad morze, rowery i wspolne ognisko. Zabieramy gry planszowe na wieczory.';
   await page.getByRole('textbox',{name:'Opis wyjazdu',exact:true}).fill(description);
@@ -57,7 +56,7 @@ test('real API flow: create, failed save, reload, second device, discovery, life
     await backend(device,store);const second=await device.newPage();await login(second);await second.goto('/trips');
     await expect(second.getByTestId('own-trip-'+trip.id)).toContainText('Kemping Testowy');
     await backend(other,store);const b=await other.newPage();b.on('pageerror',error=>errors.push(error.message));
-    await login(b,'b@example.com');await b.goto('/explore');
+    await login(b,'b@example.com');await b.goto('/explore'); await b.getByRole('radio',{name:'Mam plan',exact:true}).click();
     const card=b.getByTestId('discovery-trip-'+trip.id);
     await expect(card).toContainText('Ekipa A');await expect(card).toContainText('Kemping Testowy');
     await expect(card).toHaveText(previewText,{useInnerText:true});
@@ -82,7 +81,7 @@ test('real API flow: create, failed save, reload, second device, discovery, life
     await own.getByRole('button',{name:/^Opcje wyjazdu:/}).click();
     await page.getByRole('button',{name:'Wstrzymaj poszukiwania',exact:true}).click();
     await expect(own.getByRole('button',{name:'Znajdź towarzystwo',exact:true})).toBeDisabled();
-    await b.goto('/explore');await expect(b.getByText('Brak wyjazdów do odkrycia',{exact:true})).toBeVisible();await expect(card).toHaveCount(0);
+    await b.goto('/explore'); await b.getByRole('radio',{name:'Mam plan',exact:true}).click();await expect(b.getByText('Brak wyjazdów do odkrycia',{exact:true})).toBeVisible();await expect(card).toHaveCount(0);
     await own.getByRole('button',{name:/^Opcje wyjazdu:/}).click();
     await page.getByRole('button',{name:'Duplikuj jako szkic',exact:true}).click();
     const copied=[...store.trips.values()].find(item=>item.id!==trip.id);
@@ -93,7 +92,7 @@ test('real API flow: create, failed save, reload, second device, discovery, life
     await page.getByRole('button',{name:'Wznów poszukiwania',exact:true}).click();
     await page.getByRole('button',{name:'Wznów poszukiwania',exact:true}).click();
     await expect(own.getByRole('button',{name:'Znajdź towarzystwo',exact:true})).toBeEnabled();
-    await b.goto('/explore');await expect(card).toBeVisible();
+    await b.goto('/explore'); await b.getByRole('radio',{name:'Mam plan',exact:true}).click();await expect(card).toBeVisible();
     await own.getByRole('button',{name:/^Opcje wyjazdu:/}).click();
     await page.getByRole('button',{name:'Usuń wyjazd',exact:true}).click();
     await page.getByRole('button',{name:'Usuń wyjazd',exact:true}).click();

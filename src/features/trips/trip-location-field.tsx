@@ -12,25 +12,25 @@ import { useLivePlace } from './use-live-place';
 
 export type TripLocationFieldHandle = AutocompleteFieldHandle;
 export function TripLocationField({ value, mode, onChange, place, onPlaceChange, required=true, label:customLabel,
-  hint, query:controlledQuery, onQueryChange, inputRef, errorId, areasOnly=false,
+  hint, query:controlledQuery, onQueryChange, inputRef, errorId, areasOnly=false, localitiesOnly=false,
 }: {
   value:string; mode:TripMode; onChange:(id:string)=>void; place?:SelectedPlace;
   onPlaceChange?:(place:SelectedPlace)=>void; required?:boolean; label?:string; hint?:string;
-  query?:string; onQueryChange?:(query:string)=>void; inputRef?:Ref<TripLocationFieldHandle>; errorId?:string;areasOnly?:boolean;
+  query?:string; onQueryChange?:(query:string)=>void; inputRef?:Ref<TripLocationFieldHandle>; errorId?:string;areasOnly?:boolean;localitiesOnly?:boolean;
 }) {
   const label=customLabel ?? (areasOnly?'Jaki obszar Was interesuje?':mode==='planned' ? 'Dokąd jedziecie?' : 'Gdzie chcecie pojechać?');
   const [localQuery,setLocalQuery]=useState('');
   const legacy=findTripLocation(value);
   const live=useLivePlace(areasOnly?undefined:place);
   const candidate=areasOnly?place:live;
-  const selected=candidate?.id===value ? candidate : undefined;
+  const selected=candidate?.id===value && (!areasOnly || (candidate.scope==='area'&&candidate.source!=='google'&&(!localitiesOnly||candidate.kind==='locality'))) ? candidate : undefined;
   const query=controlledQuery ?? localQuery;
   const display=selected?.name ?? legacy?.name ?? query;
   const setQuery=(text:string) => {setLocalQuery(text);onQueryChange?.(text);};
   const clear=() => {onChange('');setQuery('');};
   return <View style={{gap:8}}>
     <AutocompleteField label={label} value={display} required={required} inputRef={inputRef} errorId={errorId}
-      placeholder={areasOnly?'np. Giżycko, pomorskie, Chorwacja…':'np. Białowieża, Camping…'} maxLength={160}
+      placeholder={localitiesOnly?'np. Giżycko, Białowieża…':areasOnly?'np. Giżycko, pomorskie, Chorwacja…':'np. Białowieża, Camping…'} maxLength={160}
       hint={hint ?? (areasOnly?'Wybierz miejscowość, wieś, region lub kraj. Dokładne miejsce ustalicie wspólnie z ekipą.':'Wpisz miejscowość, nazwę kempingu lub inne miejsce. Możesz też dodać własne.')}
       onChangeText={text => {onChange('');setQuery(text);}} onClear={clear} clearLabel="Wyczyść lokalizację"
       renderSuggestions={close => {
@@ -39,11 +39,11 @@ export function TripLocationField({ value, mode, onChange, place, onPlaceChange,
           setLocalQuery('');close();
         };
         return areasOnly
-          ? <GeoapifyAreaSuggestions key={selected?.id??'search'} initial={selected} query={display} onSelect={onSelect}/>
+          ? <GeoapifyAreaSuggestions key={selected?.id??'search'} initial={selected} query={display} onSelect={onSelect} localitiesOnly={localitiesOnly}/>
           : <PlaceSuggestions key={selected?.id??'search'} initial={selected} query={display} mode={mode} onSelect={onSelect}/>;
       }}/>
     {selected ? <AppText variant="caption" color="textSecondary">
-      {areasOnly?areaPlaceLabel(selected.name,selected.kind):PLACE_KIND_LABELS[selected.kind]}{!areasOnly&&selected.address ? ' · '+selected.address : ''}
+      {localitiesOnly?PLACE_KIND_LABELS[selected.kind]:areasOnly?areaPlaceLabel(selected.name,selected.kind):PLACE_KIND_LABELS[selected.kind]}{!areasOnly&&selected.address ? ' · '+selected.address : ''}
       {!required ? selected.source==='google'&&['region','country'].includes(selected.kind) ? ' · obszar wybranego miejsca' : ' · okolice do '+placeSearchRadiusKm(selected.kind)+' km' : ''}
     </AppText> : legacy ? <AppText variant="caption" color="textSecondary">{locationContext(legacy)}</AppText> : null}
   </View>;

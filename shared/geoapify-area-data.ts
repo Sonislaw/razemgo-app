@@ -8,11 +8,12 @@ export interface GeoapifyArea {
 export const GEOAPIFY_AREA_ID = /^[a-zA-Z0-9_-]{5,240}$/;
 const text = (value: unknown, max = 160) => typeof value === 'string' && value.trim().length <= max ? value.trim() : '';
 const number = (value: unknown, max: number): value is number => typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= max;
-export function geoapifyAreas(raw: unknown): GeoapifyArea[] {
+export function geoapifyAreas(raw: unknown, localitiesOnly = false): GeoapifyArea[] {
   if (!raw || typeof raw !== 'object' || !Array.isArray((raw as {results?: unknown}).results)) throw Error('Invalid area response');
   const results: GeoapifyArea[] = [], seen = new Set<string>();
   for (const p of (raw as {results: Record<string, unknown>[]}).results.slice(0, 30)) {
     if (!p || typeof p !== 'object' || !['city', 'state', 'county', 'country', 'district', 'suburb'].includes(String(p.result_type))) continue;
+    if (localitiesOnly && p.result_type !== 'city') continue;
     const identifier = text(p.place_id, 240), country = text(p.country, 100), region = text(p.state, 100);
     const kind = p.result_type === 'country' ? 'country' : ['state', 'county'].includes(String(p.result_type)) ? 'region' : 'locality';
     const name = text(p.result_type === 'country' ? p.country : p.result_type === 'state' ? p.state : p.result_type === 'county' ? p.county : p.name || p.city || p.village || p.town || p.address_line1);

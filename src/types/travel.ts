@@ -32,6 +32,7 @@ export interface DateRange {
   endDate: string;
 }
 interface TripBase extends DateRange {
+  searchArea?: SelectedPlace;
   participants?: TripParticipants | null;
   travelModes?: string[];
   id: string;

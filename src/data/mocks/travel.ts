@@ -244,6 +244,7 @@ export const MY_TRIPS: TripPlan[] = [
     groupId: MY_GROUP.id,
     mode: 'planned',
     destination: { name: 'Chłapowo', region: 'Pomorze' },
+    searchArea: {id:'manual:00000000-0000-4000-8000-000000004259',source:'manual',scope:'area',kind:'locality',name:'Chłapowo',address:'',region:'pomorskie',country:'Polska'},
     startDate: '2027-05-21',
     endDate: '2027-05-24',
     description:

@@ -2,8 +2,11 @@
 
 Pole „Obszar poszukiwań” w kreatorze i edycji „Szukam pomysłu” oraz pole
 „Gdzie chcecie pojechać?” w filtrach tej zakładki Odkrywaj korzystają wyłącznie
-z Geoapify Address Autocomplete. Filtry „Mam plan”, w tym na mapie, zachowują
-Google Places. Mapa w szczegółach nadal używa Google Maps.
+z Geoapify Address Autocomplete. „Mam plan” używa Geoapify z `type=city`
+w pierwszym polu kreatora oraz w filtrach listy i mapy: dostępne są tylko
+miejscowości i wsie. Drugie pole kreatora korzysta z Google Places w granicach
+wybranej miejscowości — opis w [GEOAPIFY_PLACES_DEV.md](GEOAPIFY_PLACES_DEV.md).
+Mapy nadal używają Google Maps.
 
 ## Konfiguracja
 
@@ -24,7 +27,8 @@ Błędy dostawcy i URL zawierający klucz nie są przekazywane do klienta.
 - Autocomplete dostarcza nazwę, współrzędne i dostępny bbox. Wybranie wyniku
   nie uruchamia Place Details ani dodatkowego Geoapify API.
 - Lokalne 20 fraz w panelu; wspólny cache wyników w bazie przez 24 godziny.
-  Klucz to SHA-256 znormalizowanej frazy, język i wersja formatu; nie ID konta.
+  Klucz uwzględnia SHA-256 pary zakresu wyszukiwania i znormalizowanej frazy,
+  język i wersję formatu; nie ID konta.
   Blokada PostgreSQL współdzieli pojedyncze pobranie między instancjami Edge.
   Wygasanie 60 s, ochrona starego właściciela i 10 s przerwy po błędzie
   wykorzystują istniejący mechanizm `sharedApiCache`.
@@ -65,15 +69,24 @@ demonstracyjnych, z unikatowymi opisami i obszarami Geoapify (16 miejscowości,
 4 województwa, 3 kraje). Sprawdzono pięć stron wyników Odkrywaj oraz dane do map.
 31 ogłoszeń „Mam plan” zachowano. Pliki robocze tej wymiany usunięto.
 
+Po przełączeniu drugiego pola kreatora na Google Places, również 11.11.2026,
+na polecenie użytkownika zastąpiono wszystkie 31 ogłoszeń „Mam plan” na Dev
+31 nowymi publikacjami na kontach demonstracyjnych. Każda ma inny rzeczywisty
+kemping, inny opis oraz osobny zapis miejscowości lub wsi z Geoapify.
+Zachowano wszystkie 52 konta i 24 ogłoszenia „Szukam pomysłu”. Wymianę
+sprawdzono najpierw w wycofanej transakcji, następnie potwierdzono poprawność
+nazw na siedmiu stronach rzeczywistych wyników Odkrywaj. Nie wygenerowano
+powiadomień push dla nowych publikacji. Pliki robocze wymiany usunięto.
+
 ## Porządki po integracji
 
 Kreator ma jeden przełącznik `areasOnly`: kieruje od razu do panelu Geoapify.
 Panel Google i jego repozytorium nie mają już trybu wyszukiwania samych obszarów,
 nieużywanych parametrów ani kopii formularza ręcznego obszaru. Serwer `places`
 odrzuca nieobsługiwane pola, w tym dawny parametr `areasOnly`, przed wywołaniem
-Google. Filtry Odkrywaj wybierają dostawcę według aktywnego typu ogłoszenia:
-Geoapify dla „Szukam pomysłu”, Google dla „Mam plan”. W obu trybach dostępne
-jest wyszukiwanie krajów i regionów. Odczyt zapisanych danych Google, bieżący
+Google. Filtry Odkrywaj używają Geoapify w obu typach ogłoszeń: „Mam plan”
+ogranicza wybór do miejscowości i wsi, a „Szukam pomysłu” dopuszcza również
+kraje i regiony. Odczyt zapisanych danych Google, bieżący
 cache geometrii i historia migracji nadal są potrzebne do pozostałych funkcji
 oraz istniejących środowisk.
 Typ `SelectedPlace` zawiera tylko trzy rzeczywiście obsługiwane źródła:

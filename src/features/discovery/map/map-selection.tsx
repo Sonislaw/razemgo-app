@@ -12,7 +12,7 @@ import { DataStatus } from '@/components/ui/data-status';
 import { createPagedResource } from '@/lib/paged-resource';
 import { GroupAvatar } from '@/features/profile/group-avatar';
 import { getTripHeadline } from '@/features/trips/trip-headline';
-import { formatTripDates } from '../filter-trips';
+import { formatTripDates, getTripLocation } from '../filter-trips';
 import { fetchMapItems } from './map-repository';
 import { useTheme } from '@/hooks/use-theme';
 import type { DiscoveryFilters } from '@/types/travel';
@@ -132,7 +132,7 @@ export function MapSelection({
             {getTripHeadline(item.trip)}
           </AppText>
           <AppText variant="caption" color="textSecondary">
-            {formatTripDates(item.trip)} · {item.trip.destination.name}
+            {formatTripDates(item.trip)} · {getTripLocation(item.trip)}
           </AppText>
           <View style={layout.row}>
             <GroupAvatar

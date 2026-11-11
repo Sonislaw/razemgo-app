@@ -3,6 +3,7 @@ import { GOOGLE_PLACE_ID, googlePlaceDetails, googlePlacePredictions, manualAddr
 import { validDispatchSecret } from '../dispatch-push/push-worker.ts';
 import { maintainPlaceGeometry } from './maintenance.ts';
 import { googleGeometry } from '../_shared/google-geometry.ts';
+import { validGeoapifyArea } from '../../../shared/geoapify-area-data.ts';
 
 export async function handlePlaces(request: Request) {
   const origin = request.headers.get('origin');
@@ -32,11 +33,13 @@ export async function handlePlaces(request: Request) {
     try { input = JSON.parse(raw); } catch { return respond(400, { error: 'Invalid request' }); }
     if (!input || Array.isArray(input) || !['autocomplete', 'details', 'geometry', 'refresh', 'manual-address'].includes(input.action)) return respond(400, { error: 'Invalid action' });
     const allowedFields:Record<string,readonly string[]>={
-      autocomplete:['action','query','mode','sessionToken'],details:['action','placeId','sessionToken'],
+      autocomplete:['action','query','mode','sessionToken','areaId'],details:['action','placeId','sessionToken'],
       geometry:['action','placeId'],refresh:['action'],'manual-address':['action','address','region','country'],
     };
     if(Object.keys(input).some(key=>!allowedFields[input.action].includes(key)))return respond(400,{error:'Invalid request fields'});
     if(input.action==='autocomplete'&&input.mode!=null&&!['planned','flexible'].includes(input.mode))return respond(400,{error:'Invalid search mode'});
+    if(input.areaId!==undefined&&(input.mode!=='planned'||typeof input.areaId!=='string'||!/^geoapify:[A-Za-z0-9_-]{5,240}$/.test(input.areaId)))
+      return respond(400,{error:'Invalid locality'});
     if(input.action==='manual-address'&&['address','region','country'].some(k=>typeof input[k]!=='string'||input[k].trim().length<2||input[k].length>(k==='address'?300:100)))
       return respond(400,{error:'Complete address required'});
     const token = input.sessionToken;
@@ -71,11 +74,21 @@ export async function handlePlaces(request: Request) {
       return place;
     };
     if (input.action === 'autocomplete') {
+      let restriction;
+      if(input.areaId){
+        const result=await admin.rpc('get_geoapify_area',{area_id:input.areaId});
+        if(result.error||!validGeoapifyArea(result.data)||result.data.kind!=='locality')return respond(400,{error:'Select a town or village first'});
+        const area=result.data,b=area.bounds;
+        restriction=b&&b.south<b.north&&b.west<b.east
+          ?{rectangle:{low:{latitude:b.south,longitude:b.west},high:{latitude:b.north,longitude:b.east}}}
+          :{circle:{center:{latitude:area.latitude,longitude:area.longitude},radius:20000}};
+      }
       const raw = await google('https://places.googleapis.com/v1/places:autocomplete',
         'suggestions.placePrediction.placeId,suggestions.placePrediction.structuredFormat,suggestions.placePrediction.types',
         { input: input.query.trim(), languageCode: 'pl', regionCode: 'pl', includeQueryPredictions: false,
+          ...(restriction?{locationRestriction:restriction}:{}),
           ...(token ? { sessionToken: token } : {}) });
-      return respond(200, { predictions: googlePlacePredictions(raw).filter(p => input.mode!=='planned'||!['region','country'].includes(p.kind)) });
+      return respond(200, { predictions: googlePlacePredictions(raw).filter(p => input.areaId?['campground','place'].includes(p.kind):input.mode!=='planned'||!['region','country'].includes(p.kind)) });
     }
     if (input.action === 'details') {
       const place=await details(input.placeId,token);

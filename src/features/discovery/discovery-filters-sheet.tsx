@@ -225,9 +225,10 @@ export function DiscoveryFiltersSheet({
       <View style={layout.stack}>
         <TripLocationField
           mode={tripMode}
-          areasOnly={tripMode === 'flexible'}
+          areasOnly
+          localitiesOnly={tripMode === 'planned'}
           label="Gdzie chcecie pojechać?"
-          hint={tripMode === 'flexible' ? 'Wybierz miejscowość, wieś, region lub kraj.' : undefined}
+          hint={tripMode === 'flexible' ? 'Wybierz miejscowość, wieś, region lub kraj.' : 'Wybierz miejscowość lub wieś.'}
           required={false}
           value={draft.locationId ?? ''}
           place={draft.place}
@@ -242,7 +243,7 @@ export function DiscoveryFiltersSheet({
         />
         <AppText variant="caption" color="textSecondary">
           {tripMode === 'planned'
-            ? 'Wyszukiwanie obejmuje cele wyjazdów.'
+            ? 'Wyszukiwanie obejmuje wybraną miejscowość i jej okolice.'
             : 'Wyszukiwanie obejmuje obszary poszukiwań w ogłoszeniach „Szukam pomysłu”.'}
         </AppText>
       </View>

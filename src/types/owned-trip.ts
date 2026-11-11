@@ -20,6 +20,7 @@ export type OwnedTrip = TripPlan & {
   travelModes: string[];
 };
 export interface TripForm {
+  searchArea?: SelectedPlace;
   place?: SelectedPlace;
   participants: TripParticipants | null;
   mode: TripMode;

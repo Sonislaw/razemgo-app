@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { B, groupId, state, backend, login } from './trip-fixtures.mjs';
-import { openSuggestions } from './autocomplete-helpers.mjs';
+import { plannedDestination } from './autocomplete-helpers.mjs';
 
 test('trip participants differ from the profile, survive reload and editing, and drive cards and filters', async ({ page, context, browser }) => {
   test.setTimeout(120000);
@@ -11,8 +11,7 @@ test('trip participants differ from the profile, survive reload and editing, and
   await page.getByLabel(/^25 października 2026/).click(); await page.getByLabel(/^28 października 2026/).click();
   await page.getByRole('button', { name: 'Wybierz daty', exact: true }).click();
   await page.getByRole('button', { name: 'Dalej', exact: true }).click();
-  await (await openSuggestions(page, 'Dokąd jedziecie?')).fill('Chłapowo pomorskie');
-  await page.getByRole('button', { name: /^Wybierz miejsce: Chłapowo,/ }).first().click();
+  await plannedDestination(page);
   await page.getByRole('textbox', { name: 'Opis wyjazdu', exact: true }).fill('Wyjazd nad morze w większym gronie dorosłych.');
   await page.getByRole('button', { name: 'Więcej: Dorośli na wyjeździe', exact: true }).click();
   await page.getByRole('button', { name: 'Więcej: Dorośli na wyjeździe', exact: true }).click();
@@ -29,7 +28,7 @@ test('trip participants differ from the profile, survive reload and editing, and
   const second = await browser.newContext({ baseURL: 'http://localhost:8085', viewport: { width: 390, height: 844 } });
   try {
     await backend(second, store); const other = await second.newPage(); await login(other, 'b@example.com');
-    await other.goto('/explore');
+    await other.goto('/explore'); await other.getByRole('radio',{name:'Mam plan',exact:true}).click();
     const listing = other.getByTestId('discovery-trip-' + trip.id);
     await expect(listing).not.toContainText('4 dorosłych');
     await expect(listing).not.toContainText(/Dzieci 4–6|Podobny wiek dzieci/);
@@ -46,7 +45,7 @@ test('trip participants differ from the profile, survive reload and editing, and
     await expect(page).toHaveURL('http://localhost:8085/trips');
     expect(store.trips.get(trip.id).child_count).toBe(1);
     expect(store.trips.get(trip.id).child_age_bands).toEqual(['7–9']);
-    await other.goto('/explore');
+    await other.goto('/explore'); await other.getByRole('radio',{name:'Mam plan',exact:true}).click();
     await expect(listing).toContainText('Dzieci 7–9 lat');
     await expect(listing).not.toContainText('Dzieci 4–6');
     await other.getByRole('button', { name: 'Otwórz filtry', exact: true }).click();
@@ -69,7 +68,7 @@ test('legacy trips display an unknown composition instead of the owner profile',
     matching_group_kinds: [], matching_child_age_bands: [], published_at: '2026-10-24T12:00:00Z',
     adult_count: null, child_count: null, child_age_bands: [],
   };
-  store.trips.set(trip.id, trip); await backend(context, store); await login(page); await page.goto('/explore');
+  store.trips.set(trip.id, trip); await backend(context, store); await login(page); await page.goto('/explore'); await page.getByRole('radio',{name:'Mam plan',exact:true}).click();
   const card = page.getByTestId('discovery-trip-' + trip.id);
   await expect(card).not.toContainText('Skład wyjazdu do uzupełnienia');
   await expect(card).not.toContainText(/2 dorosłych|Dzieci 4–6|Podobny wiek dzieci/);

@@ -11,6 +11,7 @@ import type { GroupRow } from './profile';
 import type { SelectedPlace } from '../../types/place';
 
 export type TripRow = {
+  search_area_data?: SelectedPlace | null;
   place_data?: SelectedPlace | null;
   adult_count?: number | null;
   child_count?: number | null;

@@ -106,6 +106,7 @@ export function toTripForm(
       cloneTripParticipants(trip.participants) ??
       (profile ? participantsFromProfile(profile.group) : null),
     mode: trip.mode,
+    ...(trip.mode === 'planned' && trip.searchArea ? {searchArea:storePlace(trip.searchArea)} : {}),
     startDate: trip.startDate,
     endDate: trip.endDate,
     locationId: tripLocationIdForPlace(place),
@@ -159,14 +160,19 @@ export function changeTripLocation(
 export function changeTripMode(form: TripForm, mode: TripMode): TripForm {
   const location = placeLocation(form.place,form.locationId);
   return changeTripLocation(
-    { ...form, mode },
+    { ...form, mode, searchArea:mode==='planned'?(form.searchArea??(form.place?.scope==='area'&&form.place.kind==='locality'?storePlace(form.place):undefined)):undefined },
     (form.place&&!isPlaceAllowedForTrip(form.place,mode))||(location&&!isLocationAllowedForTrip(location,mode))
       ? ''
       : form.locationId,
   );
 }
 
-export type TripFormField = 'dates' | 'locationId' | 'description' | 'participants' | 'travelModes' | 'campgroundName' | 'campgroundAddress' | 'animals';
+export function changeTripSearchArea(form:TripForm,searchArea?:TripForm['searchArea']):TripForm {
+  if(form.searchArea&&searchArea&&JSON.stringify(storePlace(form.searchArea))===JSON.stringify(storePlace(searchArea)))return form;
+  return {...changeTripLocation(form,''),searchArea:searchArea?storePlace(searchArea):undefined};
+}
+
+export type TripFormField = 'dates' | 'searchArea' | 'locationId' | 'description' | 'participants' | 'travelModes' | 'campgroundName' | 'campgroundAddress' | 'animals';
 export interface TripFormIssue { field: TripFormField; message: string }
 
 export function validateTripFormIssues(form: TripForm, step?: 1 | 2): TripFormIssue[] {
@@ -184,12 +190,19 @@ export function validateTripFormIssues(form: TripForm, step?: 1 | 2): TripFormIs
     validateAnimals(form.animals.animals).forEach(message => add('animals', message));
     validateTripParticipants(form.participants).forEach(message => add('participants', message));
     const location = placeLocation(form.place,form.locationId);
+    if (form.mode==='planned' && (!form.searchArea || form.searchArea.scope!=='area' || form.searchArea.kind!=='locality' || !placeLocation(form.searchArea)))
+      add('searchArea','Wybierz miejscowość lub wieś z podpowiedzi lub dodaj ją ręcznie.');
+    if(form.mode==='planned'&&form.searchArea?.source==='manual') {
+      const error=manualPlaceError(form.searchArea);if(error)add('searchArea',error);
+    }
+    if (form.mode==='planned' && form.place?.source==='geoapify' && form.place.areaId!==form.searchArea?.id)
+      add('locationId','Wybierz konkretne miejsce w wybranym obszarze.');
     if(form.place?.source==='manual') {
       const error=manualPlaceError(form.place);
       if(error)add('locationId',error);
     }
     if(form.place&&!isPlaceAllowedForTrip(form.place,form.mode))
-      add('locationId',form.mode==='flexible'?'W trybie „Szukam pomysłu” wybierz miejscowość, region lub kraj. Kemping i konkretny punkt wybierzesz po ustaleniu planu.':'Wybierz miejscowość, kemping lub konkretne miejsce wyjazdu.');
+      add('locationId',form.mode==='flexible'?'W trybie „Szukam pomysłu” wybierz miejscowość, region lub kraj. Kemping i konkretny punkt wybierzesz po ustaleniu planu.':'Wybierz kemping lub inne konkretne miejsce w wybranym obszarze.');
     if (!location || !isLocationAllowedForTrip(location, form.mode))
       add('locationId',
         form.mode === 'planned'
@@ -239,6 +252,7 @@ export function tripFromForm(
       ? form.campgroundAddress?.trim()
       : '';
   const base = {
+    ...(form.mode === 'planned' && form.searchArea ? {searchArea:storePlace(form.searchArea)} : {}),
     participants: cloneTripParticipants(form.participants),
     id,
     groupId,

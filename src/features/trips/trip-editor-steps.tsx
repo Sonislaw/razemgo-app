@@ -1,5 +1,6 @@
 import { TripParticipantsFields } from './trip-participants-fields';
 import { TripDescriptionHelper } from './trip-description-helper';
+import { PlannedLocationFields } from './planned-location-fields';
 import { DateRangeField } from '@/components/trips/date-range-field';
 import { DiscoveryTripCard } from '@/components/trips/discovery-trip-card';
 import { TripPlanningIcon } from '@/components/trips/trip-planning-icon';
@@ -82,7 +83,7 @@ export function TripTimingStep({
             }}
             onPress={() => {
                 const cleared=!!form.locationId&&!changeTripMode(form,option.mode).locationId;
-                setLocationNotice(cleared?(option.mode==='flexible'?'W kolejnym kroku wybierz obszar poszukiwań: miejscowość, wieś, region lub kraj.':'W kolejnym kroku wybierz miejscowość lub konkretne miejsce wyjazdu.'):'');
+                setLocationNotice(cleared?(option.mode==='flexible'?'W kolejnym kroku wybierz obszar poszukiwań: miejscowość, wieś, region lub kraj.':'W kolejnym kroku wskaż konkretne miejsce w wybranym obszarze.'):'');
               onModeChange(option.mode);
             }}
             style={[
@@ -135,12 +136,14 @@ export function TripDestinationStep({
   update,
   onLocationChange,
   onPlaceChange,
+  onAreaChange,
   fields,
 }: {
   form: TripForm;
   update: Update;
   onLocationChange: (id: string) => void;
   onPlaceChange: (place: SelectedPlace) => void;
+  onAreaChange: (place?: SelectedPlace) => void;
   fields: TripEditorFields;
 }) {
   const locationInput = useRef<TripLocationFieldHandle>(null);
@@ -149,7 +152,8 @@ export function TripDestinationStep({
     <>
       <Card testID="trip-editor-location" style={{ gap: 20 }}>
         <SectionTitle title={form.mode==='flexible'?'Obszar poszukiwań':'Lokalizacja'} />
-        <TripEditorField name="locationId" label={form.mode==='flexible'?'Obszar poszukiwań':'Miejsce wyjazdu'} fields={fields} focus={() => locationInput.current?.focus()}>
+        {form.mode==='planned'?<PlannedLocationFields form={form} fields={fields} onAreaChange={onAreaChange}
+          onPlaceChange={onPlaceChange} onClearPlace={()=>onLocationChange('')}/>:<TripEditorField name="locationId" label="Obszar poszukiwań" fields={fields} focus={() => locationInput.current?.focus()}>
           <TripLocationField
             inputRef={locationInput}
             errorId={fields.errors.locationId ? tripFieldErrorId('locationId') : undefined}
@@ -164,7 +168,7 @@ export function TripDestinationStep({
               : undefined}
             onChange={onLocationChange}
           />
-        </TripEditorField>
+        </TripEditorField>}
         {!form.place && (form.campgroundName || form.campgroundAddress) ? <View style={{gap:4}}>
           <AppText variant="label">{form.campgroundName}</AppText>
           {form.campgroundAddress ? <AppText variant="caption" color="textSecondary">{form.campgroundAddress}</AppText> : null}

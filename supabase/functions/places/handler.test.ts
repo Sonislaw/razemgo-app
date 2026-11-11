@@ -10,11 +10,18 @@ Deno.test('Places authenticates, enforces budgets and hides the server key while
   const calls: { url:string; init?:RequestInit }[] = [];
   let authenticated = true, limited = false, googleFailure = false, missingAddress = false;
   const id = 'ChIJ_camp', session = crypto.randomUUID();
+  const area={id:'geoapify:area_ustka',geoapifyPlaceId:'area_ustka',source:'geoapify',scope:'area',kind:'locality',name:'Ustka',address:'',region:'pomorskie',country:'Polska',latitude:54.58,longitude:16.86,
+    bounds:{south:54.56,north:54.60,west:16.82,east:16.90}};
   const assert = (value: unknown) => { if (!value) throw Error('Places boundary failed'); };
   globalThis.fetch = async (input, init) => {
     const url = String(input); calls.push({ url, init });
     if (url.endsWith('/auth/v1/user')) return Response.json(authenticated ? { id: crypto.randomUUID() } : { message:'invalid' }, { status: authenticated ? 200 : 401 });
     if (url.endsWith('/rest/v1/rpc/claim_my_place_request')) return limited ? Response.json({ code:'54000',message:'limit' }, { status:400 }) : Response.json(null);
+    if(url.endsWith('/rest/v1/rpc/get_geoapify_area')) {
+      assert(new Headers(init?.headers).get('apikey')==='test-server');
+      const key=JSON.parse(String(init?.body)).area_id;
+      return Response.json(key===area.id?area:key==='geoapify:area_region'?{...area,kind:'region',id:key,geoapifyPlaceId:'area_region'}:null);
+    }
     if (url.endsWith('/rest/v1/rpc/record_google_place_geometry')) {
       assert(new Headers(init?.headers).get('apikey') === 'test-server');
       const data = JSON.parse(String(init?.body));
@@ -67,9 +74,18 @@ Deno.test('Places authenticates, enforces budgets and hides the server key while
     const predictions = await invoke({action:'autocomplete',query:'Camp',sessionToken:session,mode:'planned'});
     assert(predictions.status === 200 && predictions.headers.get('cache-control') === 'no-store');
     const rows=(await predictions.json()).predictions;assert(rows.length===1&&rows[0].kind === 'campground');
+    const searches=()=>calls.filter(c=>c.url.includes('places:autocomplete'));
+    const before=searches().length;
+    for(const areaId of ['geoapify:unknown_area','geoapify:area_region'])assert((await invoke({action:'autocomplete',query:'Camp',sessionToken:session,mode:'planned',areaId})).status===400);
+    assert(searches().length===before);
+    const scoped=await invoke({action:'autocomplete',query:'Camp',sessionToken:session,mode:'planned',areaId:area.id});
+    assert(scoped.status===200&&(await scoped.json()).predictions.length===1);
+    const scopedBody=JSON.parse(String(searches().at(-1)!.init?.body));
+    assert(scopedBody.locationRestriction.rectangle.low.latitude===area.bounds.south&&scopedBody.locationRestriction.rectangle.high.longitude===area.bounds.east);
+    assert(scopedBody.sessionToken===session&&scopedBody.locationBias===undefined);
     const details = await invoke({action:'details',placeId:id,sessionToken:session});
     assert(details.status === 200 && (await details.json()).place.address === 'Adres');
-    // The general discovery filter still searches countries through Google.
+    // Keep the old endpoint compatible with earlier clients.
     const filter=await invoke({action:'autocomplete',query:'Polska',sessionToken:session,mode:'flexible'});
     const filterRows=(await filter.json()).predictions;assert(filterRows.length===2&&filterRows[1].kind==='country');
     const address={action:'manual-address',address:'Leśna 4, Ustka',region:'pomorskie',country:'Polska'};

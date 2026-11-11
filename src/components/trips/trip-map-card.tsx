@@ -47,7 +47,7 @@ function TripMapContent({target}:{target:TripMapTarget}) {
         <Button label="Wczytaj mapę ponownie" variant="secondary" onPress={()=>{setFailed(false);setReady(false);setAttempt(value=>value+1);}}/></View> : null}
     </View></ScreenFullWidth> : <AppText variant="caption" color="textSecondary">{googleMapAvailable?'Dla tego miejsca nie wskazano punktu. Lokalizację możesz sprawdzić w Google Maps.':'Lokalizację możesz sprawdzić w Google Maps.'}</AppText>}
     {!precise ? <AppText variant="caption" color="textSecondary">Lokalizacja orientacyjna — obszar wyjazdu.</AppText> : null}
-    {target.source==='geoapify' ? <GeoapifyAttribution/> : null}
+    {target.source==='geoapify'||target.geoapifyAttribution ? <GeoapifyAttribution/> : null}
     <Button label="Otwórz w Google Maps" icon="arrow" variant="secondary" onPress={()=>{
       setOpenError(false);void openURL(googleMapsSearchUrl(target)).catch(()=>setOpenError(true));
     }}/>

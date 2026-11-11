@@ -800,6 +800,7 @@ export type Database = {
                     "matching_group_kinds": (string)[];
                     "mode": string;
                     place_data: Json | null;
+                    search_area_data: Json | null;
                     "published_at": string | null;
                     "start_date": string | null;
                     "status": string;
@@ -831,6 +832,7 @@ export type Database = {
                     "matching_group_kinds"?: (string)[];
                     "mode": string;
                     place_data?: Json | null;
+                    search_area_data?: Json | null;
                     "published_at"?: string | null;
                     "start_date"?: string | null;
                     "status"?: string;
@@ -861,6 +863,7 @@ export type Database = {
                     "matching_group_kinds"?: (string)[];
                     "mode"?: string;
                     place_data?: Json | null;
+                    search_area_data?: Json | null;
                     "published_at"?: string | null;
                     "start_date"?: string | null;
                     "status"?: string;
@@ -1068,6 +1071,10 @@ export type Database = {
                 Args: {
                     "target_trip_id": string;
                 };
+                Returns: Json;
+            };
+            "get_geoapify_area": {
+                Args: { area_id: string };
                 Returns: Json;
             };
             "get_geoapify_search_cache": {

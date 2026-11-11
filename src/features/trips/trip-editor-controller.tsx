@@ -16,6 +16,7 @@ import { useProfile } from '@/features/profile/profile-context';
 import { useOwnTrips } from '@/features/trips/own-trips-context';
 import {
   changeTripLocation,
+  changeTripSearchArea,
   changeTripMode,
   getTripStatus,
   newTripForm,
@@ -116,7 +117,7 @@ export function TripEditorScreen() {
   const showIssues = (validation: TripFormIssue[]) => {
     setIssues(validation);
     setErrors([]);
-    const first = (['dates', 'locationId', 'campgroundName', 'campgroundAddress',
+    const first = (['dates', 'searchArea', 'locationId', 'campgroundName', 'campgroundAddress',
       'description', 'participants', 'animals', 'travelModes'] as const).find(field => validation.some(issue => issue.field === field));
     if (first) {
       setStep(first === 'dates' ? 1 : 2);
@@ -365,6 +366,7 @@ export function TripEditorScreen() {
                 onModeChange={(mode) => {
                   setForm((current) => changeTripMode(current, mode));
                   clearFieldErrors('locationId');
+                  clearFieldErrors('searchArea');
                 }}
                 onDates={() => {
                   Keyboard.dismiss();
@@ -377,6 +379,11 @@ export function TripEditorScreen() {
                   form={form}
                   fields={fields}
                   update={update}
+                  onAreaChange={(searchArea) => {
+                    setForm(current=>changeTripSearchArea(current,searchArea));
+                    clearFieldErrors('searchArea');
+                    clearFieldErrors('locationId');
+                  }}
                   onPlaceChange={(place) => {
                     setForm((current) => ({...current,place,locationId:place.id,campgroundName:'',campgroundAddress:''}));
                     clearFieldErrors('locationId');

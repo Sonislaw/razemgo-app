@@ -21,7 +21,7 @@ import { filterPublicGroups, publicGroupFromRow } from '../../src/features/group
 import { groupCriteriaFromPayload } from '../../src/features/saved-filters/saved-filter-data.ts';
 import { mockMapResponse } from './map-fixtures.mjs';
 import { passportFixture } from './passport-fixtures.mjs';
-import { mockPlaces, mockSearchAreas } from './places-fixtures.mjs';
+import { mockPlaces, mockSearchAreas, mockPlannedPlaces } from './places-fixtures.mjs';
 export const TEST_API_ORIGIN = process.env.RAZEMGO_TEST_API_ORIGIN ?? 'http://127.0.0.1:54321';
 
 const A = '00000000-0000-4000-8000-000000000001';
@@ -170,6 +170,10 @@ async function backend(context, store) {
     if(url.pathname==='/functions/v1/search-areas') {
       (store.areaCalls??=[]).push(body);
       return store.failAreas?respond({error:'Unavailable'},503):respond(mockSearchAreas(body));
+    }
+    if(url.pathname==='/functions/v1/geoapify-places') {
+      (store.geoPlaceCalls??=[]).push(body);
+      return store.failGeoPlaces?respond({error:'Unavailable'},503):respond(mockPlannedPlaces(body));
     }
     if(url.pathname==='/functions/v1/places') {
       (store.placeCalls??=[]).push(body);

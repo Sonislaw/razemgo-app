@@ -22,7 +22,7 @@ export function cacheFixture(serverKey: string) {
       if (data.failed) leases.set(key, {id: data.refresh_id, failed: true}); else leases.delete(key);
       return Response.json(null);
     }
-    if (key.startsWith('geoapify:autocomplete:')) searches.set(key, data.payload);
+    if (key.startsWith('geoapify:')) searches.set(key, data.payload);
     else if (key.startsWith('places:geometry:')) geometry.set(key.slice(16), data.payload);
     else components.set(key.slice(8), data.payload);
     leases.delete(key); return Response.json(true);

@@ -68,3 +68,6 @@ verify_jwt = false
 
 [functions.search-areas]
 verify_jwt = false
+
+[functions.geoapify-places]
+verify_jwt = false

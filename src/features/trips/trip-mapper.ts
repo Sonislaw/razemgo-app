@@ -15,6 +15,7 @@ export function tripToPayload(form: TripForm) {
     location &&
     ['city', 'village', 'locality'].includes(location.kind);
   return {
+    search_area_data: form.mode === 'planned' && form.searchArea ? storePlace(form.searchArea) : null,
     place_data: form.place ? storePlace(form.place) : null,
     adult_count: form.participants?.adultCount ?? null,
     child_count: form.participants?.childCount ?? null,
@@ -42,6 +43,7 @@ export function tripToPayload(form: TripForm) {
 export function tripFromRow(value: unknown): OwnedTrip {
   const row = parseTripRow(value);
   const base = {
+    ...(row.mode === 'planned' && row.search_area_data ? {searchArea:readPlace(row.search_area_data)} : {}),
     participants:
       row.adult_count != null && row.child_count != null
         ? {

@@ -9,38 +9,47 @@ import { ManualPlaceFields } from './manual-place-fields';
 import { predictPlaces, resolvePlace } from './places-repository';
 import { PLACE_KIND_LABELS } from './place-data';
 import { createPlaceQueryCache } from './place-query-cache';
+import { resolveGeoapifyManualAddress } from './geoapify-place-repository';
+import { GeoapifyAttribution } from '@/components/trips/geoapify-attribution';
 
-export function PlaceSuggestions({ query, mode, onSelect, initial }: {
-  query:string;mode:string;onSelect:(place:SelectedPlace)=>void;initial?:SelectedPlace;
+export function PlaceSuggestions({ query, mode, onSelect, initial, searchArea }: {
+  query:string;mode:string;onSelect:(place:SelectedPlace)=>void;initial?:SelectedPlace;searchArea?:SelectedPlace;
 }) {
   const theme = useTheme(), [token, setToken] = useState(createRequestKey);
   const [snapshot,setSnapshot] = useState<{key:string;results:PlacePrediction[];error:string}>({key:'',results:[],error:''});
-  const [selectionError,setSelectionError] = useState({key:'',message:''}), [retry,setRetry] = useState(0), [manual,setManual] = useState(initial?.source==='manual'), [choosing,setChoosing] = useState(false);
+  const [selectionError,setSelectionError] = useState({key:'',message:''}), [retry,setRetry] = useState(0), [manual,setManual] = useState(initial?.source==='manual'||searchArea?.source==='manual'), [choosing,setChoosing] = useState(false);
   const search = query.trim();
   const [queryCache] = useState(createPlaceQueryCache);
-  const unchangedSelection = initial?.source === 'google' && search === initial.name.trim();
-  const queryKey=mode+':'+search+':'+retry;
+  const unchangedSelection = !!initial && initial.source!=='manual' && search === initial.name.trim();
+  const areaId=searchArea?.source==='geoapify'?searchArea.id:undefined;
+  const cacheMode=JSON.stringify([mode,areaId]);
+  const queryKey=cacheMode+':'+search+':'+retry;
   const requestKey=token+':'+queryKey;
   const results=snapshot.key===requestKey ? snapshot.results : [];
   const loading=!manual&&!unchangedSelection&&search.length>=3&&snapshot.key!==requestKey;
   const error=(selectionError.key===queryKey?selectionError.message:'')||(snapshot.key===requestKey?snapshot.error:'');
   const selection = useRef<AbortController|null>(null);
   useEffect(() => () => selection.current?.abort(), []);
-  useEffect(() => {selection.current?.abort();}, [search, mode, manual]);
+  useEffect(() => {selection.current?.abort();}, [search, mode, manual, areaId]);
   useEffect(() => {
-    if(manual || unchangedSelection || search.length<3)return;
+    if(manual || unchangedSelection || search.length<3 || (searchArea && !areaId))return;
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      const cached = queryCache.get(token, search, mode);
+      const cached = queryCache.get(token, search, cacheMode);
       if (cached !== undefined) {setSnapshot({key:requestKey,results:cached,error:''}); return;}
-      void predictPlaces(search,mode,token,controller.signal).then(value => {
-        if(!controller.signal.aborted) {queryCache.set(token,search,mode,value); setSnapshot({key:requestKey,results:value,error:''});}
+      void predictPlaces(search,mode,token,controller.signal,areaId).then(value => {
+        if(!controller.signal.aborted) {queryCache.set(token,search,cacheMode,value); setSnapshot({key:requestKey,results:value,error:''});}
       }).catch(() => {if(!controller.signal.aborted) setSnapshot({key:requestKey,results:[],error:'Nie udało się pobrać podpowiedzi. Spróbuj ponownie lub dodaj miejsce ręcznie.'});});
     },500);
     return () => {clearTimeout(timer);controller.abort();};
-  },[search,mode,token,manual,requestKey,unchangedSelection,queryCache]);
-  if(manual) return <ManualPlaceFields query={query} flexible={mode==='flexible'} initial={initial?.source==='manual'?initial:undefined} onSave={onSelect} onBack={() => setManual(false)}/>;
+  },[search,mode,token,manual,requestKey,unchangedSelection,queryCache,areaId,cacheMode,searchArea]);
+  if(manual || (searchArea && !areaId && !unchangedSelection)) return <View style={{gap:12}}>
+    <ManualPlaceFields query={query} flexible={mode==='flexible'} preciseOnly={!!searchArea} searchArea={searchArea}
+      resolveAddress={searchArea?resolveGeoapifyManualAddress:undefined}
+      initial={initial?.source==='manual'?initial:undefined} onSave={onSelect} onBack={() => setManual(false)}/>
+    {searchArea?<GeoapifyAttribution/>:null}</View>;
   return <View style={{gap:12}} testID="google-place-suggestions">
+    {searchArea?<AppText variant="caption" color="textSecondary">Miejsca w miejscowości: {searchArea.name}</AppText>:null}
     <AppText variant="caption" color="textSecondary" accessibilityLiveRegion="polite">{unchangedSelection ? 'Wybrane miejsce. Zmień tekst, aby wyszukać inne.' : loading ? 'Wyszukiwanie miejsc…' : search.length<3 ?
       'Wpisz co najmniej 3 znaki: miejscowość, nazwę kempingu lub inne miejsce.' : results.length ? 'Wybierz miejsce' : 'Brak pasujących miejsc. Możesz dodać własne.'}</AppText>
     {loading || choosing ? <ActivityIndicator color={theme.primaryStrong}/> : null}
@@ -66,6 +75,7 @@ export function PlaceSuggestions({ query, mode, onSelect, initial }: {
     {error ? <><AppText accessibilityRole="alert" variant="caption">{error}</AppText>
       <Button label="Spróbuj ponownie" variant="secondary" disabled={choosing} onPress={() => setRetry(value=>value+1)}/></> : null}
     <Button label="Nie ma tego miejsca? Dodaj ręcznie" variant="secondary" disabled={choosing} onPress={() => {selection.current?.abort();setManual(true);}}/>
-    <AppText style={{fontSize:14,fontWeight:'400',color:theme.textSecondary,textAlign:'right'}}>Google Maps</AppText>
+    {unchangedSelection&&initial.source==='geoapify'?<GeoapifyAttribution/>:
+      <AppText style={{fontSize:14,fontWeight:'400',color:theme.textSecondary,textAlign:'right'}}>Google Maps</AppText>}
   </View>;
 }

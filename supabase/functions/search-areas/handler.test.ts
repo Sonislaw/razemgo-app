@@ -13,10 +13,12 @@ Deno.test('Geoapify area proxy authenticates, limits, filters and shares queries
     const cached=cache.handle(url,init);if(cached)return cached;
     if(url.startsWith('https://api.geoapify.com/v1/geocode/autocomplete?')){
       providerCalls++;await new Promise(resolve=>setTimeout(resolve,20));
-      const params=new URL(url).searchParams;assert(params.get('apiKey')===values.GEOAPIFY_API_KEY&&params.get('type')==='locality'&&params.get('lang')==='pl');
+      const params=new URL(url).searchParams;assert(params.get('apiKey')===values.GEOAPIFY_API_KEY&&['locality','city'].includes(params.get('type')??'')&&params.get('lang')==='pl');
       if(providerFailure)return Response.json({error:values.GEOAPIFY_API_KEY},{status:403});
       const row={place_id:'51abcd12345',name:'Kozienice',city:'Kozienice',result_type:'city',country:'Polska',state:'Mazowieckie',lat:51.58,lon:21.55};
-      return Response.json({results:[row,{...row,result_type:'amenity',place_id:'51camp12345'},{...row,result_type:'street',place_id:'51street123'}]});
+      return Response.json({results:[row,{...row,result_type:'amenity',place_id:'51camp12345'},{...row,result_type:'street',place_id:'51street123'},
+        {...row,result_type:'state',place_id:'51state1234'}, {...row,result_type:'country',place_id:'51country12'},
+        {...row,result_type:'district',place_id:'51district1'}, {...row,result_type:'suburb',place_id:'51suburb123'}]});
     }
     throw Error('Unexpected transport, including any Google call');
   };
@@ -24,17 +26,23 @@ Deno.test('Geoapify area proxy authenticates, limits, filters and shares queries
   try {
     assert((await invoke({},{})).status===401);assert((await invoke({query:'Ko'})).status===400);
     assert((await invoke({query:'Kozienice',url:'https://foreign.invalid'})).status===400);
+    assert((await invoke({query:'Kozienice',localitiesOnly:'true'})).status===400);
     assert((await invoke({}, {authorization:'Bearer test',origin:'https://foreign.invalid'})).status===403);
     authenticated=false;assert((await invoke()).status===401);authenticated=true;limited=true;assert((await invoke()).status===429);limited=false;
     assert(providerCalls===0);
     const results=await Promise.all(Array.from({length:20},(_,i)=>invoke({query:i%2?' KOZIENICE ':'Kozienice'})));
     assert(results.every(response=>response.status===200&&response.headers.get('cache-control')==='no-store'));
     const payloads=await Promise.all(results.map(response=>response.json()));
-    assert(providerCalls===1&&payloads.every(p=>p.areas.length===1&&p.areas[0].name==='Kozienice'&&p.areas[0].source==='geoapify'));
+    assert(providerCalls===1&&payloads.every(p=>p.areas.length===5&&p.areas[0].name==='Kozienice'&&p.areas[0].source==='geoapify'));
     await invoke();assert(providerCalls===1);
+    const towns=await Promise.all(Array.from({length:20},()=>invoke({query:'Kozienice',localitiesOnly:true})));
+    assert(towns.every(response=>response.status===200));
+    for(const response of towns) {const payload=await response.json();assert(payload.areas.length===1&&payload.areas[0].name==='Kozienice');}
+    assert(providerCalls===2); // Broader cached searches must not leak into town-only suggestions.
+    assert((await (await invoke()).json()).areas.length===5);assert(providerCalls===2);
     providerFailure=true;const failed=await invoke({query:'inne miejsce'});
     assert(failed.status===503&&!(await failed.text()).includes('private-geoapify-test'));
-    await invoke({query:'inne miejsce'});assert(providerCalls===2);
+    await invoke({query:'inne miejsce'});assert(providerCalls===3);
     Deno.env.delete('GEOAPIFY_API_KEY');assert((await (await invoke()).json()).code==='not_configured');
   }finally {globalThis.fetch=original;Object.keys(values).forEach((key,i)=>previous[i]===undefined?Deno.env.delete(key):Deno.env.set(key,previous[i]!));}
 });

@@ -15,8 +15,9 @@ export function TripLocationSummary({ trip, locationLabel, compact = false }: {
 }) {
   const theme = useTheme();
   const original=trip.mode==='planned' ? trip.destination : trip.travelArea;
-  const place=useLivePlace(original.place);
-  const campground = trip.mode === 'planned' ? trip.campgroundName?.trim() : '';
+  const locality=compact&&trip.mode==='planned'?trip.searchArea:undefined;
+  const place=useLivePlace(compact&&trip.mode==='planned'?locality:original.place);
+  const campground = !compact&&trip.mode === 'planned' ? trip.campgroundName?.trim() : '';
   const address = !compact&&trip.mode==='planned' ? place?.address || trip.campgroundAddress?.trim() : '';
   const title=trip.mode==='flexible'&&place?areaPlaceLabel(place.name,place.kind):place?.name??locationLabel??getTripLocation(trip);
   return (

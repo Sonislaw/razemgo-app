@@ -85,6 +85,7 @@ export function parseTripRow(value: unknown): TripRow {
     text(row[key], 200);
   text(row.location_id,263);
   if (row.place_data!=null && !validPlace(row.place_data)) throw Error('Invalid place');
+  if (row.search_area_data!=null && (!validPlace(row.search_area_data) || row.search_area_data.scope !== 'area')) throw Error('Invalid search area');
   text(row.description, 2000);
   text(row.campground_name, 200);
   text(row.campground_address, 300);

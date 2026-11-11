@@ -1,6 +1,6 @@
 import {test,expect} from '@playwright/test';
 import {state,backend,login} from './trip-fixtures.mjs';
-import {openSuggestions} from './autocomplete-helpers.mjs';
+import {openSuggestions,plannedDestination} from './autocomplete-helpers.mjs';
 
 async function editor(page,mode='planned'){
  await page.goto('/trip-editor');
@@ -8,8 +8,9 @@ async function editor(page,mode='planned'){
  await page.getByRole('button',{name:'Wybierz zakres dat',exact:true}).click();
  await page.getByLabel(/^25 października 2026/).click();await page.getByLabel(/^28 października 2026/).click();
  await page.getByRole('button',{name:'Wybierz daty',exact:true}).click();await page.getByRole('button',{name:'Dalej',exact:true}).click();
- await (await openSuggestions(page,mode==='flexible'?'Jaki obszar Was interesuje?':'Dokąd jedziecie?')).fill('Chłapowo pomorskie');
- await page.getByRole('button',{name:/^Wybierz miejsce: Chłapowo,/}).first().click();
+ if(mode==='planned')await plannedDestination(page);
+ else {await (await openSuggestions(page,'Jaki obszar Was interesuje?')).fill('Chłapowo pomorskie');
+ await page.getByRole('button',{name:/^Wybierz miejsce: Chłapowo,/}).first().click();}
 }
 
 for(const width of [320,390])test(`description assistant: choose, preview, edit and publish at ${width}px`,async({page,context})=>{
@@ -23,7 +24,7 @@ for(const width of [320,390])test(`description assistant: choose, preview, edit 
  await dialog.getByRole('checkbox',{name:'Gry planszowe',exact:true}).click();
  await expect(generate).toBeEnabled();await generate.click();
  const proposal=dialog.getByRole('textbox',{name:'Propozycja opisu',exact:true});const first=await proposal.inputValue();
- expect(first).toContain('Chłapowo');expect(first).toContain('rodziny z dziećmi');expect(first).toContain('planszówki');
+ expect(first).toContain('Camping Morski');expect(first).toContain('rodziny z dziećmi');expect(first).toContain('planszówki');
  expect(store.trips.size).toBe(0);await dialog.getByRole('button',{name:'Zaproponuj inaczej',exact:true}).click();await expect(proposal).not.toHaveValue(first);
  const text=await proposal.inputValue()+' Zabieramy swoją ulubioną grę.';await proposal.fill(text);
  await dialog.getByRole('button',{name:'Wstaw opis',exact:true}).click();await expect(dialog).toHaveCount(0);
@@ -55,9 +56,9 @@ test('flexible descriptions preserve existing text on close, retain answers on b
  const saved=[...store.trips.values()][0];expect(saved.mode).toBe('flexible');expect(saved.description).toContain('wspólnie');expect(saved.matching_group_kinds).toEqual([]);
 });
 
-test('descriptions use the full Google name after a partial search and after reloading; unavailable names never quote the partial query',async({page,context})=>{
+test('descriptions keep the full stored Geoapify place name after a partial search and reloading',async({page,context})=>{
  const store=state();await backend(context,store);await login(page);await editor(page);
- await (await openSuggestions(page,'Dokąd jedziecie?')).fill('Camp');
+ await (await openSuggestions(page,'Konkretne miejsce')).fill('Camp');
  await page.getByRole('button',{name:/^Wybierz miejsce: Camping Morski,/}).click();
  const open=async()=>{
   await page.getByRole('button',{name:'Pomóż mi napisać opis',exact:true}).click();
@@ -70,12 +71,12 @@ test('descriptions use the full Google name after a partial search and after rel
  await dialog.getByRole('button',{name:'Zaproponuj inaczej',exact:true}).click();await expect(proposal).toHaveValue(/„Camping Morski”/);
  await dialog.getByRole('button',{name:'Wstaw opis',exact:true}).click();await page.getByRole('button',{name:'Opublikuj wyjazd',exact:true}).click();
  await expect(page).toHaveURL('http://localhost:8085/trips');const saved=[...store.trips.values()][0];
- expect(saved.place_data.name).toBe('Camp');expect(saved.description).toContain('„Camping Morski”');
+ expect(saved.place_data.source).toBe('google');expect(saved.description).toContain('„Camping Morski”');
  await page.goto('/trip-editor?id='+saved.id);await page.getByRole('button',{name:'Dalej',exact:true}).click();
  dialog=await open();proposal=dialog.getByRole('textbox',{name:'Propozycja opisu',exact:true});
  await expect(proposal).toHaveValue(/„Camping Morski”/);await expect(proposal).not.toHaveValue(/„Camp”/);
  await dialog.getByRole('button',{name:'Zamknij',exact:true}).click();
- store.failPlaces=true;dialog=await open();proposal=dialog.getByRole('textbox',{name:'Propozycja opisu',exact:true});
+ store.failGeoPlaces=true;dialog=await open();proposal=dialog.getByRole('textbox',{name:'Propozycja opisu',exact:true});
  await expect(proposal).toBeVisible();await expect(proposal).not.toHaveValue(/„Camp”/);
  await dialog.getByRole('button',{name:'Zamknij',exact:true}).click();
  await expect(page.getByRole('textbox',{name:'Opis wyjazdu',exact:true})).toHaveValue(saved.description);

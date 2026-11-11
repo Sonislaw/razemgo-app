@@ -138,6 +138,7 @@ test('campground addresses survive saving, editing and duplication, and are trim
   const form = {
     ...newTripForm(profile),
     mode: 'planned',
+    searchArea: MY_TRIPS[0].searchArea,
     locationId: 'pl-locality:4259',
     startDate: '2027-05-21',
     endDate: '2027-05-24',

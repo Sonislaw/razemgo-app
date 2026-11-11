@@ -132,6 +132,7 @@ export function sharedNights(a: DateRange, b: DateRange): number {
     : 0;
 }
 export function getTripLocation(trip: TripPlan): string {
+  if(trip.mode==='planned'&&trip.searchArea)return [trip.searchArea.name,trip.searchArea.region].filter(Boolean).join(', ');
   const place = trip.mode === 'planned' ? trip.destination : trip.travelArea;
   const kind=place.place?.kind??findTripLocation(tripLocationIdForPlace(place))?.kind;
   return [trip.mode==='flexible'?areaPlaceLabel(place.name,kind):place.name,place.region].filter(Boolean).join(', ');
@@ -162,7 +163,8 @@ export function filterProposals(
     if (reference && sharedNights(trip, reference) <= 0) return false;
     if (filters.groupKinds?.length && !filters.groupKinds.includes(group.kind))
       return false;
-    const place = trip.mode === 'planned' ? trip.destination : trip.travelArea;
+    const area=trip.mode==='planned'&&(!selectedLocation||filters.place?.scope==='area')?trip.searchArea:undefined;
+    const place = area?{name:area.name,region:area.region,locationId:area.id,place:area}:trip.mode==='planned'?trip.destination:trip.travelArea;
     // Keep searches from earlier demo plans compatible with the province name.
     const legacyRegion = /^(pomorze|pomorskie)$/iu.test(place.region)
       ? 'Pomorze Pomorskie'

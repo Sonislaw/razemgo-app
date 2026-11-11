@@ -31,7 +31,7 @@ test('new place formats round-trip through forms, payloads and saved filters wit
   assert.equal(expected.name,'Mój cel');assert.equal(expected.address,'');assert.equal(expected.latitude,undefined);
   assert.equal(validPlace({...manual,latitude:91}),false);
   for(const place of [google,manual]) {
-    const form={...newTripForm({group:MY_GROUP}),mode:'planned',locationId:place.id,place,startDate:'2099-05-21',endDate:'2099-05-24',description:'Spokojny wyjazd nad morze i rozmowy przy ognisku.'};
+    const form={...newTripForm({group:MY_GROUP}),mode:'planned',searchArea:{id:'manual:'+randomUUID(),source:'manual',scope:'area',kind:'locality',name:'Ustka',address:'',region:'pomorskie',country:'Polska'},locationId:place.id,place,startDate:'2099-05-21',endDate:'2099-05-24',description:'Spokojny wyjazd nad morze i rozmowy przy ognisku.'};
     assert.deepEqual(validateTripForm(form),[]);
     const saved=tripFromForm(form,randomUUID(),MY_GROUP.id,'published');
     assert.equal(toTripForm(saved).place.id,place.id);

@@ -10,7 +10,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { GroupAvatar } from '@/features/profile/group-avatar';
 import { FavoriteButton } from '@/features/favorites/favorite-button';
 import { getTripHeadline } from '@/features/trips/trip-headline';
-import { formatTripDates } from '../filter-trips';
+import { formatTripDates, getTripLocation } from '../filter-trips';
 import { LandscapePhoto } from '@/components/trips/landscape-photo';
 import type { MapProposal } from './map-data';
 
@@ -44,7 +44,7 @@ export function MapPreview({
             {formatTripDates(trip)}
           </AppText>
           <AppText variant="caption" color="textSecondary" numberOfLines={1}>
-            {trip.destination.name}
+            {getTripLocation(trip)}
           </AppText>
         </View>
         <IconButton

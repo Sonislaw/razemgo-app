@@ -1,6 +1,8 @@
 export type PlaceKind = 'locality' | 'campground' | 'place' | 'region' | 'country';
 export interface SelectedPlace {
-  scope?: 'area';
+  scope?: 'area' | 'place';
+  areaId?: string;
+  coordinateSource?: 'address' | 'pin';
   bounds?: {south:number;north:number;west:number;east:number};
   id: string;
   source: 'google' | 'geoapify' | 'manual';

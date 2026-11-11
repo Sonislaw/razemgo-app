@@ -1,6 +1,7 @@
 import type { SelectedPlace } from '../types/place';
 import { GOOGLE_PLACE_ID } from '../../shared/google-place-data.ts';
 import { validGeoapifyArea } from '../../shared/geoapify-area-data.ts';
+import { validGeoapifyPlace } from '../../shared/geoapify-place-data.ts';
 export function isAreaPlaceKind(kind:string): boolean {return kind==='locality'||kind==='region'||kind==='country';}
 
 export const PLACE_KINDS = ['locality','campground','place','region','country'] as const;
@@ -8,13 +9,14 @@ export const PLACE_KIND_LABELS = { locality:'Miejscowość', campground:'Kemping
 export function validPlace(value: unknown): value is SelectedPlace {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const p = value as SelectedPlace;
-  if (p.source === 'geoapify') return validGeoapifyArea(p);
+  if (p.source === 'geoapify') return validGeoapifyArea(p) || validGeoapifyPlace(p);
   if (!PLACE_KINDS.includes(p.kind) || typeof p.name !== 'string' || !p.name.trim() || p.name.length>160 ||
     typeof p.address !== 'string' || p.address.length>300 || typeof p.region !== 'string' || p.region.length>100 ||
     typeof p.country !== 'string' || p.country.length>100 || typeof p.id !== 'string' || p.id.length>263) return false;
   if (p.source==='google') return typeof p.googlePlaceId==='string' && GOOGLE_PLACE_ID.test(p.googlePlaceId) &&
     p.id==='google:'+p.googlePlaceId && typeof p.userLabel==='string' && !!p.userLabel.trim() && p.userLabel.length<=160;
   if (p.source!=='manual' || !/^manual:[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(p.id)) return false;
+  if(p.coordinateSource!=null&&!['address','pin'].includes(p.coordinateSource))return false;
   if(p.scope!=null&&(p.scope!=='area'||!isAreaPlaceKind(p.kind)||p.address!==''||p.latitude!=null||p.longitude!=null||p.googlePlaceId!=null))return false;
   if (p.googlePlaceId!=null && (typeof p.googlePlaceId!=='string'||!GOOGLE_PLACE_ID.test(p.googlePlaceId))) return false;
   return (p.latitude==null && p.longitude==null) || (typeof p.latitude==='number' && Number.isFinite(p.latitude) &&
@@ -47,15 +49,17 @@ export function manualPlaceError(p: Pick<SelectedPlace,'name'|'address'|'region'
 // the user's original description are stored with a trip or saved filter.
 export function storePlace(p: SelectedPlace): SelectedPlace {
   if (!validPlace(p)) throw Error('Invalid place');
-  if (p.source === 'geoapify') return {id:p.id,source:'geoapify',scope:'area',geoapifyPlaceId:p.geoapifyPlaceId,
-    kind:p.kind,name:p.name.trim(),address:'',region:p.region.trim(),country:p.country.trim(),latitude:p.latitude,longitude:p.longitude,
+  if (p.source === 'geoapify') return {id:p.id,source:'geoapify',scope:p.scope,geoapifyPlaceId:p.geoapifyPlaceId,
+    ...(p.scope==='place'?{areaId:p.areaId}:{}),
+    kind:p.kind,name:p.name.trim(),address:p.scope==='place'?p.address.trim():'',region:p.region.trim(),country:p.country.trim(),latitude:p.latitude,longitude:p.longitude,
     ...(p.bounds?{bounds:{...p.bounds}}:{})};
   return p.source==='google' ? { id:p.id, source:'google', kind:p.kind, googlePlaceId:p.googlePlaceId,
     userLabel:p.userLabel!.trim(), name:p.userLabel!.trim(), address:'', region:'', country:'' } :
     { id:p.id, source:'manual', kind:p.kind, name:p.name.trim(), address:p.address.trim(), region:p.region.trim(), country:p.country.trim(),
       ...(p.scope==='area'?{scope:'area' as const}:{}),
       ...(p.googlePlaceId ? {googlePlaceId:p.googlePlaceId} :
-        p.latitude!=null && p.longitude!=null ? { latitude:p.latitude, longitude:p.longitude } : {}) };
+        p.latitude!=null && p.longitude!=null ? { latitude:p.latitude, longitude:p.longitude,
+          ...(p.coordinateSource?{coordinateSource:p.coordinateSource}:{}) } : {}) };
 }
 export function readPlace(value: unknown): SelectedPlace | undefined { return validPlace(value) ? storePlace(value) : undefined; }
 export const placeSearchRadiusKm = (kind: SelectedPlace['kind']) => kind==='country' ? 700 : kind==='region' ? 150 : kind==='locality' ? 20 : 1;

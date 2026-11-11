@@ -13,7 +13,7 @@ export const LOCATION_KIND_LABELS: Record<LocationOption['kind'], string> = {
 export const TRIP_LOCATION_REQUIRED_ERROR =
   'Wybierz miejsce z podpowiedzi lub dodaj je ręcznie.';
 export const PLANNED_TRIP_LOCATION_REQUIRED_ERROR =
-  'W trybie „Mam plan” wybierz miejscowość, kemping lub inne konkretne miejsce. Możesz dodać je ręcznie.';
+  'Wybierz konkretne miejsce w wybranym obszarze lub dodaj je ręcznie.';
 
 export function isConcreteTripLocation(location?: LocationOption): boolean {
   return !!location && ['locality', 'city', 'village'].includes(location.kind);

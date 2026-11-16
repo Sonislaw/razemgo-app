@@ -163,15 +163,22 @@ export function DiscoveryFiltersSheet({
     >
       <FavoritesNotice />
       <View style={layout.stack}>
-        <FieldLabel>Klimat wyjazdu</FieldLabel>
-        <AppText variant="caption" color="textSecondary">
-          Możesz wybrać kilka klimatów. Brak wyboru pokazuje wszystkie.
-        </AppText>
-        <TripLandscapePicker
-          multiple
-          value={draft.landscapeKinds ?? []}
-          onChange={(landscapeKinds) =>
-            setDraft((current) => ({ ...current, landscapeKinds }))
+        <TripLocationField
+          mode={tripMode}
+          areasOnly
+          localitiesOnly={tripMode === 'planned'}
+          label="Gdzie chcecie pojechać?"
+          hint={tripMode === 'flexible' ? 'Wybierz miejscowość, wieś, region lub kraj.' : 'Wybierz miejscowość lub wieś.'}
+          required={false}
+          value={draft.locationId ?? ''}
+          place={draft.place}
+          onPlaceChange={place => setDraft(current => ({...current,place,locationId:place.id,location:place.userLabel??place.name}))}
+          query={draft.location}
+          onChange={(id) =>
+            setDraft((current) => selectDiscoveryLocation(current, id))
+          }
+          onQueryChange={(query) =>
+            setDraft((current) => updateDiscoveryLocationQuery(current, query))
           }
         />
       </View>
@@ -186,9 +193,6 @@ export function DiscoveryFiltersSheet({
             />
           ) : null}
         </View>
-        <AppText variant="caption" color="textSecondary">
-          Zaznacz zakres w kalendarzu i wybierz dokładny lub przybliżony termin.
-        </AppText>
         <DateRangeField
           range={dateRange}
           showWeekdays={false}
@@ -213,29 +217,50 @@ export function DiscoveryFiltersSheet({
         ) : null}
       </View>
       <View style={layout.stack}>
-        <TripLocationField
-          mode={tripMode}
-          areasOnly
-          localitiesOnly={tripMode === 'planned'}
-          label="Gdzie chcecie pojechać?"
-          hint={tripMode === 'flexible' ? 'Wybierz miejscowość, wieś, region lub kraj.' : 'Wybierz miejscowość lub wieś.'}
-          required={false}
-          value={draft.locationId ?? ''}
-          place={draft.place}
-          onPlaceChange={place => setDraft(current => ({...current,place,locationId:place.id,location:place.userLabel??place.name}))}
-          query={draft.location}
-          onChange={(id) =>
-            setDraft((current) => selectDiscoveryLocation(current, id))
-          }
-          onQueryChange={(query) =>
-            setDraft((current) => updateDiscoveryLocationQuery(current, query))
+        <FieldLabel>Towarzystwo dla dzieci</FieldLabel>
+        <ChipRow horizontal label="Towarzystwo dla dzieci">
+          {CHILD_AGE_BANDS.map((band) => (
+            <Chip
+              key={band}
+              label={band + ' lat'}
+              accessibilityLabel={'Wiek dzieci: ' + band + ' lat'}
+              selected={draft.childAgeBands.includes(band)}
+              onPress={() => toggleAge(band)}
+            />
+          ))}
+        </ChipRow>
+      </View>
+      <View style={layout.stack}>
+        <FieldLabel>Klimat wyjazdu</FieldLabel>
+        <TripLandscapePicker
+          multiple
+          value={draft.landscapeKinds ?? []}
+          onChange={(landscapeKinds) =>
+            setDraft((current) => ({ ...current, landscapeKinds }))
           }
         />
-        <AppText variant="caption" color="textSecondary">
-          {tripMode === 'planned'
-            ? 'Wyszukiwanie obejmuje wybraną miejscowość i jej okolice.'
-            : 'Wyszukiwanie obejmuje obszary poszukiwań w ogłoszeniach „Szukam pomysłu”.'}
-        </AppText>
+      </View>
+      <View style={layout.stack}>
+        <FieldLabel>Zwierzęta na wyjeździe</FieldLabel>
+        <ChipRow horizontal label="Zwierzęta na wyjeździe">
+          {ANIMAL_OPTIONS.map(({ kind, label }) => (
+            <AnimalChoice
+              key={kind}
+              kind={kind}
+              label={label}
+              accessibilityLabel={'Zwierzęta na wyjeździe: ' + label}
+              selected={draft.animalKinds?.includes(kind)}
+              onPress={() =>
+                setDraft((current) => ({
+                  ...current,
+                  animalKinds: current.animalKinds?.includes(kind)
+                    ? current.animalKinds.filter((item) => item !== kind)
+                    : [...(current.animalKinds ?? []), kind],
+                }))
+              }
+            />
+          ))}
+        </ChipRow>
       </View>
       {draft.sourceTripId ? (
         <View style={layout.stack}>
@@ -261,48 +286,6 @@ export function DiscoveryFiltersSheet({
           </ChipRow>
         </View>
       ) : null}
-      <View style={layout.stack}>
-        <FieldLabel>Towarzystwo dla dzieci</FieldLabel>
-        <AppText variant="caption" color="textSecondary">
-          Możesz wybrać kilka przedziałów.
-        </AppText>
-        <ChipRow horizontal label="Towarzystwo dla dzieci">
-          {CHILD_AGE_BANDS.map((band) => (
-            <Chip
-              key={band}
-              label={band + ' lat'}
-              accessibilityLabel={'Wiek dzieci: ' + band + ' lat'}
-              selected={draft.childAgeBands.includes(band)}
-              onPress={() => toggleAge(band)}
-            />
-          ))}
-        </ChipRow>
-      </View>
-      <View style={layout.stack}>
-        <FieldLabel>Zwierzęta na wyjeździe</FieldLabel>
-        <AppText variant="caption" color="textSecondary">
-          Możesz wybrać kilka rodzajów.
-        </AppText>
-        <ChipRow horizontal label="Zwierzęta na wyjeździe">
-          {ANIMAL_OPTIONS.map(({ kind, label }) => (
-            <AnimalChoice
-              key={kind}
-              kind={kind}
-              label={label}
-              accessibilityLabel={'Zwierzęta na wyjeździe: ' + label}
-              selected={draft.animalKinds?.includes(kind)}
-              onPress={() =>
-                setDraft((current) => ({
-                  ...current,
-                  animalKinds: current.animalKinds?.includes(kind)
-                    ? current.animalKinds.filter((item) => item !== kind)
-                    : [...(current.animalKinds ?? []), kind],
-                }))
-              }
-            />
-          ))}
-        </ChipRow>
-      </View>
     </FilterSheet>
   );
 }

@@ -11,8 +11,11 @@ import { GeoapifyAttribution } from './geoapify-attribution';
 import { GoogleMapsAttribution } from './location-attribution';
 
 function locationName(place:SelectedPlace){
-  const region=place.kind==='locality'?place.region.trim().replace(/^wojew[oó]dztwo\s+/iu,''):'';
-  return place.name+(region?' ('+region+')':'');
+  if(place.kind!=='locality')return place.name;
+  const country=place.country.trim();
+  const context=country&&!/^(pl|pol|polska|poland)$/iu.test(country)
+    ?country:place.region.trim().replace(/^wojew[oó]dztwo\s+/iu,'');
+  return place.name+(context?' ('+context+')':'');
 }
 
 export function TripLocationSummary({ trip, locationLabel, compact = false, showGeoapifyAttribution=true }: {

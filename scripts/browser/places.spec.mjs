@@ -241,11 +241,14 @@ test('Geoapify failure keeps the query and retries without falling back to Googl
 
 for(const width of [320,390])test(`Odkrywaj reads the full Geoapify area name from the listing and shows its Google map without provider lookups at ${width}px`,async({page,context})=>{
   const store=seed(),area=mockSearchAreas({query:'Koz'}) .areas[0];
+  if(width===390)Object.assign(area,{name:'Praga',region:'Hlavní město Praha',country:'Czechy',latitude:50.0755,longitude:14.4378,
+    bounds:{south:50.02,north:50.13,west:14.38,east:14.49}});
+  const location=width===320?'Kozienice (mazowieckie) i okolice · cel do ustalenia':'Praga (Czechy) i okolice · cel do ustalenia';
   store.trips.set(id,{...store.trips.get(id),group_id:groupId(B),mode:'flexible',location_id:area.id,location_name:area.name,location_kind:'locality',place_data:area});
   await page.setViewportSize({width,height:844});await backend(context,store);await mockMapTiles(context);await login(page);await page.goto('/explore');
-  const screen=page.getByTestId('discovery-screen');await expect(screen).toContainText('Kozienice (mazowieckie) i okolice · cel do ustalenia');
+  const screen=page.getByTestId('discovery-screen');await expect(screen).toContainText(location);
   expect(store.placeCalls??[]).toHaveLength(0);expect(store.areaCalls??[]).toHaveLength(0);
-  await page.goto('/trip/'+id);await expect(page.getByText('Kozienice (mazowieckie) i okolice · cel do ustalenia',{exact:true})).toBeAttached();await expect(page.getByTestId('geoapify-attribution')).toHaveCount(1);await expect(page.getByTestId('trip-map-card').getByTestId('geoapify-attribution')).toHaveCount(0);
+  await page.goto('/trip/'+id);await expect(page.getByText(location,{exact:true})).toBeAttached();await expect(page.getByTestId('geoapify-attribution')).toHaveCount(1);await expect(page.getByTestId('trip-map-card').getByTestId('geoapify-attribution')).toHaveCount(0);
   await expect(page.getByTestId('trip-google-map').frameLocator('iframe').locator('.google-map-canvas')).toBeAttached();
   expect(store.placeCalls??[]).toHaveLength(0);expect(store.areaCalls??[]).toHaveLength(0);
 });

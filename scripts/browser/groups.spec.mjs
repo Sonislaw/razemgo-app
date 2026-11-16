@@ -477,10 +477,11 @@ test('crew hearts save only after confirmation, retry safely, sync devices and f
     fullPage: true,
   });
   await page.getByRole('button', { name: 'Wróć', exact: true }).click();
+  const favorites = page.getByRole('button', { name: 'Tylko ulubione ekipy', exact: true });
+  await favorites.click();
+  await expect(favorites).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Filtry ekip', exact: true }).click();
-  await page
-    .getByRole('switch', { name: 'Tylko ulubione', exact: true })
-    .click();
+  await expect(page.getByRole('switch', { name: 'Tylko ulubione', exact: true })).toHaveCount(0);
   await expect(
     page.getByRole('button', { name: 'Pokaż wyniki · 1', exact: true }),
   ).toBeVisible();

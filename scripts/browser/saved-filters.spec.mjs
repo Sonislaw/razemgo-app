@@ -118,9 +118,9 @@ test('expired dates remain exact; crew sets include online/favorites, replace an
   expect(old.filters.start_date).toBe('2025-05-01');
   await page.getByRole('tab', { name: 'Ekipy', exact: true }).click();
   await expect(button(page, 'Zapisane · 0')).toBeVisible();
+  await button(page, 'Tylko ulubione ekipy').click();
   await button(page, 'Filtry ekip').click();
   await page.getByRole('switch', { name: 'Tylko online', exact: true }).click();
-  await page.getByRole('switch', { name: 'Tylko ulubione', exact: true }).click();
   await saveNew(page, 'Wakacje');
   await expect(button(page, 'Zapisane · 1')).toBeVisible();
   const crew = [...store.filterSets.values()].find(row => row.kind === 'groups');
@@ -159,9 +159,7 @@ test('cross-device catalog synchronization leaves active search untouched and is
     const a = await first.newPage(), b = await second.newPage();
     await login(a); await login(b); await a.goto('/explore'); await b.goto('/explore');
     await expect(button(b, 'Zapisane · 0')).toBeVisible();
-    await openTrips(b);
-    await b.getByRole('switch', { name: 'Tylko ulubione', exact: true }).click();
-    await b.getByRole('button', { name: /^Pokaż wyniki/ }).click();
+    await button(b, 'Tylko ulubione wyjazdy').click();
     await b.clock.install();
     await openTrips(a); await saveNew(a, 'Wspólny katalog');
     await expect(button(a, 'Zapisane · 1')).toBeVisible();

@@ -32,6 +32,8 @@ test('trip favorites survive restart, match the filter count and stay independen
     created_at: '2026-10-24T10:00:00Z',
     updated_at: '2026-10-24T10:00:00Z',
   });
+  const otherId = '00000000-0000-4000-8000-000000000812';
+  store.trips.set(otherId, { ...store.trips.get(tripId), id: otherId, published_at: '2026-10-23T10:00:00Z' });
   await backend(context, store);
   await login(page);
   const homeCard = page.getByTestId('home-latest-listing');
@@ -47,6 +49,7 @@ test('trip favorites survive restart, match the filter count and stay independen
   await expect(page).toHaveURL('http://localhost:8085/');
   await homeCard.screenshot({ path: '.expo/favorite-home.png' });
   await page.getByRole('tab', { name: 'Odkrywaj', exact: true }).click();
+  await page.getByRole('radio', { name: 'Mam plan', exact: true }).click();
   const card = page.getByTestId('discovery-trip-' + tripId);
   await expect(card).toBeVisible();
   await expect(
@@ -77,12 +80,17 @@ test('trip favorites survive restart, match the filter count and stay independen
     .getByRole('button', { name: 'Wróć do listy wyjazdów', exact: true })
     .click();
   await page.getByRole('tab', { name: 'Odkrywaj', exact: true }).click();
+  await page.getByRole('radio', { name: 'Mam plan', exact: true }).click();
+  const favorites = page.getByRole('button', { name: 'Tylko ulubione wyjazdy', exact: true });
+  await expect(favorites).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByTestId('discovery-trip-' + otherId)).toBeAttached();
+  await favorites.click();
+  await expect(favorites).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('discovery-trip-' + otherId)).toHaveCount(0);
   await page
     .getByRole('button', { name: 'Otwórz filtry', exact: true })
     .click();
-  await page
-    .getByRole('switch', { name: 'Tylko ulubione', exact: true })
-    .click();
+  await expect(page.getByRole('switch', { name: 'Tylko ulubione', exact: true })).toHaveCount(0);
   await expect(
     page.getByRole('button', { name: 'Pokaż wyniki · 1', exact: true }),
   ).toBeVisible();
@@ -90,15 +98,17 @@ test('trip favorites survive restart, match the filter count and stay independen
     .getByRole('button', { name: 'Pokaż wyniki · 1', exact: true })
     .click();
   await page.setViewportSize({ width: 320, height: 800 });
+  await page.screenshot({ path: '.expo/favorite-trip-controls.png' });
   await card.screenshot({ path: '.expo/favorite-trip.png' });
   await card
     .getByRole('button', { name: 'Usuń wyjazd z ulubionych', exact: true })
     .click();
   await expect(card).toHaveCount(0);
-  await page
-    .getByRole('button', { name: 'Wyczyść filtry', exact: true })
-    .click();
+  await expect(favorites).toHaveAttribute('aria-pressed', 'true');
+  await favorites.click();
+  await expect(favorites).toHaveAttribute('aria-pressed', 'false');
   await expect(card).toBeVisible();
+  await expect(page.getByTestId('discovery-trip-' + otherId)).toBeAttached();
   await expect(
     card.getByRole('button', {
       name: 'Dodaj wyjazd do ulubionych',

@@ -21,6 +21,7 @@ import { AppText, Button, layout } from '@/components/ui/primitives';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/features/auth/auth-context';
 import { DiscoveryFilterBar } from '../discovery-controls';
+import { DiscoveryFavoritesButton } from '../discovery-favorites-button';
 import { DiscoveryFiltersSheet } from '../discovery-filters-sheet';
 import { useDiscovery } from '../discovery-context';
 import { INITIAL_FILTERS } from '../filter-trips';
@@ -284,7 +285,10 @@ export function DiscoveryMap({
           <AppText variant="heading" style={{ flex: 1, fontSize: 18 }}>
             Mapa wyjazdów
           </AppText>
-          <SavedFiltersButton kind="trips" onApply={applySavedFilterSet} />
+          <View style={[layout.row, { gap: 4 }]}>
+            <SavedFiltersButton kind="trips" onApply={applySavedFilterSet} />
+            <DiscoveryFavoritesButton kind="trips" />
+          </View>
         </View>
         <DiscoveryFilterBar
           activeCount={activeCount}

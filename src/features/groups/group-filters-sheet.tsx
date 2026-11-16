@@ -180,16 +180,6 @@ export function GroupFiltersSheet({
         maxLength={80}
       />
       <View style={layout.row}>
-        <AppText style={{ flex: 1 }}>Tylko ulubione</AppText>
-        <Switch
-          accessibilityLabel="Tylko ulubione"
-          value={draft.favoritesOnly}
-          onValueChange={(favoritesOnly) =>
-            setDraft((prev) => ({ ...prev, favoritesOnly }))
-          }
-        />
-      </View>
-      <View style={layout.row}>
         <AppText style={{ flex: 1 }}>Tylko online</AppText>
         <Switch
           accessibilityLabel="Tylko online"

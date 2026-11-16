@@ -4,10 +4,16 @@ import { AppText } from '@/components/ui/primitives';
 import { getTripLocation } from '@/features/discovery/filter-trips';
 import { useTheme } from '@/hooks/use-theme';
 import type { TripPlan } from '@/types/travel';
+import type { SelectedPlace } from '@/types/place';
 import { useLivePlace } from '@/features/trips/use-live-place';
 import { areaPlaceLabel } from '@/features/trips/place-data';
 import { GeoapifyAttribution } from './geoapify-attribution';
 import { GoogleMapsAttribution } from './location-attribution';
+
+function locationName(place:SelectedPlace){
+  const region=place.kind==='locality'?place.region.trim().replace(/^wojew[oó]dztwo\s+/iu,''):'';
+  return place.name+(region?' ('+region+')':'');
+}
 
 export function TripLocationSummary({ trip, locationLabel, compact = false, showGeoapifyAttribution=true }: {
   trip: TripPlan;
@@ -21,7 +27,9 @@ export function TripLocationSummary({ trip, locationLabel, compact = false, show
   const place=useLivePlace(compact&&trip.mode==='planned'?locality:original.place);
   const campground = !compact&&trip.mode === 'planned' ? trip.campgroundName?.trim() : '';
   const address = !compact&&trip.mode==='planned' ? place?.address || trip.campgroundAddress?.trim() : '';
-  const title=trip.mode==='flexible'&&place?areaPlaceLabel(place.name,place.kind):place?.name??locationLabel??getTripLocation(trip);
+  const plannedLocality=!compact&&trip.mode==='planned'&&trip.searchArea?.kind==='locality'?trip.searchArea:undefined;
+  const name=place?locationName(place):undefined;
+  const title=trip.mode==='flexible'&&place?areaPlaceLabel(name!,place.kind):name??locationLabel??getTripLocation(trip);
   return (
     <View style={[
       styles.container,
@@ -45,7 +53,8 @@ export function TripLocationSummary({ trip, locationLabel, compact = false, show
       ) : null}
       {address ? <AppText color="textSecondary" style={[styles.detailSecondary, styles.address]}>{address}</AppText> : null}
       {place?.source==='google' ? <View style={{marginLeft:30}}><GoogleMapsAttribution/></View> : null}
-      {showGeoapifyAttribution&&place?.source==='geoapify' ? <View style={{marginLeft:30}}><GeoapifyAttribution/></View> : null}
+      {plannedLocality ? <AppText color="textSecondary" style={[styles.detailSecondary,styles.address]}>{locationName(plannedLocality)}</AppText> : null}
+      {showGeoapifyAttribution&&(place?.source==='geoapify'||plannedLocality?.source==='geoapify') ? <View style={{marginLeft:30}}><GeoapifyAttribution/></View> : null}
     </View>
   );
 }

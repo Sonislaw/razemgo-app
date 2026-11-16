@@ -99,9 +99,12 @@ export function SavedFiltersButton({ kind, onApply }: { kind: SavedFilterKind; o
   const count = status === 'loading' ? '…' : items.filter(item => item.kind === kind).length;
   return <>
     <Pressable accessibilityRole="button" accessibilityLabel={`Zapisane · ${count}`} onPress={() => setOpen(true)}
-      style={({ pressed }) => [styles.savedButton, { opacity: pressed ? 0.65 : 1 }]}>
-      <Icon name="bookmark" size={18} color={theme.primaryStrong} />
-      <AppText variant="label" style={{ fontSize: 13, color: theme.primaryStrong }}>Zapisane · {count}</AppText>
+      accessibilityHint="Otwiera zapisane zestawy filtrów" accessibilityState={{ expanded: open }}
+      style={({ pressed }) => [styles.savedButton, { backgroundColor: theme.iconBackground, opacity: pressed ? 0.65 : 1 }]}>
+      <Icon name="bookmark" size={22} color={theme.textSecondary} />
+      <View aria-hidden pointerEvents="none" style={[styles.savedCount, { backgroundColor: theme.notificationBackground }]}>
+        <AppText variant="caption" style={{ fontSize: 11, lineHeight: 16, fontWeight: '700', color: theme.notificationText }}>{count}</AppText>
+      </View>
     </Pressable>
     {open ? <SavedFilterListSheet kind={kind} onClose={() => setOpen(false)} onApply={item => { setOpen(false); onApply(item); }} /> : null}
   </>;
@@ -183,7 +186,8 @@ function ManageFilterSetSheet({ item, onClose }: { item: SavedFilterSet; onClose
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  savedButton: { minHeight: 44, paddingHorizontal: 4, flexDirection: 'row', alignItems: 'center', gap: 5 },
+  savedButton: { width: 44, height: 44, flexShrink: 0, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  savedCount: { position: 'absolute', top: -3, right: -3, minWidth: 20, minHeight: 20, paddingHorizontal: 4, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   item: { borderWidth: 1, borderRadius: Radius.small, paddingRight: 4 },
   itemContent: { flex: 1, minWidth: 0, minHeight: 64, padding: 12, gap: 4 },
 });

@@ -45,6 +45,7 @@ for(const width of [320,390])test(`planned trips require area then place, persis
   await page.goto('/trips/'+trip.id);await expect(page.getByTestId('trip-map-card')).toContainText('Google Maps');
   await expect(page.getByTestId('trip-google-map').frameLocator('iframe').locator('.google-map-canvas')).toBeAttached();
   await page.reload();await expect(page.getByText('Camping Morski',{exact:true})).toBeAttached();
+  await expect(page.getByText('Ustka (pomorskie)',{exact:true}).filter({visible:true})).toHaveCount(1);
   await page.goto('/trip-editor?id='+trip.id);await button(page,'Dalej').click();
   await expect(suggestionField(page,'Miejscowość / wieś')).toContainText('Ustka');await expect(suggestionField(page,'Konkretne miejsce')).toContainText('Camping Morski');
   await openSuggestions(page,'Konkretne miejsce');await button(page,'Użyj wybranego miejsca: Camping Morski').click();
@@ -57,6 +58,7 @@ for(const width of [320,390])test(`planned discovery cards display the stored to
   await page.setViewportSize({width,height:844});
   const store=state(),id='00000000-0000-4000-8000-000000062355';
   const town=mockSearchAreas({query:'Ustka',localitiesOnly:true}).areas.find(a=>a.name==='Ustka');
+  town.region='województwo '+town.region;
   const google={id:'google:qa_camp_morski',source:'google',googlePlaceId:'qa_camp_morski',kind:'campground',name:'Camp',userLabel:'Camp',address:'',region:'',country:''};
   store.trips.set(id,{id,group_id:groupId(B),mode:'planned',status:'published',visibility:'public',start_date:'2099-05-21',end_date:'2099-05-24',
     search_area_data:town,place_data:google,location_id:google.id,location_name:'Camp',location_region:'',location_kind:'locality',
@@ -65,11 +67,13 @@ for(const width of [320,390])test(`planned discovery cards display the stored to
   await backend(context,store);await mockMapTiles(context);await login(page);await page.goto('/explore');
   await page.getByRole('radio',{name:'Mam plan',exact:true}).click();
   const card=page.getByTestId('discovery-trip-'+id);
-  await expect(card.getByText('Ustka',{exact:true})).toBeVisible();
+  await expect(card.getByText('Ustka (pomorskie)',{exact:true})).toBeVisible();
   await expect(card).not.toContainText('Camping Morski');expect(store.placeCalls??[]).toHaveLength(0);expect(store.areaCalls??[]).toHaveLength(0);
   await card.getByRole('button',{name:'Zobacz wyjazd',exact:true}).click();
   await expect(page).toHaveURL('http://localhost:8085/trip/'+id);
   await expect(page.getByText('Camping Morski',{exact:true})).toBeAttached();
+  await expect(page.getByText('Ustka (pomorskie)',{exact:true}).filter({visible:true})).toHaveCount(1);
+  await expect(page.getByTestId('geoapify-attribution').filter({visible:true})).toHaveCount(1);
   expect(store.placeCalls.filter(c=>c.action==='details')).toHaveLength(1);expect(store.areaCalls??[]).toHaveLength(0);
 });
 

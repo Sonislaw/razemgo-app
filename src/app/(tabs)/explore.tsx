@@ -21,6 +21,7 @@ import { useDiscovery } from '@/features/discovery/discovery-context';
 import { DiscoveryFiltersSheet } from '@/features/discovery/discovery-filters-sheet';
 import { DiscoveryQuickDates } from '@/features/discovery/discovery-quick-dates';
 import { DiscoverySortButton } from '@/features/discovery/discovery-sort-button';
+import { DiscoveryFavoritesButton } from '@/features/discovery/discovery-favorites-button';
 import { DiscoveryTripModeSwitch } from '@/features/discovery/discovery-trip-mode-switch';
 import { discoveryTripMode, emptyDiscoveryFilters } from '@/features/discovery/trip-discovery-state';
 import { DiscoveryFilterBar, DiscoveryResultsHeader } from '@/features/discovery/discovery-controls';
@@ -182,6 +183,7 @@ export default function ExploreScreen() {
         <DiscoveryResultsHeader title={totalCount === null ? 'Propozycje' : 'Propozycje · ' + totalCount}
           action={<View style={styles.resultActions}>
             <SavedFiltersButton kind="trips" onApply={applySavedFilterSet} />
+            <DiscoveryFavoritesButton kind="trips" />
             <DiscoverySortButton />
           </View>} />
       <DataStatus status={proposals.length && (hasMore || status === 'loading') ? 'ready' : status} error={error} onRetry={() => { void retry(); }} label="Wczytywanie ogłoszeń" />

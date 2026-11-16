@@ -78,17 +78,17 @@ test('town cards avoid Google reads, while details reuse the place cache until l
   const lookups = () => (store.placeCalls ?? []).filter(call => call.action === 'details' && call.placeId === 'qa_camp_morski');
   expect(lookups()).toHaveLength(0);
   const card = page.getByTestId('own-trip-' + id);
-  await expect(card.getByText('Ustka', {exact: true})).toBeAttached();
+  await expect(card.getByText('Ustka (pomorskie)', {exact: true})).toBeAttached();
   expect(lookups()).toHaveLength(0);
   await page.getByRole('tab', {name: 'Archiwum, 0', exact: true}).click(); await expect(card).toHaveCount(0);
   await page.getByRole('tab', {name: 'Aktywne, 1', exact: true}).click();
-  await expect(card.getByText('Ustka', {exact: true})).toBeAttached(); expect(lookups()).toHaveLength(0);
+  await expect(card.getByText('Ustka (pomorskie)', {exact: true})).toBeAttached(); expect(lookups()).toHaveLength(0);
   await card.getByRole('button', {name: /^Szczegóły wyjazdu:/}).click();
   await expect(page).toHaveURL('http://localhost:8085/trips/' + id);
   await expect(page.getByTestId('trip-weather')).toBeAttached();
   await expect(page.getByText('Camping Morski', {exact: true}).filter({visible: true})).toHaveCount(1); expect(lookups()).toHaveLength(1);
   await button(page, 'Wróć do wyjazdów').click();
-  await expect(card.getByText('Ustka', {exact: true})).toBeAttached(); expect(lookups()).toHaveLength(1);
+  await expect(card.getByText('Ustka (pomorskie)', {exact: true})).toBeAttached(); expect(lookups()).toHaveLength(1);
   await expect(page).toHaveURL('http://localhost:8085/trips');
   await expect(page.getByTestId('trip-map-card')).toHaveCount(0);
   const geometryReads = () => (store.placeCalls ?? []).filter(call => call.action === 'geometry' && call.placeId === 'qa_camp_morski').length;
@@ -104,7 +104,7 @@ test('town cards avoid Google reads, while details reuse the place cache until l
   await field(page, 'E-mail').fill('a@example.com'); await page.getByLabel('Hasło', {exact: true}).fill('correct-password');
   await button(page, 'Zaloguj się').click(); await expect(page).toHaveURL('http://localhost:8085/');
   await page.getByRole('tab', {name: 'Wyjazdy', exact: true}).click();
-  await expect(card.getByText('Ustka', {exact: true})).toBeAttached();
+  await expect(card.getByText('Ustka (pomorskie)', {exact: true})).toBeAttached();
   expect(lookups()).toHaveLength(1);
   await card.getByRole('button',{name:/^Szczegóły wyjazdu:/}).click();
   await expect.poll(() => lookups().length).toBe(2);
@@ -214,14 +214,14 @@ for(const width of [320,390])test(`Geoapify flexible area keeps its full name an
   expect(store.areaCalls).toHaveLength(1);expect(store.placeCalls??[]).toHaveLength(0);
   await button(page,'Zapisz zmiany').click();await expect(page).toHaveURL('http://localhost:8085/trips');
   const saved=store.trips.get(id).place_data;expect(saved.source).toBe('geoapify');expect(saved.name).toBe('Kozienice');expect(saved.bounds).toBeTruthy();expect(saved.latitude).toBe(51.585);
-  const card=page.getByTestId('own-trip-'+id);await expect(card).toContainText('Kozienice i okolice');
+  const card=page.getByTestId('own-trip-'+id);await expect(card).toContainText('Kozienice (mazowieckie) i okolice');
   await card.getByRole('button',{name:/^Szczegóły wyjazdu:/}).click();
   const map=page.getByTestId('trip-google-map').frameLocator('iframe');await expect(map.locator('.google-map-canvas')).toBeAttached();
   await expect(page.getByTestId('trip-map-card')).toContainText('obszar wyjazdu');
   expect(store.placeCalls??[]).toHaveLength(0);expect(store.areaCalls).toHaveLength(1);
   // A fresh application load must use the persisted name and point, not RAM.
   await page.reload();await expect(page.getByTestId('geoapify-attribution')).toHaveCount(1);await expect(page.getByTestId('trip-map-card').getByTestId('geoapify-attribution')).toHaveCount(0);
-  await expect(page.getByText('Kozienice i okolice · cel do ustalenia',{exact:true})).toBeAttached();
+  await expect(page.getByText('Kozienice (mazowieckie) i okolice · cel do ustalenia',{exact:true})).toBeAttached();
   expect(store.placeCalls??[]).toHaveLength(0);expect(store.areaCalls).toHaveLength(1);
   await edit(page);await openSuggestions(page,label);
   await expect(button(page,'Użyj wybranego obszaru: Kozienice')).toBeVisible();await page.waitForTimeout(650);
@@ -243,9 +243,9 @@ for(const width of [320,390])test(`Odkrywaj reads the full Geoapify area name fr
   const store=seed(),area=mockSearchAreas({query:'Koz'}) .areas[0];
   store.trips.set(id,{...store.trips.get(id),group_id:groupId(B),mode:'flexible',location_id:area.id,location_name:area.name,location_kind:'locality',place_data:area});
   await page.setViewportSize({width,height:844});await backend(context,store);await mockMapTiles(context);await login(page);await page.goto('/explore');
-  const screen=page.getByTestId('discovery-screen');await expect(screen).toContainText('Kozienice i okolice · cel do ustalenia');
+  const screen=page.getByTestId('discovery-screen');await expect(screen).toContainText('Kozienice (mazowieckie) i okolice · cel do ustalenia');
   expect(store.placeCalls??[]).toHaveLength(0);expect(store.areaCalls??[]).toHaveLength(0);
-  await page.goto('/trip/'+id);await expect(page.getByTestId('geoapify-attribution')).toHaveCount(1);await expect(page.getByTestId('trip-map-card').getByTestId('geoapify-attribution')).toHaveCount(0);
+  await page.goto('/trip/'+id);await expect(page.getByText('Kozienice (mazowieckie) i okolice · cel do ustalenia',{exact:true})).toBeAttached();await expect(page.getByTestId('geoapify-attribution')).toHaveCount(1);await expect(page.getByTestId('trip-map-card').getByTestId('geoapify-attribution')).toHaveCount(0);
   await expect(page.getByTestId('trip-google-map').frameLocator('iframe').locator('.google-map-canvas')).toBeAttached();
   expect(store.placeCalls??[]).toHaveLength(0);expect(store.areaCalls??[]).toHaveLength(0);
 });

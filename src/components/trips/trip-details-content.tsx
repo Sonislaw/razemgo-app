@@ -24,6 +24,7 @@ export function TripDetailsContent({
   onOpenGroup: () => void;
 }) {
   const place=trip.mode==='planned'?trip.destination.place:trip.travelArea.place;
+  const hasGeoapifyLocation=place?.source==='geoapify'||(trip.mode==='planned'&&trip.searchArea?.kind==='locality'&&trip.searchArea.source==='geoapify');
   return (
     <>
       <View style={layout.stack}>
@@ -66,7 +67,7 @@ export function TripDetailsContent({
         </Card>
       </View>
       <TripWeatherCard trip={trip} />
-      <TripMapCard trip={trip} showGeoapifyAttribution={place?.source!=='geoapify'} />
+      <TripMapCard trip={trip} showGeoapifyAttribution={!hasGeoapifyLocation} />
       <TripParticipantsCard value={trip.participants} animals={trip.animals} />
     </>
   );

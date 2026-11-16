@@ -61,6 +61,7 @@ for (const width of [320, 390])
     await page.setViewportSize({ width, height: 844 });
     const store = state();
     seed(store);
+    store.favoriteTrips.set(A, new Set([uuid(8000), uuid(8001)]));
     await backend(context, store);
     await mockMapTiles(context);
     await login(page);
@@ -74,6 +75,13 @@ for (const width of [320, 390])
     await expect(
       map.getByText('Plany w obszarze: 13', { exact: true }),
     ).toBeVisible();
+    const favorites = map.getByRole('button', { name: 'Tylko ulubione wyjazdy', exact: true });
+    await favorites.click();
+    await expect(favorites).toHaveAttribute('aria-pressed', 'true');
+    await expect(map.getByText('Plany w obszarze: 2', { exact: true })).toBeVisible();
+    await favorites.click();
+    await expect(favorites).toHaveAttribute('aria-pressed', 'false');
+    await expect(map.getByText('Plany w obszarze: 13', { exact: true })).toBeVisible();
     const frame = page.frameLocator(
       'iframe[data-testid="discovery-map-frame"]',
     );

@@ -1,9 +1,10 @@
 import { CollectionScreen } from '@/components/ui/collection-screen';
 import { DataStatus } from '@/components/ui/data-status';
-import { Button, EmptyState } from '@/components/ui/primitives';
+import { Button, EmptyState, layout } from '@/components/ui/primitives';
 import { USE_DEMO_DATA } from '@/constants/app';
 import { ANIMAL_OPTIONS } from '@/features/animals/animal-data';
 import { useDiscovery } from '@/features/discovery/discovery-context';
+import { DiscoveryFavoritesButton } from '@/features/discovery/discovery-favorites-button';
 import {
   DiscoveryFilterBar,
   DiscoveryResultsHeader,
@@ -21,7 +22,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
-import { AppState, Platform } from 'react-native';
+import { AppState, Platform, View } from 'react-native';
 import { createPagedResource } from '@/lib/paged-resource';
 import { GroupCard } from './group-card';
 import {
@@ -235,7 +236,10 @@ export function GroupsDiscovery({
           />
           <DiscoveryResultsHeader
             title={hasLoaded ? 'Ekipy · ' + page.totalCount : 'Ekipy'}
-            action={<SavedFiltersButton kind="groups" onApply={applySavedFilterSet} />}
+            action={<View style={[layout.row, { gap: 4 }]}>
+              <SavedFiltersButton kind="groups" onApply={applySavedFilterSet} />
+              <DiscoveryFavoritesButton kind="groups" />
+            </View>}
           />
         </>
       }

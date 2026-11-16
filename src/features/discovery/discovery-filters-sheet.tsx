@@ -20,7 +20,7 @@ import { TripLandscapePicker } from '@/features/trips/trip-landscape-picker';
 import { TripLocationField } from '@/features/trips/trip-location-field';
 import type { ChildAgeBand, DiscoveryFilters } from '@/types/travel';
 import { useState } from 'react';
-import { Keyboard, Switch, View } from 'react-native';
+import { Keyboard, View } from 'react-native';
 import {
   clearDiscoveryDates,
   getDiscoveryDateRangeError,
@@ -162,16 +162,6 @@ export function DiscoveryFiltersSheet({
       }
     >
       <FavoritesNotice />
-      <View style={layout.row}>
-        <AppText style={{ flex: 1 }}>Tylko ulubione</AppText>
-        <Switch
-          accessibilityLabel="Tylko ulubione"
-          value={!!draft.favoritesOnly}
-          onValueChange={(favoritesOnly) =>
-            setDraft((current) => ({ ...current, favoritesOnly }))
-          }
-        />
-      </View>
       <View style={layout.stack}>
         <FieldLabel>Klimat wyjazdu</FieldLabel>
         <AppText variant="caption" color="textSecondary">

@@ -20,6 +20,7 @@ import {
 } from '@/features/trips/own-trips-state';
 import { TripLandscapePicker } from '@/features/trips/trip-landscape-picker';
 import { TripLocationField, type TripLocationFieldHandle } from '@/features/trips/trip-location-field';
+import { TripListAttribution } from '@/components/trips/location-attribution';
 import type { SelectedPlace } from '@/types/place';
 import {
   ownTripDates,
@@ -280,6 +281,7 @@ export function TripPublicationFields({
           locationLabel={ownTripPlace(preview)}
           datesLabel={ownTripDates(preview)}
         />
+        <TripListAttribution trips={[preview]}/>
       </ExpandableSection>
     </>
   );

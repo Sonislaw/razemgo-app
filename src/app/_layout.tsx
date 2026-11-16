@@ -146,6 +146,7 @@ function RootNavigator() {
           <Stack.Screen name="traveler-passport" />
           <Stack.Screen name="crew/[id]" />
           <Stack.Screen name="settings" />
+          <Stack.Screen name="data-sources" />
           <Stack.Screen name="notifications" />
           <Stack.Screen name="chat/[id]" />
           <Stack.Screen name="messaging-safety" />

@@ -1,4 +1,5 @@
 import { CollectionScreen } from '@/components/ui/collection-screen';
+import { TripListAttribution } from '@/components/trips/location-attribution';
 import { DataStatus } from '@/components/ui/data-status';
 import { Icon } from '@/components/ui/icon';
 import { IllustratedPageHeader } from '@/components/ui/illustrated-page-header';
@@ -305,7 +306,7 @@ function TripsContent() {
             </View>
           ) : null
         }
-      />
+      ><TripListAttribution trips={trips} bar /></CollectionScreen>
       {selected ? (
         <TripActions trip={selected} onClose={() => setSelectedId(null)} />
       ) : null}

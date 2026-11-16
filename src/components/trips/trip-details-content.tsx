@@ -23,6 +23,7 @@ export function TripDetailsContent({
   isOwn?: boolean;
   onOpenGroup: () => void;
 }) {
+  const place=trip.mode==='planned'?trip.destination.place:trip.travelArea.place;
   return (
     <>
       <View style={layout.stack}>
@@ -65,7 +66,7 @@ export function TripDetailsContent({
         </Card>
       </View>
       <TripWeatherCard trip={trip} />
-      <TripMapCard trip={trip} />
+      <TripMapCard trip={trip} showGeoapifyAttribution={place?.source!=='geoapify'} />
       <TripParticipantsCard value={trip.participants} animals={trip.animals} />
     </>
   );

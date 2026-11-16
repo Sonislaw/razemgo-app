@@ -12,6 +12,7 @@ import { DataStatus } from '@/components/ui/data-status';
 import { createPagedResource } from '@/lib/paged-resource';
 import { GroupAvatar } from '@/features/profile/group-avatar';
 import { getTripHeadline } from '@/features/trips/trip-headline';
+import { TripListAttribution, tripListHasGeoapify } from '@/components/trips/location-attribution';
 import { formatTripDates, getTripLocation } from '../filter-trips';
 import { fetchMapItems } from './map-repository';
 import { useTheme } from '@/hooks/use-theme';
@@ -100,8 +101,9 @@ export function MapSelection({
         ) : null}
       </Card>
     );
+  const listedTrips=page.items.map(item=>item.trip);
   return (
-    <BottomSheet title="Wyjazdy w tym miejscu" onClose={onClose}
+    <BottomSheet title="Wyjazdy w tym miejscu" onClose={onClose} footer={tripListHasGeoapify(listedTrips)?<TripListAttribution trips={listedTrips}/>:undefined}
       pagination={{itemCount:page.items.length,hasMore:page.hasMore,loading:state.loadingMore,
         disabled:state.status==='loading',error:state.error,resetKey:store,
         loadingLabel:'Wczytywanie kolejnych wyjazdów…',onLoadMore:store.more,onRetry:store.retry}}>

@@ -16,6 +16,7 @@ import { ShareLinkButton } from '@/features/sharing/share-link-button';
 import { View } from 'react-native';
 import { PassportCard } from '@/features/passport/passport-card';
 import { Shadows } from '@/constants/theme';
+import { TripListAttribution } from '@/components/trips/location-attribution';
 
 export default function PublicGroupScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -60,5 +61,5 @@ export default function PublicGroupScreen() {
     afterList={available ? <>
       <DataStatus status={status === 'loading' || (data.trips.length && data.hasMore) ? 'ready' : status} error={error} label="Wczytywanie ogłoszeń" onRetry={() => void retry()} />
     </> : null}
-  />;
+  ><TripListAttribution trips={available?data.trips.map(item=>item.trip):[]} bar safeBottom /></CollectionScreen>;
 }

@@ -41,6 +41,7 @@ import { DiscoveryMap } from '@/features/discovery/map/discovery-map';
 import { MapListLayer } from '@/features/discovery/map/map-list-layer';
 import type { MapMemory } from '@/features/discovery/map/map-data';
 import { USE_DEMO_DATA } from '@/constants/app';
+import { TripListAttribution } from '@/components/trips/location-attribution';
 
 export default function ExploreScreen() {
   const { openTrips } = useLocalSearchParams<{ openTrips?: string }>();
@@ -199,7 +200,7 @@ export default function ExploreScreen() {
               : <Button label="Pokaż wszystkie wyjazdy" onPress={reset} />}
           />
         )) : null}
-    /></MapListLayer>
+    ><TripListAttribution trips={proposals.map(proposal=>proposal.trip)} bar /></CollectionScreen></MapListLayer>
     {mapOpen?<DiscoveryMap key={JSON.stringify(discoveryFiltersPayload(filters))+':'+tripFilterRevision} memory={mapMemory} onRemember={setMapMemory} summary={summary} activeCount={activeCount}
       notice={filterSetExpired({kind:'trips',filters},today)?'Termin w tym zestawie już minął':undefined}
       onClose={closeTripMap} onNavigate={preserveOnReturn} />:null}

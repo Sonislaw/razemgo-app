@@ -11,6 +11,7 @@ import { PLACE_KIND_LABELS } from './place-data';
 import { createPlaceQueryCache } from './place-query-cache';
 import { resolveGeoapifyManualAddress } from './geoapify-place-repository';
 import { GeoapifyAttribution } from '@/components/trips/geoapify-attribution';
+import { GoogleMapsAttribution } from '@/components/trips/location-attribution';
 
 export function PlaceSuggestions({ query, mode, onSelect, initial, searchArea }: {
   query:string;mode:string;onSelect:(place:SelectedPlace)=>void;initial?:SelectedPlace;searchArea?:SelectedPlace;
@@ -76,6 +77,6 @@ export function PlaceSuggestions({ query, mode, onSelect, initial, searchArea }:
       <Button label="Spróbuj ponownie" variant="secondary" disabled={choosing} onPress={() => setRetry(value=>value+1)}/></> : null}
     <Button label="Nie ma tego miejsca? Dodaj ręcznie" variant="secondary" disabled={choosing} onPress={() => {selection.current?.abort();setManual(true);}}/>
     {unchangedSelection&&initial.source==='geoapify'?<GeoapifyAttribution/>:
-      <AppText style={{fontSize:14,fontWeight:'400',color:theme.textSecondary,textAlign:'right'}}>Google Maps</AppText>}
+      <View style={{alignItems:'flex-end'}}><GoogleMapsAttribution/></View>}
   </View>;
 }

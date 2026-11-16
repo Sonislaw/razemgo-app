@@ -220,7 +220,7 @@ for(const width of [320,390])test(`Geoapify flexible area keeps its full name an
   await expect(page.getByTestId('trip-map-card')).toContainText('obszar wyjazdu');
   expect(store.placeCalls??[]).toHaveLength(0);expect(store.areaCalls).toHaveLength(1);
   // A fresh application load must use the persisted name and point, not RAM.
-  await page.reload();await expect(page.getByTestId('trip-map-card')).toContainText('Geoapify');
+  await page.reload();await expect(page.getByTestId('geoapify-attribution')).toHaveCount(1);await expect(page.getByTestId('trip-map-card').getByTestId('geoapify-attribution')).toHaveCount(0);
   await expect(page.getByText('Kozienice i okolice · cel do ustalenia',{exact:true})).toBeAttached();
   expect(store.placeCalls??[]).toHaveLength(0);expect(store.areaCalls).toHaveLength(1);
   await edit(page);await openSuggestions(page,label);
@@ -245,7 +245,7 @@ for(const width of [320,390])test(`Odkrywaj reads the full Geoapify area name fr
   await page.setViewportSize({width,height:844});await backend(context,store);await mockMapTiles(context);await login(page);await page.goto('/explore');
   const screen=page.getByTestId('discovery-screen');await expect(screen).toContainText('Kozienice i okolice · cel do ustalenia');
   expect(store.placeCalls??[]).toHaveLength(0);expect(store.areaCalls??[]).toHaveLength(0);
-  await page.goto('/trip/'+id);await expect(page.getByTestId('trip-map-card')).toContainText('Geoapify');
+  await page.goto('/trip/'+id);await expect(page.getByTestId('geoapify-attribution')).toHaveCount(1);await expect(page.getByTestId('trip-map-card').getByTestId('geoapify-attribution')).toHaveCount(0);
   await expect(page.getByTestId('trip-google-map').frameLocator('iframe').locator('.google-map-canvas')).toBeAttached();
   expect(store.placeCalls??[]).toHaveLength(0);expect(store.areaCalls??[]).toHaveLength(0);
 });

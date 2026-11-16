@@ -79,7 +79,7 @@ export function TripListingCard({
         {openDetails ? <Pressable accessibilityRole="button" accessibilityLabel={'Otwórz wyjazd: ' + getTripHeadline(trip)}
           onPress={openDetails} style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>{headline}</Pressable> : headline}
         <View style={styles.metadata}>
-          <TripLocationSummary trip={trip} locationLabel={locationLabel} compact />
+          <TripLocationSummary trip={trip} locationLabel={locationLabel} compact showGeoapifyAttribution={false} />
           <View style={styles.metadataRow}>
             <TripPlanningIcon kind="dates" size={20} framed={false} />
             <AppText color="textSecondary" style={[styles.flex, styles.detailText]}>

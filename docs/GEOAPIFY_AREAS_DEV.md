@@ -117,6 +117,22 @@ usunięto. Porządki nie wymagały migracji ani nowego APK.
 
 Zmiana działa przez Metro; nie wymaga nowej biblioteki natywnej ani APK.
 
+## Oznaczenia źródeł w interfejsie
+
+Listy Odkrywaj, Moje wyjazdy i ogłoszenia ekipy mają jeden wspólny podpis
+Geoapify/OSM w widocznej stopce, zamiast podpisów na każdej karcie.
+Na Starcie i w podglądzie kreatora podpis jest pod pojedynczą kartą.
+W szczegółach podpis przy lokalizacji nie jest powtarzany przy mapie;
+mapa nadal zachowuje oznaczenia Google. Ręczny punkt geokodowany przez
+Geoapify zachowuje podpis przy mapie. Podpowiedzi mają jeden podpis pod
+zestawem wyników. Dane Google zachowują własne oznaczenie w swoim kontenerze,
+również w starszych mieszanych listach. Wpisy ręczne bez danych dostawcy
+nie tworzą stopki. Pełna informacja i odnośniki są w Ustawienia → Źródła danych.
+
+Test `scripts/browser/location-attribution.spec.mjs` sprawdza 320/390 px,
+przewijanie i paginację ze stałą stopką, oba typy ogłoszeń, profil ekipy,
+własne i ręczne wpisy, mieszane dane Google/Geoapify, mapę oraz nową stronę.
+
 Źródła: [Autocomplete](https://apidocs.geoapify.com/docs/geocoding/address-autocomplete/),
 [przechowywanie wyników](https://www.geoapify.com/address-autocomplete/#:~:text=Affordable%20and%20Permissive),
 [atrybucja](https://www.geoapify.com/terms-and-conditions/).

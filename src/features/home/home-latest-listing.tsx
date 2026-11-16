@@ -5,6 +5,7 @@ import { FavoriteButton } from '@/features/favorites/favorite-button';
 import type { TravelGroup, TripPlan } from '@/types/travel';
 import { View } from 'react-native';
 import { TripReactionsButton } from '@/features/reactions/trip-reactions';
+import { TripListAttribution } from '@/components/trips/location-attribution';
 
 export function HomeLatestListing({ trip, group, travelModes, isOwn, onPress }: {
   trip: TripPlan;
@@ -13,7 +14,7 @@ export function HomeLatestListing({ trip, group, travelModes, isOwn, onPress }: 
   isOwn: boolean;
   onPress: () => void;
 }) {
-  return (
+  return (<View style={{gap:6}}>
     <TripListingCard
       testID="home-latest-listing"
       trip={trip}
@@ -29,5 +30,7 @@ export function HomeLatestListing({ trip, group, travelModes, isOwn, onPress }: 
         <TripListingAction label="Zobacz wyjazd" onPress={onPress} />
       </View>}
     />
+    <TripListAttribution trips={[trip]}/>
+    </View>
   );
 }

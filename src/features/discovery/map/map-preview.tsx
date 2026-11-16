@@ -13,6 +13,7 @@ import { getTripHeadline } from '@/features/trips/trip-headline';
 import { formatTripDates, getTripLocation } from '../filter-trips';
 import { LandscapePhoto } from '@/components/trips/landscape-photo';
 import type { MapProposal } from './map-data';
+import { TripListAttribution } from '@/components/trips/location-attribution';
 
 export function MapPreview({
   item,
@@ -53,6 +54,7 @@ export function MapPreview({
           onPress={onClose}
         />
       </View>
+      <TripListAttribution trips={[trip]}/>
       <View style={layout.row}>
         <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={28} />
         <View style={{ flex: 1, minWidth: 0 }}>

@@ -7,11 +7,13 @@ import type { TripPlan } from '@/types/travel';
 import { useLivePlace } from '@/features/trips/use-live-place';
 import { areaPlaceLabel } from '@/features/trips/place-data';
 import { GeoapifyAttribution } from './geoapify-attribution';
+import { GoogleMapsAttribution } from './location-attribution';
 
-export function TripLocationSummary({ trip, locationLabel, compact = false }: {
+export function TripLocationSummary({ trip, locationLabel, compact = false, showGeoapifyAttribution=true }: {
   trip: TripPlan;
   locationLabel?: string;
   compact?: boolean;
+  showGeoapifyAttribution?: boolean;
 }) {
   const theme = useTheme();
   const original=trip.mode==='planned' ? trip.destination : trip.travelArea;
@@ -42,8 +44,8 @@ export function TripLocationSummary({ trip, locationLabel, compact = false }: {
         </View>
       ) : null}
       {address ? <AppText color="textSecondary" style={[styles.detailSecondary, styles.address]}>{address}</AppText> : null}
-      {place?.source==='google' ? <AppText style={{fontSize:12,fontWeight:'400',color:theme.textSecondary,marginLeft:30}}>Google Maps</AppText> : null}
-      {place?.source==='geoapify' ? <View style={{marginLeft:30}}><GeoapifyAttribution/></View> : null}
+      {place?.source==='google' ? <View style={{marginLeft:30}}><GoogleMapsAttribution/></View> : null}
+      {showGeoapifyAttribution&&place?.source==='geoapify' ? <View style={{marginLeft:30}}><GeoapifyAttribution/></View> : null}
     </View>
   );
 }

@@ -111,6 +111,7 @@ export default function SettingsScreen() {
           variant="secondary"
           onPress={openSafety}
         />
+        <Button label="Źródła danych" icon="map" variant="secondary" onPress={()=>router.push('/data-sources')}/>
         {IS_DEMO_MODE ? (
           <View style={{ gap: 8 }}>
             <DemoBadge />

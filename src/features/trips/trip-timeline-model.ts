@@ -2,6 +2,10 @@ import type { DateRange } from '../../types/travel';
 import { isValidDate } from './own-trips-state.ts';
 
 export type TimelineTrip = DateRange & { status?: string };
+export interface TripHighlight {
+  kind: 'departure' | 'ongoing';
+  label: string;
+}
 export interface TimelineMarker {
   key: 'today' | 'start' | 'end';
   label: string;
@@ -31,11 +35,28 @@ function shortDate(value: string, showYear: boolean) {
   return `${Number(value.slice(8))} ${MONTHS[Number(value.slice(5, 7)) - 1]}${showYear ? ' ’' + value.slice(2, 4) : ''}`;
 }
 
+function tripDayOffsets({ startDate, endDate }: DateRange, today: string) {
+  if (!isValidDate(today) || !isValidDate(startDate) || !isValidDate(endDate) || endDate <= startDate) return null;
+  const currentDay = day(today);
+  return { daysUntilStart: day(startDate) - currentDay, daysUntilEnd: day(endDate) - currentDay };
+}
+
+export function getTripHighlight(trip: TimelineTrip, today: string): TripHighlight | undefined {
+  if (trip.status && trip.status !== 'published') return;
+  const offsets = tripDayOffsets(trip, today);
+  if (!offsets || offsets.daysUntilEnd <= 0 || offsets.daysUntilStart > 14) return;
+  const { daysUntilStart } = offsets;
+  if (daysUntilStart < 0) return { kind: 'ongoing', label: 'Wyjazd trwa' };
+  if (daysUntilStart === 0) return { kind: 'departure', label: 'Start dziś!' };
+  if (daysUntilStart === 1) return { kind: 'departure', label: 'Już jutro!' };
+  return { kind: 'departure', label: `Już za ${daysUntilStart} dni!` };
+}
+
 export function getTripTimeline(trip: TimelineTrip, today: string): TripTimelineModel | null {
   const { startDate, endDate, status } = trip;
-  if (!isValidDate(today) || !isValidDate(startDate) || !isValidDate(endDate) || endDate <= startDate) return null;
-  const daysUntilStart = day(startDate) - day(today);
-  const daysUntilEnd = day(endDate) - day(today);
+  const offsets = tripDayOffsets(trip, today);
+  if (!offsets) return null;
+  const { daysUntilStart, daysUntilEnd } = offsets;
   const phase = daysUntilStart > 0 ? 'upcoming' : daysUntilEnd > 0 ? 'ongoing' : 'past';
   const muted = status === 'cancelled' || status === 'completed' || phase === 'past';
   const caption = status === 'cancelled' ? 'Wyjazd anulowany'

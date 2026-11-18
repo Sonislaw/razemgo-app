@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {getTripTimeline} from '../src/features/trips/trip-timeline-model.ts';
+import {getTripHighlight,getTripTimeline} from '../src/features/trips/trip-timeline-model.ts';
 
 const range=(startDate,endDate,status)=>({startDate,endDate,status});
 
@@ -33,7 +33,10 @@ test('starting today combines coincident markers and an ongoing trip puts today 
   assert.equal(getTripTimeline(range('2026-10-24','2026-10-27'),'2026-10-26').caption,'Trwa · jeszcze 1 dzień');
 });
 test('checkout is exclusive and completed trips show elapsed days rather than future countdowns',()=>{
-  const end=getTripTimeline(range('2026-10-23','2026-10-26'),'2026-10-26');
+  const trip=range('2026-10-23','2026-10-26','published');
+  const end=getTripTimeline(trip,'2026-10-26');
+  assert.equal(getTripHighlight(trip,'2026-10-25')?.kind,'ongoing');
+  assert.equal(getTripHighlight(trip,'2026-10-26'),undefined);
   assert.equal(end.phase,'past');assert.equal(end.caption,'Zakończony dziś');assert.equal(end.muted,true);
   assert.equal(end.markers.at(-1).label,'Dziś · koniec');assert.equal(end.markers.length,2);
   assert.equal(getTripTimeline(range('2026-10-23','2026-10-25'),'2026-10-26').caption,'Zakończony wczoraj');

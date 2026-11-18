@@ -5,6 +5,7 @@ import { TripListingAction, TripListingCard } from './trip-listing-card';
 import { CardShareActions } from '@/features/sharing/card-share-actions';
 import { View } from 'react-native';
 import { TripReactionsButton, TripReactionsPreview } from '@/features/reactions/trip-reactions';
+import { getTripHighlight } from '@/features/trips/trip-timeline-model';
 
 interface DiscoveryTripCardProps extends TripProposal {
   onNavigate?: () => void;
@@ -12,9 +13,10 @@ interface DiscoveryTripCardProps extends TripProposal {
   testID?: string;
   locationLabel?: string;
   datesLabel?: string;
+  highlightDate?: string;
 }
 
-export const DiscoveryTripCard = memo(function DiscoveryTripCard({ trip, group, onNavigate, preview = false, testID, locationLabel, datesLabel }: DiscoveryTripCardProps) {
+export const DiscoveryTripCard = memo(function DiscoveryTripCard({ trip, group, onNavigate, preview = false, testID, locationLabel, datesLabel, highlightDate }: DiscoveryTripCardProps) {
   const openTrip = () => {
     onNavigate?.();
     router.push({ pathname: '/trip/[id]', params: { id: trip.id } });
@@ -29,6 +31,7 @@ export const DiscoveryTripCard = memo(function DiscoveryTripCard({ trip, group, 
       onPressDetails={preview ? undefined : openTrip}
       locationLabel={locationLabel}
       datesLabel={datesLabel}
+      highlight={highlightDate ? getTripHighlight(trip, highlightDate) : undefined}
       onPressGroup={() => { onNavigate?.(); router.push({ pathname: '/crew/[id]', params: { id: group.id } }); }}
       travelModes={trip.travelModes}
       favoriteAction={<CardShareActions kind="trip" targetId={trip.id} preview={preview} />}

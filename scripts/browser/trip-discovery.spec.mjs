@@ -44,6 +44,72 @@ function seed(store, n = 13) {
     });
   }
 }
+test('discovery highlights upcoming and ongoing trips without covering card actions', async ({ page, context }) => {
+  const store = state();
+  seed(store, 1);
+  const sample = store.trips.get(uuid(8000));
+  for (const [id, start, end] of [
+    [8000, '2026-11-09', '2026-11-12'],
+    [8001, '2026-11-10', '2026-11-13'],
+    [8002, '2026-10-27', '2026-10-30'],
+    [8003, '2026-10-26', '2026-10-30'],
+    [8004, '2026-10-25', '2026-10-30'],
+  ]) {
+    store.trips.set(uuid(id), { ...sample, id: uuid(id), start_date: start, end_date: end });
+  }
+  store.trips.set(uuid(9000), {
+    ...sample, id: uuid(9000), mode: 'flexible', campground_name: '',
+    start_date: '2026-11-04', end_date: '2026-11-08',
+  });
+  store.trips.set(uuid(9001), {
+    ...sample, id: uuid(9001), mode: 'flexible', campground_name: '',
+    start_date: '2026-10-23', end_date: '2026-10-29',
+  });
+  const times = await page.evaluate(() => ({
+    today: new Date(2026, 9, 26, 12).toISOString(),
+    tomorrow: new Date(2026, 9, 27, 0, 1).toISOString(),
+  }));
+  await backend(context, store);
+  await login(page);
+  await page.clock.setFixedTime(new Date(times.today));
+  await page.goto('/explore');
+  const screen = page.getByTestId('discovery-screen');
+  const card = (id) => screen.getByTestId('discovery-trip-' + uuid(id));
+  const highlight = (id) => card(id).getByText(/^(Już (za \d+ dni|jutro)!|Start dziś!|Wyjazd trwa)$/);
+  await expect(highlight(9000)).toHaveText('Już za 9 dni!');
+  await expect(highlight(9001)).toHaveText('Wyjazd trwa');
+
+  await screen.getByRole('radio', { name: 'Mam plan', exact: true }).click();
+  await expectLoaded(screen, 5);
+  await expect(highlight(8000)).toHaveText('Już za 14 dni!');
+  await expect(card(8000)).toHaveCSS('border-top-width', '2px');
+  await expect(card(8000)).toHaveCSS('border-top-color', 'rgb(254, 136, 30)');
+  await expect(card(8001)).toHaveCSS('border-top-width', '1px');
+  await expect(highlight(8001)).toHaveCount(0);
+  await expect(highlight(8002)).toHaveText('Już jutro!');
+  await expect(highlight(8003)).toHaveText('Start dziś!');
+  await expect(card(8004)).toHaveCSS('border-top-color', 'rgb(89, 188, 87)');
+  await expect(highlight(8004)).toHaveText('Wyjazd trwa');
+  await expect(card(8004).getByTestId('trip-timeline')).toContainText('Trwa · jeszcze 4 dni');
+
+  const favorite = card(8004).getByRole('button', { name: 'Dodaj wyjazd do ulubionych', exact: true });
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await scrollToRow(screen, card(8004));
+    await favorite.click({ trial: true });
+    const labelBox = await highlight(8004).boundingBox();
+    const actionBox = await favorite.boundingBox();
+    expect(labelBox.y + labelBox.height).toBeLessThan(actionBox.y);
+    await page.screenshot({ path: `.expo/discovery-ongoing-${width}.png` });
+  }
+
+  await page.clock.setFixedTime(new Date(times.tomorrow));
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await expect(highlight(8000)).toHaveText('Już za 13 dni!');
+  await expect(highlight(8001)).toHaveText('Już za 14 dni!');
+  await expect(highlight(8003)).toHaveText('Wyjazd trwa');
+});
+
 for (const width of [320, 390]) test(`discovery separates ideas from plans and keeps one type selected at ${width}px`, async ({page,context}) => {
   await page.setViewportSize({width,height:844});
   const store=state(); seed(store);

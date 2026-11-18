@@ -140,8 +140,10 @@ export default function ExploreScreen() {
       pagination={{itemCount:proposals.length,hasMore,loading:loadingMore,disabled:status==='loading',error,
         enabled:!mapOpen,resetKey:loadMore,loadingLabel:'Wczytywanie kolejnych ogłoszeń…',onLoadMore:loadMore,onRetry:retry}}
       keyExtractor={proposal => proposal.trip.id}
-      renderItem={({ item: proposal }) => <DiscoveryTripCard {...proposal}
-        onNavigate={preserveOnReturn} />}
+      renderItem={({ item: proposal }) => (
+        <DiscoveryTripCard {...proposal} onNavigate={preserveOnReturn}
+          highlightDate={today} />
+      )}
       beforeList={<>
       {switcher}
       <DiscoveryTripModeSwitch value={tripMode} onChange={mode =>

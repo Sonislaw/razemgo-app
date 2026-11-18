@@ -11,6 +11,8 @@ import { GroupAvatar } from '@/features/profile/group-avatar';
 import { useGroupOnline } from '@/features/presence/presence-context';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
 import { getTripHeadline } from '@/features/trips/trip-headline';
+import type { TripHighlight } from '@/features/trips/trip-timeline-model';
+import { BrandPalette } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { TravelGroup, TripPlan } from '@/types/travel';
 import { TripCover } from './trip-cover';
@@ -27,6 +29,7 @@ interface TripListingCardProps {
   children?: ReactNode;
   locationLabel?: string;
   datesLabel?: string;
+  highlight?: TripHighlight;
   onPress?: () => void;
   onPressDetails?: () => void;
   onPressGroup?: () => void;
@@ -48,6 +51,7 @@ export function TripListingCard({
   children,
   locationLabel,
   datesLabel,
+  highlight,
   onPress,
   onPressDetails,
   onPressGroup,
@@ -126,10 +130,22 @@ export function TripListingCard({
       </View>
     </>
   );
+  const ongoing = highlight?.kind === 'ongoing';
   const cardStyle = [
     styles.card,
     { backgroundColor: theme.backgroundElement, borderColor: theme.border },
+    !!highlight && [
+      styles.highlightedCard,
+      ongoing ? styles.ongoingCard : styles.departureCard,
+      { borderColor: ongoing ? theme.community : theme.energy },
+    ],
   ];
+  const highlightBadge = highlight ? (
+    <View pointerEvents="none" style={[styles.highlightBadge, ongoing ? styles.ongoingBadge : styles.departureBadge]}>
+      <Icon name={ongoing ? 'clock' : 'calendar'} size={16} color="#FFFFFF" />
+      <AppText variant="label" style={styles.highlightLabel}>{highlight.label}</AppText>
+    </View>
+  ) : null;
   const footerContent = footer ? <View style={[
     styles.footer, { marginHorizontal: 8 },
     !group && { marginTop: 10, borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 8 },
@@ -137,6 +153,7 @@ export function TripListingCard({
   // Footer actions and favorite remain siblings of the main button on native and web.
   if (onPress) return (
     <View testID={testID} nativeID={nativeID} style={cardStyle}>
+      {highlightBadge}
       <Pressable accessibilityRole="button"
         disabled={disabled} accessibilityState={{ disabled }}
         accessibilityLabel={accessibilityLabel ? accessibilityLabel + (online ? '. Ekipa online' : '') : undefined}
@@ -146,7 +163,7 @@ export function TripListingCard({
       {footerContent}
     </View>
   );
-  return <View testID={testID} nativeID={nativeID} style={cardStyle}>{content}{footerContent}</View>;
+  return <View testID={testID} nativeID={nativeID} style={cardStyle}>{highlightBadge}{content}{footerContent}</View>;
 }
 
 export function TripListingAction({ label, onPress, accessibilityLabel = label }: {
@@ -175,6 +192,18 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderRadius: 24, padding: 6,
     boxShadow: '0 4px 20px rgba(36, 56, 66, 0.08)',
   },
+  highlightedCard: { marginTop: 12, borderWidth: 2 },
+  departureCard: { boxShadow: '0 5px 20px rgba(229, 115, 22, 0.20)' },
+  ongoingCard: { boxShadow: '0 5px 20px rgba(40, 122, 49, 0.18)' },
+  // Keep the badge in the layout so larger text also leaves room for the cover actions.
+  highlightBadge: {
+    zIndex: 1, alignSelf: 'flex-end', marginTop: -18, marginRight: 8, marginBottom: -4,
+    maxWidth: '100%', flexDirection: 'row', alignItems: 'center', gap: 6,
+    borderRadius: 999, borderBottomLeftRadius: 5, paddingHorizontal: 12, paddingVertical: 4,
+  },
+  departureBadge: { backgroundColor: '#BC460C', boxShadow: '0 3px 8px rgba(150, 55, 12, 0.2)' },
+  ongoingBadge: { backgroundColor: BrandPalette.greenAction, boxShadow: '0 3px 8px rgba(40, 122, 49, 0.2)' },
+  highlightLabel: { color: '#FFFFFF', fontWeight: '700', flexShrink: 1 },
   favoriteSpace: { width: 44, height: 44 },
   cardFavoriteAction: { position: 'absolute', top: 14, right: 14 },
   content: { padding: 8, paddingBottom: 0, gap: 10 },

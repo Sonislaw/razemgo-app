@@ -1,5 +1,16 @@
 # RazemGo Dev i Preview
 
+**Aktualne wydanie Preview — 18.11.2026:** [Preview 1.8.1 (11)](RELEASE_1.8.1.md)
+jest gotowe do pobrania i naprawia awarię przy uruchamianiu 1.8.0. Backend Preview
+ma 69 migracji. Zachowano pakiet i podpis aplikacji; wydanie można instalować
+jako aktualizację. Dev nadal korzysta z Metro. Nowy zestaw danych Preview to
+30 ekip i 30 ogłoszeń; zachowano cztery pozostałe konta i ich wiadomości.
+Trzy starty APK i odtworzenie sesji przeszły na Androidzie. Po uzupełnieniu
+autoryzacji klucza Google Cloud potwierdzono mapę, znaczniki 10 wyjazdów
+i przejście ze znacznika do szczegółów ogłoszenia w tym samym APK.
+
+Poniższe datowane wpisy przedstawiają historię wdrożeń.
+
 **Bieżące zmiany Dev — 1.11.2026:** edycja „O mojej ekipie” znajduje się w głównej sekcji **Mój profil → Edytuj profil**. Ekran „Profil publiczny” i wybór widoczności zostały usunięte. Każdy profil jest dostępny dla innych zalogowanych podróżników; blokady i moderacja nadal obowiązują. Automatyczne propozycje stosują termin i kierunek/region, bez dawnych preferencji rodzaju ekipy i wieku dzieci. Migracje `202611010001_profile_about.sql`, `202611010002_always_visible_groups.sql` i `202611010003_proposal_criteria.sql` wdrożono wyłącznie na Dev: ma 45 migracji, Preview zachowuje 42. Zmiany wymagają odświeżenia aplikacji, bez nowego APK Dev. Przy przyszłej promocji do Preview należy uwzględnić wszystkie trzy migracje. [Kontrakty zapisu i dostępności](GROUPS.md), [propozycje](PROPOSAL_NOTIFICATIONS.md).
 
 Stan wydania **1.4.0** z 31.10.2026: oba backendy miały **42 migracje**, do `202610310007_sync_domains.sql`. Preview otrzymało siedem migracji z Dev, bez resetu i kopiowania danych. Nowe APK to **Preview 1.4.0 (7)** oraz **Dev 1.4.0 (3)**; oba zachowują swoje pakiety i podpisy. Zaktualizowane moduły natywne wymagają instalacji nowego APK Dev. [Linki, kontrole i ograniczenia wydania](RELEASE_1.4.0.md).

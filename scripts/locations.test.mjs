@@ -161,6 +161,7 @@ test('switching to a concrete plan clears broad locations and preserves concrete
   const base = {
     mode: 'flexible',
     locationId: 'pl-region:pomorskie',
+    searchArea: undefined,
     campgroundName: '',
     startDate: '2027-05-21',
     endDate: '2027-05-24',

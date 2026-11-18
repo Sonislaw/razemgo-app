@@ -280,6 +280,26 @@
     "roles": []
   },
   {
+    "schema": "geoapify_private",
+    "name": "record_places",
+    "arguments": "cache_key text, payload jsonb",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "geoapify_private",
+    "name": "record_search",
+    "arguments": "cache_key text, payload jsonb",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
     "schema": "messaging_private",
     "name": "collection_changed",
     "arguments": "",
@@ -801,7 +821,7 @@
     "schema": "places_private",
     "name": "normalize_place",
     "arguments": "p jsonb",
-    "definer": false,
+    "definer": true,
     "settings": [
       "search_path=\"\""
     ],
@@ -887,6 +907,30 @@
   },
   {
     "schema": "public",
+    "name": "claim_api_cache_refresh",
+    "arguments": "cache_key text, refresh_id uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "claim_geoapify_provider_request",
+    "arguments": "",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
+    ]
+  },
+  {
+    "schema": "public",
     "name": "claim_my_place_request",
     "arguments": "",
     "definer": true,
@@ -913,6 +957,18 @@
     "schema": "public",
     "name": "claim_push_health_alerts",
     "arguments": "active_codes text[]",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "commit_api_cache_refresh",
+    "arguments": "cache_key text, refresh_id uuid, payload jsonb",
     "definer": true,
     "settings": [
       "search_path=\"\""
@@ -1063,6 +1119,42 @@
     ],
     "roles": [
       "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_geoapify_area",
+    "arguments": "area_id text",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_geoapify_search_cache",
+    "arguments": "cache_key text",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_google_place_geometry",
+    "arguments": "place_id text",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
     ]
   },
   {
@@ -1245,6 +1337,18 @@
   },
   {
     "schema": "public",
+    "name": "get_my_trip_weather_context",
+    "arguments": "target_trip_id uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
     "name": "get_my_tutorial_state",
     "arguments": "",
     "definer": true,
@@ -1361,6 +1465,30 @@
     ],
     "roles": [
       "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_trip_weather_cache",
+    "arguments": "cache_key text",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "get_weather_component",
+    "arguments": "cache_key text, component text",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
     ]
   },
   {
@@ -1554,6 +1682,18 @@
   },
   {
     "schema": "public",
+    "name": "put_trip_weather_cache",
+    "arguments": "cache_key text, forecast jsonb",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
+    ]
+  },
+  {
+    "schema": "public",
     "name": "record_google_place_geometry",
     "arguments": "place_id text, latitude double precision, longitude double precision, bounds jsonb",
     "definer": true,
@@ -1646,6 +1786,18 @@
     ],
     "roles": [
       "authenticated"
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "release_api_cache_refresh",
+    "arguments": "cache_key text, refresh_id uuid, failed boolean",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": [
+      "service_role"
     ]
   },
   {
@@ -2054,6 +2206,16 @@
     "schema": "reactions_private",
     "name": "summary",
     "arguments": "me uuid, target uuid",
+    "definer": true,
+    "settings": [
+      "search_path=\"\""
+    ],
+    "roles": []
+  },
+  {
+    "schema": "weather_private",
+    "name": "expire_cache",
+    "arguments": "",
     "definer": true,
     "settings": [
       "search_path=\"\""

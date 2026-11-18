@@ -4,7 +4,11 @@ Aktualny podział na niezależne Dev i Preview opisano w [Środowiska](ENVIRONME
 
 Profil `preview` buduje podpisany APK z kodem JavaScript i ilustracjami wewnątrz aplikacji. Nie wymaga Expo Go, Metro ani komputera. Internet nadal jest potrzebny do Supabase, Google, wiadomości, map i push. Konfiguracja dystrybucji odpowiada [EAS internal distribution](https://docs.expo.dev/build/internal-distribution/).
 
-Aktualne wydanie: **[Preview 1.2.0 (5) — pobierz APK](https://expo.dev/artifacts/eas/98uxA1QnwXv0DGDIqGs98ViMg3QyA0nnuaZ5IZvD5sw.apk)**. Zakres i wyniki kontroli: [RELEASE_1.2.0.md](RELEASE_1.2.0.md).
+Aktualne wydanie: **[Preview 1.8.1 (11) — pobierz APK](https://expo.dev/artifacts/eas/6ZmIBnCVymgiy4nidtL9FB4qvKegaKbXOTFASndVyJs.apk)**. Naprawiono awarię uruchamiania 1.8.0; trzy rzeczywiste starty gotowego APK przeszły na emulatorze Androida. Zachowano pakiet, podpis i sesję. Po uzupełnieniu ustawień klucza Google Cloud mapa, znaczniki 10 wyjazdów i otwieranie szczegółów działają poprawnie. Kontrole i konfiguracja: [RELEASE_1.8.1.md](RELEASE_1.8.1.md).
+
+17.11.2026 zastąpiono wcześniejsze dane demonstracyjne: Preview ma 30 nowych ekip
+i 30 ogłoszeń (10 „Mam plan”, 20 „Szukam pomysłu”). Zachowano cztery pozostałe
+konta i 49 wiadomości. Poniższy wpis z 27.10 opisuje historyczny zestaw danych.
 
 ## Środowisko
 
@@ -55,6 +59,18 @@ npm run build:preview
 Sekretnego pliku Firebase nie pobiera `env:pull`; lokalna kontrola używa ignorowanego `google-services.json`. EAS udostępnia plik przez `GOOGLE_SERVICES_JSON` podczas buildu. `app.config.js` sprawdza konfigurację ponownie na serwerze EAS i przerywa build preview przy brakujących wartościach, niewłaściwym kluczu lub pliku Firebase. Konfiguracja używa [zmiennych EAS](https://docs.expo.dev/eas/environment-variables/usage/), a nie pliku `.env.local` wysyłanego z komputera.
 
 Budowanie nie publikuje aplikacji w Google Play i nie uruchamia EAS Update. Zmiany kodu w tej wersji wymagają kolejnego APK. Po zakończeniu EAS udostępnia stronę instalacji i link do pobrania; przekaż testerom link do konkretnego wydania.
+
+Przed przekazaniem linku pobierz gotowy APK i sprawdź jego rzeczywisty start
+na Androidzie. Ten krok jest wymagany także po udanym buildzie i kontroli
+zawartości APK: awaria R8 w 1.8.0 wystąpiła dopiero w natywnym wydaniu.
+
+```powershell
+npm run test:android:startup -- --apk .expo/releases/razemgo-preview-WERSJA-KOD.apk --serial emulator-5554
+```
+
+Kontrola instaluje aktualizację bez czyszczenia danych i sprawdza trzy zimne
+uruchomienia, obecność ekranu powitalnego lub głównego i przetrwanie procesu.
+Diagnostyka pozostaje w ignorowanym `.expo/android-startup/preview/`.
 
 ## Krótki scenariusz na dwóch telefonach
 

@@ -19,6 +19,7 @@ for (const width of [320, 390]) test(`trip sorting: global date order, paging an
   test.setTimeout(120000);
   await page.setViewportSize({width, height: 844});
   const store = state(); seed(store); await backend(context, store); await login(page); await page.goto('/explore');
+  await page.getByRole('radio', {name: 'Mam plan', exact: true}).click();
   const screen = page.getByTestId('discovery-screen');
   const cards = screen.locator('[data-testid^="discovery-trip-"]');
   const sort = page.getByRole('button', {name: 'Sortuj wyjazdy', exact: true});

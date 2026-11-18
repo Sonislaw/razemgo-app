@@ -24,6 +24,7 @@ for (const width of [320, 390]) test(`quick dates: horizontal shortcuts update r
   test.setTimeout(120000);
   await page.setViewportSize({width, height: 844});
   const store = state(); seed(store); await backend(context, store); await login(page); await page.goto('/explore');
+  await page.getByRole('radio', {name: 'Mam plan', exact: true}).click();
   const screen = page.getByTestId('discovery-screen');
   const strip = page.getByTestId('discovery-quick-dates');
   const chip = label => strip.getByRole('button', {name: label, exact: true});

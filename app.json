@@ -2,7 +2,7 @@
   "expo": {
     "name": "RazemGo",
     "slug": "razemgo",
-    "version": "1.7.0",
+    "version": "1.8.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "razemgo",
@@ -45,6 +45,14 @@
       "expo-image",
       "expo-font",
       "expo-web-browser",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraProguardRules": "# WorkManager 2.9.1 (react-native-maps) instantiates Room and input mergers by reflection.\n-keep class * extends androidx.room.RoomDatabase { public <init>(); }\n-keep class * extends androidx.work.InputMerger { public <init>(); }\n"
+          }
+        }
+      ],
       [
         "expo-notifications",
         {

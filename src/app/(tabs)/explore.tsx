@@ -60,6 +60,7 @@ export default function ExploreScreen() {
   );
   const dateRange = resolveDiscoveryRange(filters);
   const tripMode = discoveryTripMode(filters);
+  const showMapButton = tripMode === 'planned' && !USE_DEMO_DATA && googleMapAvailable;
   const activeCount =
     Number(filters.dateRangeId !== 'all') +
     Number(Boolean(filters.location.trim())) +
@@ -165,10 +166,10 @@ export default function ExploreScreen() {
           </View>
         ) : null}
         <DiscoveryFilterBar activeCount={activeCount} summary={summary} placeholder="Termin, miejsce i klimat"
-          action={USE_DEMO_DATA||!googleMapAvailable?undefined:<Pressable accessibilityRole="button" accessibilityLabel="Pokaż mapę wyjazdów" onPress={openTripMap}
+          action={showMapButton ? <Pressable accessibilityRole="button" accessibilityLabel="Pokaż mapę wyjazdów" onPress={openTripMap}
             style={({pressed})=>({minHeight:56,minWidth:48,alignItems:'center',justifyContent:'center',gap:3,opacity:pressed?0.65:1})}>
             <Icon name="map" size={21} color={theme.primaryStrong} /><AppText variant="caption" style={{color:theme.primaryStrong}}>Mapa</AppText>
-          </Pressable>}
+          </Pressable> : null}
           savedSetName={activeTripSet?.name}
           notice={filterSetExpired({ kind: 'trips', filters }, today) ? 'Termin w tym zestawie już minął' : undefined}
           filterHint="Wybierz klimat, termin, miejsce i wiek dzieci"

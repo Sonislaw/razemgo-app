@@ -1,4 +1,5 @@
-import { StyleSheet, View } from 'react-native';
+import type { Ref } from 'react';
+import { Pressable, StyleSheet, View, type LayoutChangeEvent, type ViewInstance } from 'react-native';
 import { Icon } from '@/components/ui/icon';
 import { AppText } from '@/components/ui/primitives';
 import { getTripLocation } from '@/features/discovery/filter-trips';
@@ -18,11 +19,16 @@ function locationName(place:SelectedPlace){
   return place.name+(context?' ('+context+')':'');
 }
 
-export function TripLocationSummary({ trip, locationLabel, compact = false, showGeoapifyAttribution=true }: {
+export function TripLocationSummary({
+  trip, locationLabel, compact = false, showGeoapifyAttribution = true, onOpenLocation, anchorRef, onLayout,
+}: {
   trip: TripPlan;
   locationLabel?: string;
   compact?: boolean;
   showGeoapifyAttribution?: boolean;
+  onOpenLocation?: () => void;
+  anchorRef?: Ref<ViewInstance>;
+  onLayout?: (event: LayoutChangeEvent) => void;
 }) {
   const theme = useTheme();
   const original=trip.mode==='planned' ? trip.destination : trip.travelArea;
@@ -33,11 +39,33 @@ export function TripLocationSummary({ trip, locationLabel, compact = false, show
   const plannedLocality=!compact&&trip.mode==='planned'&&trip.searchArea?.kind==='locality'?trip.searchArea:undefined;
   const name=place?locationName(place):undefined;
   const title=trip.mode==='flexible'&&place?areaPlaceLabel(name!,place.kind):name??locationLabel??getTripLocation(trip);
+  const surface = { backgroundColor: theme.backgroundSelected, borderLeftColor: theme.primaryStrong };
+  const exactPlace = trip.mode === 'planned' && (
+    trip.campgroundName?.trim() || trip.campgroundAddress?.trim() ||
+    (original.place?.scope !== 'area' && (
+      original.place?.kind === 'campground' || original.place?.kind === 'place' || original.place?.address.trim()
+    ))
+  );
+  if (compact && exactPlace && onOpenLocation) return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={'Zobacz dokładne miejsce: ' + title}
+      onPress={onOpenLocation}
+      style={({ pressed }) => [styles.container, styles.row, styles.locationAction, surface, pressed && styles.pressed]}
+    >
+      <Icon name="pin" size={20} />
+      <View style={styles.text}>
+        <AppText color="primaryStrong" style={styles.location}>{title}</AppText>
+        <AppText variant="caption" color="primaryStrong" style={styles.actionLabel}>Zobacz dokładne miejsce</AppText>
+      </View>
+      <Icon name="chevron" size={18} />
+    </Pressable>
+  );
   return (
-    <View style={[
+    <View ref={anchorRef} onLayout={onLayout} collapsable={anchorRef ? false : undefined} style={[
       styles.container,
       !compact && styles.details,
-      { backgroundColor: theme.backgroundSelected, borderLeftColor: theme.primaryStrong },
+      surface,
     ]}>
       <View style={styles.row}>
         <Icon name="pin" size={compact ? 20 : 22} />
@@ -66,6 +94,9 @@ const styles = StyleSheet.create({
   container: { borderRadius: 12, borderLeftWidth: 3, padding: 10, gap: 4 },
   details: { padding: 14, gap: 6 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  locationAction: { minHeight: 48 },
+  actionLabel: { textDecorationLine: 'underline' },
+  pressed: { opacity: 0.72 },
   text: { flex: 1, minWidth: 0 },
   location: { fontSize: 14, lineHeight: 21, fontWeight: '600' },
   detailLocation: { fontSize: 16, lineHeight: 24 },

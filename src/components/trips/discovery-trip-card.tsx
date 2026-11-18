@@ -21,6 +21,10 @@ export const DiscoveryTripCard = memo(function DiscoveryTripCard({ trip, group, 
     onNavigate?.();
     router.push({ pathname: '/trip/[id]', params: { id: trip.id } });
   };
+  const openLocation = () => {
+    onNavigate?.();
+    router.push({ pathname: '/trip/[id]', params: { id: trip.id, section: 'location' } });
+  };
   return (
     <TripListingCard
       testID={testID ?? 'discovery-trip-' + trip.id}
@@ -29,6 +33,7 @@ export const DiscoveryTripCard = memo(function DiscoveryTripCard({ trip, group, 
       showCrewParticipants={false}
       disabled={preview}
       onPressDetails={preview ? undefined : openTrip}
+      onPressLocation={preview ? undefined : openLocation}
       locationLabel={locationLabel}
       datesLabel={datesLabel}
       highlight={highlightDate ? getTripHighlight(trip, highlightDate) : undefined}

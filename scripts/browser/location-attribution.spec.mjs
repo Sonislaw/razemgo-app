@@ -36,6 +36,7 @@ for(const width of [320,390])test(`shared location credits stay visible without 
   await login(page);await page.goto('/explore');
   const list=page.getByTestId('discovery-screen');
   await expect(page.getByTestId('discovery-trip-'+id(1))).toBeAttached();
+  await expect(list.getByRole('button', { name: /^Zobacz dokładne miejsce/ })).toHaveCount(0);
   await expect(credits(page)).toHaveCount(1);await expect(bar(page)).toBeInViewport();
   await expect(list.getByTestId('geoapify-attribution')).toHaveCount(0);
   await page.getByTestId('discovery-trip-'+id(5)).scrollIntoViewIfNeeded();
@@ -49,6 +50,14 @@ for(const width of [320,390])test(`shared location credits stay visible without 
   await expect(page.getByTestId('discovery-trip-'+id(9))).toContainText(area.name);
   await expect(page.getByTestId('discovery-trip-'+id(9)).getByTestId('geoapify-attribution')).toHaveCount(0);
   await expect(credits(page)).toHaveCount(1);await expect(bar(page)).toBeInViewport();expect(store.placeCalls??[]).toHaveLength(0);
+
+  const exactPlace = list.getByRole('button', { name: 'Zobacz dokładne miejsce: ' + area.name + ' (mazowieckie)', exact: true });
+  await expect(exactPlace).toContainText(area.name);
+  await exactPlace.click();
+  await expect(page).toHaveURL(new RegExp('/trip/' + id(9) + '\\?section=location$'));
+  const campground = page.getByText('Camping Morski', { exact: true });
+  await expect(campground).toBeInViewport();
+  await expect.poll(async () => (await campground.boundingBox())?.y ?? Infinity).toBeLessThan(100);
 
   await page.goto('/trip/'+id(1));
   await expect(page.getByTestId('trip-map-card')).toBeAttached();await expect(credits(page)).toHaveCount(1);

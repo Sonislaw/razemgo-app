@@ -32,6 +32,7 @@ interface TripListingCardProps {
   highlight?: TripHighlight;
   onPress?: () => void;
   onPressDetails?: () => void;
+  onPressLocation?: () => void;
   onPressGroup?: () => void;
   accessibilityLabel?: string;
   accessibilityHint?: string;
@@ -54,6 +55,7 @@ export function TripListingCard({
   highlight,
   onPress,
   onPressDetails,
+  onPressLocation,
   onPressGroup,
   accessibilityLabel,
   accessibilityHint,
@@ -83,7 +85,8 @@ export function TripListingCard({
         {openDetails ? <Pressable accessibilityRole="button" accessibilityLabel={'Otwórz wyjazd: ' + getTripHeadline(trip)}
           onPress={openDetails} style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>{headline}</Pressable> : headline}
         <View style={styles.metadata}>
-          <TripLocationSummary trip={trip} locationLabel={locationLabel} compact showGeoapifyAttribution={false} />
+          <TripLocationSummary trip={trip} locationLabel={locationLabel} compact showGeoapifyAttribution={false}
+            onOpenLocation={!disabled && !onPress ? onPressLocation : undefined} />
           <View style={styles.metadataRow}>
             <TripPlanningIcon kind="dates" size={20} framed={false} />
             <AppText color="textSecondary" style={[styles.flex, styles.detailText]}>

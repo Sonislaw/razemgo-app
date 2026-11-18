@@ -2,7 +2,8 @@ import { TripDetailsContent } from '@/components/trips/trip-details-content';
 import { DataStatus } from '@/components/ui/data-status';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useDiscoveryTrip } from '@/features/discovery/use-trip-search';
-import { StyleSheet, View } from 'react-native';
+import { useRef } from 'react';
+import { StyleSheet, View, type ScrollViewInstance, type ViewInstance } from 'react-native';
 import {
   AppText,
   Button,
@@ -28,10 +29,23 @@ export function generateStaticParams() {
 }
 
 export default function TripDetailsScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, section } = useLocalSearchParams<{ id: string; section?: string }>();
   const { item: proposal, status, error, refresh } = useDiscoveryTrip(id);
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  const locationRef = useRef<ViewInstance>(null);
+  const focusedLocation = useRef<string>(undefined);
+  const focusLocation = section === 'location';
+  const scrollToLocation = () => {
+    const scroll = scrollRef.current;
+    const content = scroll?.getInnerViewRef();
+    if (!scroll || !content || focusedLocation.current === id) return;
+    locationRef.current?.measureLayout(content, (_x, y) => {
+      focusedLocation.current = id;
+      scroll.scrollTo({ y: Math.max(0, y - insets.top - 12), animated: false });
+    });
+  };
   const back = () =>
     router.canGoBack() ? router.back() : router.replace('/explore');
   if (!proposal && status !== 'ready') return (
@@ -55,7 +69,7 @@ export default function TripDetailsScreen() {
   const { trip, group } = proposal;
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-    <Screen>
+    <Screen scrollRef={scrollRef}>
       <HeaderRow>
         <IconButton icon="back" label="Wróć do listy wyjazdów" onPress={back} />
         <AppText variant="heading" accessibilityRole="header" style={styles.flex}>
@@ -71,6 +85,8 @@ export default function TripDetailsScreen() {
       <TripDetailsContent
         trip={trip}
         group={group}
+        locationRef={focusLocation ? locationRef : undefined}
+        onLocationLayout={focusLocation ? scrollToLocation : undefined}
         onOpenGroup={() => router.push({ pathname: '/crew/[id]', params: { id: group.id } })}
       />
     </Screen>

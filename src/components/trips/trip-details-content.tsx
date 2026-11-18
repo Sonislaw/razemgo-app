@@ -1,4 +1,5 @@
-import { StyleSheet, View } from 'react-native';
+import type { Ref } from 'react';
+import { StyleSheet, View, type LayoutChangeEvent, type ViewInstance } from 'react-native';
 import { AppText, Button, Card, Chip, SectionTitle, layout } from '@/components/ui/primitives';
 import { GroupAvatar } from '@/features/profile/group-avatar';
 import { TravelModeBadges } from '@/features/profile/travel-mode-ui';
@@ -16,19 +17,23 @@ export function TripDetailsContent({
   locationLabel,
   isOwn = false,
   onOpenGroup,
+  locationRef,
+  onLocationLayout,
 }: {
   trip: TripPlan;
   group: TravelGroup;
   locationLabel?: string;
   isOwn?: boolean;
   onOpenGroup: () => void;
+  locationRef?: Ref<ViewInstance>;
+  onLocationLayout?: (event: LayoutChangeEvent) => void;
 }) {
   const place=trip.mode==='planned'?trip.destination.place:trip.travelArea.place;
   const hasGeoapifyLocation=place?.source==='geoapify'||(trip.mode==='planned'&&trip.searchArea?.kind==='locality'&&trip.searchArea.source==='geoapify');
   return (
     <>
       <View style={layout.stack}>
-        <TripLocationSummary trip={trip} locationLabel={locationLabel} />
+        <TripLocationSummary trip={trip} locationLabel={locationLabel} anchorRef={locationRef} onLayout={onLocationLayout} />
         <Card testID="trip-organizer">
           <View style={layout.row}>
             <GroupAvatar groupId={group.id} avatarId={group.avatarId} size={48} />

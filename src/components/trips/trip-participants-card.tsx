@@ -20,7 +20,13 @@ export function TripParticipantsCard({ value, animals }: {
       <AppText variant="heading" accessibilityRole="header">Skład wyjazdu</AppText>
       <View testID="trip-participants" style={styles.composition}>
         {value ? <>
-          <CompositionRow icon="profile" title={`${value.adultCount} ${value.adultCount === 1 ? 'dorosły' : 'dorosłych'}`} />
+          <CompositionRow icon="profile" title={`${value.adultCount} ${value.adultCount === 1 ? 'dorosły' : 'dorosłych'}`}>
+            {value.adultAgeBands.length ? (
+              <View style={layout.wrap}>
+                {value.adultAgeBands.map(band => <ListingTag key={band} label={band} tone="warm" />)}
+              </View>
+            ) : null}
+          </CompositionRow>
           {value.childCount > 0 ? (
             <CompositionRow icon="people" title={`${value.childCount} ${value.childCount === 1 ? 'dziecko' : 'dzieci'}`} warm>
               <View style={layout.wrap}>

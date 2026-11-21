@@ -32,6 +32,7 @@ export const MY_GROUP: TravelGroup = {
   name: 'Nasza rodzina',
   kind: 'family',
   adultCount: 2,
+  adultAgeBands: ['26–49'],
   childCount: 2,
   childAgeBands: ['4–6', '7–9'],
   travelModes: ['Przyczepa'],
@@ -46,6 +47,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
     avatarId: 'camp-bear',
     kind: 'family',
     adultCount: 2,
+    adultAgeBands: ['26–49'],
     childCount: 2,
     childAgeBands: ['4–6', '7–9'],
     travelModes: ['Przyczepa'],
@@ -59,6 +61,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
     avatarId: 'paddle-beaver',
     kind: 'family',
     adultCount: 2,
+    adultAgeBands: ['26–49', '50+'],
     childCount: 2,
     childAgeBands: ['7–9', '10–12'],
     travelModes: ['Kamper'],
@@ -72,6 +75,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
     avatarId: 'road-wolf',
     kind: 'couple',
     adultCount: 2,
+    adultAgeBands: ['18–25'],
     childCount: 0,
     childAgeBands: [],
     travelModes: ['Van'],
@@ -85,6 +89,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
     avatarId: 'meadow-hedgehog',
     kind: 'family',
     adultCount: 1,
+    adultAgeBands: ['18–25'],
     childCount: 2,
     childAgeBands: ['0–3', '4–6'],
     travelModes: ['Namiot'],
@@ -98,6 +103,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
     avatarId: 'campfire-squirrel',
     kind: 'friends',
     adultCount: 3,
+    adultAgeBands: ['26–49'],
     childCount: 0,
     childAgeBands: [],
     travelModes: ['Namiot'],
@@ -111,6 +117,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
     avatarId: 'summit-chamois',
     kind: 'family',
     adultCount: 2,
+    adultAgeBands: ['26–49'],
     childCount: 2,
     childAgeBands: ['10–12', '13–17'],
     travelModes: ['Kamper'],
@@ -121,7 +128,7 @@ export const DEMO_GROUPS: TravelGroup[] = [
 export const DEMO_TRIPS: TripPlan[] = [
   {
     id: 'demo-coast',
-    participants: { adultCount: 2, childCount: 2, childAgeBands: ['4–6', '7–9'] },
+    participants: { adultCount: 2, adultAgeBands: ['26–49'], childCount: 2, childAgeBands: ['4–6', '7–9'] },
     publishedAt: '2026-10-20T08:00:00.000Z',
     animals: { animals: [{ kind: 'dog' }] },
 
@@ -142,7 +149,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-lake',
-    participants: { adultCount: 2, childCount: 2, childAgeBands: ['7–9', '10–12'] },
+    participants: { adultCount: 2, adultAgeBands: ['26–49', '50+'], childCount: 2, childAgeBands: ['7–9', '10–12'] },
     publishedAt: '2026-10-20T12:00:00.000Z',
     animals: { animals: [] },
 
@@ -163,7 +170,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-mountains',
-    participants: { adultCount: 2, childCount: 0, childAgeBands: [] },
+    participants: { adultCount: 2, adultAgeBands: ['18–25'], childCount: 0, childAgeBands: [] },
     publishedAt: '2026-10-21T08:00:00.000Z',
     animals: { animals: [{ kind: 'cat' }] },
 
@@ -179,7 +186,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-forest',
-    participants: { adultCount: 1, childCount: 2, childAgeBands: ['0–3', '4–6'] },
+    participants: { adultCount: 1, adultAgeBands: ['18–25'], childCount: 2, childAgeBands: ['0–3', '4–6'] },
     publishedAt: '2026-10-21T10:00:00.000Z',
     animals: { animals: [] },
 
@@ -195,7 +202,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-friends',
-    participants: { adultCount: 3, childCount: 0, childAgeBands: [] },
+    participants: { adultCount: 3, adultAgeBands: ['26–49'], childCount: 0, childAgeBands: [] },
     publishedAt: '2026-10-21T14:00:00.000Z',
     animals: { animals: [] },
 
@@ -215,7 +222,7 @@ export const DEMO_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-bieszczady',
-    participants: { adultCount: 2, childCount: 2, childAgeBands: ['10–12', '13–17'] },
+    participants: { adultCount: 2, adultAgeBands: ['26–49'], childCount: 2, childAgeBands: ['10–12', '13–17'] },
     publishedAt: '2026-10-21T18:00:00.000Z',
     animals: { animals: [{ kind: 'dog' }] },
 
@@ -237,7 +244,7 @@ export const DEMO_TRIPS: TripPlan[] = [
 export const MY_TRIPS: TripPlan[] = [
   {
     id: 'demo-my-coast',
-    participants: { adultCount: 2, childCount: 2, childAgeBands: ['4–6', '7–9'] },
+    participants: { adultCount: 2, adultAgeBands: ['26–49'], childCount: 2, childAgeBands: ['4–6', '7–9'] },
     publishedAt: '2026-10-18T09:00:00.000Z',
     animals: { animals: [{ kind: 'dog' }] },
 
@@ -254,7 +261,7 @@ export const MY_TRIPS: TripPlan[] = [
   },
   {
     id: 'demo-my-idea',
-    participants: { adultCount: 2, childCount: 2, childAgeBands: ['4–6', '7–9'] },
+    participants: { adultCount: 2, adultAgeBands: ['26–49'], childCount: 2, childAgeBands: ['4–6', '7–9'] },
     publishedAt: '2026-10-19T09:00:00.000Z',
     animals: { animals: [] },
 

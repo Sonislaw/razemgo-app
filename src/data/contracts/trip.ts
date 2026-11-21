@@ -2,6 +2,7 @@ import type { AnimalKind } from '../../types/animals';
 import type { LocationOption } from '../../types/location';
 import type { TripStatus, TripVisibility } from '../../types/owned-trip';
 import type {
+  AdultAgeBand,
   ChildAgeBand,
   LandscapeKind,
   TravelGroup,
@@ -14,6 +15,7 @@ export type TripRow = {
   search_area_data?: SelectedPlace | null;
   place_data?: SelectedPlace | null;
   adult_count?: number | null;
+  adult_age_bands?: AdultAgeBand[];
   child_count?: number | null;
   child_age_bands?: ChildAgeBand[];
   id: string;

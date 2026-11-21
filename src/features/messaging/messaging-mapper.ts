@@ -37,6 +37,7 @@ function snapshotToTrip(row: TripSnapshot): TripPlan {
     participants: row.adult_count != null && row.child_count != null ? {
       adultCount: row.adult_count,
       childCount: row.child_count,
+      adultAgeBands: [...(row.adult_age_bands ?? [])],
       childAgeBands: [...(row.child_age_bands ?? [])],
     } : null,
     id: row.id,

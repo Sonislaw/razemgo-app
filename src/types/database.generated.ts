@@ -725,6 +725,7 @@ export type Database = {
             };
             "travel_groups": {
                 Row: {
+                    "adult_age_bands": (string)[];
                     "adult_count": number;
                     "animal_kinds": (string)[];
                     "avatar_id": string;
@@ -742,6 +743,7 @@ export type Database = {
                 };
                 ComputedFields: never;
                 Insert: {
+                    "adult_age_bands"?: (string)[];
                     "adult_count": number;
                     "animal_kinds"?: (string)[];
                     "avatar_id": string;
@@ -758,6 +760,7 @@ export type Database = {
                     "updated_at"?: string;
                 };
                 Update: {
+                    "adult_age_bands"?: (string)[];
                     "adult_count"?: number;
                     "animal_kinds"?: (string)[];
                     "avatar_id"?: string;
@@ -778,6 +781,7 @@ export type Database = {
             };
             "trip_plans": {
                 Row: {
+                    "adult_age_bands": (string)[];
                     "adult_count": number | null;
                     "animal_kinds": (string)[];
                     "campground_address": string;
@@ -810,6 +814,7 @@ export type Database = {
                 };
                 ComputedFields: never;
                 Insert: {
+                    "adult_age_bands"?: (string)[];
                     "adult_count"?: number | null;
                     "animal_kinds"?: (string)[];
                     "campground_address"?: string;
@@ -841,6 +846,7 @@ export type Database = {
                     "visibility"?: string;
                 };
                 Update: {
+                    "adult_age_bands"?: (string)[];
                     "adult_count"?: number | null;
                     "animal_kinds"?: (string)[];
                     "campground_address"?: string;

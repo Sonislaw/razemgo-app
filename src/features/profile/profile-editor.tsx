@@ -12,6 +12,7 @@ import {
 import { IS_DEMO_MODE } from '@/constants/app';
 import { CHILD_AGE_BANDS } from '@/constants/travel';
 import { GroupAnimalFields } from '@/features/animals/animal-fields';
+import { AdultAgeBandFields } from '@/features/profile/adult-age-band-fields';
 import { ChipRow } from '@/components/ui/chip-row';
 import { useAuth } from '@/features/auth/auth-context';
 import { ProfileAvatarPicker } from '@/features/profile/profile-avatar-picker';
@@ -194,7 +195,21 @@ export default function ProfileEditor({
             onChange={(adultCount) =>
               setDraft((current) => ({
                 ...current,
-                group: { ...current.group, adultCount },
+                group: {
+                  ...current.group,
+                  adultCount,
+                  adultAgeBands: current.group.adultAgeBands.slice(0, adultCount),
+                },
+              }))
+            }
+          />
+          <AdultAgeBandFields
+            value={draft.group.adultAgeBands}
+            adultCount={draft.group.adultCount}
+            onChange={(adultAgeBands) =>
+              setDraft((current) => ({
+                ...current,
+                group: { ...current.group, adultAgeBands },
               }))
             }
           />

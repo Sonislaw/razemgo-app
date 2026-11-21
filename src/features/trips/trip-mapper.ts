@@ -18,6 +18,7 @@ export function tripToPayload(form: TripForm) {
     search_area_data: form.mode === 'planned' && form.searchArea ? storePlace(form.searchArea) : null,
     place_data: form.place ? storePlace(form.place) : null,
     adult_count: form.participants?.adultCount ?? null,
+    adult_age_bands: [...(form.participants?.adultAgeBands ?? [])],
     child_count: form.participants?.childCount ?? null,
     child_age_bands: [...(form.participants?.childAgeBands ?? [])],
     mode: form.mode,
@@ -48,6 +49,7 @@ export function tripFromRow(value: unknown): OwnedTrip {
       row.adult_count != null && row.child_count != null
         ? {
             adultCount: row.adult_count,
+            adultAgeBands: [...(row.adult_age_bands ?? [])],
             childCount: row.child_count,
             childAgeBands: [...(row.child_age_bands ?? [])],
           }
@@ -93,6 +95,7 @@ export function proposalFromRow(value: unknown): TripProposal {
       kind: crew.kind,
       ...(crew.crew_number ? { crewNumber: crew.crew_number } : {}),
       adultCount: crew.adult_count,
+      adultAgeBands: [...(crew.adult_age_bands ?? [])],
       childCount: crew.child_count,
       childAgeBands: [...crew.child_age_bands],
       travelModes: [crew.travel_mode],

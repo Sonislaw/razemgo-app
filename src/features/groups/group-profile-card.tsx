@@ -57,6 +57,9 @@ export function GroupCardFacts({ group, expanded }: { group: TravelGroup; expand
   const interests = group.interests;
   return (
     <View style={groupCardStyles.tags}>
+      {group.adultAgeBands.length ? (
+        <ListingTag icon="profile" tone="warm" label={'Dorośli ' + group.adultAgeBands.join(', ')} />
+      ) : null}
       {ages.length ? <ListingTag icon="people" tone="warm" label={'Dzieci ' + ages.join(', ') + ' lat'} /> : null}
       {group.animals.animals.length ? (
         <ListingTag tone="warm" label={tripAnimalSummary(group.animals)}>

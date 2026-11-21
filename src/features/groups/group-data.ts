@@ -7,6 +7,7 @@ import {
 import type { AnimalKind } from '../../types/animals';
 import type { ProfileAvatarId } from '../../types/avatar';
 import type {
+  AdultAgeBand,
   ChildAgeBand,
   TravelGroup,
   TripProposal,
@@ -78,6 +79,7 @@ export type PublicGroupRow = {
     avatar_id: ProfileAvatarId;
     kind: TravelGroup['kind'];
     adult_count: number;
+    adult_age_bands?: AdultAgeBand[];
     child_count: number;
     child_age_bands: ChildAgeBand[];
     travel_mode: string;
@@ -102,6 +104,7 @@ export function publicGroupFromRow(row: PublicGroupRow): PublicGroup {
       avatarId: g.avatar_id,
       kind: g.kind,
       adultCount: g.adult_count,
+      adultAgeBands: [...(g.adult_age_bands ?? [])],
       childCount: g.child_count,
       childAgeBands: g.child_age_bands,
       travelModes: [g.travel_mode],

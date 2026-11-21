@@ -66,9 +66,10 @@ export function TripListingCard({
   showCrewParticipants = true,
 }: TripListingCardProps) {
   const theme = useTheme();
+  const adultAgeBands = trip.participants?.adultAgeBands ?? [];
   const ageBands = trip.participants?.childCount ? trip.participants.childAgeBands : [];
   const hasChildren = (trip.participants?.childCount ?? 0) > 0;
-  const hasFacts = !group || hasChildren || trip.animals.animals.length > 0 || trip.interests.length > 0;
+  const hasFacts = !group || adultAgeBands.length > 0 || hasChildren || trip.animals.animals.length > 0 || trip.interests.length > 0;
   const participantsSummary = tripParticipantsSummary(trip.participants);
   const online = useGroupOnline(group?.id);
   const openDetails = !disabled && !onPress ? onPressDetails : undefined;
@@ -98,6 +99,9 @@ export function TripListingCard({
           <View style={styles.facts}>
             {!group ? (
               <ListingTag icon="people" label={participantsSummary} />
+            ) : null}
+            {adultAgeBands.length ? (
+              <ListingTag icon="profile" tone="warm" label={'Dorośli ' + adultAgeBands.join(', ')} />
             ) : null}
             {hasChildren ? (
               <ListingTag icon="people" tone="warm" label={ageBands.length ? 'Dzieci ' + ageBands.join(', ') + ' lat' : 'Wiek dzieci niepodany'} />
@@ -204,8 +208,16 @@ const styles = StyleSheet.create({
     maxWidth: '100%', flexDirection: 'row', alignItems: 'center', gap: 6,
     borderRadius: 999, borderBottomLeftRadius: 5, paddingHorizontal: 12, paddingVertical: 4,
   },
-  departureBadge: { backgroundColor: '#BC460C', boxShadow: '0 3px 8px rgba(150, 55, 12, 0.2)' },
-  ongoingBadge: { backgroundColor: BrandPalette.greenAction, boxShadow: '0 3px 8px rgba(40, 122, 49, 0.2)' },
+  departureBadge: {
+    backgroundColor: '#BC460C',
+    backgroundImage: 'linear-gradient(180deg, #C4510B, #A93B0A)',
+    boxShadow: '0 3px 8px rgba(150, 55, 12, 0.2)',
+  },
+  ongoingBadge: {
+    backgroundColor: BrandPalette.greenAction,
+    backgroundImage: 'linear-gradient(180deg, #2D8037, #206428)',
+    boxShadow: '0 3px 8px rgba(40, 122, 49, 0.2)',
+  },
   highlightLabel: { color: '#FFFFFF', fontWeight: '700', flexShrink: 1 },
   favoriteSpace: { width: 44, height: 44 },
   cardFavoriteAction: { position: 'absolute', top: 14, right: 14 },

@@ -1,4 +1,4 @@
-import { MAX_TRIP_PARTICIPANTS, validateTripParticipants } from '../../lib/trip-participants.ts';
+import { MAX_TRIP_PARTICIPANTS, validAdultAgeBands, validateTripParticipants } from '../../lib/trip-participants.ts';
 import type { MailboxRow, MessageRow } from './messaging';
 import type { GroupRow } from './profile';
 import type { PublicTripRow, TripRow } from './trip';
@@ -36,6 +36,11 @@ export function strings(
 export function oneOf(value: unknown, allowed: readonly unknown[]) {
   if (!allowed.includes(value)) throw new Error('Invalid API option');
 }
+function checkAdultAgeBands(value: unknown, adultCount: number) {
+  if (value === undefined) return;
+  strings(value, 3);
+  if (!validAdultAgeBands(value, adultCount)) throw Error('Invalid adult age bands');
+}
 export function parseGroupRow(value: unknown, publicOnly = false): GroupRow {
   const row = object(value);
   text(row.id, 128);
@@ -53,6 +58,7 @@ export function parseGroupRow(value: unknown, publicOnly = false): GroupRow {
   oneOf(row.kind, ['family', 'couple', 'solo', 'friends']);
   oneOf(row.travel_mode, ['Przyczepa', 'Kamper', 'Namiot', 'Van', 'Samochód']);
   integer(row.adult_count, 1, 8);
+  checkAdultAgeBands(row.adult_age_bands, row.adult_count);
   integer(row.child_count, 0, 6);
   strings(row.child_age_bands, 5);
   strings(row.interests, 10);
@@ -64,17 +70,20 @@ export function parseTripRow(value: unknown): TripRow {
   const row = object(value);
   if (row.adult_count != null || row.child_count != null) {
     integer(row.adult_count, 1, MAX_TRIP_PARTICIPANTS);
+    if (row.adult_age_bands !== undefined) strings(row.adult_age_bands, 3);
     integer(row.child_count, 0, MAX_TRIP_PARTICIPANTS);
     strings(row.child_age_bands, 5);
     const errors = validateTripParticipants({
       adultCount: row.adult_count,
       childCount: row.child_count,
+      adultAgeBands: (row.adult_age_bands as TripRow['adult_age_bands']) ?? [],
       childAgeBands: row.child_age_bands as NonNullable<TripRow['child_age_bands']>,
     }, { allowMissingChildAges: row.status === 'draft' });
     if (errors.length) throw Error('Invalid trip participants');
-  } else if (row.child_age_bands !== undefined) {
+  } else {
     // Older APIs may omit participant fields. Unknown counts cannot carry ages.
-    strings(row.child_age_bands, 0);
+    if (row.child_age_bands !== undefined) strings(row.child_age_bands, 0);
+    checkAdultAgeBands(row.adult_age_bands, 0);
   }
   for (const key of [
     'id',

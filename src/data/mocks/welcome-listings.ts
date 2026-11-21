@@ -10,7 +10,7 @@ export type WelcomeListing = TripPlan & {
 export const WELCOME_LISTINGS: WelcomeListing[] = [
   {
     id: 'welcome-coast',
-    participants: { adultCount: 2, childCount: 2, childAgeBands: ['4–6', '7–9'] },
+    participants: { adultCount: 2, adultAgeBands: ['26–49'], childCount: 2, childAgeBands: ['4–6', '7–9'] },
     groupId: 'welcome-crew-coast',
     exampleReactions: { love: 12, curious: 7, envy: 4 },
     group: {
@@ -20,6 +20,7 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
       avatarId: 'camp-bear',
       kind: 'family',
       adultCount: 2,
+      adultAgeBands: ['26–49'],
       childCount: 2,
       childAgeBands: ['4–6', '7–9'],
       travelModes: ['Przyczepa'],
@@ -39,7 +40,7 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
   },
   {
     id: 'welcome-lake',
-    participants: { adultCount: 2, childCount: 1, childAgeBands: ['7–9'] },
+    participants: { adultCount: 2, adultAgeBands: ['26–49', '50+'], childCount: 1, childAgeBands: ['7–9'] },
     groupId: 'welcome-crew-lake',
     exampleReactions: { adventure: 8, love: 5, applause: 3 },
     group: {
@@ -49,6 +50,7 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
       avatarId: 'paddle-beaver',
       kind: 'family',
       adultCount: 2,
+      adultAgeBands: ['26–49', '50+'],
       childCount: 1,
       childAgeBands: ['7–9'],
       travelModes: ['Kamper'],
@@ -68,7 +70,7 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
   },
   {
     id: 'welcome-mountain',
-    participants: { adultCount: 2, childCount: 0, childAgeBands: [] },
+    participants: { adultCount: 2, adultAgeBands: ['18–25', '26–49'], childCount: 0, childAgeBands: [] },
     groupId: 'welcome-crew-mountain',
     exampleReactions: { adventure: 11, envy: 8, curious: 5 },
     group: {
@@ -78,6 +80,7 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
       avatarId: 'summit-chamois',
       kind: 'couple',
       adultCount: 2,
+      adultAgeBands: ['18–25', '26–49'],
       childCount: 0,
       childAgeBands: [],
       travelModes: ['Van'],
@@ -96,7 +99,7 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
   },
   {
     id: 'welcome-forest',
-    participants: { adultCount: 1, childCount: 2, childAgeBands: ['0–3', '4–6'] },
+    participants: { adultCount: 1, adultAgeBands: ['26–49'], childCount: 2, childAgeBands: ['0–3', '4–6'] },
     groupId: 'welcome-crew-forest',
     exampleReactions: { love: 9, applause: 6, curious: 3 },
     group: {
@@ -106,6 +109,7 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
       avatarId: 'campfire-squirrel',
       kind: 'family',
       adultCount: 1,
+      adultAgeBands: ['26–49'],
       childCount: 2,
       childAgeBands: ['0–3', '4–6'],
       travelModes: ['Namiot'],
@@ -125,7 +129,7 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
   },
   {
     id: 'welcome-idea',
-    participants: { adultCount: 3, childCount: 0, childAgeBands: [] },
+    participants: { adultCount: 3, adultAgeBands: ['26–49', '50+'], childCount: 0, childAgeBands: [] },
     groupId: 'welcome-crew-idea',
     exampleReactions: { curious: 9, applause: 4, love: 3 },
     group: {
@@ -135,6 +139,7 @@ export const WELCOME_LISTINGS: WelcomeListing[] = [
       avatarId: 'trail-fox',
       kind: 'friends',
       adultCount: 3,
+      adultAgeBands: ['26–49', '50+'],
       childCount: 0,
       childAgeBands: [],
       travelModes: ['Kamper'],

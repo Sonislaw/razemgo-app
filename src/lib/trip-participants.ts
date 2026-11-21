@@ -1,12 +1,19 @@
 import type { TripParticipants, TravelGroup } from '../types/travel';
-import { CHILD_AGE_BANDS } from '../constants/travel.ts';
+import { ADULT_AGE_BANDS, CHILD_AGE_BANDS } from '../constants/travel.ts';
 
 export const MAX_TRIP_PARTICIPANTS = 20;
+
+export function validAdultAgeBands(bands: readonly string[], adultCount: number) {
+  return bands.length <= adultCount &&
+    new Set(bands).size === bands.length &&
+    bands.every(band => ADULT_AGE_BANDS.some(option => option === band));
+}
 
 export function cloneTripParticipants(value?: TripParticipants | null): TripParticipants | null {
   if (!value) return null;
   return {
     adultCount: value.adultCount,
+    adultAgeBands: [...(value.adultAgeBands ?? [])],
     childCount: value.childCount,
     childAgeBands: [...value.childAgeBands],
   };
@@ -15,6 +22,7 @@ export function cloneTripParticipants(value?: TripParticipants | null): TripPart
 export function participantsFromProfile(group: TravelGroup): TripParticipants {
   return {
     adultCount: group.adultCount,
+    adultAgeBands: [...(group.adultAgeBands ?? [])],
     childCount: group.childCount,
     childAgeBands: group.childCount ? [...group.childAgeBands] : [],
   };
@@ -31,6 +39,9 @@ export function validateTripParticipants(
   }
   if (!Number.isInteger(value.childCount) || value.childCount < 0 || value.childCount > MAX_TRIP_PARTICIPANTS) {
     errors.push(`Podaj liczbę dzieci na wyjeździe od 0 do ${MAX_TRIP_PARTICIPANTS}.`);
+  }
+  if (!validAdultAgeBands(value.adultAgeBands ?? [], value.adultCount)) {
+    errors.push('Wybierz przedziały wieku dorosłych zgodnie z ich liczbą na wyjeździe.');
   }
   const missingAges = value.childCount > 0 && !value.childAgeBands.length;
   if (

@@ -88,7 +88,7 @@ export default function SettingsScreen() {
           </View>
           <AppText variant="caption" color="textSecondary">
             Zarządzaj blokadami ekip. Widoczność konkretnego
-            wyjazdu zmienisz w jego edycji. Wiek dzieci pokazujemy w przedziałach.
+            wyjazdu zmienisz w jego edycji. Wiek dzieci i dorosłych pokazujemy w przedziałach.
           </AppText>
           <Button label="Zablokowane ekipy" icon="block" variant="secondary" onPress={openSafety} />
         </Card>

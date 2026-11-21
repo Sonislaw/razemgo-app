@@ -1,3 +1,4 @@
+import { validAdultAgeBands } from '../../lib/trip-participants.ts';
 import type { TravelerProfile } from '../../types/profile';
 import {
   DEFAULT_PROFILE_AVATAR_ID,
@@ -21,6 +22,7 @@ export function createEmptyProfile(): TravelerProfile {
       avatarId: DEFAULT_PROFILE_AVATAR_ID,
       kind: 'family',
       adultCount: 1,
+      adultAgeBands: [],
       childCount: 0,
       childAgeBands: [],
       travelModes: [],
@@ -40,6 +42,7 @@ export function cloneProfile(profile: TravelerProfile): TravelerProfile {
       avatarId: getProfileAvatar(profile.group.avatarId).id,
       kind: profile.group.kind,
       adultCount: profile.group.adultCount,
+      adultAgeBands: [...(profile.group.adultAgeBands ?? [])],
       childCount: profile.group.childCount,
       childAgeBands: [...profile.group.childAgeBands],
       travelModes: profile.group.travelModes.slice(0, 1),
@@ -80,6 +83,8 @@ export function validateProfile(profile: TravelerProfile): string[] {
     group.childCount > 6
   )
     errors.push('Liczba dzieci powinna wynosić od 0 do 6.');
+  if (!validAdultAgeBands(group.adultAgeBands ?? [], group.adultCount))
+    errors.push('Liczba wybranych przedziałów wieku nie może być większa od liczby dorosłych.');
   if (group.childAgeBands.length > group.childCount)
     errors.push(
       'Liczba wybranych przedziałów wieku nie może być większa od liczby dzieci.',

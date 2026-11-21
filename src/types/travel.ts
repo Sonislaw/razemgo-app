@@ -3,12 +3,14 @@ import type { ProfileAvatarId } from './avatar';
 import type { PassportSummary } from './passport';
 import type { SelectedPlace } from './place';
 
+export type AdultAgeBand = '18–25' | '26–49' | '50+';
 export type ChildAgeBand = '0–3' | '4–6' | '7–9' | '10–12' | '13–17';
 export type TripMode = 'planned' | 'flexible';
 export type LandscapeKind = 'coast' | 'lake' | 'mountain' | 'forest';
 
 export interface TripParticipants {
   adultCount: number;
+  adultAgeBands: AdultAgeBand[];
   childCount: number;
   childAgeBands: ChildAgeBand[];
 }
@@ -21,6 +23,7 @@ export interface TravelGroup {
   avatarId?: ProfileAvatarId;
   kind: 'family' | 'couple' | 'solo' | 'friends';
   adultCount: number;
+  adultAgeBands: AdultAgeBand[];
   childCount: number;
   childAgeBands: ChildAgeBand[];
   travelModes: string[];

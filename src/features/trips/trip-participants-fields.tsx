@@ -1,3 +1,4 @@
+import { AdultAgeBandFields } from '@/features/profile/adult-age-band-fields';
 import { View } from 'react-native';
 import { AppText, Chip, FieldLabel, SectionTitle, layout } from '@/components/ui/primitives';
 import { ProfileCounter } from '@/features/profile/profile-form-fields';
@@ -9,7 +10,7 @@ export function TripParticipantsFields({ value, onChange }: {
   value: TripParticipants | null;
   onChange: (value: TripParticipants) => void;
 }) {
-  const current = value ?? { adultCount: 1, childCount: 0, childAgeBands: [] };
+  const current = value ?? { adultCount: 1, adultAgeBands: [], childCount: 0, childAgeBands: [] };
   return (
     <View style={{ gap: 12 }}>
       <SectionTitle title="Kto jedzie?" required />
@@ -21,7 +22,16 @@ export function TripParticipantsFields({ value, onChange }: {
         value={current.adultCount}
         min={1}
         max={MAX_TRIP_PARTICIPANTS}
-        onChange={adultCount => onChange({ ...current, adultCount })}
+        onChange={adultCount => onChange({
+          ...current, adultCount,
+          adultAgeBands: current.adultAgeBands.slice(0, adultCount),
+        })}
+      />
+      <AdultAgeBandFields
+        forTrip
+        value={current.adultAgeBands}
+        adultCount={current.adultCount}
+        onChange={adultAgeBands => onChange({ ...current, adultAgeBands })}
       />
       <ProfileCounter
         label="Dzieci na wyjeździe"

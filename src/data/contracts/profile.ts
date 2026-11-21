@@ -1,6 +1,6 @@
 import type { AnimalKind } from '../../types/animals';
 import type { ProfileAvatarId } from '../../types/avatar';
-import type { ChildAgeBand, TravelGroup } from '../../types/travel';
+import type { AdultAgeBand, ChildAgeBand, TravelGroup } from '../../types/travel';
 import type { PassportSummary } from '../../types/passport';
 
 export type GroupRow = {
@@ -12,6 +12,7 @@ export type GroupRow = {
   avatar_id: ProfileAvatarId;
   kind: TravelGroup['kind'];
   adult_count: number;
+  adult_age_bands?: AdultAgeBand[];
   child_count: number;
   child_age_bands: ChildAgeBand[];
   travel_mode: string;

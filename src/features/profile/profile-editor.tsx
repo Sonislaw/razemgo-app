@@ -232,9 +232,6 @@ export default function ProfileEditor({
           {draft.group.childCount > 0 ? (
             <View style={layout.stack}>
               <FieldLabel>Wiek dzieci</FieldLabel>
-              <AppText variant="caption" color="textSecondary">
-                Wybierz przybliżone przedziały — bez imion i dat urodzenia.
-              </AppText>
               <ChipRow horizontal label="Wiek dzieci">
                 {CHILD_AGE_BANDS.map((band) => (
                   <Chip

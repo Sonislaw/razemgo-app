@@ -164,8 +164,7 @@ function ContactAction({
             color="textSecondary"
             style={{ fontSize: 14, lineHeight: 21 }}
           >
-            Przedstaw się i napisz, co Cię zainteresowało. Dane dzieci z profilu
-            nie zostaną dodane do wiadomości.
+            Przedstaw się i napisz, co Cię zainteresowało.
           </AppText>
           <FirstMessageSuggestions
             trip={trip}
